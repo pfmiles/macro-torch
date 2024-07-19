@@ -15,26 +15,26 @@
 ]] --   
 --- Chinese spell&item keywords to English ones mapping
 kwdMap = {
-    ['人型'] = nil,
-    ['偷窃'] = nil,
-    ['菊花茶'] = nil,
-    ['鬼魅攻击'] = nil,
-    ['出血'] = nil,
-    ['背刺'] = nil,
-    ['消失'] = nil,
-    ['伺机待发'] = nil,
-    ['低吼'] = nil,
-    ['挫志咆哮'] = nil,
-    ['槌击'] = nil,
-    ['愤怒'] = nil,
-    ['愈合'] = nil,
-    ['治疗之触'] = nil,
-    ['元素'] = nil,
-    ['毒蛇钉刺'] = nil,
-    ['摔绊'] = nil,
-    ['猛禽一击'] = nil,
-    ['猎人印记'] = nil,
-    ['奥术射击'] = nil
+    ['人型'] = 'test',
+    ['偷窃'] = 'test',
+    ['菊花茶'] = 'test',
+    ['鬼魅攻击'] = 'test',
+    ['出血'] = 'test',
+    ['背刺'] = 'test',
+    ['消失'] = 'test',
+    ['伺机待发'] = 'test',
+    ['低吼'] = 'test',
+    ['挫志咆哮'] = 'test',
+    ['槌击'] = 'test',
+    ['愤怒'] = 'test',
+    ['愈合'] = 'test',
+    ['治疗之触'] = 'test',
+    ['元素'] = 'test',
+    ['毒蛇钉刺'] = 'test',
+    ['摔绊'] = 'test',
+    ['猛禽一击'] = 'test',
+    ['猎人印记'] = 'test',
+    ['奥术射击'] = 'test'
 }
 function i18n(chsKwd)
     for k, v in pairs(kwdMap) do

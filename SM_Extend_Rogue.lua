@@ -19,8 +19,8 @@
 function isTargetRogueFaint(t)
     local rogueFaintDebuffs = {'CheapShot', 'Rogue_KidneyShot'}
     local allDebuffText = getTargetAllDebuffText(t)
-    for i = 1, #rogueFaintDebuffs do
-        if string.find(allDebuffText, rogueFaintDebuffs[i]) then
+    for i, v in ipairs(rogueFaintDebuffs) do
+        if string.find(allDebuffText, v) then
             return true
         end
     end
