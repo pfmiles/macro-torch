@@ -15,7 +15,26 @@
 ]] --   
 --- Chinese spell&item keywords to English ones mapping
 kwdMap = {
-    ['1'] = '2'
+    ['人型'] = nil,
+    ['偷窃'] = nil,
+    ['菊花茶'] = nil,
+    ['鬼魅攻击'] = nil,
+    ['出血'] = nil,
+    ['背刺'] = nil,
+    ['消失'] = nil,
+    ['伺机待发'] = nil,
+    ['低吼'] = nil,
+    ['挫志咆哮'] = nil,
+    ['槌击'] = nil,
+    ['愤怒'] = nil,
+    ['愈合'] = nil,
+    ['治疗之触'] = nil,
+    ['元素'] = nil,
+    ['毒蛇钉刺'] = nil,
+    ['摔绊'] = nil,
+    ['猛禽一击'] = nil,
+    ['猎人印记'] = nil,
+    ['奥术射击'] = nil
 }
 function i18n(chsKwd)
     for k, v in pairs(kwdMap) do
@@ -28,6 +47,13 @@ function i18n(chsKwd)
         end
     end
     error('Undefined i18n keyword: ' .. chsKwd)
+end
+
+--- 判断当前目标是否正在攻击我
+---@param t string 指定的目标
+function isTargetAttackingMe()
+    local t = 'target'
+    return isTargetValidCanAttack(t) and UnitAffectingCombat(t) and UnitName("player") == UnitName("targettarget")
 end
 
 --- 判断指定的目标是否存在且活着且可被玩家攻击
@@ -181,7 +207,7 @@ function listActions()
             if t then
                 m = m .. " \"" .. t .. "\"";
             end
-            DEFAULT_CHAT_FRAME:AddMessage(m);
+            show(m);
         end
     end
 end
@@ -192,9 +218,22 @@ function listTargetDebuffs(t)
     for i = 1, 40 do
         local d = UnitDebuff(t, i)
         if d then
-            DEFAULT_CHAT_FRAME:AddMessage('Found Debuff: ' .. tostring(d))
+            show('Found Debuff: ' .. tostring(d))
         end
     end
+end
+
+--- 取得目标身上所有debuff的texture文本，返回一个总和字符串
+---@param t string 指定的目标
+function getTargetAllDebuffText(t)
+    local allDebuffTxt = ""
+    for i = 1, 40 do
+        local d = UnitDebuff(t, i)
+        if d then
+            allDebuffTxt = allDebuffTxt .. tostring(d)
+        end
+    end
+    return allDebuffTxt
 end
 
 --- 列出指定目标身上的所有buff
@@ -203,7 +242,7 @@ function listTargetBuffs(t)
     for i = 1, 40 do
         local b = UnitBuff(t, i)
         if b then
-            DEFAULT_CHAT_FRAME:AddMessage('Found Buff: ' .. tostring(b))
+            show('Found Buff: ' .. tostring(b))
         end
     end
 end
@@ -211,11 +250,24 @@ end
 ---显示目标的能量类型(魔法: 0, 怒气: 1, 集中值: 2, 能量: 3)
 ---@param t string 指定的目标
 function showTargetPowerType(t)
-    DEFAULT_CHAT_FRAME:AddMessage('Power Type: ' .. tostring(UnitPowerType(t)))
+    show('Power Type: ' .. tostring(UnitPowerType(t)))
 end
 
 ---显示目标的生物类型
 ---@param t string 指定的目标
 function showTargetType(t)
-    DEFAULT_CHAT_FRAME:AddMessage('Unit Type: ' .. tostring(UnitCreatureType(t)))
+    show('Unit Type: ' .. tostring(UnitCreatureType(t)))
+end
+
+--- 显示目标职业
+function showTargetClass(t)
+    show('Unit Class: ' .. tostring(UnitClass(t)))
+end
+
+--- 在聊天框中显示传入的内容，传入内容会被tostring
+---@param a any
+function show(a)
+    if a then
+        DEFAULT_CHAT_FRAME:AddMessage(tostring(a))
+    end
 end
