@@ -30,11 +30,11 @@ end
 ---@param sp string 偷东西后要释放的技能
 function pickPocketBeforeCast(spell)
     local t = 'target'
-    if UnitIsPlayer(t) or not string.find(UnitCreatureType(t), i18n('人型')) then
+    if UnitIsPlayer(t) or not string.find(UnitCreatureType(t), '人型') then
         CastSpellByName(spell)
     else
         if n ~= 1 then
-            CastSpellByName(i18n("偷窃"))
+            CastSpellByName("偷窃")
             n = 1
         else
             CastSpellByName(spell)
@@ -45,26 +45,28 @@ end
 function rogueSneak(startSp)
     pickPocketBeforeCast(startSp)
 end
---- 特定情况下回复能量(爆发)
-function restoreEnergy()
-    local t = 'target'
-    if isTargetValidCanAttack(t) and UnitPlayerControlled(t) and UnitMana('player') < 20 then
-        useItemInBag('player', i18n('菊花茶'))
+--- 特定情况下回复
+function restoreIfNeeded()
+    local p = 'player'
+    if isTargetAttackingMe() and UnitPlayerControlled('target') and UnitMana(p) < 20 then
+        useItemInBag(p, '菊花茶')
     end
+    useItemIfHealthPercentLessThan(p, 30, '治疗药水')
 end
 function rogueBattle()
     if not isTargetRogueFaint('target') and isTargetAttackingMe() then
-        CastSpellByName(i18n('鬼魅攻击'))
+        CastSpellByName('鬼魅攻击')
     end
-    CastSpellByName(i18n('出血'))
+    CastSpellByName('出血')
+    CastSpellByName('邪恶攻击')
     startAutoAtk()
 end
 --- 盗贼正面战斗
 ---@param startSp string 潜行状态起手技
 function rogueAtk(startSp)
+    restoreIfNeeded()
     local t = 'target'
     if isTargetValidCanAttack(t) then
-        restoreEnergy()
         if isBuffOrDebuffPresent('player', 'Ability_Stealth') then
             rogueSneak(startSp)
         else
@@ -73,7 +75,7 @@ function rogueAtk(startSp)
     else
         TargetNearestEnemy()
         if isTargetValidCanAttack(t) then
-            restoreEnergy()
+
             if isBuffOrDebuffPresent('player', 'Ability_Stealth') then
                 rogueSneak(startSp)
             else
@@ -86,15 +88,15 @@ function rogueSneakBack(startSp)
     pickPocketBeforeCast(startSp)
 end
 function rogueBattleBack()
-    CastSpellByName(i18n('背刺'))
+    CastSpellByName('背刺')
     startAutoAtk()
 end
 --- 盗贼背后战斗
 ---@param startSp string 潜行状态起手技
 function rogueAtkBack(startSp)
+    restoreIfNeeded()
     local t = 'target'
     if isTargetValidCanAttack(t) then
-        restoreEnergy()
         if isBuffOrDebuffPresent('player', 'Ability_Stealth') then
             rogueSneakBack(startSp)
         else
@@ -103,7 +105,6 @@ function rogueAtkBack(startSp)
     else
         TargetNearestEnemy()
         if isTargetValidCanAttack(t) then
-            restoreEnergy()
             if isBuffOrDebuffPresent('player', 'Ability_Stealth') then
                 rogueSneakBack(startSp)
             else
@@ -128,11 +129,11 @@ end
 --- 伺机消失
 function readyVanish()
     if not isBuffOrDebuffPresent('player', 'Ability_Stealth') then
-        local s = i18n('消失')
+        local s = '消失'
         if isActionCooledDown('Ability_Vanish') then
             CastSpellByName(s)
         else
-            CastSpellByName(i18n('伺机待发'))
+            CastSpellByName('伺机待发')
             CastSpellByName(s)
         end
     end

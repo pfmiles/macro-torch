@@ -26,8 +26,8 @@ function hunterStings()
 
     ---其它毒蛇钉刺有效目标，上毒蛇钉刺
     local targetType = UnitCreatureType(t)
-    if not string.find(targetType, i18n('元素')) then
-        castIfBuffAbsent(t, i18n('毒蛇钉刺'), 'Hunter_Quickshot')
+    if not string.find(targetType, '元素') then
+        castIfBuffAbsent(t, '毒蛇钉刺', 'Hunter_Quickshot')
     end
 end
 function MeleeSeq()
@@ -36,19 +36,19 @@ function MeleeSeq()
     end
     startAutoAtk()
     if not isBuffOrDebuffPresent('target', 'Rogue_Trip') then
-        CastSpellByName(i18n('摔绊'))
+        CastSpellByName('摔绊')
     end
-    CastSpellByName(i18n('猛禽一击'))
+    CastSpellByName('猛禽一击')
 end
 function RangedSeq()
     if HasPetUI() and not UnitIsDead('pet') then
         PetAttack()
     end
     local t = 'target'
-    castIfBuffAbsent(t, i18n('猎人印记'), 'Hunter_SniperShot')
+    castIfBuffAbsent(t, '猎人印记', 'Hunter_SniperShot')
     startAutoShoot()
     hunterStings()
-    CastSpellByName(i18n('奥术射击'))
+    CastSpellByName('奥术射击')
 end
 function hunterAtk()
     local t = 'target'
