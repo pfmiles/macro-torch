@@ -13,42 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ]] --   
---- Chinese spell&item keywords to English ones mapping
-kwdMap = {
-    ['人型'] = 'test',
-    ['偷窃'] = 'test',
-    ['菊花茶'] = 'test',
-    ['鬼魅攻击'] = 'test',
-    ['出血'] = 'test',
-    ['背刺'] = 'test',
-    ['消失'] = 'test',
-    ['伺机待发'] = 'test',
-    ['低吼'] = 'test',
-    ['挫志咆哮'] = 'test',
-    ['槌击'] = 'test',
-    ['愤怒'] = 'test',
-    ['愈合'] = 'test',
-    ['治疗之触'] = 'test',
-    ['元素'] = 'test',
-    ['毒蛇钉刺'] = 'test',
-    ['摔绊'] = 'test',
-    ['猛禽一击'] = 'test',
-    ['猎人印记'] = 'test',
-    ['奥术射击'] = 'test'
-}
-function i18n(chsKwd)
-    for k, v in pairs(kwdMap) do
-        if k == chsKwd then
-            if 'enUS' == GetLocale() then
-                return v
-            else
-                return k
-            end
-        end
-    end
-    error('Undefined i18n keyword: ' .. chsKwd)
-end
-
 --- 判断当前目标是否正在攻击我
 ---@param t string 指定的目标
 function isTargetAttackingMe()

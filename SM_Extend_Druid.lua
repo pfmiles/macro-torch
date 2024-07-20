@@ -21,9 +21,9 @@ function xdMeleeSeq()
     startAutoAtk()
     if isBuffOrDebuffPresent(p, 'Racial_BearForm') then
         --- 熊形态
-        CastSpellByName(i18n('低吼'))
-        castIfBuffAbsent(t, i18n('挫志咆哮'), 'Druid_DemoralizingRoar')
-        CastSpellByName(i18n('槌击'))
+        CastSpellByName('低吼')
+        castIfBuffAbsent(t, '挫志咆哮', 'Druid_DemoralizingRoar')
+        CastSpellByName('槌击')
     else
         --- 人形态
     end
@@ -37,7 +37,7 @@ function xdRangedSeq()
         --- 熊形态
     else
         --- 人形态
-        CastSpellByName(i18n('愤怒'))
+        CastSpellByName('愤怒')
     end
 end
 function xdAtk()
@@ -69,9 +69,9 @@ function xdHealSeq(onSelf)
         t = 'target'
     end
     if not isBuffOrDebuffPresent(t, 'Nature_ResistNature') then
-        CastSpellByName(i18n('愈合'), onSelf)
+        CastSpellByName('愈合', onSelf)
     end
-    CastSpellByName(i18n('治疗之触'), onSelf)
+    CastSpellByName('治疗之触', onSelf)
 end
 function xdHeal()
     if isTargetValidFriendly('target') then
