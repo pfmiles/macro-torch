@@ -30,7 +30,7 @@ end
 ---@param sp string 偷东西后要释放的技能
 function pickPocketBeforeCast(spell)
     local t = 'target'
-    if UnitIsPlayer(t) or not string.find(UnitCreatureType(t), '人型') then
+    if UnitIsPlayer(t) or not string.find(UnitCreatureType(t), '人型生物') then
         CastSpellByName(spell)
     else
         if n ~= 1 then
@@ -75,7 +75,6 @@ function rogueAtk(startSp)
     else
         TargetNearestEnemy()
         if isTargetValidCanAttack(t) then
-
             if isBuffOrDebuffPresent('player', 'Ability_Stealth') then
                 rogueSneak(startSp)
             else
