@@ -1,10 +1,10 @@
-人型=Humanoid
+人型生物=Humanoid
 偷窃=Pick Pocket
 菊花茶=_not_exist_
-鬼魅攻击=_not_exist_
+鬼魅攻击=Ghostly Strike
 出血=_not_exist_
 背刺=Backstab
-消失=Evasion
+躲闪=Evasion
 伺机待发=_not_exist_
 低吼=_not_exist_
 挫志咆哮=_not_exist_
@@ -12,7 +12,7 @@
 愤怒=_not_exist_
 愈合=_not_exist_
 治疗之触=_not_exist_
-元素=_not_exist_
+元素生物=Elemental
 毒蛇钉刺=_not_exist_
 摔绊=_not_exist_
 猛禽一击=_not_exist_
@@ -20,8 +20,10 @@
 奥术射击=_not_exist_
 邪恶攻击=Sinister Strike
 凿击=Gouge
-消失=Evasion
+消失=Vanish
 潜行=Stealth
 切割=Slice and Dice
 疾跑=Sprint
 治疗药水=Healing Potion
+绞喉=Garrote
+伏击=Ambush

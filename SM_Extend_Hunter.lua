@@ -26,7 +26,7 @@ function hunterStings()
 
     ---其它毒蛇钉刺有效目标，上毒蛇钉刺
     local targetType = UnitCreatureType(t)
-    if not string.find(targetType, '元素') then
+    if not string.find(targetType, '元素生物') then
         castIfBuffAbsent(t, '毒蛇钉刺', 'Hunter_Quickshot')
     end
 end
