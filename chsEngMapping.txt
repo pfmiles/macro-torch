@@ -13,11 +13,11 @@
 愈合=_not_exist_
 治疗之触=_not_exist_
 元素生物=Elemental
-毒蛇钉刺=_not_exist_
+毒蛇钉刺=Serpent Sting
 摔绊=_not_exist_
-猛禽一击=_not_exist_
-猎人印记=_not_exist_
-奥术射击=_not_exist_
+猛禽一击=Raptor Strike
+猎人印记=Hunter\\'s Mark
+奥术射击=Arcane Shot
 邪恶攻击=Sinister Strike
 凿击=Gouge
 消失=Vanish
@@ -27,3 +27,7 @@
 治疗药水=Healing Potion
 绞喉=Garrote
 伏击=Ambush
+_no_key_=Track Beasts
+_no_key_=Aspect of the Monkey
+_no_key_=Shadowmeld
+绷带=Bandage
