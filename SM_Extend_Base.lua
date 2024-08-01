@@ -59,10 +59,11 @@ end
 
 --- 开启自动近战攻击, 这需要“攻击”技能被放在任意一个技能栏格子里
 function startAutoAtk()
-    for z = 1, 172 do
-        if IsAttackAction(z) then
-            if not IsCurrentAction(z) then
-                UseAction(z)
+    for i = 1, 172 do
+        local a = GetActionTexture(i)
+        if a and string.find(a, 'Weapon') and IsAttackAction(i) then
+            if not IsCurrentAction(i) then
+                UseAction(i)
             end
             return
         end
@@ -73,7 +74,7 @@ end
 function startAutoShoot()
     for i = 1, 172 do
         local a = GetActionTexture(i)
-        if a and string.find(a, 'Weapon') then
+        if a and string.find(a, 'Weapon') and ActionHasRange(i) then
             if not IsAutoRepeatAction(i) then
                 UseAction(i)
             end
