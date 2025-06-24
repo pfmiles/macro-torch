@@ -258,7 +258,7 @@ end
 
 ---显示目标的能量类型(魔法: 0, 怒气: 1, 集中值: 2, 能量: 3)
 ---@param t string 指定的目标
-function showTargetPowerType(t)
+function showTargetEnergyType(t)
     show('Power Type: ' .. tostring(UnitPowerType(t)))
 end
 
