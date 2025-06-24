@@ -34,6 +34,12 @@ function isTargetValidFriendly(t)
     return UnitExists(t) and not UnitIsDead(t) and UnitCanAssist('player', t)
 end
 
+--- 判断指定的目标是否是玩家或被玩家控制的目标
+---@param t string
+function isPlayerOrPlayerControlled(t)
+    return UnitIsPlayer(t) or UnitPlayerControlled(t)
+end
+
 --- 判断技能栏中指定texture的技能是否已经冷却结束
 ---@param actionTxtContains string 技能栏中代表技能的图标texture(可以是部分内容, 使用字符串contains判断)
 function isActionCooledDown(actionTxtContains)
@@ -61,7 +67,8 @@ end
 function startAutoAtk()
     for i = 1, 172 do
         local a = GetActionTexture(i)
-        if a and string.find(a, 'Weapon') and IsAttackAction(i) then
+        -- and (string.find(a, 'Weapon') or string.find(a, 'Staff') or string.find(a, 'Spell_Reset'))
+        if a and IsAttackAction(i) then
             if not IsCurrentAction(i) then
                 UseAction(i)
             end
@@ -74,7 +81,7 @@ end
 function startAutoShoot()
     for i = 1, 172 do
         local a = GetActionTexture(i)
-        if a and string.find(a, 'Weapon') and ActionHasRange(i) then
+        if a and (string.find(a, 'Weapon') or string.find(a, 'Staff')) and ActionHasRange(i) then
             if not IsAutoRepeatAction(i) then
                 UseAction(i)
             end
@@ -95,6 +102,23 @@ function isBuffOrDebuffPresent(t, txt)
     return false
 end
 
+--- 获取指定buff或debuff在目标身上的层数
+---@param t string 指定的目标
+---@param txt string 指定的buff/debuff texture文本, 可以是部分内容, 使用string.find匹配
+function getTargetBuffOrDebuffLayers(t, txt)
+    for i = 1, 40 do
+        if string.find(tostring(UnitDebuff(t, i)), txt) or string.find(tostring(UnitBuff(t, i)), txt) then
+            local b, c = UnitDebuff(t, i)
+            if c then
+                return c
+            else
+                return 0
+            end
+        end
+    end
+    return 0
+end
+
 --- 如果指定的buff在指定的目标身上不存在，则释放指定的技能
 ---@param t string 指定的目标
 ---@param sp string 指定的技能
@@ -112,6 +136,26 @@ function castBuffOrSelf(sp)
         CastSpellByName(sp)
     else
         CastSpellByName(sp, true)
+    end
+end
+
+--- 如果目标生命百分比小于指定值，则释放指定的法术
+---@param t 目标
+---@param health 生命百分比
+---@param spell 法术
+function castIfUnitHealthPercentLessThan(t, health, spell)
+    if getUnitHealthPercent(t) < health then
+        CastSpellByName(spell)
+    end
+end
+
+--- 如果目标生命百分比大于指定值，则释放指定的法术
+---@param t 目标
+---@param health 生命百分比
+---@param spell 法术
+function castIfUnitHealthPercentMoreThan(t, health, spell)
+    if getUnitHealthPercent(t) >= health then
+        CastSpellByName(spell)
     end
 end
 
@@ -235,4 +279,11 @@ function show(a)
     if a then
         DEFAULT_CHAT_FRAME:AddMessage(tostring(a))
     end
+end
+
+--- tell if the specified index of stance active
+---@param idx number
+function isStanceActive(idx)
+    local a, b, c = GetShapeshiftFormInfo(idx)
+    return c
 end

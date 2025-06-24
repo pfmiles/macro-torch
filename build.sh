@@ -22,3 +22,5 @@ if [ "$lang" == "eng" ]; then
         sed -i "s/$c/$e/g" $target
     done
 fi
+
+cp SM_Extend.lua /cygdrive/d/games/TurtleWoW/Interface/AddOns/SuperMacro/
