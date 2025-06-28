@@ -27,11 +27,19 @@ end
 function wroMeleeAtk(reapLine)
     local t = 'target'
     local p = 'player'
+
+    -- 开始攻击
     startAutoAtk()
     if HasPetUI() and not UnitIsDead('pet') then
         PetDefensiveMode()
         PetAttack()
     end
+
+    -- 上自身buff
+    wroBuffs()
+    -- 给敌方叠debuff
+    wroDebuffs()
+    
     if isStanceActive(1) then
         -- 战斗姿态
         CastSpellByName('Overpower')
@@ -42,24 +50,35 @@ function wroMeleeAtk(reapLine)
             CastSpellByName('Taunt')
         end
         CastSpellByName('Revenge')
+        -- 在团队中时叠破甲
+        if GetNumPartyMembers() > 0 and getTargetBuffOrDebuffLayers(t, 'Ability_Warrior_Sunder') < 5 then
+            CastSpellByName('Sunder Armor')
+        end
     end
-    if GetNumPartyMembers() > 0 and getTargetBuffOrDebuffLayers(t, 'Ability_Warrior_Sunder') < 5 then
-        CastSpellByName('Sunder Armor')
-    end
+    
     CastSpellByName('Heroic Strike')
-    castIfBuffAbsent(t, 'Rend', 'Ability_Gouge')
-    if UnitAffectingCombat(p) and UnitMana(p) < 15 then
-        CastSpellByName('Bloodrage')
-    end
+    ---CastSpellByName('Slam')
 end
 ---buff逻辑
 function wroBuffs()
     local p = 'player'
     if UnitMana(p) >= 10 then
+        castIfBuffAbsent(p, 'Shield Block', 'Ability_Defend')
+    end
+    if UnitMana(p) >= 10 then
         castIfBuffAbsent(p, 'Battle Shout', 'Ability_Warrior_BattleShout')
     end
+    if UnitAffectingCombat(p) and UnitMana(p) < 10 then
+        CastSpellByName('Bloodrage')
+    end
+end
+---debuff逻辑
+function wroDebuffs()
+    local t = 'target'
+    castIfBuffAbsent(t, 'Rend', 'Ability_Gouge')
 end
 
+--- aoe逻辑
 function wroAoe()
     local t = 'target'
     local p = 'player'
@@ -84,18 +103,20 @@ end
 ---@param pvp boolean whether or not attack player targets
 function wroAtk(pvp, reapLine, mainStanceIdx)
     local p = 'player'
+    -- 切回主姿态
     if not isStanceActive(mainStanceIdx) and UnitMana(p) < 5 then
         CastShapeshiftForm(mainStanceIdx)
     end
-    wroBuffs()
     local t = 'target'
     if isTargetValidCanAttack(t) and (pvp or not isPlayerOrPlayerControlled(t)) then
+        -- 如果当前地方目标在近距离
         if CheckInteractDistance(t, 3) then
             wroMeleeAtk(reapLine)
         else
             wroRangedAtk(reapLine)
         end
     else
+        -- 如果没有目标，有限支援宠物目标，否则搜寻最近敌人目标
         local pt = 'pettarget'
         if HasPetUI() and not UnitIsDead('pet') and isTargetValidCanAttack(pt) and
             (pvp or not isPlayerOrPlayerControlled(pt)) then
