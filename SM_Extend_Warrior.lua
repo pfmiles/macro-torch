@@ -23,8 +23,9 @@ function wroRangedAtk(reapLine)
     end
     CastSpellByName('Throw')
 end
----近战逻辑
-function wroMeleeAtk(reapLine)
+
+---近战固定前置策略
+function meleeCommonTactics(reapLine)
     local t = 'target'
     local p = 'player'
 
@@ -40,25 +41,42 @@ function wroMeleeAtk(reapLine)
     -- 给敌方叠debuff
     wroDebuffs()
     
-    if isStanceActive(1) then
-        -- 战斗姿态
-        CastSpellByName('Overpower')
+    -- 当前目标拉住
+    if not isTargetAttackingMe() then
+        CastSpellByName('Taunt')
     end
-    if isStanceActive(2) then
-        -- 防御姿态
-        if not isTargetAttackingMe() then
-            CastSpellByName('Taunt')
-        end
-        CastSpellByName('Revenge')
-        -- 在团队中时叠破甲
-        if GetNumPartyMembers() > 0 and getTargetBuffOrDebuffLayers(t, 'Ability_Warrior_Sunder') < 5 then
-            CastSpellByName('Sunder Armor')
-        end
+
+    -- 优先用掉复仇
+    CastSpellByName('Revenge')
+end
+
+---近战单体逻辑
+function wroMeleeAtk(reapLine)
+    local t = 'target'
+
+    meleeCommonTactics(reapLine)
+
+    -- 在团队中时叠破甲
+    if GetNumPartyMembers() > 0 and getTargetBuffOrDebuffLayers(t, 'Ability_Warrior_Sunder') < 5 then
+        CastSpellByName('Sunder Armor')
+    else
+        CastSpellByName('Heroic Strike')
     end
     
-    CastSpellByName('Heroic Strike')
     ---CastSpellByName('Slam')
 end
+--- aoe逻辑
+function wroAoe(reapLine)
+    local t = 'target'
+    local p = 'player'
+
+    meleeCommonTactics(reapLine)
+
+    castIfBuffAbsent(t, 'Thunder Clap', 'Spell_Nature_ThunderClap')
+    castIfBuffAbsent(t, 'Demoralizing Shout', 'Ability_Warrior_WarCry')
+    CastSpellByName('Cleave')
+end
+
 ---buff逻辑
 function wroBuffs()
     local p = 'player'
@@ -75,20 +93,9 @@ end
 ---debuff逻辑
 function wroDebuffs()
     local t = 'target'
-    castIfBuffAbsent(t, 'Rend', 'Ability_Gouge')
-end
-
---- aoe逻辑
-function wroAoe()
-    local t = 'target'
-    local p = 'player'
-    if not isBuffOrDebuffPresent(t, 'Spell_Nature_ThunderClap') then
-        if isStanceActive(3) and UnitMana(p) < 7 then
-            CastSpellByName('Defensive Stance')
-        end
-        CastSpellByName('Thunder Clap')
+    if not string.find(UnitCreatureType(t), 'Mechanical') then
+        castIfBuffAbsent(t, 'Rend', 'Ability_Gouge')
     end
-    castIfBuffAbsent(t, 'Demoralizing Shout', 'Ability_Warrior_WarCry')
 end
 
 function wroInterrupt()
