@@ -10,7 +10,7 @@ if [ -f "$target" ]; then
     rm $target
 fi
 
-find ./ -iname '*.lua'|xargs cat >> $target
+find ./ -iname '*.lua'|grep -v "$target"|xargs cat >> $target
 
 lang=$1
 
@@ -23,4 +23,7 @@ if [ "$lang" == "eng" ]; then
     done
 fi
 
-cp SM_Extend.lua /cygdrive/d/games/TurtleWoW/Interface/AddOns/SuperMacro/
+cp $target /cygdrive/d/games/TurtleWoW/Interface/AddOns/SuperMacro/
+cp $target /cygdrive/d/games/twmoa_1172_cn/Interface/AddOns/SuperMacro/
+
+
