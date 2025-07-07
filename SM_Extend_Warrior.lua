@@ -36,6 +36,11 @@ function meleeCommonTactics(reapLine)
         PetAttack()
     end
 
+    -- 自动喝药
+    useItemIfHealthPercentLessThan(p, 20, 'Healing Potion')
+    -- 自动吃糖
+    useItemIfHealthPercentLessThan(p, 20, 'Healthstone')
+
     -- 上自身buff
     wroBuffs()
     -- 给敌方叠debuff
@@ -56,11 +61,17 @@ function wroMeleeAtk(reapLine)
 
     meleeCommonTactics(reapLine)
 
+    -- 挂流血
+    if not isBleedingNoEffectTarget(t) then
+        castIfBuffAbsent(t, 'Rend', SPELL_TEXTURE_MAP['Rend'])
+    end
+
     -- 在团队中时叠破甲
-    if GetNumPartyMembers() > 0 and getTargetBuffOrDebuffLayers(t, 'Ability_Warrior_Sunder') < 5 then
+    local targetIsBoss = UnitClassification(t) == 'worldboss'
+    if GetNumPartyMembers() >= 4 and targetIsBoss and getTargetBuffOrDebuffLayers(t, SPELL_TEXTURE_MAP['Sunder Armor']) < 5 then
         CastSpellByName('Sunder Armor')
     else
-        CastSpellByName('Heroic Strike')
+        CastSpellByName('Shield Slam')
     end
     
     ---CastSpellByName('Slam')
@@ -72,9 +83,12 @@ function wroAoe(reapLine)
 
     meleeCommonTactics(reapLine)
 
-    castIfBuffAbsent(t, 'Thunder Clap', 'Spell_Nature_ThunderClap')
-    castIfBuffAbsent(t, 'Demoralizing Shout', 'Ability_Warrior_WarCry')
-    CastSpellByName('Cleave')
+    castIfBuffAbsent(t, 'Demoralizing Shout', SPELL_TEXTURE_MAP['Demoralizing Shout'])
+    castIfBuffAbsent(t, 'Thunder Clap', SPELL_TEXTURE_MAP['Thunder Clap'])
+    
+    if not isActionCooledDown('Spell_Nature_ThunderClap') then
+        CastSpellByName('Cleave')
+    end
 end
 
 ---buff逻辑
@@ -93,17 +107,7 @@ end
 ---debuff逻辑
 function wroDebuffs()
     local t = 'target'
-    if not string.find(UnitCreatureType(t), 'Mechanical') then
-        castIfBuffAbsent(t, 'Rend', 'Ability_Gouge')
-    end
-end
-
-function wroInterrupt()
-    local p = 'player'
-    if isStanceActive(3) and UnitMana(p) < 7 then
-        CastSpellByName('Defensive Stance')
-    end
-    CastSpellByName('Shield Bash')
+    
 end
 
 --- 战士一键输出
@@ -111,7 +115,7 @@ end
 function wroAtk(pvp, reapLine, mainStanceIdx)
     local p = 'player'
     -- 切回主姿态
-    if not isStanceActive(mainStanceIdx) and UnitMana(p) < 5 then
+    if not isStanceActive(mainStanceIdx) then
         CastShapeshiftForm(mainStanceIdx)
     end
     local t = 'target'
@@ -141,6 +145,24 @@ function wroAtk(pvp, reapLine, mainStanceIdx)
     end
 end
 
+--- 临时冲锋
+function tmpCharge(pvp)
+    local t = 'target'
+    if isTargetValidCanAttack(t) then
+        if not pvp and isPlayerOrPlayerControlled(t) then
+            return
+        end
+        if CheckInteractDistance(t, 3) then
+            return
+        end
+        -- 切战斗姿态
+        if not isStanceActive(1) then
+            CastShapeshiftForm(1)
+        end
+        CastSpellByName('Charge')
+    end
+end
+
 --- 战士控制
 function wroCtrl(pvp)
     local t = 'target'
@@ -160,5 +182,27 @@ function wroCtrl(pvp)
             CastSpellByName('Battle Stance')
         end
         CastSpellByName('Charge')
+    end
+end
+
+function wroInterrupt()
+    local p = 'player'
+    if isStanceActive(3) and UnitMana(p) < 7 then
+        CastSpellByName('Defensive Stance')
+    end
+    CastSpellByName('Shield Bash')
+end
+
+--- 大保命逻辑
+function warriorDefence()
+    if not isStanceActiveByName('Defensive Stance') then
+        CastSpellByName('Defensive Stance')
+    end
+    if isActionCooledDown(SPELL_TEXTURE_MAP['Disarm']) and UnitMana('player') >= 20 then
+        CastSpellByName('Disarm')
+    else
+        if isActionCooledDown(SPELL_TEXTURE_MAP['Shield Wall']) then
+            CastSpellByName('Shield Wall')
+        end
     end
 end
