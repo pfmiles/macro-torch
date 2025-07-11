@@ -205,4 +205,5 @@ function warriorDefence()
             CastSpellByName('Shield Wall')
         end
     end
+    UseInventoryItem(13)
 end
