@@ -117,7 +117,7 @@ function listTargetBuffs(t)
     end
 end
 
-local BLEED_NO_EFFECT_CREATURE_TYPES = { 'Undead', 'Mechanical' }
+local BLEED_NO_EFFECT_CREATURE_TYPES = { 'Undead', 'Mechanical', 'Elemental' }
 --- test if the target takes no effect from bleeding
 --- @param t string
 --- @return boolean
