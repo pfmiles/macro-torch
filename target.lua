@@ -47,6 +47,12 @@ function getUnitHealthPercent(t)
     return UnitHealth(t) / UnitHealthMax(t) * 100
 end
 
+--- 获得指定目标的损失了多少生命值
+---@param t string 指定的目标
+function getUnitHealthLost(t)
+    return UnitHealthMax(t) - UnitHealth(t)
+end
+
 --- 获得制定目标剩余魔法/怒气/能量值百分比
 ---@param t string 指定的目标
 function getUnitManaPercent(t)

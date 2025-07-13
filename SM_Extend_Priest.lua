@@ -21,13 +21,13 @@ function priestRangedAtk()
         PetDefensiveMode()
         PetAttack()
     end
-    if isActionCooledDown('Spell_Shadow_UnholyFrenzy') then
+    if isActionCooledDown('Spell_Shadow_UnholyFrenzy') and UnitMana('player') >= 80 and getUnitHealthPercent('target') > 10 and GetNumPartyMembers() == 0 then
         stopAutoShoot()
         CastSpellByName('Mind Blast')
-    -- else
-    --     if isActionCooledDown('Spell_Arcane_StarFire') then
-    --         CastSpellByName('Starshards')
-    --     end
+        -- else
+        --     if isActionCooledDown('Spell_Arcane_StarFire') then
+        --         CastSpellByName('Starshards')
+        --     end
     end
 end
 
@@ -45,7 +45,12 @@ end
 ---debuff逻辑
 function priestDebuffs()
     local t = 'target'
-    castIfBuffAbsent(t, 'Shadow Word: Pain', 'Spell_Shadow_ShadowWordPain')
+    local p = 'player'
+    if getUnitHealthPercent(t) > 10 and GetNumPartyMembers() == 0 then
+        castIfBuffAbsent(t, 'Shadow Word: Pain', 'Spell_Shadow_ShadowWordPain')
+    end
+    useItemIfManaPercentLessThan(p, 10, 'Mana Potion')
+    useItemIfHealthPercentLessThan(p, 20, 'Health Potion')
 end
 
 --- 牧师一键输出
@@ -94,12 +99,11 @@ function priestHeal()
     if not isTargetValidFriendly(t) then
         t = p
     end
-    if getUnitHealthPercent(t) < 70 then
+    if getUnitHealthLost(t) > 300 then
+        CastSpellByName('Heal')
+    elseif getUnitHealthLost(t) > 140 then
         CastSpellByName('Lesser Heal')
-        castIfBuffAbsent(t, 'Renew', 'Spell_Holy_Renew')
     else
         castIfBuffAbsent(t, 'Renew', 'Spell_Holy_Renew')
-        CastSpellByName('Lesser Heal')
     end
 end
-
