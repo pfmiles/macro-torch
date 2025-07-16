@@ -16,14 +16,16 @@
 ---牧师专用---
 ---远程逻辑
 function priestRangedAtk()
+    local t = 'target'
+    local p = 'player'
     startAutoShoot()
     if HasPetUI() and not UnitIsDead('pet') then
         PetDefensiveMode()
         PetAttack()
     end
-    if isActionCooledDown('Spell_Shadow_UnholyFrenzy') and UnitMana('player') >= 80 and getUnitHealthPercent('target') > 10 and GetNumPartyMembers() == 0 then
+    if isActionCooledDown('Spell_Holy_SearingLight') and not isBuffOrDebuffPresent(t, 'Spell_Holy_SearingLight') and UnitMana(p) >= 80 and getUnitHealthPercent(t) > 10 and GetNumPartyMembers() == 0 then
         stopAutoShoot()
-        CastSpellByName('Mind Blast')
+        CastSpellByName('Holy Fire')
         -- else
         --     if isActionCooledDown('Spell_Arcane_StarFire') then
         --         CastSpellByName('Starshards')
