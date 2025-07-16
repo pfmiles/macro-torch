@@ -23,4 +23,4 @@ function Pet:new()
     return obj
 end
 
-pet = Pet:new()
+mt.pet = Pet:new()

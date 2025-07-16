@@ -23,7 +23,7 @@ function Target:new()
     return obj
 end
 
-target = Target:new()
+mt.target = Target:new()
 
 --- 判断当前目标是否正在攻击我
 ---@param t string 指定的目标

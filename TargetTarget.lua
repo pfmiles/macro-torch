@@ -23,4 +23,4 @@ function TargetTarget:new()
     return obj
 end
 
-targettarget = TargetTarget:new()
+mt.targettarget = TargetTarget:new()

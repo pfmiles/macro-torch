@@ -10,7 +10,11 @@ if [ -f "$target" ]; then
     rm $target
 fi
 
-find ./ -iname '*.lua'|grep -v "$target"|xargs cat >> $target
+## Unit.lua should be placed first
+if [ -f "Unit.lua" ]; then
+    cat Unit.lua >> $target
+fi
+find ./ -iname '*.lua'|grep -v "$target"|grep -v "Unit.lua"|xargs cat >> $target
 
 lang=$1
 

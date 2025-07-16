@@ -24,4 +24,3 @@ local function containsAnyKeyword(str, kwdList)
     end
     return false
 end
-

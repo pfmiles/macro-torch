@@ -23,7 +23,7 @@ function Player:new()
     return obj
 end
 
-player = Player:new()
+mt.player = Player:new()
 
 --- 如果指定的buff在指定的目标身上不存在，则释放指定的技能
 ---@param t string 指定的目标
