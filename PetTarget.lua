@@ -12,15 +12,15 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-]] --   
+]] --
 
--- 检查字符串是否包含集合中的任意关键字
-local function containsAnyKeyword(str, kwdList)
-    if not str then return false end
-    for _, keyword in ipairs(kwdList) do
-        if string.find(str, keyword) then
-            return true
-        end
-    end
-    return false
+PetTarget = Unit:new('pettarget')
+
+function PetTarget:new()
+    local obj = {}
+    self.__index = self
+    setmetatable(obj, self)
+    return obj
 end
+
+mt.pettarget = PetTarget:new()

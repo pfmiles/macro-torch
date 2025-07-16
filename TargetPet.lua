@@ -23,4 +23,4 @@ function TargetPet:new()
     return obj
 end
 
-targetpet = TargetPet:new()
+mt.targetpet = TargetPet:new()
