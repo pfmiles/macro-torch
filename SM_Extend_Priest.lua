@@ -106,6 +106,6 @@ function macroTorch.priestHeal()
     elseif macroTorch.getUnitHealthLost(t) > 140 then
         CastSpellByName('Lesser Heal')
     else
-        castIfBuffAbsent(t, 'Renew', 'Spell_Holy_Renew')
+        macroTorch.castIfBuffAbsent(t, 'Renew', 'Spell_Holy_Renew')
     end
 end

@@ -106,7 +106,7 @@ function macroTorch.listTargetDebuffs(t)
     for i = 1, 40 do
         local d = UnitDebuff(t, i)
         if d then
-            show('Found Debuff: ' .. tostring(d))
+            macroTorch.show('Found Debuff: ' .. tostring(d))
         end
     end
 end
@@ -130,7 +130,7 @@ function macroTorch.listTargetBuffs(t)
     for i = 1, 40 do
         local b = UnitBuff(t, i)
         if b then
-            show('Found Buff: ' .. tostring(b))
+            macroTorch.show('Found Buff: ' .. tostring(b))
         end
     end
 end
