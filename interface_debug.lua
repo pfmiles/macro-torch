@@ -12,14 +12,14 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-]] --   
+]] --
 
 --- 判断技能栏中指定texture的技能是否已经冷却结束
 ---@param actionTxtContains string 技能栏中代表技能的图标texture(可以是部分内容, 使用字符串contains判断)
 function macroTorch.isActionCooledDown(actionTxtContains)
     for z = 1, 172 do
         local txt = GetActionTexture(z)
-        if txt and macroTorch.containsAnyKeyword(txt, actionTxtContains) then
+        if txt and macroTorch.containsAnyKeyword(txt, { actionTxtContains }) then
             return GetActionCooldown(z) == 0
         end
     end
@@ -61,14 +61,12 @@ end
 ---@param t string 指定的目标
 function macroTorch.showTargetEnergyType(t)
     macroTorch.show('Power Type: ' .. tostring(UnitPowerType(t)))
-
 end
 
 ---显示目标的生物类型
 ---@param t string 指定的目标
 function macroTorch.showTargetType(t)
     macroTorch.show('Unit Type: ' .. tostring(UnitCreatureType(t)))
-
 end
 
 --- 显示目标职业
