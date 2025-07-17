@@ -14,31 +14,31 @@
    limitations under the License.
 ]] --
 
-Player = Unit:new("player")
+macroTorch.Player = macroTorch.Unit:new("player")
 
-function Player:new()
+function macroTorch.Player:new()
     local obj = {}
     self.__index = self
     setmetatable(obj, self)
     return obj
 end
 
-mt.player = Player:new()
+macroTorch.player = macroTorch.Player:new()
 
 --- 如果指定的buff在指定的目标身上不存在，则释放指定的技能
 ---@param t string 指定的目标
 ---@param sp string 指定的技能
 ---@param dbfTexture string 指定的debuf, texture文本
-function castIfBuffAbsent(t, sp, dbfTexture)
-    if not isBuffOrDebuffPresent(t, dbfTexture) then
+function macroTorch.castIfBuffAbsent(t, sp, dbfTexture)
+    if not macroTorch.isBuffOrDebuffPresent(t, dbfTexture) then
         CastSpellByName(sp)
     end
 end
 
 --- 如当前目标存在且是活着的友好目标，则释放指定的法术，否则对自己释放且不丢失当前目标
 ---@param sp string 指定的法术
-function castBuffOrSelf(sp)
-    if isTargetValidFriendly('target') then
+function macroTorch.castBuffOrSelf(sp)
+    if macroTorch.isTargetValidFriendly('target') then
         CastSpellByName(sp)
     else
         CastSpellByName(sp, true)
@@ -49,8 +49,8 @@ end
 ---@param t 目标
 ---@param health 生命百分比
 ---@param spell 法术
-function castIfUnitHealthPercentLessThan(t, health, spell)
-    if getUnitHealthPercent(t) < health then
+function macroTorch.castIfUnitHealthPercentLessThan(t, health, spell)
+    if macroTorch.getUnitHealthPercent(t) < health then
         CastSpellByName(spell)
     end
 end
@@ -59,8 +59,8 @@ end
 ---@param t 目标
 ---@param health 生命百分比
 ---@param spell 法术
-function castIfUnitHealthPercentMoreThan(t, health, spell)
-    if getUnitHealthPercent(t) >= health then
+function macroTorch.castIfUnitHealthPercentMoreThan(t, health, spell)
+    if macroTorch.getUnitHealthPercent(t) >= health then
         CastSpellByName(spell)
     end
 end
@@ -69,9 +69,9 @@ end
 ---@param t string 指定的目标
 ---@param itemName string 指定的包包物品名
 ---@param buff string buff texture文本
-function useItemIfBuffAbsent(t, itemName, buff)
-    if not isBuffOrDebuffPresent(t, buff) then
-        useItemInBag(t, itemName)
+function macroTorch.useItemIfBuffAbsent(t, itemName, buff)
+    if not macroTorch.isBuffOrDebuffPresent(t, buff) then
+        macroTorch.useItemInBag(t, itemName)
     end
 end
 
@@ -79,9 +79,9 @@ end
 ---@param t string 指定的目标
 ---@param hp number 生命百分比阈值, 0 - 100
 ---@param itemName string 背包里的物品名称，可以只包含部分名称，使用字符串包含逻辑匹配
-function useItemIfHealthPercentLessThan(t, hp, itemName)
-    if getUnitHealthPercent(t) < hp then
-        useItemInBag(t, itemName)
+function macroTorch.useItemIfHealthPercentLessThan(t, hp, itemName)
+    if macroTorch.getUnitHealthPercent(t) < hp then
+        macroTorch.useItemInBag(t, itemName)
     end
 end
 
@@ -89,16 +89,16 @@ end
 ---@param t string 指定的目标
 ---@param mp number 法力/怒气/能量百分比阈值, 0 - 100
 ---@param itemName string 背包里的物品名称，可以只包含部分名称，使用字符串包含逻辑匹配
-function useItemIfManaPercentLessThan(t, mp, itemName)
-    if getUnitManaPercent(t) < mp then
-        useItemInBag(t, itemName)
+function macroTorch.useItemIfManaPercentLessThan(t, mp, itemName)
+    if macroTorch.getUnitManaPercent(t) < mp then
+        macroTorch.useItemInBag(t, itemName)
     end
 end
 
 --- 对指定的目标使用包包里的物品
 ---@param t string 指定的目标
 ---@param itemName string 物品名，可仅仅指定一部分名字，使用字符串包含判断
-function useItemInBag(t, itemName)
+function macroTorch.useItemInBag(t, itemName)
     for b = 0, 4 do
         for s = 1, GetContainerNumSlots(b, s) do
             local n = GetContainerItemLink(b, s)
@@ -112,17 +112,17 @@ end
 
 --- tell if the specified index of stance active
 ---@param idx number
-function isStanceActive(idx)
+function macroTorch.isStanceActive(idx)
     local a, b, c = GetShapeshiftFormInfo(idx)
     return c
 end
 
 --- 判断指定名称的姿态是否激活
 ---@param stanceName string 姿态名称，如'Defensive Stance'
-function isStanceActiveByName(stanceName)
+function macroTorch.isStanceActiveByName(stanceName)
     local numOfStances = GetNumShapeshiftForms()
     for i = 1, numOfStances do
-        if isStanceActive(i) then
+        if macroTorch.isStanceActive(i) then
             local idx, spellName, enabled = GetShapeshiftFormInfo(i)
             if spellName == stanceName then
                 return true
@@ -133,7 +133,7 @@ function isStanceActiveByName(stanceName)
 end
 
 --- 开启自动近战攻击, 这需要“攻击”技能被放在任意一个技能栏格子里
-function startAutoAtk()
+function macroTorch.startAutoAtk()
     for i = 1, 172 do
         local a = GetActionTexture(i)
         -- and (string.find(a, 'Weapon') or string.find(a, 'Staff') or string.find(a, 'Spell_Reset'))
@@ -145,7 +145,7 @@ function startAutoAtk()
 end
 
 --- 停止自动攻击
-function stopAutoAtk()
+function macroTorch.stopAutoAtk()
     for i = 1, 172 do
         local a = GetActionTexture(i)
         if a and IsAttackAction(i) and not ActionHasRange(i) and IsCurrentAction(i) then
@@ -159,10 +159,10 @@ end
 local RANGED_WEAPON_KEYWORDS = { 'Weapon', 'Staff' }
 
 --- 开启自动射击, 这需要“射击”技能被放在任意一个技能栏格子里
-function startAutoShoot()
+function macroTorch.startAutoShoot()
     for i = 1, 172 do
         local a = GetActionTexture(i)
-        if a and containsAnyKeyword(a, RANGED_WEAPON_KEYWORDS) and ActionHasRange(i) and not IsAutoRepeatAction(i) then
+        if a and macroTorch.containsAnyKeyword(a, RANGED_WEAPON_KEYWORDS) and ActionHasRange(i) and not IsAutoRepeatAction(i) then
             UseAction(i)
             return
         end
@@ -170,10 +170,10 @@ function startAutoShoot()
 end
 
 --- 停止自动射击
-function stopAutoShoot()
+function macroTorch.stopAutoShoot()
     for i = 1, 172 do
         local a = GetActionTexture(i)
-        if a and containsAnyKeyword(a, RANGED_WEAPON_KEYWORDS) and ActionHasRange(i) and IsAutoRepeatAction(i) then
+        if a and macroTorch.containsAnyKeyword(a, RANGED_WEAPON_KEYWORDS) and ActionHasRange(i) and IsAutoRepeatAction(i) then
             UseAction(i)
             return
         end

@@ -12,13 +12,13 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-]] --   
+]] --
 ---盗贼专用start---
 --- 是否被盗贼技能眩晕
 ---@param t string 指定的目标
-function isTargetRogueFaint(t)
-    local rogueFaintDebuffs = {'CheapShot', 'Rogue_KidneyShot'}
-    local allDebuffText = getTargetAllDebuffText(t)
+function macroTorch.isTargetRogueFaint(t)
+    local rogueFaintDebuffs = { 'CheapShot', 'Rogue_KidneyShot' }
+    local allDebuffText = macroTorch.getTargetAllDebuffText(t)
     for i, v in ipairs(rogueFaintDebuffs) do
         if string.find(allDebuffText, v) then
             return true
@@ -26,9 +26,10 @@ function isTargetRogueFaint(t)
     end
     return false
 end
+
 --- 释放技能前先偷东西，需潜行且目标存在
 ---@param sp string 偷东西后要释放的技能
-function pickPocketBeforeCast(spell)
+function macroTorch.pickPocketBeforeCast(spell)
     local t = 'target'
     if UnitIsPlayer(t) or not string.find(UnitCreatureType(t), '人型生物') then
         CastSpellByName(spell)
@@ -42,94 +43,103 @@ function pickPocketBeforeCast(spell)
         end
     end
 end
-function rogueSneak(startSp)
-    pickPocketBeforeCast(startSp)
+
+function macroTorch.rogueSneak(startSp)
+    macroTorch.pickPocketBeforeCast(startSp)
 end
+
 --- 特定情况下回复
-function restoreIfNeeded()
+function macroTorch.restoreIfNeeded()
     local p = 'player'
-    if isTargetAttackingMe() and UnitPlayerControlled('target') and UnitMana(p) < 20 then
-        useItemInBag(p, '菊花茶')
+    if macroTorch.isTargetAttackingMe() and UnitPlayerControlled('target') and UnitMana(p) < 20 then
+        macroTorch.useItemInBag(p, '菊花茶')
     end
-    useItemIfHealthPercentLessThan(p, 30, '治疗药水')
+    macroTorch.useItemIfHealthPercentLessThan(p, 30, '治疗药水')
 end
-function rogueBattle()
-    if not isTargetRogueFaint('target') and isTargetAttackingMe() then
+
+function macroTorch.rogueBattle()
+    if not macroTorch.isTargetRogueFaint('target') and macroTorch.isTargetAttackingMe() then
         CastSpellByName('鬼魅攻击')
     end
     CastSpellByName('出血')
     CastSpellByName('邪恶攻击')
-    startAutoAtk()
+    macroTorch.startAutoAtk()
 end
+
 --- 盗贼正面战斗
 ---@param startSp string 潜行状态起手技
-function rogueAtk(startSp)
-    restoreIfNeeded()
+function macroTorch.rogueAtk(startSp)
+    macroTorch.restoreIfNeeded()
     local t = 'target'
-    if isTargetValidCanAttack(t) then
-        if isBuffOrDebuffPresent('player', 'Ability_Stealth') then
-            rogueSneak(startSp)
+    if macroTorch.isTargetValidCanAttack(t) then
+        if macroTorch.isBuffOrDebuffPresent('player', 'Ability_Stealth') then
+            macroTorch.rogueSneak(startSp)
         else
-            rogueBattle()
+            macroTorch.rogueBattle()
         end
     else
         TargetNearestEnemy()
-        if isTargetValidCanAttack(t) then
-            if isBuffOrDebuffPresent('player', 'Ability_Stealth') then
-                rogueSneak(startSp)
+        if macroTorch.isTargetValidCanAttack(t) then
+            if macroTorch.isBuffOrDebuffPresent('player', 'Ability_Stealth') then
+                macroTorch.rogueSneak(startSp)
             else
-                rogueBattle()
+                macroTorch.rogueBattle()
             end
         end
     end
 end
-function rogueSneakBack(startSp)
-    pickPocketBeforeCast(startSp)
+
+function macroTorch.rogueSneakBack(startSp)
+    macroTorch.pickPocketBeforeCast(startSp)
 end
-function rogueBattleBack()
+
+function macroTorch.rogueBattleBack()
     CastSpellByName('背刺')
-    startAutoAtk()
+    macroTorch.startAutoAtk()
 end
+
 --- 盗贼背后战斗
 ---@param startSp string 潜行状态起手技
-function rogueAtkBack(startSp)
-    restoreIfNeeded()
+function macroTorch.rogueAtkBack(startSp)
+    macroTorch.restoreIfNeeded()
     local t = 'target'
-    if isTargetValidCanAttack(t) then
-        if isBuffOrDebuffPresent('player', 'Ability_Stealth') then
-            rogueSneakBack(startSp)
+    if macroTorch.isTargetValidCanAttack(t) then
+        if macroTorch.isBuffOrDebuffPresent('player', 'Ability_Stealth') then
+            macroTorch.rogueSneakBack(startSp)
         else
-            rogueBattleBack()
+            macroTorch.rogueBattleBack()
         end
     else
         TargetNearestEnemy()
-        if isTargetValidCanAttack(t) then
-            if isBuffOrDebuffPresent('player', 'Ability_Stealth') then
-                rogueSneakBack(startSp)
+        if macroTorch.isTargetValidCanAttack(t) then
+            if macroTorch.isBuffOrDebuffPresent('player', 'Ability_Stealth') then
+                macroTorch.rogueSneakBack(startSp)
             else
-                rogueBattleBack()
+                macroTorch.rogueBattleBack()
             end
         end
     end
 end
+
 --- 切换最近处的敌人并释放指定技能(不是抓贼宏)
 ---@param sp string 指定技能
-function lockNearestEnemyThenCast(sp)
+function macroTorch.lockNearestEnemyThenCast(sp)
     local t = 'target'
-    if isTargetValidCanAttack(t) and CheckInteractDistance(t, 3) then
+    if macroTorch.isTargetValidCanAttack(t) and CheckInteractDistance(t, 3) then
         CastSpellByName(sp)
     else
         TargetNearestEnemy()
-        if isTargetValidCanAttack(t) and CheckInteractDistance(t, 3) then
+        if macroTorch.isTargetValidCanAttack(t) and CheckInteractDistance(t, 3) then
             CastSpellByName(sp)
         end
     end
 end
+
 --- 伺机消失
-function readyVanish()
-    if not isBuffOrDebuffPresent('player', 'Ability_Stealth') then
+function macroTorch.readyVanish()
+    if not macroTorch.isBuffOrDebuffPresent('player', 'Ability_Stealth') then
         local s = '消失'
-        if isActionCooledDown('Ability_Vanish') then
+        if macroTorch.isActionCooledDown('Ability_Vanish') then
             CastSpellByName(s)
         else
             CastSpellByName('伺机待发')

@@ -16,32 +16,32 @@
 
 --- 判断技能栏中指定texture的技能是否已经冷却结束
 ---@param actionTxtContains string 技能栏中代表技能的图标texture(可以是部分内容, 使用字符串contains判断)
-function isActionCooledDown(actionTxtContains)
+function macroTorch.isActionCooledDown(actionTxtContains)
     for z = 1, 172 do
         local txt = GetActionTexture(z)
-        if txt and string.find(txt, actionTxtContains) then
+        if txt and macroTorch.containsAnyKeyword(txt, actionTxtContains) then
             return GetActionCooldown(z) == 0
         end
     end
 end
 
 --- 显示所有技能属性
-function showAllActionProps()
+function macroTorch.showAllActionProps()
     for i = 1, 172 do
         local a = GetActionTexture(i)
         if a then
-            show(a .. ':')
-            show('IsAttackAction:' .. tostring(IsAttackAction(i)))
-            show('ActionHasRange:' .. tostring(ActionHasRange(i)))
-            show('IsCurrentAction:' .. tostring(IsCurrentAction(i)))
-            show('IsAutoRepeatAction:' .. tostring(IsAutoRepeatAction(i)))
-            show('IsEquippedAction:' .. tostring(IsEquippedAction(i)))
+            macroTorch.show(a .. ':')
+            macroTorch.show('IsAttackAction:' .. tostring(IsAttackAction(i)))
+            macroTorch.show('ActionHasRange:' .. tostring(ActionHasRange(i)))
+            macroTorch.show('IsCurrentAction:' .. tostring(IsCurrentAction(i)))
+            macroTorch.show('IsAutoRepeatAction:' .. tostring(IsAutoRepeatAction(i)))
+            macroTorch.show('IsEquippedAction:' .. tostring(IsEquippedAction(i)))
         end
     end
 end
 
 --- 列出所有动作条可释放动作信息
-function showAllActions()
+function macroTorch.showAllActions()
     local i = 0
 
     for i = 1, 172 do
@@ -52,31 +52,33 @@ function showAllActions()
             if t then
                 m = m .. " \"" .. t .. "\"";
             end
-            show(m);
+            macroTorch.show(m);
         end
     end
 end
 
 ---显示目标的能量类型(魔法: 0, 怒气: 1, 集中值: 2, 能量: 3)
 ---@param t string 指定的目标
-function showTargetEnergyType(t)
-    show('Power Type: ' .. tostring(UnitPowerType(t)))
+function macroTorch.showTargetEnergyType(t)
+    macroTorch.show('Power Type: ' .. tostring(UnitPowerType(t)))
+
 end
 
 ---显示目标的生物类型
 ---@param t string 指定的目标
-function showTargetType(t)
-    show('Unit Type: ' .. tostring(UnitCreatureType(t)))
+function macroTorch.showTargetType(t)
+    macroTorch.show('Unit Type: ' .. tostring(UnitCreatureType(t)))
+
 end
 
 --- 显示目标职业
-function showTargetClass(t)
-    show('Unit Class: ' .. tostring(UnitClass(t)))
+function macroTorch.showTargetClass(t)
+    macroTorch.show('Unit Class: ' .. tostring(UnitClass(t)))
 end
 
 --- 在聊天框中显示传入的内容，传入内容会被tostring
 ---@param a any
-function show(a)
+function macroTorch.show(a)
     if a then
         DEFAULT_CHAT_FRAME:AddMessage(tostring(a))
     end

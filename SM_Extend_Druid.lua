@@ -12,71 +12,75 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-]] --   
+]] --
 ---小德专用start---
 --- 近战动作策略
-function xdMeleeSeq()
+function macroTorch.xdMeleeSeq()
     local t = 'target'
     local p = 'player'
-    startAutoAtk()
-    if isBuffOrDebuffPresent(p, 'Racial_BearForm') then
+    macroTorch.startAutoAtk()
+    if macroTorch.isBuffOrDebuffPresent(p, 'Racial_BearForm') then
         --- 熊形态
         CastSpellByName('低吼')
-        castIfBuffAbsent(t, '挫志咆哮', 'Druid_DemoralizingRoar')
+        macroTorch.castIfBuffAbsent(t, '挫志咆哮', 'Druid_DemoralizingRoar')
         CastSpellByName('槌击')
     else
         --- 人形态
     end
 end
+
 --- 远程动作策略
-function xdRangedSeq()
+function macroTorch.xdRangedSeq()
     local t = 'target'
     local p = 'player'
-    startAutoAtk()
-    if isBuffOrDebuffPresent(p, 'Racial_BearForm') then
+    macroTorch.startAutoAtk()
+    if macroTorch.isBuffOrDebuffPresent(p, 'Racial_BearForm') then
         --- 熊形态
     else
         --- 人形态
         CastSpellByName('愤怒')
     end
 end
-function xdAtk()
+
+function macroTorch.xdAtk()
     local t = 'target'
-    if isTargetValidCanAttack(t) then
+    if macroTorch.isTargetValidCanAttack(t) then
         if CheckInteractDistance(t, 3) then
-            xdMeleeSeq()
+            macroTorch.xdMeleeSeq()
         else
-            xdRangedSeq()
+            macroTorch.xdRangedSeq()
         end
     else
         TargetNearestEnemy()
-        if isTargetValidCanAttack(t) then
+        if macroTorch.isTargetValidCanAttack(t) then
             if CheckInteractDistance(t, 3) then
-                xdMeleeSeq()
+                macroTorch.xdMeleeSeq()
             else
-                xdRangedSeq()
+                macroTorch.xdRangedSeq()
             end
         end
     end
 end
+
 --- 小德治疗序列
 ---@param onSelf boolean 是否对自己释放
-function xdHealSeq(onSelf)
+function macroTorch.xdHealSeq(onSelf)
     local t
     if (onSelf) then
         t = 'player'
     else
         t = 'target'
     end
-    if not isBuffOrDebuffPresent(t, 'Nature_ResistNature') then
+    if not macroTorch.isBuffOrDebuffPresent(t, 'Nature_ResistNature') then
         CastSpellByName('愈合', onSelf)
     end
     CastSpellByName('治疗之触', onSelf)
 end
-function xdHeal()
-    if isTargetValidFriendly('target') then
-        xdHealSeq(false)
+
+function macroTorch.xdHeal()
+    if macroTorch.isTargetValidFriendly('target') then
+        macroTorch.xdHealSeq(false)
     else
-        xdHealSeq(true)
+        macroTorch.xdHealSeq(true)
     end
 end

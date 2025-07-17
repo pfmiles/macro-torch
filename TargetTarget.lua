@@ -14,13 +14,13 @@
    limitations under the License.
 ]] --
 
-TargetTarget = Unit:new("targettarget")
+macroTorch.TargetTarget = macroTorch.Unit:new("targettarget")
 
-function TargetTarget:new()
+function macroTorch.TargetTarget:new()
     local obj = {}
     self.__index = self
     setmetatable(obj, self)
     return obj
 end
 
-mt.targettarget = TargetTarget:new()
+macroTorch.targettarget = macroTorch.TargetTarget:new()

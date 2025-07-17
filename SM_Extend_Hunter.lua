@@ -15,7 +15,7 @@
 ]] --   
 ---猎人专用---
 --- 钉刺逻辑
-function hunterStings()
+function macroTorch.hunterStings()
     local t = 'target'
     local isPlayerTarget = UnitIsPlayer(t)
     local isManaTarget = UnitPowerType(t) == 0
@@ -32,32 +32,32 @@ function hunterStings()
         ---其它毒蛇钉刺有效目标，上毒蛇钉刺
         local targetType = UnitCreatureType(t)
         if targetType and not string.find(targetType, '元素生物') and not string.find(targetType, '机械生物') and
-            getUnitHealthPercent(t) > 50 then
-            castIfBuffAbsent(t, '毒蛇钉刺', 'Hunter_Quickshot')
+            macroTorch.getUnitHealthPercent(t) > 50 then
+            macroTorch.castIfBuffAbsent(t, '毒蛇钉刺', 'Hunter_Quickshot')
         end
     end
 end
-function MeleeSeq()
+function macroTorch.MeleeSeq()
     if HasPetUI() and not UnitIsDead('pet') then
         PetDefensiveMode()
         PetAttack()
     end
-    startAutoAtk()
-    if not isBuffOrDebuffPresent('target', 'Rogue_Trip') then
+    macroTorch.startAutoAtk()
+    if not macroTorch.isBuffOrDebuffPresent('target', 'Rogue_Trip') then
         CastSpellByName('摔绊')
     end
     CastSpellByName('猫鼬撕咬')
     CastSpellByName('猛禽一击')
 end
-function RangedSeq()
+function macroTorch.RangedSeq()
     if HasPetUI() and not UnitIsDead('pet') then
         PetDefensiveMode()
         PetAttack()
     end
     local t = 'target'
-    castIfBuffAbsent(t, '猎人印记', 'Hunter_SniperShot')
-    startAutoShoot()
-    hunterStings()
+    macroTorch.castIfBuffAbsent(t, '猎人印记', 'Hunter_SniperShot')
+    macroTorch.startAutoShoot()
+    macroTorch.hunterStings()
     --CastSpellByName('Trueshot')
     Quiver.CastNoClip('Trueshot')
     --CastSpellByName('奥术射击')
@@ -65,36 +65,36 @@ function RangedSeq()
 end
 --- hunter attack all in one
 ---@param pvp boolean whether or not attack player targets
-function hunterAtk(pvp)
+function macroTorch.hunterAtk(pvp)
     local t = 'target'
-    if isTargetValidCanAttack(t) and (pvp or not isPlayerOrPlayerControlled(t)) then
+    if macroTorch.isTargetValidCanAttack(t) and (pvp or not macroTorch.isPlayerOrPlayerControlled(t)) then
         if CheckInteractDistance(t, 3) then
-            MeleeSeq()
+            macroTorch.MeleeSeq()
         else
-            RangedSeq()
+            macroTorch.RangedSeq()
         end
     else
         local pt = 'pettarget'
-        if HasPetUI() and not UnitIsDead('pet') and isTargetValidCanAttack(pt) and
-            (pvp or not isPlayerOrPlayerControlled(pt)) then
+        if HasPetUI() and not UnitIsDead('pet') and macroTorch.isTargetValidCanAttack(pt) and
+            (pvp or not macroTorch.isPlayerOrPlayerControlled(pt)) then
             TargetUnit(pt)
         else
             TargetNearestEnemy()
         end
-        if isTargetValidCanAttack(t) and (pvp or not isPlayerOrPlayerControlled(t)) then
+        if macroTorch.isTargetValidCanAttack(t) and (pvp or not macroTorch.isPlayerOrPlayerControlled(t)) then
             if CheckInteractDistance(t, 3) then
-                MeleeSeq()
+                macroTorch.MeleeSeq()
             else
-                RangedSeq()
+                macroTorch.RangedSeq()
             end
         end
     end
 end
 
-function changeStance()
-    if isBuffOrDebuffPresent('player', 'Mount_JungleTiger') then
+function macroTorch.changeStance()
+    if macroTorch.isBuffOrDebuffPresent('player', 'Mount_JungleTiger') then
         local t = 'target'
-        if isTargetValidCanAttack(t) then
+        if macroTorch.isTargetValidCanAttack(t) then
             if CheckInteractDistance(t, 3) then
                 CastSpellByName('灵猴守护')
             else
@@ -110,7 +110,7 @@ end
 
 --- 强制陷阱
 ---@param trap string
-function forceTrap(trap)
+function macroTorch.forceTrap(trap)
     local p = 'player'
     if UnitAffectingCombat(p) then
         -- 宠物停止攻击
@@ -120,13 +120,13 @@ function forceTrap(trap)
             PetFollow()
         end
         -- 如果没有在假死状态，假死
-        castIfBuffAbsent(p, '假死', 'Rogue_FeignDeath')
+        macroTorch.castIfBuffAbsent(p, '假死', 'Rogue_FeignDeath')
     end
     CastSpellByName(trap)
 end
 
 --- 控制序列
-function hunterCtrl()
-    castIfBuffAbsent('target', '震荡射击', 'Devour')
+function macroTorch.hunterCtrl()
+    macroTorch.castIfBuffAbsent('target', '震荡射击', 'Devour')
     CastSpellByName('Intimidation')
 end

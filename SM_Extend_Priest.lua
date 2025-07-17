@@ -15,16 +15,16 @@
 ]] --
 ---牧师专用---
 ---远程逻辑
-function priestRangedAtk()
+function macroTorch.priestRangedAtk()
     local t = 'target'
     local p = 'player'
-    startAutoShoot()
+    macroTorch.startAutoShoot()
     if HasPetUI() and not UnitIsDead('pet') then
         PetDefensiveMode()
         PetAttack()
     end
-    if isActionCooledDown('Spell_Holy_SearingLight') and not isBuffOrDebuffPresent(t, 'Spell_Holy_SearingLight') and UnitMana(p) >= 80 and getUnitHealthPercent(t) > 10 and GetNumPartyMembers() == 0 then
-        stopAutoShoot()
+    if macroTorch.isActionCooledDown('Spell_Holy_SearingLight') and not macroTorch.isBuffOrDebuffPresent(t, 'Spell_Holy_SearingLight') and UnitMana(p) >= 80 and macroTorch.getUnitHealthPercent(t) > 10 and GetNumPartyMembers() == 0 then
+        macroTorch.stopAutoShoot()
         CastSpellByName('Holy Fire')
         -- else
         --     if isActionCooledDown('Spell_Arcane_StarFire') then
@@ -34,76 +34,76 @@ function priestRangedAtk()
 end
 
 ---buff逻辑
-function priestBuffs()
+function macroTorch.priestBuffs()
     local p = 'player'
     local t = 'target'
-    if not isTargetValidFriendly(t) then
+    if not macroTorch.isTargetValidFriendly(t) then
         t = p
     end
-    castIfBuffAbsent(t, 'Power Word: Fortitude', 'Spell_Holy_WordFortitude')
-    castIfBuffAbsent(p, 'Inner Fire', 'Spell_Holy_InnerFire')
+    macroTorch.castIfBuffAbsent(t, 'Power Word: Fortitude', 'Spell_Holy_WordFortitude')
+    macroTorch.castIfBuffAbsent(p, 'Inner Fire', 'Spell_Holy_InnerFire')
 end
 
 ---debuff逻辑
-function priestDebuffs()
+function macroTorch.priestDebuffs()
     local t = 'target'
     local p = 'player'
-    if getUnitHealthPercent(t) > 10 and GetNumPartyMembers() == 0 then
-        castIfBuffAbsent(t, 'Shadow Word: Pain', 'Spell_Shadow_ShadowWordPain')
+    if macroTorch.getUnitHealthPercent(t) > 10 and GetNumPartyMembers() == 0 then
+        macroTorch.castIfBuffAbsent(t, 'Shadow Word: Pain', 'Spell_Shadow_ShadowWordPain')
     end
-    useItemIfManaPercentLessThan(p, 10, 'Mana Potion')
-    useItemIfHealthPercentLessThan(p, 20, 'Health Potion')
+    macroTorch.useItemIfManaPercentLessThan(p, 10, 'Mana Potion')
+    macroTorch.useItemIfHealthPercentLessThan(p, 20, 'Health Potion')
 end
 
 --- 牧师一键输出
 ---@param pvp boolean whether or not attack player targets
-function priestAtk(pvp)
-    priestBuffs()
+function macroTorch.priestAtk(pvp)
+    macroTorch.priestBuffs()
     local t = 'target'
-    if isTargetValidCanAttack(t) and (pvp or not isPlayerOrPlayerControlled(t)) then
+    if macroTorch.isTargetValidCanAttack(t) and (pvp or not macroTorch.isPlayerOrPlayerControlled(t)) then
         if UnitAffectingCombat(t) then
-            priestDebuffs()
+            macroTorch.priestDebuffs()
         end
         if CheckInteractDistance(t, 3) then
-            priestRangedAtk()
+            macroTorch.priestRangedAtk()
         else
-            priestRangedAtk()
+            macroTorch.priestRangedAtk()
         end
     else
         local pt = 'pettarget'
-        if HasPetUI() and not UnitIsDead('pet') and isTargetValidCanAttack(pt) and
-            (pvp or not isPlayerOrPlayerControlled(pt)) then
+        if HasPetUI() and not UnitIsDead('pet') and macroTorch.isTargetValidCanAttack(pt) and
+            (pvp or not macroTorch.isPlayerOrPlayerControlled(pt)) then
             TargetUnit(pt)
         else
             TargetNearestEnemy()
         end
-        if isTargetValidCanAttack(t) and (pvp or not isPlayerOrPlayerControlled(t)) then
+        if macroTorch.isTargetValidCanAttack(t) and (pvp or not macroTorch.isPlayerOrPlayerControlled(t)) then
             if UnitAffectingCombat(t) then
-                priestDebuffs()
+                macroTorch.priestDebuffs()
             end
             if CheckInteractDistance(t, 3) then
-                priestRangedAtk()
+                macroTorch.priestRangedAtk()
             else
-                priestRangedAtk()
+                macroTorch.priestRangedAtk()
             end
         end
     end
 end
 
 --- 牧师控制
-function priestCtrl(pvp)
+function macroTorch.priestCtrl(pvp)
 end
 
 --- 牧师治疗
-function priestHeal()
+function macroTorch.priestHeal()
     local p = 'player'
     local t = 'target'
-    if not isTargetValidFriendly(t) then
+    if not macroTorch.isTargetValidFriendly(t) then
         t = p
     end
-    if getUnitHealthLost(t) > 300 then
+    if macroTorch.getUnitHealthLost(t) > 300 then
         CastSpellByName('Heal')
-    elseif getUnitHealthLost(t) > 140 then
+    elseif macroTorch.getUnitHealthLost(t) > 140 then
         CastSpellByName('Lesser Heal')
     else
         castIfBuffAbsent(t, 'Renew', 'Spell_Holy_Renew')
