@@ -14,13 +14,13 @@
    limitations under the License.
 ]] --
 
-Pet = Unit:new("pet")
+macroTorch.Pet = macroTorch.Unit:new("pet")
 
-function Pet:new()
+function macroTorch.Pet:new()
     local obj = {}
     self.__index = self
     setmetatable(obj, self)
     return obj
 end
 
-mt.pet = Pet:new()
+macroTorch.pet = macroTorch.Pet:new()

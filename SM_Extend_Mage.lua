@@ -12,11 +12,11 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-]] --   
+]] --
 ---法师专用---
 ---远程逻辑
-function mageRangedAtk(reapLine)
-    startAutoAtk()
+function macroTorch.mageRangedAtk(reapLine)
+    macroTorch.startAutoAtk()
     if HasPetUI() and not UnitIsDead('pet') then
         PetDefensiveMode()
         PetAttack()
@@ -24,9 +24,10 @@ function mageRangedAtk(reapLine)
 
     CastSpellByName('Frostbolt')
 end
+
 ---近战逻辑
-function mageMeleeAtk(reapLine)
-    startAutoAtk()
+function macroTorch.mageMeleeAtk(reapLine)
+    macroTorch.startAutoAtk()
     if HasPetUI() and not UnitIsDead('pet') then
         PetDefensiveMode()
         PetAttack()
@@ -34,46 +35,47 @@ function mageMeleeAtk(reapLine)
 
     CastSpellByName('Frostbolt')
 end
+
 ---buff逻辑
-function mageBuffs()
+function macroTorch.mageBuffs()
     local p = 'player'
     local t = 'target'
-    if not isTargetValidFriendly(t) then
+    if not macroTorch.isTargetValidFriendly(t) then
         t = p
     end
-    castIfBuffAbsent(p, 'Frost Armor', 'Frost_FrostArmor02')
-    castIfBuffAbsent(t, 'Arcane Intellect', 'Holy_MagicalSentry')
+    macroTorch.castIfBuffAbsent(p, 'Frost Armor', 'Frost_FrostArmor02')
+    macroTorch.castIfBuffAbsent(t, 'Arcane Intellect', 'Holy_MagicalSentry')
 end
 
 --- 法师一键输出
 ---@param pvp boolean whether or not attack player targets
-function mageAtk(pvp, reapLine)
-    mageBuffs()
+function macroTorch.mageAtk(pvp, reapLine)
+    macroTorch.mageBuffs()
     local t = 'target'
-    if isTargetValidCanAttack(t) and (pvp or not isPlayerOrPlayerControlled(t)) then
+    if macroTorch.isTargetValidCanAttack(t) and (pvp or not macroTorch.isPlayerOrPlayerControlled(t)) then
         if CheckInteractDistance(t, 3) then
-            mageMeleeAtk(reapLine)
+            macroTorch.mageMeleeAtk(reapLine)
         else
-            mageRangedAtk(reapLine)
+            macroTorch.mageRangedAtk(reapLine)
         end
     else
         local pt = 'pettarget'
-        if HasPetUI() and not UnitIsDead('pet') and isTargetValidCanAttack(pt) and
-            (pvp or not isPlayerOrPlayerControlled(pt)) then
+        if HasPetUI() and not UnitIsDead('pet') and macroTorch.isTargetValidCanAttack(pt) and
+            (pvp or not macroTorch.isPlayerOrPlayerControlled(pt)) then
             TargetUnit(pt)
         else
             TargetNearestEnemy()
         end
-        if isTargetValidCanAttack(t) and (pvp or not isPlayerOrPlayerControlled(t)) then
+        if macroTorch.isTargetValidCanAttack(t) and (pvp or not macroTorch.isPlayerOrPlayerControlled(t)) then
             if CheckInteractDistance(t, 3) then
-                mageMeleeAtk(reapLine)
+                macroTorch.mageMeleeAtk(reapLine)
             else
-                mageRangedAtk(reapLine)
+                macroTorch.mageRangedAtk(reapLine)
             end
         end
     end
 end
 
 --- 法师控制
-function mageCtrl()
+function macroTorch.mageCtrl()
 end

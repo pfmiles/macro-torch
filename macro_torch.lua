@@ -14,13 +14,8 @@
    limitations under the License.
 ]] --
 
-macroTorch.TargetPet = macroTorch.Unit:new("targetpet")
+-- the addon namespace
+macroTorch = {}
 
-function macroTorch.TargetPet:new()
-    local obj = {}
-    self.__index = self
-    setmetatable(obj, self)
-    return obj
-end
-
-macroTorch.targetpet = macroTorch.TargetPet:new()
+-- alias
+mt = macroTorch

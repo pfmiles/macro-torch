@@ -15,7 +15,7 @@
 ]] --   
 
 -- 检查字符串是否包含集合中的任意关键字
-local function containsAnyKeyword(str, kwdList)
+function macroTorch.containsAnyKeyword(str, kwdList)
     if not str then return false end
     for _, keyword in ipairs(kwdList) do
         if string.find(str, keyword) then

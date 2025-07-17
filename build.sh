@@ -10,11 +10,16 @@ if [ -f "$target" ]; then
     rm $target
 fi
 
-## Unit.lua should be placed first
+## macro_torch.lua should be placed first
+if [ -f "macro_torch.lua" ]; then
+    cat macro_torch.lua >> $target
+fi
+
+## Unit.lua should be placed second
 if [ -f "Unit.lua" ]; then
     cat Unit.lua >> $target
 fi
-find ./ -iname '*.lua'|grep -v "$target"|grep -v "Unit.lua"|xargs cat >> $target
+find ./ -iname '*.lua'|grep -v "$target"|grep -v "Unit.lua"|grep -v "macro_torch.lua"|xargs cat >> $target
 
 lang=$1
 

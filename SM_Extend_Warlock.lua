@@ -12,78 +12,81 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-]] --   
+]] --
 ---术士专用---
 ---诅咒逻辑
-function wlkCurses(reapLine)
+function macroTorch.wlkCurses(reapLine)
     local t = 'target'
-    if getUnitHealthPercent(t) > reapLine then
-        castIfBuffAbsent(t, 'Immolate', 'Fire_Immolation')
+    if macroTorch.getUnitHealthPercent(t) > reapLine then
+        macroTorch.castIfBuffAbsent(t, 'Immolate', 'Fire_Immolation')
     end
 
-    if getUnitHealthPercent(t) > reapLine then
-        castIfBuffAbsent(t, 'Corruption', 'Shadow_AbominationExplosion')
+    if macroTorch.getUnitHealthPercent(t) > reapLine then
+        macroTorch.castIfBuffAbsent(t, 'Corruption', 'Shadow_AbominationExplosion')
     end
 
-    castIfBuffAbsent(t, 'Curse of Agony', 'Shadow_CurseOfSargeras')
+    macroTorch.castIfBuffAbsent(t, 'Curse of Agony', 'Shadow_CurseOfSargeras')
 end
+
 ---远程逻辑
-function wlkRangedAtk(reapLine)
+function macroTorch.wlkRangedAtk(reapLine)
     --startAutoAtk()
     if HasPetUI() and not UnitIsDead('pet') then
         PetDefensiveMode()
         PetAttack()
     end
-    wlkCurses(reapLine)
+    macroTorch.wlkCurses(reapLine)
 
-    startAutoShoot()
+    macroTorch.startAutoShoot()
 end
+
 ---近战逻辑
-function wlkMeleeAtk(reapLine)
+function macroTorch.wlkMeleeAtk(reapLine)
     --startAutoAtk()
     if HasPetUI() and not UnitIsDead('pet') then
         PetDefensiveMode()
         PetAttack()
     end
-    wlkCurses(reapLine)
+    macroTorch.wlkCurses(reapLine)
 
-    startAutoShoot()
+    macroTorch.startAutoShoot()
 end
+
 ---buff逻辑
-function wlkBuffs()
+function macroTorch.wlkBuffs()
     local p = 'player'
-    castIfBuffAbsent(p, 'Demon Skin', 'Shadow_RagingScream')
+    macroTorch.castIfBuffAbsent(p, 'Demon Skin', 'Shadow_RagingScream')
 end
 
 --- 术士一键输出
 ---@param pvp boolean whether or not attack player targets
-function wlkAtk(pvp, reapLine)
-    wlkBuffs()
+function macroTorch.wlkAtk(pvp, reapLine)
+    macroTorch.wlkBuffs()
     local t = 'target'
-    if isTargetValidCanAttack(t) and (pvp or not isPlayerOrPlayerControlled(t)) then
+    if macroTorch.isTargetValidCanAttack(t) and (pvp or not macroTorch.isPlayerOrPlayerControlled(t)) then
         if CheckInteractDistance(t, 3) then
-            wlkMeleeAtk(reapLine)
+            macroTorch.wlkMeleeAtk(reapLine)
         else
-            wlkRangedAtk(reapLine)
+            macroTorch.wlkRangedAtk(reapLine)
         end
     else
         local pt = 'pettarget'
-        if HasPetUI() and not UnitIsDead('pet') and isTargetValidCanAttack(pt) and
-            (pvp or not isPlayerOrPlayerControlled(pt)) then
+        if HasPetUI() and not UnitIsDead('pet') and macroTorch.isTargetValidCanAttack(pt) and
+            (pvp or not macroTorch.isPlayerOrPlayerControlled(pt)) then
             TargetUnit(pt)
         else
             TargetNearestEnemy()
         end
-        if isTargetValidCanAttack(t) and (pvp or not isPlayerOrPlayerControlled(t)) then
+        if macroTorch.isTargetValidCanAttack(t) and (pvp or not macroTorch.isPlayerOrPlayerControlled(t)) then
             if CheckInteractDistance(t, 3) then
-                wlkMeleeAtk(reapLine)
+                macroTorch.wlkMeleeAtk(reapLine)
             else
-                wlkRangedAtk(reapLine)
+                macroTorch.wlkRangedAtk(reapLine)
             end
         end
     end
 end
 
 --- 术士控制
-function wlkCtrl()
+function macroTorch.wlkCtrl()
 end

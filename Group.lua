@@ -14,4 +14,4 @@
    limitations under the License.
 ]] --
 
-mt.group = {}
+macroTorch.group = {}

@@ -13,12 +13,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 ]] --
-mt = {}
 
 -- parent class of all units
-Unit = {}
+macroTorch.Unit = {}
 -- constructor
-function Unit:new(ref)
+function macroTorch.Unit:new(ref)
     local obj = { ref = ref }
     setmetatable(obj, {
         __index = function(t, k)
