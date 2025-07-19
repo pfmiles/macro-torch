@@ -52,7 +52,7 @@ function macroTorch.meleeCommonTactics(reapLine)
     end
 
     -- 优先用掉复仇
-    macroTorch.CastSpellByName('Revenge')
+    CastSpellByName('Revenge')
 end
 
 ---近战单体逻辑

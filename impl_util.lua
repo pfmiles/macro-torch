@@ -12,7 +12,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-]] --   
+]] --
 
 -- 检查字符串是否包含集合中的任意关键字
 function macroTorch.containsAnyKeyword(str, kwdList)
@@ -23,4 +23,9 @@ function macroTorch.containsAnyKeyword(str, kwdList)
         end
     end
     return false
+end
+
+-- 转换可能的nil为布尔值
+function macroTorch.toBoolean(v)
+    return v and true or false
 end
