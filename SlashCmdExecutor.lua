@@ -14,14 +14,6 @@
    limitations under the License.
 ]] --
 
--- the addon namespace
-macroTorch = {}
-
--- alias
-mt = macroTorch
-
--- register slash cmds
-SlashCmdList['MACROTORCH'] = macroTorch.exeSlashCmd
-
-SLASH_MACROTORCH1 = '/macrotorch'
-SLASH_MACROTORCH2 = '/mt'
+function macroTorch.exeSlashCmd(msg)
+    macroTorch.show(msg)
+end
