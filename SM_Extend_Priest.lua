@@ -23,7 +23,7 @@ function macroTorch.priestRangedAtk()
         PetDefensiveMode()
         PetAttack()
     end
-    if macroTorch.isActionCooledDown('Spell_Holy_SearingLight') and not macroTorch.isBuffOrDebuffPresent(t, 'Spell_Holy_SearingLight') and UnitMana(p) >= 80 and macroTorch.getUnitHealthPercent(t) > 10 and GetNumPartyMembers() == 0 then
+    if macroTorch.isActionCooledDown('Spell_Holy_SearingLight') and not macroTorch.isBuffOrDebuffPresent(t, 'Spell_Holy_SearingLight') and UnitMana(p) >= 95 and macroTorch.getUnitHealthPercent(t) > 10 and GetNumPartyMembers() == 0 then
         macroTorch.stopAutoShoot()
         CastSpellByName('Holy Fire')
         -- else
@@ -101,7 +101,7 @@ function macroTorch.priestHeal()
     if not macroTorch.isTargetValidFriendly(t) then
         t = p
     end
-    if macroTorch.getUnitHealthLost(t) > 300 then
+    if macroTorch.getUnitHealthLost(t) > 440 then
         CastSpellByName('Heal')
     elseif macroTorch.getUnitHealthLost(t) > 140 then
         CastSpellByName('Lesser Heal')
