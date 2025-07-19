@@ -19,6 +19,45 @@ macroTorch.Unit = {}
 -- constructor
 function macroTorch.Unit:new(ref)
     local obj = { ref = ref }
+
+    -- tell if the unit has the specified spell/item caused buff or debuff
+    -- @param spellOrItemName the name of the spell or item
+    -- @return true if the unit has the specified buff or debuff, false otherwise
+    obj.hasBuff = function(spellOrItemName)
+        local texture = macroTorch.getSpellOrItemBuffTexture(spellOrItemName)
+        for i = 1, 40 do
+            if string.find(tostring(UnitDebuff(obj.ref, i)), texture) or string.find(tostring(UnitBuff(obj.ref, i)), texture) then
+                return true
+            end
+        end
+        return false
+    end
+
+    -- get the count of stacks of buff or debuff
+    -- @param spellOrItemName the name of the spell or item
+    -- @return the count of stacks of buff or debuff
+    function obj.getBuffStacks(spellOrItemName)
+        local texture = macroTorch.getSpellOrItemBuffTexture(spellOrItemName)
+        for i = 1, 40 do
+            if string.find(tostring(UnitDebuff(obj.ref, i)), texture) then
+                local b, c = UnitDebuff(obj.ref, i)
+                if c then
+                    return c
+                else
+                    return 0
+                end
+            elseif string.find(tostring(UnitBuff(obj.ref, i)), texture) then
+                local b, c = UnitBuff(obj.ref, i)
+                if c then
+                    return c
+                else
+                    return 0
+                end
+            end
+        end
+        return 0
+    end
+
     setmetatable(obj, {
         __index = function(t, k)
             -- missing instance field search
