@@ -23,7 +23,7 @@ function macroTorch.Unit:new(ref)
     -- tell if the unit has the specified spell/item caused buff or debuff
     -- @param spellOrItemName the name of the spell or item
     -- @return true if the unit has the specified buff or debuff, false otherwise
-    obj.hasBuff = function(spellOrItemName)
+    function obj.hasBuff(spellOrItemName)
         local texture = macroTorch.getSpellOrItemBuffTexture(spellOrItemName)
         for i = 1, 40 do
             if string.find(tostring(UnitDebuff(obj.ref, i)), texture) or string.find(tostring(UnitBuff(obj.ref, i)), texture) then
@@ -56,6 +56,17 @@ function macroTorch.Unit:new(ref)
             end
         end
         return 0
+    end
+
+    -- list all buffs texture, for debug only
+    function obj.listBuffs()
+        for i = 1, 40 do
+            local b = UnitBuff(obj.ref, i)
+            local d = UnitDebuff(obj.ref, i)
+            if b or d then
+                macroTorch.show('Found Buff: ' .. tostring(b or d))
+            end
+        end
     end
 
     setmetatable(obj, {
