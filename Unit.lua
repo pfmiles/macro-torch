@@ -22,8 +22,8 @@ function macroTorch.Unit:new(ref)
     setmetatable(obj, {
         __index = function(t, k)
             -- missing instance field search
-            if UNIT_FIELD_FUNC_MAP[k] then
-                return UNIT_FIELD_FUNC_MAP[k](t)
+            if macroTorch.UNIT_FIELD_FUNC_MAP[k] then
+                return macroTorch.UNIT_FIELD_FUNC_MAP[k](t)
             end
             -- class field & method search
             local class_val = self[k]
@@ -36,7 +36,8 @@ function macroTorch.Unit:new(ref)
 end
 
 -- unit fields to function mapping
-UNIT_FIELD_FUNC_MAP = {
+macroTorch.UNIT_FIELD_FUNC_MAP = {
+    -- basic props
     ['health'] = function(self)
         return UnitHealth(self.ref)
     end,
@@ -61,4 +62,25 @@ UNIT_FIELD_FUNC_MAP = {
     ['manaPercent'] = function(self)
         return UnitMana(self.ref) / UnitManaMax(self.ref) * 100
     end,
+
+    -- conditinal props
+    ['isPlayer'] = function(self)
+        return UnitIsPlayer(self.ref) or UnitPlayerControlled(self.ref)
+    end,
+    ['isCanAttack'] = function(self)
+        local t = self.ref
+        return UnitExists(t) and not UnitIsDead(t) and UnitCanAttack('player', t)
+    end,
+    ['isFriendly'] = function(self)
+        local t = self.ref
+        return UnitExists(t) and not UnitIsDead(t) and UnitCanAssist('player', t)
+    end,
+    ['isAttackingMe'] = function(self)
+        local t = self.ref
+        return self.isCanAttack and UnitAffectingCombat(t) and UnitName("player") == UnitName(t .. "target")
+    end,
+    ['isAttackingMyPet'] = function(self)
+        local t = self.ref
+        return self.isCanAttack and UnitAffectingCombat(t) and UnitName("pet") == UnitName(t .. "target")
+    end
 }

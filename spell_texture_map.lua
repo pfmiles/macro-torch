@@ -14,7 +14,7 @@
    limitations under the License.
 ]] --
 
-SPELL_TEXTURE_MAP = {
+macroTorch.SPELL_TEXTURE_MAP = {
     --- warrior start
     ['Defensive Stance'] = 'Ability_Warrior_DefensiveStance',
     ['Battle Stance'] = 'Ability_Warrior_OffensiveStance',

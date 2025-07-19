@@ -63,12 +63,12 @@ function macroTorch.wroMeleeAtk(reapLine)
 
     -- 挂流血
     if not macroTorch.isBleedingNoEffectTarget(t) then
-        macroTorch.castIfBuffAbsent(t, 'Rend', SPELL_TEXTURE_MAP['Rend'])
+        macroTorch.castIfBuffAbsent(t, 'Rend', macroTorch.SPELL_TEXTURE_MAP['Rend'])
     end
 
     -- 在团队中时叠破甲
     local targetIsBoss = UnitClassification(t) == 'worldboss'
-    if GetNumPartyMembers() >= 4 and targetIsBoss and macroTorch.getTargetBuffOrDebuffLayers(t, SPELL_TEXTURE_MAP['Sunder Armor']) < 5 then
+    if GetNumPartyMembers() >= 4 and targetIsBoss and macroTorch.getTargetBuffOrDebuffLayers(t, macroTorch.SPELL_TEXTURE_MAP['Sunder Armor']) < 5 then
         CastSpellByName('Sunder Armor')
     else
         CastSpellByName('Shield Slam')
@@ -84,8 +84,8 @@ function macroTorch.wroAoe(reapLine)
 
     macroTorch.meleeCommonTactics(reapLine)
 
-    macroTorch.castIfBuffAbsent(t, 'Demoralizing Shout', SPELL_TEXTURE_MAP['Demoralizing Shout'])
-    macroTorch.castIfBuffAbsent(t, 'Thunder Clap', SPELL_TEXTURE_MAP['Thunder Clap'])
+    macroTorch.castIfBuffAbsent(t, 'Demoralizing Shout', macroTorch.SPELL_TEXTURE_MAP['Demoralizing Shout'])
+    macroTorch.castIfBuffAbsent(t, 'Thunder Clap', macroTorch.SPELL_TEXTURE_MAP['Thunder Clap'])
 
     if not macroTorch.isActionCooledDown('Spell_Nature_ThunderClap') then
         CastSpellByName('Cleave')
@@ -199,10 +199,10 @@ function macroTorch.warriorDefence()
     if not macroTorch.isStanceActiveByName('Defensive Stance') then
         CastSpellByName('Defensive Stance')
     end
-    if macroTorch.isActionCooledDown(SPELL_TEXTURE_MAP['Disarm']) and UnitMana('player') >= 20 then
+    if macroTorch.isActionCooledDown(macroTorch.SPELL_TEXTURE_MAP['Disarm']) and UnitMana('player') >= 20 then
         CastSpellByName('Disarm')
     else
-        if macroTorch.isActionCooledDown(SPELL_TEXTURE_MAP['Shield Wall']) then
+        if macroTorch.isActionCooledDown(macroTorch.SPELL_TEXTURE_MAP['Shield Wall']) then
             CastSpellByName('Shield Wall')
         end
     end

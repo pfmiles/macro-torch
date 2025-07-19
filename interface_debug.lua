@@ -77,7 +77,5 @@ end
 --- 在聊天框中显示传入的内容，传入内容会被tostring
 ---@param a any
 function macroTorch.show(a)
-    if a then
-        DEFAULT_CHAT_FRAME:AddMessage(tostring(a))
-    end
+    DEFAULT_CHAT_FRAME:AddMessage(tostring(a))
 end
