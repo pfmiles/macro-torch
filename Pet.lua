@@ -31,6 +31,10 @@ function macroTorch.Pet:new()
         return macroTorch.getSpellIdByName(spellName, 'pet')
     end
 
+    function obj.isSpellCooledDown(spellName)
+        return macroTorch.isSpellCooledDown(spellName, 'pet')
+    end
+
     self.__index = self
     setmetatable(obj, self)
     return obj
