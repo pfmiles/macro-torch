@@ -112,6 +112,52 @@ macroTorch.UNIT_FIELD_FUNC_MAP = {
     ['manaPercent'] = function(self)
         return UnitMana(self.ref) / UnitManaMax(self.ref) * 100
     end,
+    -- elemental, undead, etc
+    ['type'] = function(self)
+        local t = UnitCreatureType(self.ref)
+        if not t or t:match("^%s*$") then
+            t = 'Unknown'
+        end
+        return t
+    end,
+    -- mana, rage, energy, etc
+    ['powerType'] = function(self)
+        local i, n = UnitPowerType(self.ref)
+        return tostring(i) .. "," .. tostring(n)
+    end,
+    ['name'] = function(self)
+        return UnitName(self.ref)
+    end,
+    ['level'] = function(self)
+        return UnitLevel(self.ref)
+    end,
+    -- Hunter, Mage, Warrior, etc
+    ['class'] = function(self)
+        return UnitClass(self.ref)
+    end,
+    -- Human, Troll, etc
+    ['race'] = function(self)
+        return UnitRace(self.ref)
+    end,
+    ['sex'] = function(self)
+        return UnitSex(self.ref)
+    end,
+    -- elite, worldboss, etc
+    ['classification'] = function(self)
+        return UnitClassification(self.ref)
+    end,
+    -- Crab, Cat, etc
+    ['creatureFamily'] = function(self)
+        return UnitCreatureFamily(self.ref)
+    end,
+    -- Beast, Dragon, etc
+    ['creatureType'] = function(self)
+        return UnitCreatureType(self.ref)
+    end,
+    -- Alliance or Horde
+    ['factionGroup'] = function(self)
+        return UnitFactionGroup(self.ref)
+    end,
 
     -- conditinal props
     ['isPlayer'] = function(self)
@@ -134,5 +180,14 @@ macroTorch.UNIT_FIELD_FUNC_MAP = {
         local t = self.ref
         return macroTorch.toBoolean(self.isCanAttack and UnitAffectingCombat(t) and
             UnitName("pet") == UnitName(t .. "target"))
-    end
+    end,
+    ['isNearBy'] = function(self)
+        return macroTorch.toBoolean(CheckInteractDistance(self.ref, 3))
+    end,
+    ['isDead'] = function(self)
+        return macroTorch.toBoolean(UnitIsDead(self.ref))
+    end,
+    ['isExist'] = function(self)
+        return macroTorch.toBoolean(UnitExists(self.ref))
+    end,
 }
