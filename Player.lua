@@ -18,6 +18,77 @@ macroTorch.Player = macroTorch.Unit:new("player")
 
 function macroTorch.Player:new()
     local obj = {}
+
+    -- cast spell by name
+    -- @param spellName string spell name
+    -- @param onSelf boolean true if cast on self, current target otherwise
+    function obj.cast(spellName, onSelf)
+        CastSpellByName(spellName, onSelf)
+    end
+
+    -- get spell id by name
+    -- @param spellName string spell name
+    -- @return number spell id
+    function obj.getSpellIdByName(spellName)
+        return macroTorch.getSpellIdByName(spellName, 'spell')
+    end
+
+    -- use item in bag by name
+    -- @param itemName string item name
+    -- @param onSelf boolean true if use on self, current target otherwise
+    function obj.use(itemName, onSelf)
+        for b = 0, 4 do
+            for s = 1, GetContainerNumSlots(b, s) do
+                local n = GetContainerItemLink(b, s)
+                if n and string.find(n, itemName) then
+                    UseContainerItem(b, s, onSelf)
+                    -- SpellTargetUnit(obj.ref)
+                end
+            end
+        end
+    end
+
+    -- tell if the specified stance or form is active
+    -- @param formName string stance or form name
+    -- @return boolean true if active, false otherwise
+    function obj.isFormActive(formName)
+        local numOfStances = GetNumShapeshiftForms()
+        for i = 1, numOfStances do
+            local idx, spellName, active = GetShapeshiftFormInfo(i)
+            if active then
+                if macroTorch.equalsIgnoreCase(spellName, formName) then
+                    return true
+                end
+            end
+        end
+        return false
+    end
+
+    --- print all spells in book, for debug usages
+    function obj.listAllSpells()
+        return macroTorch.listAllSpells('spell')
+    end
+
+    -- start auto attack, this requires "Attack" action be placed in any action slot
+    function obj.startAutoAtk()
+        macroTorch.toggleAutoAtk(true)
+    end
+
+    -- stop auto attack, this requires "Attack" action be placed in any action slot
+    function obj.stopAutoAtk()
+        macroTorch.toggleAutoAtk(false)
+    end
+
+    -- start auto shoot, this requires ranged weapon action be placed in any of the action slots
+    function obj.startAutoShoot()
+        macroTorch.toggleAutoShoot(true)
+    end
+
+    -- stop auto shoot, this requires ranged weapon action be placed in any of the action slots
+    function obj.stopAutoShoot()
+        macroTorch.toggleAutoShoot(false)
+    end
+
     self.__index = self
     setmetatable(obj, self)
     return obj
