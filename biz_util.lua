@@ -78,3 +78,46 @@ function macroTorch.toggleAutoShoot(start)
     macroTorch.show(
         "ERROR: No ranged weapon action found in any of the action slots, please place \"Ranged Weapon(like bow or wand)\" action in any action slot!")
 end
+
+function macroTorch.isSpellCooledDown(spellName, bookType)
+    local spellId = macroTorch.getSpellIdByName(spellName, bookType)
+    if not spellId then
+        return false
+    end
+    return GetSpellCooldown(spellId, bookType) <= 0
+end
+
+function macroTorch.getSpellTexture(spellName, bookType)
+    local spellId = macroTorch.getSpellIdByName(spellName, bookType)
+    if not spellId then
+        return nil
+    end
+    return GetSpellTexture(spellId, bookType)
+end
+
+function macroTorch.getItemBagIdAndSlot(itemName)
+    for b = 0, 4 do
+        for s = 1, GetContainerNumSlots(b, s) do
+            local n = GetContainerItemLink(b, s)
+            if n and string.find(n, itemName) then
+                return b, s
+            end
+        end
+    end
+end
+
+function macroTorch.isItemCooledDown(itemName)
+    local bagId, slotIndex = macroTorch.getItemBagIdAndSlot(itemName)
+    if not bagId or not slotIndex then
+        return false
+    end
+    return GetContainerItemCooldown(bagId, slotIndex) <= 0
+end
+
+function macroTorch.getItemInfo(itemName)
+    local bagId, slotIndex = macroTorch.getItemBagIdAndSlot(itemName)
+    if not bagId or not slotIndex then
+        return nil
+    end
+    return GetContainerItemInfo(bagId, slotIndex)
+end

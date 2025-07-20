@@ -26,26 +26,22 @@ function macroTorch.Player:new()
         CastSpellByName(spellName, onSelf)
     end
 
+    -- use item in bag by name
+    -- @param itemName string item name
+    -- @param onSelf boolean true if use on self, current target otherwise
+    function obj.use(itemName, onSelf)
+        local bagId, slotIndex = macroTorch.getItemBagIdAndSlot(itemName)
+        if bagId and slotIndex then
+            UseContainerItem(bagId, slotIndex, onSelf)
+            -- SpellTargetUnit(obj.ref)
+        end
+    end
+
     -- get spell id by name
     -- @param spellName string spell name
     -- @return number spell id
     function obj.getSpellIdByName(spellName)
         return macroTorch.getSpellIdByName(spellName, 'spell')
-    end
-
-    -- use item in bag by name
-    -- @param itemName string item name
-    -- @param onSelf boolean true if use on self, current target otherwise
-    function obj.use(itemName, onSelf)
-        for b = 0, 4 do
-            for s = 1, GetContainerNumSlots(b, s) do
-                local n = GetContainerItemLink(b, s)
-                if n and string.find(n, itemName) then
-                    UseContainerItem(b, s, onSelf)
-                    -- SpellTargetUnit(obj.ref)
-                end
-            end
-        end
     end
 
     -- tell if the specified stance or form is active
@@ -87,6 +83,14 @@ function macroTorch.Player:new()
     -- stop auto shoot, this requires ranged weapon action be placed in any of the action slots
     function obj.stopAutoShoot()
         macroTorch.toggleAutoShoot(false)
+    end
+
+    function obj.isSpellCooledDown(spellName)
+        return macroTorch.isSpellCooledDown(spellName, 'spell')
+    end
+
+    function obj.isItemCooledDown(itemName)
+        return macroTorch.isItemCooledDown(itemName)
     end
 
     self.__index = self

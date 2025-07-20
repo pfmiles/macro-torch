@@ -30,8 +30,8 @@ macroTorch.SPELL_TEXTURE_MAP = {
 macroTorch.ITEM_TEXTURE_MAP = {}
 
 --- get the buff or debuff texture of the specified spell or item
---- @param spellOrItemName the name of the spell or item
---- @return the texture of the buff or debuff of the specified spell or item
+--- @param spellOrItemName string the name of the spell or item
+--- @return string texture the texture of the buff or debuff of the specified spell or item
 function macroTorch.getSpellOrItemBuffTexture(spellOrItemName)
     local ret = macroTorch.SPELL_TEXTURE_MAP[spellOrItemName] or macroTorch.ITEM_TEXTURE_MAP[spellOrItemName]
     if ret then
