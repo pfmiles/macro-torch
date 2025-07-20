@@ -79,3 +79,5 @@ end
 function macroTorch.show(a)
     DEFAULT_CHAT_FRAME:AddMessage(tostring(a))
 end
+
+

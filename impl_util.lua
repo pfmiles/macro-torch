@@ -29,3 +29,11 @@ end
 function macroTorch.toBoolean(v)
     return v and true or false
 end
+
+-- 实现不区分大小写的字符串比较方法
+function macroTorch.equalsIgnoreCase(str1, str2)
+    if type(str1) ~= "string" or type(str2) ~= "string" then
+        return false
+    end
+    return string.lower(str1) == string.lower(str2)
+end

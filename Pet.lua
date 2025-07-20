@@ -18,6 +18,19 @@ macroTorch.Pet = macroTorch.Unit:new("pet")
 
 function macroTorch.Pet:new()
     local obj = {}
+
+    -- list all spells of the pet, for debug usages
+    function obj.listAllSpells()
+        return macroTorch.listAllSpells('pet')
+    end
+
+    -- get spell id by name
+    -- @param spellName string spell name
+    -- @return number spell id
+    function obj.getSpellIdByName(spellName)
+        return macroTorch.getSpellIdByName(spellName, 'pet')
+    end
+
     self.__index = self
     setmetatable(obj, self)
     return obj
