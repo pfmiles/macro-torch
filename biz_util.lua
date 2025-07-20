@@ -121,3 +121,11 @@ function macroTorch.getItemInfo(itemName)
     end
     return GetContainerItemInfo(bagId, slotIndex)
 end
+
+function macroTorch.isCasting(spellName, bookType)
+    local spellId = macroTorch.getSpellIdByName(spellName, bookType)
+    if not spellId then
+        return false
+    end
+    return macroTorch.toBoolean(IsCurrentCast(spellId, bookType))
+end

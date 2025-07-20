@@ -35,6 +35,10 @@ function macroTorch.Pet:new()
         return macroTorch.isSpellCooledDown(spellName, 'pet')
     end
 
+    function obj.isCasting(spellName)
+        return macroTorch.isCasting(spellName, 'pet')
+    end
+
     self.__index = self
     setmetatable(obj, self)
     return obj

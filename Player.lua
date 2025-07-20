@@ -93,6 +93,10 @@ function macroTorch.Player:new()
         return macroTorch.isItemCooledDown(itemName)
     end
 
+    function obj.isCasting(spellName)
+        return macroTorch.isCasting(spellName, 'spell')
+    end
+
     self.__index = self
     setmetatable(obj, self)
     return obj
