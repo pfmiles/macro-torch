@@ -33,6 +33,6 @@ if [ "$lang" == "eng" ]; then
 fi
 
 cp $target /cygdrive/d/games/TurtleWoW/Interface/AddOns/SuperMacro/
-cp $target /cygdrive/d/games/twmoa_1172_cn/Interface/AddOns/SuperMacro/
+## cp $target /cygdrive/d/games/twmoa_1172_cn/Interface/AddOns/SuperMacro/
 
 

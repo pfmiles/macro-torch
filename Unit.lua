@@ -184,10 +184,16 @@ macroTorch.UNIT_FIELD_FUNC_MAP = {
     ['isNearBy'] = function(self)
         return macroTorch.toBoolean(CheckInteractDistance(self.ref, 3))
     end,
+    ['isInMediumRange'] = function(self)
+        return macroTorch.toBoolean(CheckInteractDistance(self.ref, 2))
+    end,
     ['isDead'] = function(self)
         return macroTorch.toBoolean(UnitIsDead(self.ref))
     end,
     ['isExist'] = function(self)
         return macroTorch.toBoolean(UnitExists(self.ref))
+    end,
+    ['isInCombat'] = function(self)
+        return macroTorch.toBoolean(UnitAffectingCombat(self.ref))
     end,
 }
