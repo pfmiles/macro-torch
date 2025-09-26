@@ -91,11 +91,12 @@ end
 function macroTorch.catAtk(startMove, regularMove)
     local p = 'player'
     local t = 'target'
+    local player = macroTorch.player
     local prowling = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Ambush')
     -- 1.health & mana saver in combat *
-    if macroTorch.player.isInCombat and not prowling then
+    if player.isInCombat and not prowling then
         macroTorch.useItemIfHealthPercentLessThan(p, 20, 'Healing Potion')
-        macroTorch.useItemIfManaPercentLessThan(p, 20, 'Mana Potion')
+        -- macroTorch.useItemIfManaPercentLessThan(p, 20, 'Mana Potion') TODO 由于cat形态下无法读取真正的mana，因此这里暂时作废
     end
     -- 2.targetEnemy *
     if not macroTorch.isTargetValidCanAttack(t) then
@@ -104,7 +105,7 @@ function macroTorch.catAtk(startMove, regularMove)
     else
         -- 3.keep autoAttack, in combat & not prowling *
         if not prowling then
-            macroTorch.player.startAutoAtk()
+            player.startAutoAtk()
         end
         -- 4.rushMod, incuding trinckets, berserk and potions *
         if IsShiftKeyDown() then
@@ -116,7 +117,20 @@ function macroTorch.catAtk(startMove, regularMove)
             CastSpellByName(startMove)
         end
         -- 6.energy res mod
-        -- TODO
+        if not prowling and macroTorch.getBuffDuration(p, 'Ability_Mount_JungleTiger') < 2 then
+            -- TODO 后续需要在刚tick完的1s之内Reshift从而不卡tick回能，也要找到cat状态下区分energy和mana的办法,目前这里的mana在cat形态下其实是energy
+            if macroTorch.isBuffOrDebuffPresent(p, 'Ability_Druid_Berserk') then
+                if player.mana < 20 then
+                    macroTorch.show('Reshift!!!')
+                    CastSpellByName('Reshift')
+                end
+            else
+                if player.mana < 30 then
+                    macroTorch.show('Reshift!!!')
+                    CastSpellByName('Reshift')
+                end
+            end
+        end
         -- 7.termMod
         lazyScript.SlashCommand('termMod')
         -- 8.OT mod
@@ -126,7 +140,7 @@ function macroTorch.catAtk(startMove, regularMove)
             CastSpellByName('Tiger\'s Fury')
         end
         -- 10.debuffMod, including rip, rake and FF
-        if macroTorch.player.isInCombat and not prowling then
+        if player.isInCombat and not prowling then
             lazyScript.SlashCommand('debuffMod')
         end
         -- 11.regular attack tech mod

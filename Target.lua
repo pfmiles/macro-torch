@@ -83,17 +83,17 @@ function macroTorch.isBuffOrDebuffPresent(t, txt)
     return false
 end
 
--- --- 判断指定的buff或debuff在指定的目标身上还剩多少持续时间
--- ---@param t string 指定的目标
--- ---@param txt string 指定的buff/debuff texture文本, 可以是部分内容, 使用string.find匹配
--- function macroTorch.getBuffOrDebuffDuration(t, txt)
---     for i = 1, 40 do
---         if string.find(tostring(UnitDebuff(t, i)), txt) or string.find(tostring(UnitBuff(t, i)), txt) then
---             return GetPlayerBuffTimeLeft(i)
---         end
---     end
---     return 0
--- end
+--- 判断指定的buff在指定的目标身上还剩多少持续时间
+---@param t string 指定的目标
+---@param txt string 指定的buff texture文本, 可以是部分内容, 使用string.find匹配
+function macroTorch.getBuffDuration(t, txt)
+    for i = 1, 40 do
+        if string.find(tostring(UnitBuff(t, i)), txt) then
+            return GetPlayerBuffTimeLeft(i)
+        end
+    end
+    return 0
+end
 
 --- 获取指定buff或debuff在目标身上的层数
 ---@param t string 指定的目标
@@ -116,9 +116,10 @@ end
 ---@param t string 指定的目标
 function macroTorch.listTargetDebuffs(t)
     for i = 1, 40 do
-        local d = UnitDebuff(t, i)
+        local d, e, f, g = UnitDebuff(t, i)
         if d then
-            macroTorch.show('Found Debuff: ' .. tostring(d))
+            macroTorch.show('Found Debuff: ' ..
+                tostring(d) .. ' | ' .. tostring(e) .. ' | ' .. tostring(f) .. ' | ' .. tostring(g))
         end
     end
 end
@@ -140,10 +141,11 @@ end
 ---@param t string 指定的目标
 function macroTorch.listTargetBuffs(t)
     for i = 1, 40 do
-        local b = UnitBuff(t, i)
+        local b, c, d = UnitBuff(t, i)
         if b then
-            macroTorch.show('Found Buff: ' .. tostring(b))
+            macroTorch.show('Found Buff: ' ..
+            tostring(b) ..
+            ' | ' .. tostring(c) .. ' | ' .. tostring(d) .. ' | Time Left: ' .. tostring(GetPlayerBuffTimeLeft(i)))
         end
     end
 end
-
