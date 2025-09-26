@@ -12,7 +12,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-]] --   
+]] --
 ---猎人专用---
 --- 钉刺逻辑
 function macroTorch.hunterStings()
@@ -37,6 +37,7 @@ function macroTorch.hunterStings()
         end
     end
 end
+
 function macroTorch.MeleeSeq()
     if HasPetUI() and not UnitIsDead('pet') then
         PetDefensiveMode()
@@ -49,6 +50,7 @@ function macroTorch.MeleeSeq()
     CastSpellByName('猫鼬撕咬')
     CastSpellByName('猛禽一击')
 end
+
 function macroTorch.RangedSeq()
     if HasPetUI() and not UnitIsDead('pet') then
         PetDefensiveMode()
@@ -63,6 +65,7 @@ function macroTorch.RangedSeq()
     --CastSpellByName('奥术射击')
     Quiver.CastNoClip('Arcane Shot')
 end
+
 --- hunter attack all in one
 ---@param pvp boolean whether or not attack player targets
 function macroTorch.hunterAtk(pvp)
@@ -129,4 +132,33 @@ end
 function macroTorch.hunterCtrl()
     macroTorch.castIfBuffAbsent('target', '震荡射击', 'Devour')
     CastSpellByName('Intimidation')
+end
+
+--the param is around -0.09 ~ -0.1 with 160ms lag
+--the lesser param, the harder for ss to fire
+--the param should adjust with lag
+function macroTorch.qqShot()
+    local a, b = Quiver.GetSecondsRemainingShoot();
+    if a then
+        local x, y, z = GetNetStats();
+        local bias = (z - 160) / 1000;
+        if b < (-0.1 + bias) then
+            CastSpellByName('Steady Shot');
+        end
+    else
+        lazyScript.SlashCommand('betweenSteady');
+        CastSpellByName('Steady Shot');
+    end
+end
+
+function macroTorch.meleeOrRangedAtk(pvp)
+    local t = 'target'
+    if macroTorch.isTargetValidCanAttack(t) and (pvp or not macroTorch.isPlayerOrPlayerControlled(t)) then
+        if CheckInteractDistance(t, 3) then
+            lazyScript.SlashCommand('meleeAtk')
+        else
+            lazyScript.SlashCommand('rangedAtkPre')
+            macroTorch.qqShot()
+        end
+    end
 end
