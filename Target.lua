@@ -83,6 +83,18 @@ function macroTorch.isBuffOrDebuffPresent(t, txt)
     return false
 end
 
+-- --- 判断指定的buff或debuff在指定的目标身上还剩多少持续时间
+-- ---@param t string 指定的目标
+-- ---@param txt string 指定的buff/debuff texture文本, 可以是部分内容, 使用string.find匹配
+-- function macroTorch.getBuffOrDebuffDuration(t, txt)
+--     for i = 1, 40 do
+--         if string.find(tostring(UnitDebuff(t, i)), txt) or string.find(tostring(UnitBuff(t, i)), txt) then
+--             return GetPlayerBuffTimeLeft(i)
+--         end
+--     end
+--     return 0
+-- end
+
 --- 获取指定buff或debuff在目标身上的层数
 ---@param t string 指定的目标
 ---@param txt string 指定的buff/debuff texture文本, 可以是部分内容, 使用string.find匹配
@@ -135,16 +147,3 @@ function macroTorch.listTargetBuffs(t)
     end
 end
 
-local BLEED_NO_EFFECT_CREATURE_TYPES = { 'Undead', 'Mechanical', 'Elemental' }
---- test if the target takes no effect from bleeding
---- @param t string
---- @return boolean
-function macroTorch.isBleedingNoEffectTarget(t)
-    local creatureType = tostring(UnitCreatureType(t))
-    for _, v in ipairs(BLEED_NO_EFFECT_CREATURE_TYPES) do
-        if string.find(creatureType, v) then
-            return true
-        end
-    end
-    return false
-end

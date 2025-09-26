@@ -84,3 +84,54 @@ function macroTorch.xdHeal()
         macroTorch.xdHealSeq(true)
     end
 end
+
+--- The 'E' key regular dps function for feral cat druid
+--- @param startMove boolean the move to be used to start a combat
+--- @param regularMove boolean regular move to fight during a combat
+function macroTorch.catAtk(startMove, regularMove)
+    local p = 'player'
+    local t = 'target'
+    local prowling = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Ambush')
+    -- 1.health & mana saver in combat *
+    if macroTorch.player.isInCombat and not prowling then
+        macroTorch.useItemIfHealthPercentLessThan(p, 20, 'Healing Potion')
+        macroTorch.useItemIfManaPercentLessThan(p, 20, 'Mana Potion')
+    end
+    -- 2.targetEnemy *
+    if not macroTorch.isTargetValidCanAttack(t) then
+        ClearTarget()
+        TargetNearestEnemy()
+    else
+        -- 3.keep autoAttack, in combat & not prowling *
+        if not prowling then
+            macroTorch.player.startAutoAtk()
+        end
+        -- 4.rushMod, incuding trinckets, berserk and potions *
+        if IsShiftKeyDown() then
+            UseInventoryItem(14)
+            CastSpellByName('Berserk')
+        end
+        -- 5.starterMod
+        if prowling then
+            CastSpellByName(startMove)
+        end
+        -- 6.energy res mod
+        -- TODO
+        -- 7.termMod
+        lazyScript.SlashCommand('termMod')
+        -- 8.OT mod
+        lazyScript.SlashCommand('otMod')
+        -- 9.combatBuffMod - tiger's fury *
+        if not macroTorch.isBuffOrDebuffPresent(p, 'Ability_Mount_JungleTiger') and macroTorch.target.isInMediumRange then
+            CastSpellByName('Tiger\'s Fury')
+        end
+        -- 10.debuffMod, including rip, rake and FF
+        if macroTorch.player.isInCombat and not prowling then
+            lazyScript.SlashCommand('debuffMod')
+        end
+        -- 11.regular attack tech mod
+        if not prowling then
+            CastSpellByName(regularMove)
+        end
+    end
+end
