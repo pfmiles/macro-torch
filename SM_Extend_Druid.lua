@@ -98,6 +98,9 @@ function macroTorch.catAtk(startMove, regularMove)
     local tigerLeft = 0
     if tigerPresent then
         tigerLeft = 18 - (GetTime() - macroTorch.tigerTimer)
+        if tigerLeft < 0 then
+            tigerLeft = 0
+        end
     else
         tigerLeft = 0
     end
@@ -152,16 +155,79 @@ function macroTorch.catAtk(startMove, regularMove)
         end
         -- 10.debuffMod, including rip, rake and FF
         if player.isInCombat and not prowling then
-            lazyScript.SlashCommand('debuffMod')
+            macroTorch.keepRip(comboPoints, player)
+            macroTorch.keepRake(player)
+            macroTorch.keepFF(ooc, player)
         end
         -- 11.oocMod
         if not prowling and ooc and isBehind and comboPoints < 5 then
-            macroTorch.show('ooc Shred!!!')
             CastSpellByName('Shred')
         end
         -- 12.regular attack tech mod
         if not prowling and comboPoints < 5 and rakePresent then
             CastSpellByName(regularMove)
         end
+    end
+end
+
+function macroTorch.keepRip(comboPoints, player)
+    local ripTimeLeft = 0
+    if not not macroTorch.ripTimer then
+        ripTimeLeft = 18 - (GetTime() - macroTorch.ripTimer)
+        if ripTimeLeft < 0 then
+            ripTimeLeft = 0
+        end
+    else
+        ripTimeLeft = 0
+    end
+
+    if ripTimeLeft > 0 or comboPoints < 5 or macroTorch.isImmune('Rip') then
+        return
+    end
+
+    if SpellReady('Rip') and player.mana >= 30 then
+        CastSpellByName('Rip')
+        macroTorch.ripTimer = GetTime()
+    end
+end
+
+function macroTorch.keepRake(player)
+    local rakeTimeLeft = 0
+    if not not macroTorch.rakeTimer then
+        rakeTimeLeft = 9 - (GetTime() - macroTorch.rakeTimer)
+        if rakeTimeLeft < 0 then
+            rakeTimeLeft = 0
+        end
+    else
+        rakeTimeLeft = 0
+    end
+
+    if rakeTimeLeft > 0 or macroTorch.isImmune('Rake') then
+        return
+    end
+
+    if SpellReady('Rake') and player.mana >= 35 then
+        CastSpellByName('Rake')
+        macroTorch.rakeTimer = GetTime()
+    end
+end
+
+function macroTorch.keepFF(ooc, player)
+    local ffTimeLeft = 0
+    if not not macroTorch.ffTimer then
+        ffTimeLeft = 40 - (GetTime() - macroTorch.ffTimer)
+        if ffTimeLeft < 0 then
+            ffTimeLeft = 0
+        end
+    else
+        ffTimeLeft = 0
+    end
+
+    if ffTimeLeft > 0.2 or ooc or player.mana > 23 or macroTorch.isImmune('Faerie Fire (Feral)') then
+        return
+    end
+    if SpellReady('Faerie Fire (Feral)') then
+        CastSpellByName('Faerie Fire (Feral)')
+        macroTorch.ffTimer = GetTime()
     end
 end

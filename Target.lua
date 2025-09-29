@@ -149,3 +149,10 @@ function macroTorch.listTargetBuffs(t)
         end
     end
 end
+
+--- 判断当前目标是否对指定的技能免疫
+---@param spellName string 技能名称
+---@return boolean true/false
+function macroTorch.isImmune(spellName)
+    return lazyScript.masks.IsImmune(spellName)(false)
+end
