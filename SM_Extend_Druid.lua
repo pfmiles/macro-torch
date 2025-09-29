@@ -93,6 +93,19 @@ function macroTorch.catAtk(startMove, regularMove)
     local t = 'target'
     local player = macroTorch.player
     local prowling = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Ambush')
+    local berserk = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Druid_Berserk')
+    local tigerPresent = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Mount_JungleTiger')
+    local tigerLeft = 0
+    if tigerPresent then
+        tigerLeft = 18 - (GetTime() - macroTorch.tigerTimer)
+    else
+        tigerLeft = 0
+    end
+    local rakePresent = macroTorch.isBuffOrDebuffPresent(t, 'Ability_Druid_Disembowel')
+    local comboPoints = GetComboPoints()
+    local ooc = macroTorch.isBuffOrDebuffPresent(p, 'Spell_Shadow_ManaBurn')
+    local isBehind = macroTorch.isTargetValidCanAttack(t) and UnitXP('behind', 'player', 'target') or false
+
     -- 1.health & mana saver in combat *
     if player.isInCombat and not prowling then
         macroTorch.useItemIfHealthPercentLessThan(p, 20, 'Healing Potion')
@@ -109,42 +122,45 @@ function macroTorch.catAtk(startMove, regularMove)
         end
         -- 4.rushMod, incuding trinckets, berserk and potions *
         if IsShiftKeyDown() then
+            if not berserk then
+                CastSpellByName('Berserk')
+            end
             UseInventoryItem(14)
-            CastSpellByName('Berserk')
         end
         -- 5.starterMod
         if prowling then
             CastSpellByName(startMove)
         end
-        -- 6.energy res mod
-        if not prowling and macroTorch.getBuffDuration(p, 'Ability_Mount_JungleTiger') < 2 then
-            -- TODO 后续需要在刚tick完的1s之内Reshift从而不卡tick回能，也要找到cat状态下区分energy和mana的办法,目前这里的mana在cat形态下其实是energy
-            if macroTorch.isBuffOrDebuffPresent(p, 'Ability_Druid_Berserk') then
-                if player.mana < 20 then
-                    macroTorch.show('Reshift!!!')
-                    CastSpellByName('Reshift')
-                end
-            else
-                if player.mana < 30 then
-                    macroTorch.show('Reshift!!!')
-                    CastSpellByName('Reshift')
-                end
+        -- 6.termMod: term on rip or killshot
+        lazyScript.SlashCommand('termMod')
+        -- 7.OT mod
+        lazyScript.SlashCommand('otMod')
+        -- 8.energy res mod
+        if not prowling and not berserk and tigerLeft < 3.5 then
+            -- clean all energy before reshift
+            lazyScript.SlashCommand('cleanBeforeReshift')
+            -- the player.mana here actually means energy
+            if player.mana < 23 and tigerLeft < 1.5 then
+                CastSpellByName('Reshift')
+                macroTorch.show('Reshift!!! energy = ' .. player.mana .. ', tigerLeft = ' .. tigerLeft)
             end
         end
-        -- 7.termMod
-        lazyScript.SlashCommand('termMod')
-        -- 8.OT mod
-        lazyScript.SlashCommand('otMod')
         -- 9.combatBuffMod - tiger's fury *
-        if not macroTorch.isBuffOrDebuffPresent(p, 'Ability_Mount_JungleTiger') and macroTorch.target.isInMediumRange then
+        if not tigerPresent and macroTorch.target.isInMediumRange and player.mana >= 30 then
             CastSpellByName('Tiger\'s Fury')
+            macroTorch.tigerTimer = GetTime()
         end
         -- 10.debuffMod, including rip, rake and FF
         if player.isInCombat and not prowling then
             lazyScript.SlashCommand('debuffMod')
         end
-        -- 11.regular attack tech mod
-        if not prowling then
+        -- 11.oocMod
+        if not prowling and ooc and isBehind and comboPoints < 5 then
+            macroTorch.show('ooc Shred!!!')
+            CastSpellByName('Shred')
+        end
+        -- 12.regular attack tech mod
+        if not prowling and comboPoints < 5 and rakePresent then
             CastSpellByName(regularMove)
         end
     end
