@@ -14,81 +14,10 @@
    limitations under the License.
 ]] --
 ---小德专用start---
---- 近战动作策略
-function macroTorch.xdMeleeSeq()
-    local t = 'target'
-    local p = 'player'
-    macroTorch.startAutoAtk()
-    if macroTorch.isBuffOrDebuffPresent(p, 'Racial_BearForm') then
-        --- 熊形态
-        CastSpellByName('低吼')
-        macroTorch.castIfBuffAbsent(t, '挫志咆哮', 'Druid_DemoralizingRoar')
-        CastSpellByName('槌击')
-    else
-        --- 人形态
-    end
-end
-
---- 远程动作策略
-function macroTorch.xdRangedSeq()
-    local t = 'target'
-    local p = 'player'
-    macroTorch.startAutoAtk()
-    if macroTorch.isBuffOrDebuffPresent(p, 'Racial_BearForm') then
-        --- 熊形态
-    else
-        --- 人形态
-        CastSpellByName('愤怒')
-    end
-end
-
-function macroTorch.xdAtk()
-    local t = 'target'
-    if macroTorch.isTargetValidCanAttack(t) then
-        if CheckInteractDistance(t, 3) then
-            macroTorch.xdMeleeSeq()
-        else
-            macroTorch.xdRangedSeq()
-        end
-    else
-        TargetNearestEnemy()
-        if macroTorch.isTargetValidCanAttack(t) then
-            if CheckInteractDistance(t, 3) then
-                macroTorch.xdMeleeSeq()
-            else
-                macroTorch.xdRangedSeq()
-            end
-        end
-    end
-end
-
---- 小德治疗序列
----@param onSelf boolean 是否对自己释放
-function macroTorch.xdHealSeq(onSelf)
-    local t
-    if (onSelf) then
-        t = 'player'
-    else
-        t = 'target'
-    end
-    if not macroTorch.isBuffOrDebuffPresent(t, 'Nature_ResistNature') then
-        CastSpellByName('愈合', onSelf)
-    end
-    CastSpellByName('治疗之触', onSelf)
-end
-
-function macroTorch.xdHeal()
-    if macroTorch.isTargetValidFriendly('target') then
-        macroTorch.xdHealSeq(false)
-    else
-        macroTorch.xdHealSeq(true)
-    end
-end
 
 --- The 'E' key regular dps function for feral cat druid
 --- @param startMove boolean the move to be used to start a combat
---- @param regularMove boolean regular move to fight during a combat
-function macroTorch.catAtk(startMove, regularMove)
+function macroTorch.catAtk(startMove)
     local p = 'player'
     local t = 'target'
     local player = macroTorch.player
@@ -114,7 +43,7 @@ function macroTorch.catAtk(startMove, regularMove)
         end
         -- 4.rushMod, incuding trinckets, berserk and potions *
         if IsShiftKeyDown() then
-            if not berserk then
+            if not berserk and SpellReady('Berserk') then
                 CastSpellByName('Berserk')
             end
             UseInventoryItem(14)
@@ -123,146 +52,131 @@ function macroTorch.catAtk(startMove, regularMove)
         if prowling then
             CastSpellByName(startMove)
         end
-        -- 6.termMod: term on rip or killshot
-        macroTorch.termMod(comboPoints, player)
-        -- 7.OT mod
-        lazyScript.SlashCommand('otMod')
-        -- 8.energy res mod
-        if not prowling and not berserk and macroTorch.tigerLeft() < 3.5 then
-            macroTorch.energyReshift(player, ooc, isBehind, comboPoints)
+        -- 7.oocMod
+        if not prowling and ooc then
+            macroTorch.cp5ReadyBite(comboPoints)
+            if isBehind then
+                if SpellReady('Shred') then
+                    CastSpellByName('Shred')
+                end
+            else
+                if SpellReady('Claw') then
+                    CastSpellByName('Claw')
+                end
+            end
         end
+        -- 6.termMod: term on rip or killshot
+        macroTorch.termMod(comboPoints)
+        -- 8.OT mod
+        lazyScript.SlashCommand('otMod')
         -- 9.combatBuffMod - tiger's fury *
         if macroTorch.target.isInMediumRange then
-            macroTorch.keepTigerFury(player)
+            macroTorch.keepTigerFury()
         end
         -- 10.debuffMod, including rip, rake and FF
         if player.isInCombat and not prowling then
-            macroTorch.keepRip(comboPoints, player)
-            macroTorch.keepRake(player)
+            macroTorch.keepRip(comboPoints)
+            macroTorch.keepRake()
             macroTorch.keepFF(ooc, player)
         end
-        -- 11.oocMod
-        if not prowling and ooc and isBehind and comboPoints < 5 then
-            CastSpellByName('Shred')
+        -- 11.regular attack tech mod
+        if not prowling and comboPoints < 5 and macroTorch.isRakePresent() then
+            macroTorch.safeClaw()
         end
-        -- 12.regular attack tech mod
-        if not prowling and comboPoints < 5 and macroTorch.isRakePresent() and SpellReady('Claw') and player.mana >= 40 then
-            CastSpellByName('Claw')
+        -- 12.energy res mod
+        if not prowling and not berserk and macroTorch.tigerLeft() < 3.5 then
+            macroTorch.energyReshift(player, isBehind, comboPoints)
         end
     end
 end
 
-function macroTorch.termMod(comboPoints, player)
-    if macroTorch.biteKillshot(comboPoints, player) then
+function macroTorch.termMod(comboPoints)
+    if macroTorch.biteKillshot(comboPoints) then
         return
     else
-        macroTorch.cp5Bite(comboPoints, player)
+        macroTorch.cp5Bite(comboPoints)
     end
 end
 
-function macroTorch.cp5Bite(comboPoints, player)
-    if comboPoints == 5 and SpellReady('Ferocious Bite') and player.mana >= 35 and (macroTorch.isImmune('Rip') or macroTorch.isRipPresent()) then
-        CastSpellByName('Ferocious Bite')
-        if macroTorch.isRipPresent() then
-            macroTorch.ripTimer = GetTime()
-        end
-        if macroTorch.isRakePresent() then
-            macroTorch.rakeTimer = GetTime()
-        end
+function macroTorch.cp5Bite(comboPoints)
+    if comboPoints == 5 and (macroTorch.isImmune('Rip') or macroTorch.isRipPresent()) then
+        macroTorch.safeBite()
     end
 end
 
-function macroTorch.biteKillshot(comboPoints, player)
+-- for ooc only
+function macroTorch.cp5ReadyBite(comboPoints)
+    if comboPoints == 5 and (macroTorch.isImmune('Rip') or macroTorch.isRipPresent()) then
+        if SpellReady('Ferocious Bite') then
+            CastSpellByName('Ferocious Bite')
+            if macroTorch.isRipPresent() then
+                macroTorch.ripTimer = GetTime()
+            end
+            if macroTorch.isRakePresent() then
+                macroTorch.rakeTimer = GetTime()
+            end
+            return true
+        end
+        return false
+    end
+end
+
+function macroTorch.biteKillshot(comboPoints)
     local targetHealth = macroTorch.target.health
-    if player.mana >= 35 and SpellReady('Ferocious Bite') and
-        (comboPoints == 1 and targetHealth < 1446 or
-            comboPoints == 2 and targetHealth < 1700 or
-            comboPoints == 3 and targetHealth < 1960 or
-            comboPoints == 4 and targetHealth < 2214 or
-            comboPoints == 5 and targetHealth < 2470) then
-        CastSpellByName('Ferocious Bite')
-        -- refresh rip & rake timer if they present
-        if macroTorch.isRipPresent() then
-            macroTorch.ripTimer = GetTime()
-        end
-        if macroTorch.isRakePresent() then
-            macroTorch.rakeTimer = GetTime()
-        end
-        return true
+    if comboPoints == 1 and targetHealth < 1446 or
+        comboPoints == 2 and targetHealth < 1700 or
+        comboPoints == 3 and targetHealth < 1960 or
+        comboPoints == 4 and targetHealth < 2214 or
+        comboPoints == 5 and targetHealth < 2470 then
+        return macroTorch.safeBite()
     else
         return false
     end
 end
 
-function macroTorch.energyReshift(player, ooc, isBehind, comboPoints)
-    -- clean all energy before reshift
-    macroTorch.cleanBeforeReshift(ooc, isBehind, player, comboPoints)
-    -- the player.mana here actually means energy
-    if player.mana < 23 and macroTorch.tigerLeft() < 1.5 then
-        CastSpellByName('Reshift')
-        macroTorch.show('Reshift!!! energy = ' .. player.mana .. ', tigerLeft = ' .. macroTorch.tigerLeft())
+function macroTorch.energyReshift(player, isBehind, comboPoints)
+    macroTorch.cleanBeforeReshift(isBehind, comboPoints)
+    if player.mana < 23 then
+        macroTorch.safeReshift()
     end
 end
 
-function macroTorch.cleanBeforeReshift(ooc, isBehind, player, comboPoints)
-    if ooc then
-        if isBehind then
-            CastSpellByName('Shred')
-        else
-            CastSpellByName('Claw')
-        end
-    end
-    macroTorch.keepRake(player)
-    macroTorch.termMod(comboPoints, player)
-    if isBehind and player.mana >= 48 then
-        CastSpellByName('Shred')
-    end
-    if player.mana >= 40 then
-        CastSpellByName('Claw')
+function macroTorch.cleanBeforeReshift(isBehind, comboPoints)
+    macroTorch.termMod(comboPoints)
+    macroTorch.keepRake()
+    if isBehind then
+        macroTorch.safeShred()
+    else
+        macroTorch.safeClaw()
     end
 end
 
-function macroTorch.keepTigerFury(player)
+function macroTorch.keepTigerFury()
     if macroTorch.isTigerPresent() then
         return
     end
-
-    if SpellReady('Tiger\'s Fury') and player.mana >= 30 then
-        CastSpellByName('Tiger\'s Fury')
-        macroTorch.tigerTimer = GetTime()
-    end
+    macroTorch.safeTigerFury()
 end
 
-function macroTorch.keepRip(comboPoints, player)
+function macroTorch.keepRip(comboPoints)
     if macroTorch.isRipPresent() or comboPoints < 5 or macroTorch.isImmune('Rip') then
         return
     end
-
-    if SpellReady('Rip') and player.mana >= 30 then
-        CastSpellByName('Rip')
-        macroTorch.ripTimer = GetTime()
-    end
+    macroTorch.safeRip()
 end
 
-function macroTorch.keepRake(player)
+function macroTorch.keepRake()
     if macroTorch.isRakePresent() or macroTorch.isImmune('Rake') then
         return
     end
-
-    if SpellReady('Rake') and player.mana >= 35 then
-        CastSpellByName('Rake')
-        macroTorch.rakeTimer = GetTime()
-    end
+    macroTorch.safeRake()
 end
 
 function macroTorch.keepFF(ooc, player)
-    if (macroTorch.isFFPresent() and macroTorch.ffLeft() > 0.2) or ooc or player.mana > 23 or macroTorch.isImmune('Faerie Fire (Feral)') then
+    if (macroTorch.isFFPresent() and macroTorch.ffLeft() > 0.2) or ooc or player.mana >= 40 or macroTorch.isImmune('Faerie Fire (Feral)') then
         return
     end
-    if SpellReady('Faerie Fire (Feral)') then
-        CastSpellByName('Faerie Fire (Feral)')
-        macroTorch.ffTimer = GetTime()
-    end
+    macroTorch.safeFF()
 end
 
 function macroTorch.isTigerPresent()
@@ -317,7 +231,7 @@ function macroTorch.rakeLeft()
 end
 
 function macroTorch.isFFPresent()
-    return buffed('Faerie Fire (Feral)', 'target') and macroTorch.ffLeft() > 0
+    return buffed('Faerie Fire ', 'target') and macroTorch.ffLeft() > 0
 end
 
 function macroTorch.ffLeft()
@@ -331,4 +245,80 @@ function macroTorch.ffLeft()
         ffLeft = 0
     end
     return ffLeft
+end
+
+function macroTorch.safeReshift()
+    if SpellReady('Reshift') and macroTorch.tigerLeft() < 1.5 then
+        CastSpellByName('Reshift')
+        macroTorch.show('Reshift!!! energy = ' .. macroTorch.player.mana .. ', tigerLeft = ' .. macroTorch.tigerLeft())
+        return true
+    end
+    return false
+end
+
+function macroTorch.safeShred()
+    if SpellReady('Shred') and macroTorch.player.mana >= 48 then
+        CastSpellByName('Shred')
+        return true
+    end
+    return false
+end
+
+function macroTorch.safeClaw()
+    if SpellReady('Claw') and macroTorch.player.mana >= 40 then
+        CastSpellByName('Claw')
+        return true
+    end
+    return false
+end
+
+function macroTorch.safeRake()
+    if SpellReady('Rake') and macroTorch.player.mana >= 35 then
+        CastSpellByName('Rake')
+        macroTorch.rakeTimer = GetTime()
+        return true
+    end
+    return false
+end
+
+function macroTorch.safeRip()
+    if SpellReady('Rip') and macroTorch.player.mana >= 30 then
+        CastSpellByName('Rip')
+        macroTorch.ripTimer = GetTime()
+        return true
+    end
+    return false
+end
+
+function macroTorch.safeBite()
+    if SpellReady('Ferocious Bite') and macroTorch.player.mana >= 35 then
+        CastSpellByName('Ferocious Bite')
+        if macroTorch.isRipPresent() then
+            macroTorch.ripTimer = GetTime()
+        end
+        if macroTorch.isRakePresent() then
+            macroTorch.rakeTimer = GetTime()
+        end
+        return true
+    end
+    return false
+end
+
+function macroTorch.safeFF()
+    if SpellReady('Faerie Fire (Feral)') then
+        -- CastSpellByName('Faerie Fire (Feral)')
+        lazyScript.SlashCommand('ff')
+        macroTorch.ffTimer = GetTime()
+        return true
+    end
+    return false
+end
+
+function macroTorch.safeTigerFury()
+    if SpellReady('Tiger\'s Fury') and macroTorch.player.mana >= 30 then
+        CastSpellByName('Tiger\'s Fury')
+        macroTorch.tigerTimer = GetTime()
+        return true
+    end
+    return false
 end
