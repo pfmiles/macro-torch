@@ -15,3 +15,11 @@
 ]] --
 
 macroTorch.env = {}
+
+--- all events handle globally
+function macroTorch.eventHandle(event)
+    if event == 'PLAYER_REGEN_ENABLED' then
+        macroTorch.context = {}
+        macroTorch.show('macroTorch.context cleared!')
+    end
+end

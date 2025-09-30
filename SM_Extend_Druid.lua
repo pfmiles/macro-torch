@@ -111,10 +111,10 @@ function macroTorch.cp5ReadyBite(comboPoints)
         if SpellReady('Ferocious Bite') then
             CastSpellByName('Ferocious Bite')
             if macroTorch.isRipPresent() then
-                macroTorch.ripTimer = GetTime()
+                macroTorch.context.ripTimer = GetTime()
             end
             if macroTorch.isRakePresent() then
-                macroTorch.rakeTimer = GetTime()
+                macroTorch.context.rakeTimer = GetTime()
             end
             return true
         end
@@ -186,8 +186,8 @@ end
 
 function macroTorch.tigerLeft()
     local tigerLeft = 0
-    if not not macroTorch.tigerTimer then
-        tigerLeft = 18 - (GetTime() - macroTorch.tigerTimer)
+    if not not macroTorch.context.tigerTimer then
+        tigerLeft = 18 - (GetTime() - macroTorch.context.tigerTimer)
         if tigerLeft < 0 then
             tigerLeft = 0
         end
@@ -203,8 +203,8 @@ end
 
 function macroTorch.ripLeft()
     local ripLeft = 0
-    if not not macroTorch.ripTimer then
-        ripLeft = 18 - (GetTime() - macroTorch.ripTimer)
+    if not not macroTorch.context.ripTimer then
+        ripLeft = 18 - (GetTime() - macroTorch.context.ripTimer)
         if ripLeft < 0 then
             ripLeft = 0
         end
@@ -220,8 +220,8 @@ end
 
 function macroTorch.rakeLeft()
     local rakeLeft = 0
-    if not not macroTorch.rakeTimer then
-        rakeLeft = 9 - (GetTime() - macroTorch.rakeTimer)
+    if not not macroTorch.context.rakeTimer then
+        rakeLeft = 9 - (GetTime() - macroTorch.context.rakeTimer)
         if rakeLeft < 0 then
             rakeLeft = 0
         end
@@ -237,8 +237,8 @@ end
 
 function macroTorch.ffLeft()
     local ffLeft = 0
-    if not not macroTorch.ffTimer then
-        ffLeft = 40 - (GetTime() - macroTorch.ffTimer)
+    if not not macroTorch.context.ffTimer then
+        ffLeft = 40 - (GetTime() - macroTorch.context.ffTimer)
         if ffLeft < 0 then
             ffLeft = 0
         end
@@ -276,7 +276,7 @@ end
 function macroTorch.safeRake()
     if SpellReady('Rake') and macroTorch.player.mana >= 35 then
         CastSpellByName('Rake')
-        macroTorch.rakeTimer = GetTime()
+        macroTorch.context.rakeTimer = GetTime()
         return true
     end
     return false
@@ -285,7 +285,7 @@ end
 function macroTorch.safeRip()
     if SpellReady('Rip') and macroTorch.player.mana >= 30 then
         CastSpellByName('Rip')
-        macroTorch.ripTimer = GetTime()
+        macroTorch.context.ripTimer = GetTime()
         return true
     end
     return false
@@ -295,10 +295,10 @@ function macroTorch.safeBite()
     if SpellReady('Ferocious Bite') and macroTorch.player.mana >= 35 then
         CastSpellByName('Ferocious Bite')
         if macroTorch.isRipPresent() then
-            macroTorch.ripTimer = GetTime()
+            macroTorch.context.ripTimer = GetTime()
         end
         if macroTorch.isRakePresent() then
-            macroTorch.rakeTimer = GetTime()
+            macroTorch.context.rakeTimer = GetTime()
         end
         return true
     end
@@ -309,7 +309,7 @@ function macroTorch.safeFF()
     if SpellReady('Faerie Fire (Feral)') then
         -- CastSpellByName('Faerie Fire (Feral)')
         lazyScript.SlashCommand('ff')
-        macroTorch.ffTimer = GetTime()
+        macroTorch.context.ffTimer = GetTime()
         return true
     end
     return false
@@ -318,8 +318,15 @@ end
 function macroTorch.safeTigerFury()
     if SpellReady('Tiger\'s Fury') and macroTorch.player.mana >= 30 then
         CastSpellByName('Tiger\'s Fury')
-        macroTorch.tigerTimer = GetTime()
+        macroTorch.context.tigerTimer = GetTime()
         return true
     end
     return false
 end
+
+-- local h, m, p, q, l, k = UnitHealth, UnitHealthMax, "player"; for i = 1, GetNumRaidMembers() do
+--     q = "raid" .. i; l = m(p) - h(p); k = m(q) - h(q); if CheckInteractDistance(q, 4) and l < k and h(q) > 1 then
+--         p = q; l = k;
+--     end
+-- end
+-- TargetUnit(p); CastSpellByName("治疗链(等级 " .. (l > 500 and 3 or 1) .. ")")
