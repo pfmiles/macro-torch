@@ -21,6 +21,12 @@ function macroTorch.catAtk(startMove)
     local p = 'player'
     local t = 'target'
     macroTorch.RESHIFT_WINDOW = 2.3
+    macroTorch.CLAW_E = 37
+    macroTorch.SHRED_E = 48
+    macroTorch.RAKE_E = 32
+    macroTorch.BITE_E = 35
+    macroTorch.RIP_E = 30
+    macroTorch.TIGER_E = 30
     local player = macroTorch.player
     local prowling = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Ambush')
     local berserk = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Druid_Berserk')
@@ -174,7 +180,7 @@ function macroTorch.keepRake()
 end
 
 function macroTorch.keepFF(ooc, player)
-    if (macroTorch.isFFPresent() and macroTorch.ffLeft() > 0.2) or ooc or player.mana >= 40 or macroTorch.isImmune('Faerie Fire (Feral)') or macroTorch.tigerLeft() < macroTorch.RESHIFT_WINDOW then
+    if (macroTorch.isFFPresent() and macroTorch.ffLeft() > 0.2) or ooc or player.mana >= macroTorch.CLAW_E or macroTorch.isImmune('Faerie Fire (Feral)') or macroTorch.tigerLeft() < macroTorch.RESHIFT_WINDOW then
         return
     end
     macroTorch.safeFF()
@@ -258,7 +264,7 @@ function macroTorch.safeReshift()
 end
 
 function macroTorch.safeShred()
-    if SpellReady('Shred') and macroTorch.player.mana >= 48 then
+    if SpellReady('Shred') and macroTorch.player.mana >= macroTorch.SHRED_E then
         CastSpellByName('Shred')
         return true
     end
@@ -266,7 +272,7 @@ function macroTorch.safeShred()
 end
 
 function macroTorch.safeClaw()
-    if SpellReady('Claw') and macroTorch.player.mana >= 40 then
+    if SpellReady('Claw') and macroTorch.player.mana >= macroTorch.CLAW_E then
         CastSpellByName('Claw')
         return true
     end
@@ -274,7 +280,7 @@ function macroTorch.safeClaw()
 end
 
 function macroTorch.safeRake()
-    if SpellReady('Rake') and macroTorch.player.mana >= 35 then
+    if SpellReady('Rake') and macroTorch.player.mana >= macroTorch.RAKE_E then
         CastSpellByName('Rake')
         macroTorch.context.rakeTimer = GetTime()
         return true
@@ -283,7 +289,7 @@ function macroTorch.safeRake()
 end
 
 function macroTorch.safeRip()
-    if SpellReady('Rip') and macroTorch.player.mana >= 30 then
+    if SpellReady('Rip') and macroTorch.player.mana >= macroTorch.RIP_E then
         CastSpellByName('Rip')
         macroTorch.context.ripTimer = GetTime()
         return true
@@ -292,7 +298,7 @@ function macroTorch.safeRip()
 end
 
 function macroTorch.safeBite()
-    if SpellReady('Ferocious Bite') and macroTorch.player.mana >= 35 then
+    if SpellReady('Ferocious Bite') and macroTorch.player.mana >= macroTorch.BITE_E then
         CastSpellByName('Ferocious Bite')
         if macroTorch.isRipPresent() then
             macroTorch.context.ripTimer = GetTime()
@@ -316,7 +322,7 @@ function macroTorch.safeFF()
 end
 
 function macroTorch.safeTigerFury()
-    if SpellReady('Tiger\'s Fury') and macroTorch.player.mana >= 30 then
+    if SpellReady('Tiger\'s Fury') and macroTorch.player.mana >= macroTorch.TIGER_E then
         CastSpellByName('Tiger\'s Fury')
         macroTorch.context.tigerTimer = GetTime()
         return true
