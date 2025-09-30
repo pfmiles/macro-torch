@@ -20,6 +20,7 @@
 function macroTorch.catAtk(startMove)
     local p = 'player'
     local t = 'target'
+    macroTorch.RESHIFT_WINDOW = 2.3
     local player = macroTorch.player
     local prowling = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Ambush')
     local berserk = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Druid_Berserk')
@@ -84,7 +85,7 @@ function macroTorch.catAtk(startMove)
             macroTorch.safeClaw()
         end
         -- 12.energy res mod
-        if not prowling and not berserk and macroTorch.tigerLeft() < 3.5 then
+        if not prowling and not berserk and macroTorch.tigerLeft() < macroTorch.RESHIFT_WINDOW then
             macroTorch.energyReshift(player, isBehind, comboPoints)
         end
     end
@@ -136,7 +137,7 @@ end
 
 function macroTorch.energyReshift(player, isBehind, comboPoints)
     macroTorch.cleanBeforeReshift(isBehind, comboPoints)
-    if player.mana < 23 then
+    if player.mana <= 25 then
         macroTorch.safeReshift()
     end
 end
@@ -173,7 +174,7 @@ function macroTorch.keepRake()
 end
 
 function macroTorch.keepFF(ooc, player)
-    if (macroTorch.isFFPresent() and macroTorch.ffLeft() > 0.2) or ooc or player.mana >= 40 or macroTorch.isImmune('Faerie Fire (Feral)') then
+    if (macroTorch.isFFPresent() and macroTorch.ffLeft() > 0.2) or ooc or player.mana >= 40 or macroTorch.isImmune('Faerie Fire (Feral)') or macroTorch.tigerLeft() < macroTorch.RESHIFT_WINDOW then
         return
     end
     macroTorch.safeFF()
@@ -248,7 +249,7 @@ function macroTorch.ffLeft()
 end
 
 function macroTorch.safeReshift()
-    if SpellReady('Reshift') and macroTorch.tigerLeft() < 1.5 then
+    if SpellReady('Reshift') then
         CastSpellByName('Reshift')
         macroTorch.show('Reshift!!! energy = ' .. macroTorch.player.mana .. ', tigerLeft = ' .. macroTorch.tigerLeft())
         return true
