@@ -17,13 +17,32 @@
 macroTorch.Target = macroTorch.Unit:new("target")
 
 function macroTorch.Target:new()
+    -- the newly created target object
     local obj = {}
+    -- specify props & method finder of the newly defined Target class
     self.__index = self
-    setmetatable(obj, self)
+    -- set the metatable of the obj to the Target class, when method/field missing, try to find it firstly in TARGET_FIELD_FUNC_MAP, then in the Target class
+    setmetatable(obj, {
+        __index = function(t, k)
+            if macroTorch.TARGET_FIELD_FUNC_MAP[k] then
+                return macroTorch.TARGET_FIELD_FUNC_MAP[k](t)
+            end
+            local class_val = self[k]
+            if class_val then
+                return class_val
+            end
+        end
+    })
+    -- obj method def
+    -- TODO
     return obj
 end
 
 macroTorch.target = macroTorch.Target:new()
+
+-- target fields to function mapping
+macroTorch.TARGET_FIELD_FUNC_MAP = {
+}
 
 --- 判断当前目标是否正在攻击我
 ---@param t string 指定的目标
@@ -144,8 +163,8 @@ function macroTorch.listTargetBuffs(t)
         local b, c, d = UnitBuff(t, i)
         if b then
             macroTorch.show('Found Buff: ' ..
-            tostring(b) ..
-            ' | ' .. tostring(c) .. ' | ' .. tostring(d) .. ' | Time Left: ' .. tostring(GetPlayerBuffTimeLeft(i)))
+                tostring(b) ..
+                ' | ' .. tostring(c) .. ' | ' .. tostring(d) .. ' | Time Left: ' .. tostring(GetPlayerBuffTimeLeft(i)))
         end
     end
 end

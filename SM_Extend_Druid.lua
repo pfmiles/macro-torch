@@ -180,7 +180,7 @@ function macroTorch.keepRake()
 end
 
 function macroTorch.keepFF(ooc, player)
-    if (macroTorch.isFFPresent() and macroTorch.ffLeft() > 0.2) or ooc or player.mana >= macroTorch.CLAW_E or macroTorch.isImmune('Faerie Fire (Feral)') or macroTorch.tigerLeft() < macroTorch.RESHIFT_WINDOW then
+    if (macroTorch.isFFPresent() and macroTorch.ffLeft() > 0.2) or ooc or player.mana >= macroTorch.CLAW_E or macroTorch.isImmune('Faerie Fire (Feral)') or macroTorch.tigerLeft() < macroTorch.RESHIFT_WINDOW or not macroTorch.target.isNearBy then
         return
     end
     macroTorch.safeFF()
@@ -330,9 +330,11 @@ function macroTorch.safeTigerFury()
     return false
 end
 
--- local h, m, p, q, l, k = UnitHealth, UnitHealthMax, "player"; for i = 1, GetNumRaidMembers() do
---     q = "raid" .. i; l = m(p) - h(p); k = m(q) - h(q); if CheckInteractDistance(q, 4) and l < k and h(q) > 1 then
---         p = q; l = k;
---     end
--- end
--- TargetUnit(p); CastSpellByName("治疗链(等级 " .. (l > 500 and 3 or 1) .. ")")
+function macroTorch.groupCast(spellFunction)
+    -- local h, m, p, q, l, k = UnitHealth, UnitHealthMax, "player"; for i = 1, GetNumRaidMembers() do
+    --     q = "raid" .. i; l = m(p) - h(p); k = m(q) - h(q); if CheckInteractDistance(q, 4) and l < k and h(q) > 1 then
+    --         p = q; l = k;
+    --     end
+    -- end
+    -- TargetUnit(p); CastSpellByName("治疗链(等级 " .. (l > 500 and 3 or 1) .. ")")
+end
