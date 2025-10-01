@@ -160,7 +160,7 @@ macroTorch.UNIT_FIELD_FUNC_MAP = {
     end,
 
     -- conditinal props
-    ['isPlayer'] = function(self)
+    ['isPlayerControlled'] = function(self)
         return macroTorch.toBoolean(UnitIsPlayer(self.ref) or UnitPlayerControlled(self.ref))
     end,
     ['isCanAttack'] = function(self)
@@ -186,6 +186,9 @@ macroTorch.UNIT_FIELD_FUNC_MAP = {
     end,
     ['isInMediumRange'] = function(self)
         return macroTorch.toBoolean(CheckInteractDistance(self.ref, 2))
+    end,
+    ['isInLongRange'] = function(self)
+        return macroTorch.toBoolean(CheckInteractDistance(self.ref, 4))
     end,
     ['isDead'] = function(self)
         return macroTorch.toBoolean(UnitIsDead(self.ref))
