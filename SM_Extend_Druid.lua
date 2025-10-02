@@ -61,6 +61,7 @@ function macroTorch.catAtk(startMove)
         end
         -- 7.oocMod
         if not prowling and ooc then
+            macroTorch.readyBiteKillshot(comboPoints)
             macroTorch.cp5ReadyBite(comboPoints)
             if isBehind then
                 if SpellReady('Shred') then
@@ -114,28 +115,38 @@ end
 -- for ooc only
 function macroTorch.cp5ReadyBite(comboPoints)
     if comboPoints == 5 and (macroTorch.isImmune('Rip') or macroTorch.isRipPresent()) then
-        if SpellReady('Ferocious Bite') then
-            CastSpellByName('Ferocious Bite')
-            if macroTorch.isRipPresent() then
-                macroTorch.context.ripTimer = GetTime()
-            end
-            if macroTorch.isRakePresent() then
-                macroTorch.context.rakeTimer = GetTime()
-            end
-            return true
-        end
+        macroTorch.readyBite()
+    end
+end
+
+macroTorch.KS_CP1_Health = 1446
+macroTorch.KS_CP2_Health = 1700
+macroTorch.KS_CP3_Health = 1960
+macroTorch.KS_CP4_Health = 2214
+macroTorch.KS_CP5_Health = 2470
+
+function macroTorch.biteKillshot(comboPoints)
+    local targetHealth = macroTorch.target.health
+    if comboPoints == 1 and targetHealth < macroTorch.KS_CP1_Health or
+        comboPoints == 2 and targetHealth < macroTorch.KS_CP2_Health or
+        comboPoints == 3 and targetHealth < macroTorch.KS_CP3_Health or
+        comboPoints == 4 and targetHealth < macroTorch.KS_CP4_Health or
+        comboPoints == 5 and targetHealth < macroTorch.KS_CP5_Health then
+        return macroTorch.safeBite()
+    else
         return false
     end
 end
 
-function macroTorch.biteKillshot(comboPoints)
+-- for ooc only
+function macroTorch.readyBiteKillshot(comboPoints)
     local targetHealth = macroTorch.target.health
-    if comboPoints == 1 and targetHealth < 1446 or
-        comboPoints == 2 and targetHealth < 1700 or
-        comboPoints == 3 and targetHealth < 1960 or
-        comboPoints == 4 and targetHealth < 2214 or
-        comboPoints == 5 and targetHealth < 2470 then
-        return macroTorch.safeBite()
+    if comboPoints == 1 and targetHealth < macroTorch.KS_CP1_Health or
+        comboPoints == 2 and targetHealth < macroTorch.KS_CP2_Health or
+        comboPoints == 3 and targetHealth < macroTorch.KS_CP3_Health or
+        comboPoints == 4 and targetHealth < macroTorch.KS_CP4_Health or
+        comboPoints == 5 and targetHealth < macroTorch.KS_CP5_Health then
+        return macroTorch.readyBite()
     else
         return false
     end
@@ -180,7 +191,12 @@ function macroTorch.keepRake()
 end
 
 function macroTorch.keepFF(ooc, player)
-    if (macroTorch.isFFPresent() and macroTorch.ffLeft() > 0.2) or ooc or player.mana >= macroTorch.CLAW_E or macroTorch.isImmune('Faerie Fire (Feral)') or macroTorch.tigerLeft() < macroTorch.RESHIFT_WINDOW or not macroTorch.target.isNearBy then
+    if (macroTorch.isFFPresent() and macroTorch.ffLeft() > 0.2)
+        or ooc or player.mana >= macroTorch.CLAW_E
+        or macroTorch.isImmune('Faerie Fire (Feral)')
+        or macroTorch.tigerLeft() < macroTorch.RESHIFT_WINDOW
+        or not macroTorch.target.isNearBy
+        or not macroTorch.player.isInCombat then
         return
     end
     macroTorch.safeFF()
@@ -299,6 +315,20 @@ end
 
 function macroTorch.safeBite()
     if SpellReady('Ferocious Bite') and macroTorch.player.mana >= macroTorch.BITE_E then
+        CastSpellByName('Ferocious Bite')
+        if macroTorch.isRipPresent() then
+            macroTorch.context.ripTimer = GetTime()
+        end
+        if macroTorch.isRakePresent() then
+            macroTorch.context.rakeTimer = GetTime()
+        end
+        return true
+    end
+    return false
+end
+
+function macroTorch.readyBite()
+    if SpellReady('Ferocious Bite') then
         CastSpellByName('Ferocious Bite')
         if macroTorch.isRipPresent() then
             macroTorch.context.ripTimer = GetTime()
