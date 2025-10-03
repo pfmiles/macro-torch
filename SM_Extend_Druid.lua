@@ -119,11 +119,11 @@ function macroTorch.cp5ReadyBite(comboPoints)
     end
 end
 
-macroTorch.KS_CP1_Health = 1446
-macroTorch.KS_CP2_Health = 1700
-macroTorch.KS_CP3_Health = 1960
-macroTorch.KS_CP4_Health = 2214
-macroTorch.KS_CP5_Health = 2470
+macroTorch.KS_CP1_Health = 1500
+macroTorch.KS_CP2_Health = 1850
+macroTorch.KS_CP3_Health = 2250
+macroTorch.KS_CP4_Health = 2650
+macroTorch.KS_CP5_Health = 3000
 
 function macroTorch.biteKillshot(comboPoints)
     local targetHealth = macroTorch.target.health
