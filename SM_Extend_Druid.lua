@@ -117,19 +117,33 @@ function macroTorch.cp5ReadyBite(comboPoints)
     end
 end
 
-macroTorch.KS_CP1_Health = 1500
-macroTorch.KS_CP2_Health = 1850
-macroTorch.KS_CP3_Health = 2250
-macroTorch.KS_CP4_Health = 2650
-macroTorch.KS_CP5_Health = 3000
+macroTorch.KS_CP1_Health = 500
+macroTorch.KS_CP2_Health = 750
+macroTorch.KS_CP3_Health = 1000
+macroTorch.KS_CP4_Health = 1250
+macroTorch.KS_CP5_Health = 1500
+
+macroTorch.KS_CP1_Health_raid = 1500
+macroTorch.KS_CP2_Health_raid = 1850
+macroTorch.KS_CP3_Health_raid = 2250
+macroTorch.KS_CP4_Health_raid = 2650
+macroTorch.KS_CP5_Health_raid = 3000
 
 function macroTorch.isKillshot(comboPoints)
     local targetHealth = macroTorch.target.health
-    return comboPoints == 1 and targetHealth < macroTorch.KS_CP1_Health or
-        comboPoints == 2 and targetHealth < macroTorch.KS_CP2_Health or
-        comboPoints == 3 and targetHealth < macroTorch.KS_CP3_Health or
-        comboPoints == 4 and targetHealth < macroTorch.KS_CP4_Health or
-        comboPoints == 5 and targetHealth < macroTorch.KS_CP5_Health
+    if macroTorch.player.isInGroup or macroTorch.player.isInRaid then
+        return comboPoints == 1 and targetHealth < macroTorch.KS_CP1_Health_raid or
+            comboPoints == 2 and targetHealth < macroTorch.KS_CP2_Health_raid or
+            comboPoints == 3 and targetHealth < macroTorch.KS_CP3_Health_raid or
+            comboPoints == 4 and targetHealth < macroTorch.KS_CP4_Health_raid or
+            comboPoints == 5 and targetHealth < macroTorch.KS_CP5_Health_raid
+    else
+        return comboPoints == 1 and targetHealth < macroTorch.KS_CP1_Health or
+            comboPoints == 2 and targetHealth < macroTorch.KS_CP2_Health or
+            comboPoints == 3 and targetHealth < macroTorch.KS_CP3_Health or
+            comboPoints == 4 and targetHealth < macroTorch.KS_CP4_Health or
+            comboPoints == 5 and targetHealth < macroTorch.KS_CP5_Health
+    end
 end
 
 function macroTorch.tryBiteKillshot(comboPoints)
