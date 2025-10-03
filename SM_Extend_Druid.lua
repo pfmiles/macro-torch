@@ -61,8 +61,9 @@ function macroTorch.catAtk(startMove)
         end
         -- 7.oocMod
         if not prowling and ooc then
-            macroTorch.readyBiteKillshot(comboPoints)
+            macroTorch.tryBiteKillshot(comboPoints)
             macroTorch.cp5ReadyBite(comboPoints)
+            -- TODO consider not shred/claw on 5cp when ooc???
             if isBehind then
                 if SpellReady('Shred') then
                     CastSpellByName('Shred')
@@ -84,8 +85,8 @@ function macroTorch.catAtk(startMove)
         -- 10.debuffMod, including rip, rake and FF
         if player.isInCombat and not prowling then
             macroTorch.keepRip(comboPoints)
-            macroTorch.keepRake()
-            macroTorch.keepFF(ooc, player)
+            macroTorch.keepRake(comboPoints)
+            macroTorch.keepFF(ooc, player, comboPoints)
         end
         -- 11.regular attack tech mod
         if not prowling and comboPoints < 5 and macroTorch.isRakePresent() then
@@ -99,11 +100,8 @@ function macroTorch.catAtk(startMove)
 end
 
 function macroTorch.termMod(comboPoints)
-    if macroTorch.biteKillshot(comboPoints) then
-        return
-    else
-        macroTorch.cp5Bite(comboPoints)
-    end
+    macroTorch.tryBiteKillshot(comboPoints)
+    macroTorch.cp5Bite(comboPoints)
 end
 
 function macroTorch.cp5Bite(comboPoints)
@@ -125,30 +123,18 @@ macroTorch.KS_CP3_Health = 2250
 macroTorch.KS_CP4_Health = 2650
 macroTorch.KS_CP5_Health = 3000
 
-function macroTorch.biteKillshot(comboPoints)
+function macroTorch.isKillshot(comboPoints)
     local targetHealth = macroTorch.target.health
-    if comboPoints == 1 and targetHealth < macroTorch.KS_CP1_Health or
+    return comboPoints == 1 and targetHealth < macroTorch.KS_CP1_Health or
         comboPoints == 2 and targetHealth < macroTorch.KS_CP2_Health or
         comboPoints == 3 and targetHealth < macroTorch.KS_CP3_Health or
         comboPoints == 4 and targetHealth < macroTorch.KS_CP4_Health or
-        comboPoints == 5 and targetHealth < macroTorch.KS_CP5_Health then
-        return macroTorch.safeBite()
-    else
-        return false
-    end
+        comboPoints == 5 and targetHealth < macroTorch.KS_CP5_Health
 end
 
--- for ooc only
-function macroTorch.readyBiteKillshot(comboPoints)
-    local targetHealth = macroTorch.target.health
-    if comboPoints == 1 and targetHealth < macroTorch.KS_CP1_Health or
-        comboPoints == 2 and targetHealth < macroTorch.KS_CP2_Health or
-        comboPoints == 3 and targetHealth < macroTorch.KS_CP3_Health or
-        comboPoints == 4 and targetHealth < macroTorch.KS_CP4_Health or
-        comboPoints == 5 and targetHealth < macroTorch.KS_CP5_Health then
-        return macroTorch.readyBite()
-    else
-        return false
+function macroTorch.tryBiteKillshot(comboPoints)
+    if macroTorch.isKillshot(comboPoints) then
+        CastSpellByName('Ferocious Bite')
     end
 end
 
@@ -161,7 +147,7 @@ end
 
 function macroTorch.cleanBeforeReshift(isBehind, comboPoints)
     macroTorch.termMod(comboPoints)
-    macroTorch.keepRake()
+    macroTorch.keepRake(comboPoints)
     if isBehind then
         macroTorch.safeShred()
     else
@@ -183,18 +169,20 @@ function macroTorch.keepRip(comboPoints)
     macroTorch.safeRip()
 end
 
-function macroTorch.keepRake()
-    if macroTorch.isRakePresent() or macroTorch.isImmune('Rake') then
+function macroTorch.keepRake(comboPoints)
+    -- in no condition rake on 5cp
+    if comboPoints == 5 or macroTorch.isRakePresent() or macroTorch.isImmune('Rake') then
         return
     end
     macroTorch.safeRake()
 end
 
-function macroTorch.keepFF(ooc, player)
+function macroTorch.keepFF(ooc, player, comboPoints)
     if (macroTorch.isFFPresent() and macroTorch.ffLeft() > 0.2)
         or ooc or player.mana >= macroTorch.CLAW_E
         or macroTorch.isImmune('Faerie Fire (Feral)')
         or macroTorch.tigerLeft() < macroTorch.RESHIFT_WINDOW
+        or comboPoints == 5
         or not macroTorch.target.isNearBy
         or not macroTorch.player.isInCombat then
         return
