@@ -199,4 +199,10 @@ macroTorch.UNIT_FIELD_FUNC_MAP = {
     ['isInCombat'] = function(self)
         return macroTorch.toBoolean(UnitAffectingCombat(self.ref))
     end,
+    ['isInGroup'] = function(self)
+        return macroTorch.toBoolean(UnitInParty(self.ref))
+    end,
+    ['isInRaid'] = function(self)
+        return macroTorch.toBoolean(UnitInRaid(self.ref))
+    end,
 }
