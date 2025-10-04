@@ -21,6 +21,7 @@ function macroTorch.catAtk(startMove)
     local p = 'player'
     local t = 'target'
     macroTorch.RESHIFT_WINDOW = 2.3
+    macroTorch.RESHIFT_E_GATE = 25
     macroTorch.CLAW_E = 37
     macroTorch.SHRED_E = 48
     macroTorch.RAKE_E = 32
@@ -65,13 +66,9 @@ function macroTorch.catAtk(startMove)
             macroTorch.cp5ReadyBite(comboPoints)
             -- TODO consider not shred/claw on 5cp when ooc???
             if isBehind then
-                if SpellReady('Shred') then
-                    CastSpellByName('Shred')
-                end
+                macroTorch.readyShred()
             else
-                if SpellReady('Claw') then
-                    CastSpellByName('Claw')
-                end
+                macroTorch.readyClaw()
             end
         end
         -- 6.termMod: term on rip or killshot
@@ -117,26 +114,28 @@ function macroTorch.cp5ReadyBite(comboPoints)
     end
 end
 
-macroTorch.KS_CP1_Health = 500
-macroTorch.KS_CP2_Health = 750
-macroTorch.KS_CP3_Health = 1000
-macroTorch.KS_CP4_Health = 1250
-macroTorch.KS_CP5_Health = 1500
+macroTorch.KS_CP1_Health = 750
+macroTorch.KS_CP2_Health = 1000
+macroTorch.KS_CP3_Health = 1250
+macroTorch.KS_CP4_Health = 1500
+macroTorch.KS_CP5_Health = 1750
 
-macroTorch.KS_CP1_Health_raid = 1500
-macroTorch.KS_CP2_Health_raid = 1850
-macroTorch.KS_CP3_Health_raid = 2250
-macroTorch.KS_CP4_Health_raid = 2650
-macroTorch.KS_CP5_Health_raid = 3000
+macroTorch.KS_CP1_Health_group = 1500
+macroTorch.KS_CP2_Health_group = 1850
+macroTorch.KS_CP3_Health_group = 2250
+macroTorch.KS_CP4_Health_group = 2650
+macroTorch.KS_CP5_Health_group = 3000
 
 function macroTorch.isKillshot(comboPoints)
     local targetHealth = macroTorch.target.health
-    if macroTorch.player.isInGroup or macroTorch.player.isInRaid then
-        return comboPoints == 1 and targetHealth < macroTorch.KS_CP1_Health_raid or
-            comboPoints == 2 and targetHealth < macroTorch.KS_CP2_Health_raid or
-            comboPoints == 3 and targetHealth < macroTorch.KS_CP3_Health_raid or
-            comboPoints == 4 and targetHealth < macroTorch.KS_CP4_Health_raid or
-            comboPoints == 5 and targetHealth < macroTorch.KS_CP5_Health_raid
+    if macroTorch.player.isInGroup and not macroTorch.player.isInRaid then
+        return comboPoints == 1 and targetHealth < macroTorch.KS_CP1_Health_group or
+            comboPoints == 2 and targetHealth < macroTorch.KS_CP2_Health_group or
+            comboPoints == 3 and targetHealth < macroTorch.KS_CP3_Health_group or
+            comboPoints == 4 and targetHealth < macroTorch.KS_CP4_Health_group or
+            comboPoints == 5 and targetHealth < macroTorch.KS_CP5_Health_group
+    elseif macroTorch.player.isInRaid then
+        return comboPoints >= 3 and macroTorch.target.healthPercent <= 2
     else
         return comboPoints == 1 and targetHealth < macroTorch.KS_CP1_Health or
             comboPoints == 2 and targetHealth < macroTorch.KS_CP2_Health or
@@ -154,8 +153,8 @@ end
 
 function macroTorch.energyReshift(player, isBehind, comboPoints)
     macroTorch.cleanBeforeReshift(isBehind, comboPoints)
-    if player.mana <= 25 then
-        macroTorch.safeReshift()
+    if player.mana <= macroTorch.RESHIFT_E_GATE then
+        macroTorch.readyReshift()
     end
 end
 
@@ -177,7 +176,7 @@ function macroTorch.keepTigerFury()
 end
 
 function macroTorch.keepRip(comboPoints)
-    if macroTorch.isRipPresent() or comboPoints < 5 or macroTorch.isImmune('Rip') then
+    if macroTorch.isRipPresent() or comboPoints < 5 or macroTorch.isImmune('Rip') or macroTorch.isKillshot(comboPoints) then
         return
     end
     macroTorch.safeRip()
@@ -185,7 +184,7 @@ end
 
 function macroTorch.keepRake(comboPoints)
     -- in no condition rake on 5cp
-    if comboPoints == 5 or macroTorch.isRakePresent() or macroTorch.isImmune('Rake') then
+    if comboPoints == 5 or macroTorch.isRakePresent() or macroTorch.isImmune('Rake') or macroTorch.isKillshot(comboPoints) then
         return
     end
     macroTorch.safeRake()
@@ -198,7 +197,8 @@ function macroTorch.keepFF(ooc, player, comboPoints)
         or macroTorch.tigerLeft() < macroTorch.RESHIFT_WINDOW
         or comboPoints == 5
         or not macroTorch.target.isNearBy
-        or not macroTorch.player.isInCombat then
+        or not macroTorch.player.isInCombat
+        or macroTorch.isKillshot(comboPoints) then
         return
     end
     macroTorch.safeFF()
@@ -272,7 +272,7 @@ function macroTorch.ffLeft()
     return ffLeft
 end
 
-function macroTorch.safeReshift()
+function macroTorch.readyReshift()
     if SpellReady('Reshift') then
         CastSpellByName('Reshift')
         macroTorch.show('Reshift!!! energy = ' .. macroTorch.player.mana .. ', tigerLeft = ' .. macroTorch.tigerLeft())
@@ -282,7 +282,11 @@ function macroTorch.safeReshift()
 end
 
 function macroTorch.safeShred()
-    if SpellReady('Shred') and macroTorch.player.mana >= macroTorch.SHRED_E then
+    return macroTorch.player.mana >= macroTorch.SHRED_E and macroTorch.readyShred()
+end
+
+function macroTorch.readyShred()
+    if SpellReady('Shred') then
         CastSpellByName('Shred')
         return true
     end
@@ -290,7 +294,11 @@ function macroTorch.safeShred()
 end
 
 function macroTorch.safeClaw()
-    if SpellReady('Claw') and macroTorch.player.mana >= macroTorch.CLAW_E then
+    return macroTorch.player.mana >= macroTorch.CLAW_E and macroTorch.readyClaw()
+end
+
+function macroTorch.readyClaw()
+    if SpellReady('Claw') then
         CastSpellByName('Claw')
         return true
     end
@@ -316,17 +324,7 @@ function macroTorch.safeRip()
 end
 
 function macroTorch.safeBite()
-    if SpellReady('Ferocious Bite') and macroTorch.player.mana >= macroTorch.BITE_E then
-        CastSpellByName('Ferocious Bite')
-        if macroTorch.isRipPresent() then
-            macroTorch.context.ripTimer = GetTime()
-        end
-        if macroTorch.isRakePresent() then
-            macroTorch.context.rakeTimer = GetTime()
-        end
-        return true
-    end
-    return false
+    return macroTorch.player.mana >= macroTorch.BITE_E and macroTorch.readyBite()
 end
 
 function macroTorch.readyBite()
