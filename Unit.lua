@@ -200,7 +200,7 @@ macroTorch.UNIT_FIELD_FUNC_MAP = {
         return macroTorch.toBoolean(UnitAffectingCombat(self.ref))
     end,
     ['isInGroup'] = function(self)
-        return macroTorch.toBoolean(UnitInParty(self.ref))
+        return macroTorch.toBoolean(GetNumPartyMembers() > 0)
     end,
     ['isInRaid'] = function(self)
         return macroTorch.toBoolean(UnitInRaid(self.ref))
