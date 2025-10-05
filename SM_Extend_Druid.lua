@@ -76,7 +76,7 @@ function macroTorch.catAtk(startMove)
         -- 8.OT mod
         lazyScript.SlashCommand('otMod')
         -- 9.combatBuffMod - tiger's fury *
-        if macroTorch.target.isInMediumRange then
+        if macroTorch.target.distance <= 15 then
             macroTorch.keepTigerFury()
         end
         -- 10.debuffMod, including rip, rake and FF
@@ -126,17 +126,34 @@ macroTorch.KS_CP3_Health_group = 2250
 macroTorch.KS_CP4_Health_group = 2650
 macroTorch.KS_CP5_Health_group = 3000
 
+macroTorch.KS_CP1_Health_raid = 3000
+macroTorch.KS_CP2_Health_raid = 3700
+macroTorch.KS_CP3_Health_raid = 4500
+macroTorch.KS_CP4_Health_raid = 5300
+macroTorch.KS_CP5_Health_raid = 6000
+
 function macroTorch.isKillshot(comboPoints)
     local targetHealth = macroTorch.target.health
-    if macroTorch.player.isInGroup and not macroTorch.player.isInRaid then
+    local fightWorldBoss = macroTorch.target.classification == 'worldboss'
+    if macroTorch.player.isInGroup and fightWorldBoss then
+        -- fight world boss in a group or raid
+        return comboPoints >= 3 and macroTorch.target.healthPercent <= 2
+    elseif macroTorch.player.isInGroup and not macroTorch.player.isInRaid and not fightWorldBoss then
+        -- normal battle in a 5-man group
         return comboPoints == 1 and targetHealth < macroTorch.KS_CP1_Health_group or
             comboPoints == 2 and targetHealth < macroTorch.KS_CP2_Health_group or
             comboPoints == 3 and targetHealth < macroTorch.KS_CP3_Health_group or
             comboPoints == 4 and targetHealth < macroTorch.KS_CP4_Health_group or
             comboPoints == 5 and targetHealth < macroTorch.KS_CP5_Health_group
-    elseif macroTorch.player.isInRaid then
-        return comboPoints >= 3 and macroTorch.target.healthPercent <= 2
+    elseif macroTorch.player.isInRaid and not fightWorldBoss then
+        -- normal battle in a raid
+        return comboPoints == 1 and targetHealth < macroTorch.KS_CP1_Health_raid or
+            comboPoints == 2 and targetHealth < macroTorch.KS_CP2_Health_raid or
+            comboPoints == 3 and targetHealth < macroTorch.KS_CP3_Health_raid or
+            comboPoints == 4 and targetHealth < macroTorch.KS_CP4_Health_raid or
+            comboPoints == 5 and targetHealth < macroTorch.KS_CP5_Health_raid
     else
+        -- fight alone
         return comboPoints == 1 and targetHealth < macroTorch.KS_CP1_Health or
             comboPoints == 2 and targetHealth < macroTorch.KS_CP2_Health or
             comboPoints == 3 and targetHealth < macroTorch.KS_CP3_Health or
