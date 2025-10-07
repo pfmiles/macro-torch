@@ -57,7 +57,7 @@ function macroTorch.catAtk(startMove)
         end
         -- 4.rushMod, incuding trinckets, berserk and potions *
         if IsShiftKeyDown() then
-            if not berserk and SpellReady('Berserk') then
+            if not berserk then
                 CastSpellByName('Berserk')
             end
             UseInventoryItem(14)
@@ -74,11 +74,13 @@ function macroTorch.catAtk(startMove)
         if not prowling and ooc then
             macroTorch.tryBiteKillshot(comboPoints)
             macroTorch.cp5ReadyBite(comboPoints)
-            -- TODO consider not shred/claw on 5cp when ooc???
-            if isBehind then
-                macroTorch.readyShred()
-            else
-                macroTorch.readyClaw()
+            -- no shred/claw at cp5 when ooc
+            if comboPoints < 5 then
+                if isBehind then
+                    macroTorch.readyShred()
+                else
+                    macroTorch.readyClaw()
+                end
             end
         end
         -- 6.termMod: term on rip or killshot
