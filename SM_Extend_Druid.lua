@@ -28,6 +28,12 @@ function macroTorch.catAtk(startMove)
     macroTorch.BITE_E = 35
     macroTorch.RIP_E = 30
     macroTorch.TIGER_E = 30
+    macroTorch.AUTO_TICK_ERPS = 20 / 2
+    macroTorch.TIGER_ERPS = 10 / 3
+    macroTorch.RAKE_ERPS = 5 / 3
+    macroTorch.RIP_ERPS = 5 / 2
+    macroTorch.POUNCE_ERPS = 5 / 3
+    macroTorch.BERSERK_ERPS = 20 / 2
     local player = macroTorch.player
     local prowling = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Ambush')
     local berserk = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Druid_Berserk')
@@ -96,7 +102,7 @@ function macroTorch.catAtk(startMove)
 end
 
 function macroTorch.targetEnemyMod()
-    if macroTorch.target.isFriendly then
+    if macroTorch.target.isFriendly and macroTorch.targettarget.isCanAttack then
         AssistUnit('target')
     else
         ClearTarget()
