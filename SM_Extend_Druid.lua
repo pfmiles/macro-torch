@@ -22,6 +22,7 @@ function macroTorch.catAtk(startMove)
     local t = 'target'
     macroTorch.RESHIFT_WINDOW = 2.3
     macroTorch.RESHIFT_E_GATE = 25
+    macroTorch.POUNCE_E = 50
     macroTorch.CLAW_E = 37
     macroTorch.SHRED_E = 48
     macroTorch.RAKE_E = 32
@@ -63,7 +64,11 @@ function macroTorch.catAtk(startMove)
         end
         -- 5.starterMod
         if prowling then
-            CastSpellByName(startMove)
+            if 'Pounce' == startMove then
+                macroTorch.safePounce()
+            elseif 'Ravage' == startMove then
+                CastSpellByName('Ravage')
+            end
         end
         -- 7.oocMod
         if not prowling and ooc then
@@ -303,6 +308,23 @@ function macroTorch.ffLeft()
     return ffLeft
 end
 
+function macroTorch.isPouncePresent()
+    return buffed('Pounce', 'target') and macroTorch.pounceLeft() > 0
+end
+
+function macroTorch.pounceLeft()
+    local pounceLeft = 0
+    if not not macroTorch.context.pounceTimer then
+        pounceLeft = 18 - (GetTime() - macroTorch.context.pounceTimer)
+        if pounceLeft < 0 then
+            pounceLeft = 0
+        end
+    else
+        pounceLeft = 0
+    end
+    return pounceLeft
+end
+
 function macroTorch.readyReshift()
     if SpellReady('Reshift') then
         CastSpellByName('Reshift')
@@ -386,6 +408,15 @@ function macroTorch.safeTigerFury()
     if SpellReady('Tiger\'s Fury') and macroTorch.player.mana >= macroTorch.TIGER_E then
         CastSpellByName('Tiger\'s Fury')
         macroTorch.context.tigerTimer = GetTime()
+        return true
+    end
+    return false
+end
+
+function macroTorch.safePounce()
+    if SpellReady('Pounce') and macroTorch.player.mana >= macroTorch.POUNCE_E then
+        CastSpellByName('Pounce')
+        macroTorch.context.pounceTimer = GetTime()
         return true
     end
     return false

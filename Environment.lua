@@ -28,8 +28,9 @@ function macroTorch.eventHandle(event)
                 macroTorch.context.rakeTimer = nil
                 macroTorch.context.ripTimer = nil
                 macroTorch.context.ffTimer = nil
+                macroTorch.context.pounceTimer = nil
             end
-            macroTorch.show('macroTorch.context.rake/rip/ffTimer cleared due to target change in combat!')
+            macroTorch.show('macroTorch.context.rake/rip/ff/pounceTimer cleared due to target change in combat!')
         end
     end
 end
