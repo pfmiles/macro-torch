@@ -20,8 +20,6 @@
 function macroTorch.catAtk(startMove)
     local p = 'player'
     local t = 'target'
-    macroTorch.RESHIFT_WINDOW = 2.3
-    macroTorch.RESHIFT_E_GATE = 25
     macroTorch.POUNCE_E = 50
     macroTorch.CLAW_E = 37
     macroTorch.SHRED_E = 48
@@ -88,23 +86,17 @@ function macroTorch.catAtk(startMove)
         -- 8.OT mod
         lazyScript.SlashCommand('otMod')
         -- 9.combatBuffMod - tiger's fury *
-        if macroTorch.target.distance <= 15 then
-            macroTorch.keepTigerFury()
-        end
+        macroTorch.keepTigerFury()
         -- 10.debuffMod, including rip, rake and FF
-        if player.isInCombat and not prowling then
-            macroTorch.keepRip(comboPoints)
-            macroTorch.keepRake(comboPoints)
-            macroTorch.keepFF(ooc, player, comboPoints)
-        end
+        macroTorch.keepRip(comboPoints, player, prowling)
+        macroTorch.keepRake(comboPoints, player, prowling)
+        macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
         -- 11.regular attack tech mod
         if not prowling and comboPoints < 5 and macroTorch.isRakePresent() then
             macroTorch.safeClaw()
         end
         -- 12.energy res mod
-        if not prowling and not berserk and macroTorch.tigerLeft() < macroTorch.RESHIFT_WINDOW then
-            macroTorch.energyReshift(player, isBehind, comboPoints)
-        end
+        macroTorch.reshiftMod(player, prowling, ooc, berserk)
     end
 end
 
@@ -189,54 +181,84 @@ function macroTorch.tryBiteKillshot(comboPoints)
     end
 end
 
-function macroTorch.energyReshift(player, isBehind, comboPoints)
-    macroTorch.cleanBeforeReshift(isBehind, comboPoints)
-    if player.mana <= macroTorch.RESHIFT_E_GATE then
+function macroTorch.reshiftMod(player, prowling, ooc, berserk)
+    if macroTorch.canDoReshift(player, prowling, ooc, berserk) then
         macroTorch.readyReshift()
     end
 end
 
-function macroTorch.cleanBeforeReshift(isBehind, comboPoints)
-    macroTorch.termMod(comboPoints)
-    macroTorch.keepRake(comboPoints)
-    if isBehind then
-        macroTorch.safeShred()
-    else
-        macroTorch.safeClaw()
+-- reshift at anytime in battle & not prowling & not ooc when: the current 'enerty restoration per-second' is lesser than '30 - currentEnergyBeforeReshift'
+function macroTorch.canDoReshift(player, prowling, ooc, berserk)
+    if not player.isInCombat or prowling or ooc then
+        return false
     end
+    local erps = macroTorch.AUTO_TICK_ERPS
+    if macroTorch.isTigerPresent() then
+        erps = erps + macroTorch.TIGER_ERPS
+    end
+    if macroTorch.isRakePresent() then
+        erps = erps + macroTorch.RAKE_ERPS
+    end
+    if macroTorch.isRipPresent() then
+        erps = erps + macroTorch.RIP_ERPS
+    end
+    if macroTorch.isPouncePresent() then
+        erps = erps + macroTorch.POUNCE_ERPS
+    end
+    if berserk then
+        erps = erps + macroTorch.BERSERK_ERPS
+    end
+    local diff = 30 - player.mana - erps
+    local ret = diff > 2.5
+
+    if ret then
+        macroTorch.show('Current reshift profit: ' ..
+            tostring(30 - player.mana) ..
+            ', current erps: ' ..
+            tostring(erps) .. ', diff: ' .. tostring(diff) .. ', can do reshift!')
+    end
+    return ret
 end
 
+-- tiger fury when near
 function macroTorch.keepTigerFury()
-    if macroTorch.isTigerPresent() then
+    if macroTorch.isTigerPresent() or macroTorch.target.distance > 15 then
         return
     end
     macroTorch.safeTigerFury()
 end
 
-function macroTorch.keepRip(comboPoints)
-    if macroTorch.isRipPresent() or comboPoints < 5 or macroTorch.isImmune('Rip') or macroTorch.isKillshot(comboPoints) then
+function macroTorch.keepRip(comboPoints, player, prowling)
+    if not player.isInCombat or prowling or macroTorch.isRipPresent() or comboPoints < 5 or macroTorch.isImmune('Rip') or macroTorch.isKillshot(comboPoints) then
         return
     end
     macroTorch.safeRip()
 end
 
-function macroTorch.keepRake(comboPoints)
+function macroTorch.keepRake(comboPoints, player, prowling)
     -- in no condition rake on 5cp
-    if comboPoints == 5 or macroTorch.isRakePresent() or macroTorch.isImmune('Rake') or macroTorch.isKillshot(comboPoints) then
+    if not player.isInCombat or prowling or comboPoints == 5 or macroTorch.isRakePresent() or macroTorch.isImmune('Rake') or macroTorch.isKillshot(comboPoints) then
         return
     end
     macroTorch.safeRake()
 end
 
-function macroTorch.keepFF(ooc, player, comboPoints)
+-- no FF in: 1) melee range if other techs can use, 2) when ooc 3) immune 4) killshot 5) eager to reshift 6) cp5 7) player not in combat 8) prowling 9) target not in combat 10) FF exists
+function macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
     if (macroTorch.isFFPresent() and macroTorch.ffLeft() > 0.2)
-        or ooc or player.mana >= macroTorch.CLAW_E
+        or ooc
         or macroTorch.isImmune('Faerie Fire (Feral)')
-        or macroTorch.tigerLeft() < macroTorch.RESHIFT_WINDOW
+        or macroTorch.canDoReshift(player, prowling, ooc, berserk)
         or comboPoints == 5
-        or not macroTorch.target.isNearBy
-        or not macroTorch.player.isInCombat
-        or macroTorch.isKillshot(comboPoints) then
+        or not player.isInCombat
+        or not macroTorch.target.isInCombat
+        or prowling
+        or macroTorch.isKillshot(comboPoints)
+        or macroTorch.target.isNearBy and (
+            player.mana >= macroTorch.CLAW_E and comboPoints < 5
+            or player.mana >= macroTorch.BITE_E and comboPoints == 5
+            or player.mana >= macroTorch.RAKE_E and not macroTorch.isRakePresent() and comboPoints < 5
+            or player.mana >= macroTorch.RIP_E and not macroTorch.isRipPresent() and comboPoints == 5) then
         return
     end
     macroTorch.safeFF()
