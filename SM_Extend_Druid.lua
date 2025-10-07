@@ -41,9 +41,8 @@ function macroTorch.catAtk(startMove)
         -- macroTorch.useItemIfManaPercentLessThan(p, 20, 'Mana Potion') TODO 由于cat形态下无法读取真正的mana，因此这里暂时作废
     end
     -- 2.targetEnemy *
-    if not macroTorch.isTargetValidCanAttack(t) then
-        ClearTarget()
-        TargetNearestEnemy()
+    if not macroTorch.target.isCanAttack then
+        macroTorch.targetEnemyMod()
     else
         -- 3.keep autoAttack, in combat & not prowling *
         if not prowling then
@@ -93,6 +92,15 @@ function macroTorch.catAtk(startMove)
         if not prowling and not berserk and macroTorch.tigerLeft() < macroTorch.RESHIFT_WINDOW then
             macroTorch.energyReshift(player, isBehind, comboPoints)
         end
+    end
+end
+
+function macroTorch.targetEnemyMod()
+    if macroTorch.target.isFriendly then
+        AssistUnit('target')
+    else
+        ClearTarget()
+        TargetNearestEnemy()
     end
 end
 
