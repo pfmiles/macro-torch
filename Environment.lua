@@ -20,8 +20,13 @@ macroTorch.context = {}
 --- all events handle globally
 function macroTorch.eventHandle(event)
     if event == 'PLAYER_REGEN_ENABLED' then
-        macroTorch.context = {}
-        macroTorch.show('macroTorch.context cleared due to combat exiting!')
+        if macroTorch.context then
+            macroTorch.context.rakeTimer = nil
+            macroTorch.context.ripTimer = nil
+            macroTorch.context.ffTimer = nil
+            macroTorch.context.pounceTimer = nil
+        end
+        macroTorch.show('macroTorch.context.rake/rip/ff/pounceTimer cleared due to combat exiting!')
     elseif event == 'PLAYER_TARGET_CHANGED' then
         if macroTorch.player.isInCombat and macroTorch.target.isCanAttack then
             if macroTorch.context then

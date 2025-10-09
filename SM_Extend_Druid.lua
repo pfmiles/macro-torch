@@ -22,7 +22,7 @@ function macroTorch.catAtk(startMove)
     local t = 'target'
     macroTorch.POUNCE_E = 50
     macroTorch.CLAW_E = 37
-    macroTorch.SHRED_E = 48
+    macroTorch.SHRED_E = 54
     macroTorch.RAKE_E = 32
     macroTorch.BITE_E = 35
     macroTorch.RIP_E = 30
@@ -211,12 +211,12 @@ function macroTorch.canDoReshift(player, prowling, ooc, berserk)
     local diff = 30 - player.mana - erps
     local ret = diff > 2.5
 
-    if ret then
-        macroTorch.show('Current reshift profit: ' ..
-            tostring(30 - player.mana) ..
-            ', current erps: ' ..
-            tostring(erps) .. ', diff: ' .. tostring(diff) .. ', can do reshift!')
-    end
+    -- if ret then
+    --     macroTorch.show('Current reshift profit: ' ..
+    --         tostring(30 - player.mana) ..
+    --         ', current erps: ' ..
+    --         tostring(erps) .. ', diff: ' .. tostring(diff) .. ', can do reshift!')
+    -- end
     return ret
 end
 
@@ -243,22 +243,22 @@ function macroTorch.keepRake(comboPoints, player, prowling)
     macroTorch.safeRake()
 end
 
--- no FF in: 1) melee range if other techs can use, 2) when ooc 3) immune 4) killshot 5) eager to reshift 6) cp5 7) player not in combat 8) prowling 9) target not in combat 10) FF exists
+-- no FF in: 1) melee range if other techs can use, 2) when ooc 3) immune 4) killshot 5) eager to reshift 6) cp5 7) player not in combat 8) prowling 9) target not in combat
+-- all in all: if in combat and there's nothing to do, then FF, no matter if FF debuff present, we wish to trigger more ooc through instant FFs
 function macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
-    if (macroTorch.isFFPresent() and macroTorch.ffLeft() > 0.2)
-        or ooc
+    if ooc
         or macroTorch.isImmune('Faerie Fire (Feral)')
         or macroTorch.canDoReshift(player, prowling, ooc, berserk)
-        or comboPoints == 5
         or not player.isInCombat
         or not macroTorch.target.isInCombat
         or prowling
-        or macroTorch.isKillshot(comboPoints)
         or macroTorch.target.isNearBy and (
             player.mana >= macroTorch.CLAW_E and comboPoints < 5
             or player.mana >= macroTorch.BITE_E and comboPoints == 5
             or player.mana >= macroTorch.RAKE_E and not macroTorch.isRakePresent() and comboPoints < 5
-            or player.mana >= macroTorch.RIP_E and not macroTorch.isRipPresent() and comboPoints == 5) then
+            or player.mana >= macroTorch.RIP_E and not macroTorch.isRipPresent() and comboPoints == 5
+            or comboPoints == 5
+            or macroTorch.isKillshot(comboPoints)) then
         return
     end
     macroTorch.safeFF()
@@ -444,6 +444,18 @@ function macroTorch.safePounce()
         return true
     end
     return false
+end
+
+function macroTorch.druidBuffs()
+    if not buffed('Mark of the Wild', 'player') then
+        CastSpellByName('Mark of the Wild', true)
+    end
+    if not buffed('Thorns', 'player') then
+        CastSpellByName('Thorns', true)
+    end
+    if not buffed('Nature\'s Grasp', 'player') then
+        CastSpellByName('Nature\'s Grasp', true)
+    end
 end
 
 function macroTorch.groupCast(spellFunction)
