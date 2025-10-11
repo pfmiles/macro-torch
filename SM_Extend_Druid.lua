@@ -16,8 +16,7 @@
 ---小德专用start---
 
 --- The 'E' key regular dps function for feral cat druid
---- @param startMove boolean the move to be used to start a combat
-function macroTorch.catAtk(startMove)
+function macroTorch.catAtk()
     local p = 'player'
     local t = 'target'
     macroTorch.POUNCE_E = 50
@@ -58,13 +57,13 @@ function macroTorch.catAtk(startMove)
             if not berserk then
                 CastSpellByName('Berserk')
             end
-            UseInventoryItem(14)
+            macroTorch.atkPowerBurst()
         end
         -- 5.starterMod
         if prowling then
-            if 'Pounce' == startMove then
+            if not macroTorch.isImmune('Pounce') then
                 macroTorch.safePounce()
-            elseif 'Ravage' == startMove then
+            else
                 CastSpellByName('Ravage')
             end
         end
@@ -84,7 +83,7 @@ function macroTorch.catAtk(startMove)
         -- 6.termMod: term on rip or killshot
         macroTorch.termMod(comboPoints)
         -- 8.OT mod
-        lazyScript.SlashCommand('otMod')
+        macroTorch.otMod(player, prowling, ooc, berserk, comboPoints)
         -- 9.combatBuffMod - tiger's fury *
         macroTorch.keepTigerFury()
         -- 10.debuffMod, including rip, rake and FF
@@ -97,6 +96,23 @@ function macroTorch.catAtk(startMove)
         end
         -- 12.energy res mod
         macroTorch.reshiftMod(player, prowling, ooc, berserk)
+    end
+end
+
+function macroTorch.otMod(player, prowling, ooc, berserk, comboPoints)
+    local target = macroTorch.target
+    if macroTorch.canDoReshift(player, prowling, ooc, berserk)
+        or not player.isInCombat
+        or not target.isInCombat
+        or prowling
+        or macroTorch.isKillshot(comboPoints)
+        or not target.isCanAttack
+        or target.isPlayerControlled
+        or not macroTorch.player.isInGroup then
+        return
+    end
+    if target.isAttackingMe or macroTorch.playerThreatPercent() >= 85 then
+        macroTorch.readyCower()
     end
 end
 
@@ -231,6 +247,10 @@ end
 function macroTorch.keepRip(comboPoints, player, prowling)
     if not player.isInCombat or prowling or macroTorch.isRipPresent() or comboPoints < 5 or macroTorch.isImmune('Rip') or macroTorch.isKillshot(comboPoints) then
         return
+    end
+    -- boost attack power to rip when fighting world boss
+    if macroTorch.target.classification == 'worldboss' then
+        macroTorch.atkPowerBurst()
     end
     macroTorch.safeRip()
 end
@@ -444,6 +464,25 @@ function macroTorch.safePounce()
         return true
     end
     return false
+end
+
+function macroTorch.readyCower()
+    if SpellReady('Cower') then
+        CastSpellByName('Cower')
+        return true
+    end
+    return false
+end
+
+function macroTorch.playerThreatPercent()
+    local p = 0
+    if TWT and TWT.threats and TWT.threats[TWT.name] then p = TWT.threats[TWT.name].perc or 0 end
+    return p
+end
+
+-- burst through boosting attack power
+function macroTorch.atkPowerBurst()
+    UseInventoryItem(14)
 end
 
 function macroTorch.druidBuffs()
