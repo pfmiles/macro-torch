@@ -25,8 +25,9 @@ function macroTorch.eventHandle(event)
             macroTorch.context.ripTimer = nil
             macroTorch.context.ffTimer = nil
             macroTorch.context.pounceTimer = nil
+            macroTorch.context.targetHealthVector = nil
         end
-        macroTorch.show('macroTorch.context.rake/rip/ff/pounceTimer cleared due to combat exiting!')
+        macroTorch.show('macroTorch.context.rake/rip/ff/pounceTimer/THV cleared due to combat exiting!')
     elseif event == 'PLAYER_TARGET_CHANGED' then
         if macroTorch.player.isInCombat and macroTorch.target.isCanAttack then
             if macroTorch.context then
@@ -34,8 +35,9 @@ function macroTorch.eventHandle(event)
                 macroTorch.context.ripTimer = nil
                 macroTorch.context.ffTimer = nil
                 macroTorch.context.pounceTimer = nil
+                macroTorch.context.targetHealthVector = nil
             end
-            macroTorch.show('macroTorch.context.rake/rip/ff/pounceTimer cleared due to target change in combat!')
+            macroTorch.show('macroTorch.context.rake/rip/ff/pounceTimer/THV cleared due to target change in combat!')
         end
     end
 end
