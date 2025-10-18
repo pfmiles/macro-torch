@@ -62,8 +62,10 @@ function macroTorch.catAtk()
         -- 5.starterMod
         if prowling then
             if not macroTorch.isImmune('Pounce') then
+                macroTorch.show('Pounce immune: ' .. tostring(macroTorch.isImmune('Pounce')) .. ', do safePounce!')
                 macroTorch.safePounce()
             else
+                macroTorch.show('Pounce immune: ' .. tostring(macroTorch.isImmune('Pounce')) .. ', do Ravage!')
                 CastSpellByName('Ravage')
             end
         end
@@ -111,7 +113,8 @@ function macroTorch.otMod(player, prowling, ooc, berserk, comboPoints)
         or not macroTorch.player.isInGroup then
         return
     end
-    if target.isAttackingMe or macroTorch.playerThreatPercent() >= 85 then
+    if target.isAttackingMe or (target.classification == 'worldboss' and macroTorch.playerThreatPercent() >= 80) then
+        macroTorch.show('current thread: ' .. macroTorch.playerThreatPercent() .. ' doing ready cower!!!')
         macroTorch.readyCower()
     end
 end
@@ -155,34 +158,45 @@ macroTorch.KS_CP3_Health_group = 2250
 macroTorch.KS_CP4_Health_group = 2650
 macroTorch.KS_CP5_Health_group = 3000
 
-macroTorch.KS_CP1_Health_raid = 3000
-macroTorch.KS_CP2_Health_raid = 3700
-macroTorch.KS_CP3_Health_raid = 4500
-macroTorch.KS_CP4_Health_raid = 5300
-macroTorch.KS_CP5_Health_raid = 6000
+macroTorch.KS_CP1_Health_raid_pps = macroTorch.KS_CP1_Health_group / 5
+macroTorch.KS_CP2_Health_raid_pps = macroTorch.KS_CP2_Health_group / 5
+macroTorch.KS_CP3_Health_raid_pps = macroTorch.KS_CP3_Health_group / 5
+macroTorch.KS_CP4_Health_raid_pps = macroTorch.KS_CP4_Health_group / 5
+macroTorch.KS_CP5_Health_raid_pps = macroTorch.KS_CP5_Health_group / 5
 
 function macroTorch.isKillshot(comboPoints)
     local targetHealth = macroTorch.target.health
     local fightWorldBoss = macroTorch.target.classification == 'worldboss'
+    local isPvp = macroTorch.target.isPlayerControlled or GetBattlefieldInstanceRunTime() > 0
     if macroTorch.player.isInGroup and fightWorldBoss then
         -- fight world boss in a group or raid
         return comboPoints >= 3 and macroTorch.target.healthPercent <= 2
-    elseif macroTorch.player.isInGroup and not macroTorch.player.isInRaid and not fightWorldBoss then
+    elseif macroTorch.player.isInGroup and not macroTorch.player.isInRaid and not fightWorldBoss and not isPvp then
         -- normal battle in a 5-man group
         return comboPoints == 1 and targetHealth < macroTorch.KS_CP1_Health_group or
             comboPoints == 2 and targetHealth < macroTorch.KS_CP2_Health_group or
             comboPoints == 3 and targetHealth < macroTorch.KS_CP3_Health_group or
             comboPoints == 4 and targetHealth < macroTorch.KS_CP4_Health_group or
             comboPoints == 5 and targetHealth < macroTorch.KS_CP5_Health_group
-    elseif macroTorch.player.isInRaid and not fightWorldBoss then
+    elseif macroTorch.player.isInRaid and not fightWorldBoss and not isPvp then
         -- normal battle in a raid
-        return comboPoints == 1 and targetHealth < macroTorch.KS_CP1_Health_raid or
-            comboPoints == 2 and targetHealth < macroTorch.KS_CP2_Health_raid or
-            comboPoints == 3 and targetHealth < macroTorch.KS_CP3_Health_raid or
-            comboPoints == 4 and targetHealth < macroTorch.KS_CP4_Health_raid or
-            comboPoints == 5 and targetHealth < macroTorch.KS_CP5_Health_raid
+        local raidNum = GetNumRaidMembers() or 0
+        local more = raidNum - 5
+        if more < 0 then
+            more = 0
+        end
+        return comboPoints == 1 and
+            targetHealth < (macroTorch.KS_CP1_Health_group + macroTorch.KS_CP1_Health_raid_pps * more) or
+            comboPoints == 2 and
+            targetHealth < (macroTorch.KS_CP2_Health_group + macroTorch.KS_CP2_Health_raid_pps * more) or
+            comboPoints == 3 and
+            targetHealth < (macroTorch.KS_CP3_Health_group + macroTorch.KS_CP3_Health_raid_pps * more) or
+            comboPoints == 4 and
+            targetHealth < (macroTorch.KS_CP4_Health_group + macroTorch.KS_CP4_Health_raid_pps * more) or
+            comboPoints == 5 and
+            targetHealth < (macroTorch.KS_CP5_Health_group + macroTorch.KS_CP5_Health_raid_pps * more)
     else
-        -- fight alone
+        -- fight alone or pvp
         return comboPoints == 1 and targetHealth < macroTorch.KS_CP1_Health or
             comboPoints == 2 and targetHealth < macroTorch.KS_CP2_Health or
             comboPoints == 3 and targetHealth < macroTorch.KS_CP3_Health or
@@ -248,8 +262,8 @@ function macroTorch.keepRip(comboPoints, player, prowling)
     if not player.isInCombat or prowling or macroTorch.isRipPresent() or comboPoints < 5 or macroTorch.isImmune('Rip') or macroTorch.isKillshot(comboPoints) then
         return
     end
-    -- boost attack power to rip when fighting world boss
-    if macroTorch.target.classification == 'worldboss' then
+    -- boost attack power to rip when fighting world boss or player-controlled target
+    if macroTorch.target.classification == 'worldboss' or macroTorch.target.isPlayerControlled then
         macroTorch.atkPowerBurst()
     end
     macroTorch.safeRip()
@@ -475,6 +489,7 @@ function macroTorch.readyCower()
 end
 
 function macroTorch.playerThreatPercent()
+    local TWT = macroTorch.TWT
     local p = 0
     if TWT and TWT.threats and TWT.threats[TWT.name] then p = TWT.threats[TWT.name].perc or 0 end
     return p
