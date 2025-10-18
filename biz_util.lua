@@ -129,3 +129,12 @@ function macroTorch.isCasting(spellName, bookType)
     end
     return macroTorch.toBoolean(IsCurrentCast(spellId, bookType))
 end
+
+-- 定义计算table长度的函数
+function macroTorch.tableLen(tbl)
+    local len = 0
+    for _ in pairs(tbl) do
+        len = len + 1
+    end
+    return len
+end

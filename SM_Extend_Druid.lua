@@ -32,6 +32,7 @@ function macroTorch.catAtk()
     macroTorch.RIP_ERPS = 5 / 2
     macroTorch.POUNCE_ERPS = 5 / 3
     macroTorch.BERSERK_ERPS = 20 / 2
+
     local player = macroTorch.player
     local prowling = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Ambush')
     local berserk = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Druid_Berserk')
@@ -48,6 +49,8 @@ function macroTorch.catAtk()
     if not macroTorch.target.isCanAttack then
         macroTorch.targetEnemyMod()
     else
+        -- maintain THV
+        macroTorch.maintainTHV()
         -- 3.keep autoAttack, in combat & not prowling *
         if not prowling then
             player.startAutoAtk()
@@ -107,7 +110,7 @@ function macroTorch.otMod(player, prowling, ooc, berserk, comboPoints)
         or not player.isInCombat
         or not target.isInCombat
         or prowling
-        or macroTorch.isKillshot(comboPoints)
+        or macroTorch.isKillshotOrLastChance(comboPoints)
         or not target.isCanAttack
         or target.isPlayerControlled
         or not macroTorch.player.isInGroup then
@@ -164,7 +167,54 @@ macroTorch.KS_CP3_Health_raid_pps = macroTorch.KS_CP3_Health_group / 5
 macroTorch.KS_CP4_Health_raid_pps = macroTorch.KS_CP4_Health_group / 5
 macroTorch.KS_CP5_Health_raid_pps = macroTorch.KS_CP5_Health_group / 5
 
-function macroTorch.isKillshot(comboPoints)
+function macroTorch.maintainTHV()
+    if macroTorch.context then
+        local target = macroTorch.target
+        if not macroTorch.context.targetHealthVector then
+            macroTorch.context.targetHealthVector = {}
+        end
+        if target.isCanAttack and target.isInCombat then
+            table.insert(macroTorch.context.targetHealthVector, { target.health, GetTime() })
+            while macroTorch.tableLen(macroTorch.context.targetHealthVector) > 100 do
+                table.remove(macroTorch.context.targetHealthVector, 1)
+            end
+        end
+    end
+end
+
+-- compute current health-reducing-per-second
+function macroTorch.currentHRPS()
+    if macroTorch.tableLen(macroTorch.context.targetHealthVector) < 2 then
+        return 0
+    end
+
+    -- 使用最小二乘法拟合线性回归，计算血量减少的速率
+    local sumX = 0
+    local sumY = 0
+    local sumXY = 0
+    local sumXX = 0
+    local n = macroTorch.tableLen(macroTorch.context.targetHealthVector)
+
+    -- 计算各项求和值
+    for i = 1, n do
+        local health, time = unpack(macroTorch.context.targetHealthVector[i])
+        sumX = sumX + time
+        sumY = sumY + health
+        sumXY = sumXY + time * health
+        sumXX = sumXX + time * time
+    end
+
+    -- 计算线性回归的斜率（即HRPS）
+    local slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX)
+
+    -- 返回斜率的相反数，因为我们要的是血量减少速率
+    return -slope
+end
+
+function macroTorch.isKillshotOrLastChance(comboPoints)
+    if macroTorch.isLastChance() then
+        return true
+    end
     local targetHealth = macroTorch.target.health
     local fightWorldBoss = macroTorch.target.classification == 'worldboss'
     local isPvp = macroTorch.target.isPlayerControlled or GetBattlefieldInstanceRunTime() > 0
@@ -205,9 +255,24 @@ function macroTorch.isKillshot(comboPoints)
     end
 end
 
+function macroTorch.isLastChance()
+    if macroTorch.currentHRPS() <= 0 then
+        return false
+    end
+    local ret = macroTorch.target.health <= macroTorch.currentHRPS() * 2
+    -- if ret then
+    --     macroTorch.show('Last chance! 2*HRPS: ' .. tostring(macroTorch.currentHRPS() * 2))
+    -- end
+    return ret
+end
+
 function macroTorch.tryBiteKillshot(comboPoints)
-    if macroTorch.isKillshot(comboPoints) then
-        CastSpellByName('Ferocious Bite')
+    if macroTorch.isKillshotOrLastChance(comboPoints) then
+        if comboPoints > 0 then
+            CastSpellByName('Ferocious Bite')
+        else
+            CastSpellByName('Claw')
+        end
     end
 end
 
@@ -259,7 +324,7 @@ function macroTorch.keepTigerFury()
 end
 
 function macroTorch.keepRip(comboPoints, player, prowling)
-    if not player.isInCombat or prowling or macroTorch.isRipPresent() or comboPoints < 5 or macroTorch.isImmune('Rip') or macroTorch.isKillshot(comboPoints) then
+    if not player.isInCombat or prowling or macroTorch.isRipPresent() or comboPoints < 5 or macroTorch.isImmune('Rip') or macroTorch.isKillshotOrLastChance(comboPoints) then
         return
     end
     -- boost attack power to rip when fighting world boss or player-controlled target
@@ -271,7 +336,7 @@ end
 
 function macroTorch.keepRake(comboPoints, player, prowling)
     -- in no condition rake on 5cp
-    if not player.isInCombat or prowling or comboPoints == 5 or macroTorch.isRakePresent() or macroTorch.isImmune('Rake') or macroTorch.isKillshot(comboPoints) then
+    if not player.isInCombat or prowling or comboPoints == 5 or macroTorch.isRakePresent() or macroTorch.isImmune('Rake') or macroTorch.isKillshotOrLastChance(comboPoints) then
         return
     end
     macroTorch.safeRake()
@@ -292,7 +357,7 @@ function macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
             or player.mana >= macroTorch.RAKE_E and not macroTorch.isRakePresent() and comboPoints < 5
             or player.mana >= macroTorch.RIP_E and not macroTorch.isRipPresent() and comboPoints == 5
             or comboPoints == 5
-            or macroTorch.isKillshot(comboPoints)) then
+            or macroTorch.isKillshotOrLastChance(comboPoints)) then
         return
     end
     macroTorch.safeFF()
