@@ -41,7 +41,7 @@ function macroTorch.catAtk()
     local isBehind = macroTorch.isTargetValidCanAttack(t) and UnitXP('behind', 'player', 'target') or false
 
     -- 1.health & mana saver in combat *
-    if player.isInCombat and not prowling then
+    if macroTorch.isFightStarted(prowling) then
         macroTorch.useItemIfHealthPercentLessThan(p, 20, 'Healing Potion')
         -- macroTorch.useItemIfManaPercentLessThan(p, 20, 'Mana Potion') TODO 由于cat形态下无法读取真正的mana，因此这里暂时作废
     end
@@ -52,7 +52,7 @@ function macroTorch.catAtk()
         -- maintain THV
         macroTorch.maintainTHV()
         -- 3.keep autoAttack, in combat & not prowling *
-        if not prowling then
+        if macroTorch.isFightStarted(prowling) then
             player.startAutoAtk()
         end
         -- 4.rushMod, incuding trinckets, berserk and potions *
@@ -73,7 +73,7 @@ function macroTorch.catAtk()
             end
         end
         -- 7.oocMod
-        if not prowling and ooc then
+        if (not prowling or macroTorch.target.isAttackingMe) and ooc then
             macroTorch.tryBiteKillshot(comboPoints)
             macroTorch.cp5ReadyBite(comboPoints)
             -- no shred/claw at cp5 when ooc
@@ -92,16 +92,21 @@ function macroTorch.catAtk()
         -- 9.combatBuffMod - tiger's fury *
         macroTorch.keepTigerFury()
         -- 10.debuffMod, including rip, rake and FF
-        macroTorch.keepRip(comboPoints, player, prowling)
-        macroTorch.keepRake(comboPoints, player, prowling)
+        macroTorch.keepRip(comboPoints, prowling)
+        macroTorch.keepRake(comboPoints, prowling)
         macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
         -- 11.regular attack tech mod
-        if not prowling and comboPoints < 5 and macroTorch.isRakePresent() then
+        if macroTorch.isFightStarted(prowling) and comboPoints < 5 and macroTorch.isRakePresent() then
             macroTorch.safeClaw()
         end
         -- 12.energy res mod
         macroTorch.reshiftMod(player, prowling, ooc, berserk)
     end
+end
+
+-- whether the fight has started, considering prowling
+function macroTorch.isFightStarted(prowling)
+    return (not prowling and macroTorch.player.isInCombat) or (prowling and macroTorch.target.isAttackingMe)
 end
 
 function macroTorch.otMod(player, prowling, ooc, berserk, comboPoints)
@@ -323,8 +328,8 @@ function macroTorch.keepTigerFury()
     macroTorch.safeTigerFury()
 end
 
-function macroTorch.keepRip(comboPoints, player, prowling)
-    if not player.isInCombat or prowling or macroTorch.isRipPresent() or comboPoints < 5 or macroTorch.isImmune('Rip') or macroTorch.isKillshotOrLastChance(comboPoints) then
+function macroTorch.keepRip(comboPoints, prowling)
+    if not macroTorch.isFightStarted(prowling) or macroTorch.isRipPresent() or comboPoints < 5 or macroTorch.isImmune('Rip') or macroTorch.isKillshotOrLastChance(comboPoints) then
         return
     end
     -- boost attack power to rip when fighting world boss or player-controlled target
@@ -334,9 +339,9 @@ function macroTorch.keepRip(comboPoints, player, prowling)
     macroTorch.safeRip()
 end
 
-function macroTorch.keepRake(comboPoints, player, prowling)
+function macroTorch.keepRake(comboPoints, prowling)
     -- in no condition rake on 5cp
-    if not player.isInCombat or prowling or comboPoints == 5 or macroTorch.isRakePresent() or macroTorch.isImmune('Rake') or macroTorch.isKillshotOrLastChance(comboPoints) then
+    if not macroTorch.isFightStarted(prowling) or comboPoints == 5 or macroTorch.isRakePresent() or macroTorch.isImmune('Rake') or macroTorch.isKillshotOrLastChance(comboPoints) then
         return
     end
     macroTorch.safeRake()
@@ -348,9 +353,8 @@ function macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
     if ooc
         or macroTorch.isImmune('Faerie Fire (Feral)')
         or macroTorch.canDoReshift(player, prowling, ooc, berserk)
-        or not player.isInCombat
+        or not macroTorch.isFightStarted(prowling)
         or not macroTorch.target.isInCombat
-        or prowling
         or macroTorch.target.isNearBy and (
             player.mana >= macroTorch.CLAW_E and comboPoints < 5
             or player.mana >= macroTorch.BITE_E and comboPoints == 5
