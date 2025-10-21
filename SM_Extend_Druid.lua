@@ -106,7 +106,8 @@ end
 
 -- whether the fight has started, considering prowling
 function macroTorch.isFightStarted(prowling)
-    return (not prowling and macroTorch.player.isInCombat) or (prowling and macroTorch.target.isAttackingMe)
+    return (not prowling and (macroTorch.inCombat or macroTorch.target.isPlayerControlled)) or
+        (prowling and macroTorch.target.isAttackingMe)
 end
 
 function macroTorch.otMod(player, prowling, ooc, berserk, comboPoints)

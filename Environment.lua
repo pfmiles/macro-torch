@@ -21,6 +21,8 @@ macroTorch.context = {}
 function macroTorch.eventHandle(event)
     if event == 'PLAYER_REGEN_ENABLED' then
         if macroTorch.context then
+            macroTorch.inCombat = false
+
             macroTorch.context.rakeTimer = nil
             macroTorch.context.ripTimer = nil
             macroTorch.context.ffTimer = nil
@@ -39,5 +41,11 @@ function macroTorch.eventHandle(event)
             end
             macroTorch.show('macroTorch.context.rake/rip/ff/pounceTimer/THV cleared due to target change in combat!')
         end
+    elseif event == 'PLAYER_REGEN_DISABLED' then
+        if not macroTorch.context then
+            macroTorch.context = {}
+        end
+        macroTorch.inCombat = true
+        macroTorch.show('Entering combat!')
     end
 end
