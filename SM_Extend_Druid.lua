@@ -26,12 +26,24 @@ function macroTorch.catAtk()
     macroTorch.BITE_E = 35
     macroTorch.RIP_E = 30
     macroTorch.TIGER_E = 30
+
+    macroTorch.TIGER_DURATION = 18
+    macroTorch.RIP_DURATION = 18
+    macroTorch.RAKE_DURATION = 9
+    macroTorch.FF_DURATION = 40
+    macroTorch.POUNCE_DURATION = 18
+
     macroTorch.AUTO_TICK_ERPS = 20 / 2
     macroTorch.TIGER_ERPS = 10 / 3
     macroTorch.RAKE_ERPS = 5 / 3
     macroTorch.RIP_ERPS = 5 / 2
     macroTorch.POUNCE_ERPS = 5 / 3
     macroTorch.BERSERK_ERPS = 20 / 2
+
+    macroTorch.COWER_THREAT_THRESHOLD = 80
+    macroTorch.RESHIFT_ENERGY = 60
+    macroTorch.RESHIFT_E_DIFF_THRESHOLD = 2.5
+    macroTorch.BURST_ITEM_LOC = 14
 
     local player = macroTorch.player
     local prowling = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Ambush')
@@ -42,7 +54,7 @@ function macroTorch.catAtk()
 
     -- 1.health & mana saver in combat *
     if macroTorch.isFightStarted(prowling) then
-        macroTorch.useItemIfHealthPercentLessThan(p, 20, 'Healing Potion')
+        macroTorch.useItemIfHealthPercentLessThan(p, 10, 'Healing Potion')
         -- macroTorch.useItemIfManaPercentLessThan(p, 20, 'Mana Potion') TODO 由于cat形态下无法读取真正的mana，因此这里暂时作废
     end
     -- 2.targetEnemy *
@@ -65,7 +77,7 @@ function macroTorch.catAtk()
         -- 5.starterMod
         if prowling then
             if not macroTorch.isImmune('Pounce') then
-                macroTorch.show('Pounce immune: ' .. tostring(macroTorch.isImmune('Pounce')) .. ', do safePounce!')
+                -- macroTorch.show('Pounce immune: ' .. tostring(macroTorch.isImmune('Pounce')) .. ', do safePounce!')
                 macroTorch.safePounce()
             else
                 macroTorch.show('Pounce immune: ' .. tostring(macroTorch.isImmune('Pounce')) .. ', do Ravage!')
@@ -122,7 +134,7 @@ function macroTorch.otMod(player, prowling, ooc, berserk, comboPoints)
         or not macroTorch.player.isInGroup then
         return
     end
-    if target.isAttackingMe or (target.classification == 'worldboss' and macroTorch.playerThreatPercent() >= 80) then
+    if target.isAttackingMe or (target.classification == 'worldboss' and macroTorch.playerThreatPercent() >= macroTorch.COWER_THREAT_THRESHOLD) then
         macroTorch.show('current thread: ' .. macroTorch.playerThreatPercent() .. ' doing ready cower!!!')
         macroTorch.readyCower()
     end
@@ -309,8 +321,8 @@ function macroTorch.canDoReshift(player, prowling, ooc, berserk)
     if berserk then
         erps = erps + macroTorch.BERSERK_ERPS
     end
-    local diff = 30 - player.mana - erps
-    local ret = diff > 2.5
+    local diff = macroTorch.RESHIFT_ENERGY - macroTorch.TIGER_E - player.mana - erps
+    local ret = diff > macroTorch.RESHIFT_E_DIFF_THRESHOLD
 
     -- if ret then
     --     macroTorch.show('Current reshift profit: ' ..
@@ -375,7 +387,7 @@ end
 function macroTorch.tigerLeft()
     local tigerLeft = 0
     if not not macroTorch.context.tigerTimer then
-        tigerLeft = 18 - (GetTime() - macroTorch.context.tigerTimer)
+        tigerLeft = macroTorch.TIGER_DURATION - (GetTime() - macroTorch.context.tigerTimer)
         if tigerLeft < 0 then
             tigerLeft = 0
         end
@@ -392,7 +404,7 @@ end
 function macroTorch.ripLeft()
     local ripLeft = 0
     if not not macroTorch.context.ripTimer then
-        ripLeft = 18 - (GetTime() - macroTorch.context.ripTimer)
+        ripLeft = macroTorch.RIP_DURATION - (GetTime() - macroTorch.context.ripTimer)
         if ripLeft < 0 then
             ripLeft = 0
         end
@@ -409,7 +421,7 @@ end
 function macroTorch.rakeLeft()
     local rakeLeft = 0
     if not not macroTorch.context.rakeTimer then
-        rakeLeft = 9 - (GetTime() - macroTorch.context.rakeTimer)
+        rakeLeft = macroTorch.RAKE_DURATION - (GetTime() - macroTorch.context.rakeTimer)
         if rakeLeft < 0 then
             rakeLeft = 0
         end
@@ -426,7 +438,7 @@ end
 function macroTorch.ffLeft()
     local ffLeft = 0
     if not not macroTorch.context.ffTimer then
-        ffLeft = 40 - (GetTime() - macroTorch.context.ffTimer)
+        ffLeft = macroTorch.FF_DURATION - (GetTime() - macroTorch.context.ffTimer)
         if ffLeft < 0 then
             ffLeft = 0
         end
@@ -443,7 +455,7 @@ end
 function macroTorch.pounceLeft()
     local pounceLeft = 0
     if not not macroTorch.context.pounceTimer then
-        pounceLeft = 18 - (GetTime() - macroTorch.context.pounceTimer)
+        pounceLeft = macroTorch.POUNCE_DURATION - (GetTime() - macroTorch.context.pounceTimer)
         if pounceLeft < 0 then
             pounceLeft = 0
         end
@@ -567,7 +579,7 @@ end
 
 -- burst through boosting attack power
 function macroTorch.atkPowerBurst()
-    UseInventoryItem(14)
+    UseInventoryItem(macroTorch.BURST_ITEM_LOC)
 end
 
 function macroTorch.druidBuffs()
@@ -580,13 +592,4 @@ function macroTorch.druidBuffs()
     if not buffed('Nature\'s Grasp', 'player') then
         CastSpellByName('Nature\'s Grasp', true)
     end
-end
-
-function macroTorch.groupCast(spellFunction)
-    -- local h, m, p, q, l, k = UnitHealth, UnitHealthMax, "player"; for i = 1, GetNumRaidMembers() do
-    --     q = "raid" .. i; l = m(p) - h(p); k = m(q) - h(q); if CheckInteractDistance(q, 4) and l < k and h(q) > 1 then
-    --         p = q; l = k;
-    --     end
-    -- end
-    -- TargetUnit(p); CastSpellByName("治疗链(等级 " .. (l > 500 and 3 or 1) .. ")")
 end
