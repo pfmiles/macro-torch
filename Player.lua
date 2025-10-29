@@ -23,7 +23,7 @@ function macroTorch.Player:new()
     -- @param spellName string spell name
     -- @param onSelf boolean true if cast on self, current target otherwise
     function obj.cast(spellName, onSelf)
-        CastSpellByName(spellName, onSelf)
+        macroTorch.castSpellByName(spellName, 'spell')
     end
 
     -- use item in bag by name
