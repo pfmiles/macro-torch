@@ -33,6 +33,17 @@ function macroTorch.getSpellIdByName(spellName, bookType)
     return nil
 end
 
+function macroTorch.isSpellExist(spellName, bookType)
+    return macroTorch.toBoolean(macroTorch.getSpellIdByName(spellName, bookType))
+end
+
+-- a solid implementation of cast spell by name
+-- @param spellName string spell name
+-- @param bookType string book type, 'spell' or 'pet' for example
+function macroTorch.castSpellByName(spellName, bookType)
+    CastSpell(macroTorch.getSpellIdByName(spellName, bookType), bookType)
+end
+
 -- print all spells, for debug usages
 function macroTorch.listAllSpells(bookType)
     local i = 1;

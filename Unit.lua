@@ -118,7 +118,7 @@ macroTorch.UNIT_FIELD_FUNC_MAP = {
     -- elemental, undead, etc
     ['type'] = function(self)
         local t = UnitCreatureType(self.ref)
-        if not t or t:match("^%s*$") then
+        if not t or string.find(t, "^%s*$") then
             t = 'Unknown'
         end
         return t

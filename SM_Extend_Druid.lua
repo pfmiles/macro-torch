@@ -64,6 +64,11 @@ function macroTorch.catAtk()
     else
         -- maintain THV
         macroTorch.maintainTHV()
+        -- roughly bear form logic branch
+        if macroTorch.player.isFormActive('Dire Bear Form') then
+            macroTorch.bearAtk()
+            return
+        end
         -- 3.keep autoAttack, in combat & not prowling *
         if macroTorch.isFightStarted(prowling) then
             player.startAutoAtk()
@@ -654,4 +659,83 @@ function macroTorch.mateNearMyTargetCount()
     end
     local nearMates = macroTorch.filterGroupMates(mateNearMyTarget)
     return macroTorch.tableLen(nearMates)
+end
+
+function macroTorch.druidStun()
+    local inBearForm = macroTorch.player.isFormActive('Dire Bear Form')
+    -- if in melee range then use bear bash else bear charge
+    -- if not in bear form, be bear first
+    if not inBearForm then
+        macroTorch.player.cast('Dire Bear Form')
+    end
+    if inBearForm and macroTorch.player.mana == 0 and SpellReady('Enrage') then
+        macroTorch.player.cast('Enrage')
+    end
+    if macroTorch.target.isNearBy then
+        macroTorch.player.cast('Bash')
+    else
+        if macroTorch.isSpellExist('Feral Charge', 'spell') then
+            macroTorch.player.cast('Feral Charge')
+        end
+    end
+end
+
+function macroTorch.druidDefend()
+    -- [Barkskin (Feral)][Frenzied Regeneration]
+    if SpellReady('Barkskin (Feral)') then
+        macroTorch.player.cast('Barkskin (Feral)')
+    end
+    if SpellReady('Frenzied Regeneration') then
+        local inBearForm = macroTorch.player.isFormActive('Dire Bear Form')
+        if not inBearForm then
+            macroTorch.player.cast('Dire Bear Form')
+        end
+        if inBearForm and macroTorch.player.mana == 0 and SpellReady('Enrage') then
+            macroTorch.player.cast('Enrage')
+        end
+        macroTorch.player.cast('Frenzied Regeneration')
+    end
+end
+
+function macroTorch.druidControl()
+    -- if target is of type beast or dragonkin, use Hibernate, else use [Entangling Roots]
+    if macroTorch.target.type == 'Beast' or macroTorch.target.type == 'Dragonkin' then
+        macroTorch.player.cast('Hibernate')
+    else
+        macroTorch.player.cast('Entangling Roots')
+    end
+end
+
+function macroTorch.bearAoe()
+    if not macroTorch.player.isFormActive('Dire Bear Form') then
+        return
+    end
+    -- if no [Demoralizing Roar] buff on target, use [Demoralizing Roar]
+    if macroTorch.target.isCanAttack and not buffed('Demoralizing Roar', 'target') then
+        macroTorch.player.cast('Demoralizing Roar')
+    end
+    if SpellReady('Swipe') then
+        macroTorch.player.cast('Swipe')
+    end
+end
+
+function macroTorch.bearAtk()
+    if not macroTorch.player.isFormActive('Dire Bear Form') then
+        return
+    end
+    if macroTorch.player.mana == 0 and SpellReady('Enrage') then
+        macroTorch.player.cast('Enrage')
+    end
+    local target = macroTorch.target
+    -- if target is not attacking me and it's not a player controlled target and Growl ready, use Growl
+    -- if target.isCanAttack and not target.isPlayerControlled and not target.isAttackingMe and SpellReady('Growl') then
+    --     macroTorch.player.cast('Growl')
+    -- end
+    -- [Savage Bite] as soon as I can, then [Maul] blindly
+    if SpellReady('Savage Bite') then
+        macroTorch.player.cast('Savage Bite')
+    end
+    if SpellReady('Maul') then
+        macroTorch.player.cast('Maul')
+    end
 end
