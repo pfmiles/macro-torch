@@ -44,6 +44,7 @@ function macroTorch.catAtk()
     macroTorch.RESHIFT_ENERGY = 60
     macroTorch.RESHIFT_E_DIFF_THRESHOLD = 2.5
     macroTorch.BURST_ITEM_LOC = 14
+    macroTorch.PLAYER_URGENT_HP_THRESHOLD = 10
 
     local player = macroTorch.player
     local prowling = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Ambush')
@@ -54,7 +55,7 @@ function macroTorch.catAtk()
 
     -- 1.health & mana saver in combat *
     if macroTorch.isFightStarted(prowling) then
-        macroTorch.useItemIfHealthPercentLessThan(p, 10, 'Healing Potion')
+        macroTorch.combatUrgentHPRestore()
         -- macroTorch.useItemIfManaPercentLessThan(p, 20, 'Mana Potion') TODO 由于cat形态下无法读取真正的mana，因此这里暂时作废
     end
     -- 2.targetEnemy *
@@ -116,6 +117,15 @@ function macroTorch.catAtk()
     end
 end
 
+function macroTorch.combatUrgentHPRestore()
+    local p = 'player'
+    if macroTorch.isItemCooledDown('Healthstone') then
+        macroTorch.useItemIfHealthPercentLessThan(p, macroTorch.PLAYER_URGENT_HP_THRESHOLD, 'Healthstone')
+    elseif macroTorch.isItemCooledDown('Healing Potion') then
+        macroTorch.useItemIfHealthPercentLessThan(p, macroTorch.PLAYER_URGENT_HP_THRESHOLD, 'Healing Potion')
+    end
+end
+
 -- whether the fight has started, considering prowling
 function macroTorch.isFightStarted(prowling)
     return (not prowling and (macroTorch.inCombat or macroTorch.target.isPlayerControlled)) or
@@ -134,8 +144,8 @@ function macroTorch.otMod(player, prowling, ooc, berserk, comboPoints)
         or not macroTorch.player.isInGroup then
         return
     end
-    if target.isAttackingMe or (target.classification == 'worldboss' and macroTorch.playerThreatPercent() >= macroTorch.COWER_THREAT_THRESHOLD) then
-        macroTorch.show('current thread: ' .. macroTorch.playerThreatPercent() .. ' doing ready cower!!!')
+    if (target.isAttackingMe or (target.classification == 'worldboss' and macroTorch.playerThreatPercent() >= macroTorch.COWER_THREAT_THRESHOLD)) and target.distance < 15 then
+        macroTorch.show('current threat: ' .. macroTorch.playerThreatPercent() .. ' doing ready cower!!!')
         macroTorch.readyCower()
     end
 end
@@ -185,6 +195,7 @@ macroTorch.KS_CP3_Health_raid_pps = macroTorch.KS_CP3_Health_group / 5
 macroTorch.KS_CP4_Health_raid_pps = macroTorch.KS_CP4_Health_group / 5
 macroTorch.KS_CP5_Health_raid_pps = macroTorch.KS_CP5_Health_group / 5
 
+-- maintain the target health vector
 function macroTorch.maintainTHV()
     if macroTorch.context then
         local target = macroTorch.target
@@ -241,15 +252,35 @@ function macroTorch.isKillshotOrLastChance(comboPoints)
         return comboPoints >= 3 and macroTorch.target.healthPercent <= 2
     elseif macroTorch.player.isInGroup and not macroTorch.player.isInRaid and not fightWorldBoss and not isPvp then
         -- normal battle in a 5-man group
-        return comboPoints == 1 and targetHealth < macroTorch.KS_CP1_Health_group or
-            comboPoints == 2 and targetHealth < macroTorch.KS_CP2_Health_group or
-            comboPoints == 3 and targetHealth < macroTorch.KS_CP3_Health_group or
-            comboPoints == 4 and targetHealth < macroTorch.KS_CP4_Health_group or
-            comboPoints == 5 and targetHealth < macroTorch.KS_CP5_Health_group
+        local nearMateNum = macroTorch.mateNearMyTargetCount() or 0
+        local less = 4 - nearMateNum
+        if less > 0 then
+            macroTorch.show('nearMateNum: ' .. tostring(nearMateNum) .. ', less: ' .. tostring(less))
+        end
+        return comboPoints == 1 and
+            targetHealth <
+            (macroTorch.KS_CP1_Health_group - less * (macroTorch.KS_CP1_Health_group - macroTorch.KS_CP1_Health) / 4) or
+            comboPoints == 2 and
+            targetHealth <
+            (macroTorch.KS_CP2_Health_group - less * (macroTorch.KS_CP2_Health_group - macroTorch.KS_CP2_Health) / 4) or
+            comboPoints == 3 and
+            targetHealth <
+            (macroTorch.KS_CP3_Health_group - less * (macroTorch.KS_CP3_Health_group - macroTorch.KS_CP3_Health) / 4) or
+            comboPoints == 4 and
+            targetHealth <
+            (macroTorch.KS_CP4_Health_group - less * (macroTorch.KS_CP4_Health_group - macroTorch.KS_CP4_Health) / 4) or
+            comboPoints == 5 and
+            targetHealth <
+            (macroTorch.KS_CP5_Health_group - less * (macroTorch.KS_CP5_Health_group - macroTorch.KS_CP5_Health) / 4)
     elseif macroTorch.player.isInRaid and not fightWorldBoss and not isPvp then
         -- normal battle in a raid
         local raidNum = GetNumRaidMembers() or 0
-        local more = raidNum - 5
+        local nearMateNum = macroTorch.mateNearMyTargetCount() or 0
+        if nearMateNum < raidNum - 1 then
+            macroTorch.show('raidNum: ' .. tostring(raidNum) .. ', nearMateNum: ' .. tostring(nearMateNum))
+        end
+
+        local more = nearMateNum - 5 + 1
         if more < 0 then
             more = 0
         end
@@ -356,6 +387,10 @@ function macroTorch.keepRake(comboPoints, prowling)
     -- in no condition rake on 5cp
     if not macroTorch.isFightStarted(prowling) or comboPoints == 5 or macroTorch.isRakePresent() or macroTorch.isImmune('Rake') or macroTorch.isKillshotOrLastChance(comboPoints) then
         return
+    end
+    -- boost attack power to rake when fighting world boss
+    if macroTorch.target.classification == 'worldboss' and macroTorch.target.isNearBy then
+        macroTorch.atkPowerBurst()
     end
     macroTorch.safeRake()
 end
@@ -579,7 +614,9 @@ end
 
 -- burst through boosting attack power
 function macroTorch.atkPowerBurst()
-    UseInventoryItem(macroTorch.BURST_ITEM_LOC)
+    if GetInventoryItemCooldown("player", macroTorch.BURST_ITEM_LOC) == 0 then
+        UseInventoryItem(macroTorch.BURST_ITEM_LOC)
+    end
 end
 
 function macroTorch.druidBuffs()
@@ -592,4 +629,29 @@ function macroTorch.druidBuffs()
     if not buffed('Nature\'s Grasp', 'player') then
         CastSpellByName('Nature\'s Grasp', true)
     end
+end
+
+-- get the distance between specified unit and my target
+function macroTorch.unitTargetDistance(unitId)
+    if not UnitExists(unitId) or UnitIsDead(unitId) or not macroTorch.target.isExist then
+        return nil
+    end
+    local distance = UnitXP("distanceBetween", unitId, "target")
+    if not distance or distance < 0 then
+        return nil
+    end
+    return distance
+end
+
+-- count mates number near my current targetHealthVector
+function macroTorch.mateNearMyTargetCount()
+    local function mateNearMyTarget(unitId)
+        local dis = macroTorch.unitTargetDistance(unitId)
+        if not dis then
+            return false
+        end
+        return dis <= 43
+    end
+    local nearMates = macroTorch.filterGroupMates(mateNearMyTarget)
+    return macroTorch.tableLen(nearMates)
 end

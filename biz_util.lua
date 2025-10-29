@@ -132,9 +132,41 @@ end
 
 -- 定义计算table长度的函数
 function macroTorch.tableLen(tbl)
+    if not tbl then
+        return 0
+    end
     local len = 0
     for _ in pairs(tbl) do
         len = len + 1
     end
     return len
+end
+
+-- 过滤出符合条件的团队成员
+-- @param predFunc function 过滤函数, 参数为unitId，返回值为boolean
+-- @return table 符合条件的团队成员的unitId数组
+function macroTorch.filterGroupMates(predFunc)
+    local result = {}
+    if macroTorch.player.isInRaid then
+        for i = 1, 40 do
+            local unitId = "raid" .. i
+            if UnitExists(unitId) and not UnitIsDead(unitId) and not UnitIsUnit(unitId, "player") then
+                if predFunc(unitId) then
+                    table.insert(result, unitId)
+                end
+            end
+        end
+    elseif macroTorch.player.isInGroup and not macroTorch.player.isInRaid then
+        for i = 1, 4 do
+            local unitId = "party" .. i
+            if UnitExists(unitId) and not UnitIsDead(unitId) and not UnitIsUnit(unitId, "player") then
+                if predFunc(unitId) then
+                    table.insert(result, unitId)
+                end
+            end
+        end
+    end
+
+    macroTorch.show('filterGroupMates result: ' .. table.concat(result, ', '))
+    return result
 end
