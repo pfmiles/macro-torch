@@ -149,6 +149,9 @@ function macroTorch.otMod(player, prowling, ooc, berserk, comboPoints)
         or not macroTorch.player.isInGroup then
         return
     end
+    if (target.isAttackingMe or macroTorch.playerThreatPercent() > 97) and not SpellReady('Cower') and target.classification == 'worldboss' then
+        player.use('Invulnerability Potion', true)
+    end
     if (target.isAttackingMe or (target.classification == 'worldboss' and macroTorch.playerThreatPercent() >= macroTorch.COWER_THREAT_THRESHOLD)) and target.distance < 15 then
         macroTorch.show('current threat: ' .. macroTorch.playerThreatPercent() .. ' doing ready cower!!!')
         macroTorch.readyCower()
@@ -281,9 +284,9 @@ function macroTorch.isKillshotOrLastChance(comboPoints)
         -- normal battle in a raid
         local raidNum = GetNumRaidMembers() or 0
         local nearMateNum = macroTorch.mateNearMyTargetCount() or 0
-        if nearMateNum < raidNum - 1 then
-            macroTorch.show('raidNum: ' .. tostring(raidNum) .. ', nearMateNum: ' .. tostring(nearMateNum))
-        end
+        -- if nearMateNum < raidNum - 1 then
+        --     macroTorch.show('raidNum: ' .. tostring(raidNum) .. ', nearMateNum: ' .. tostring(nearMateNum))
+        -- end
 
         local more = nearMateNum - 5 + 1
         if more < 0 then
