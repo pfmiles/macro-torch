@@ -117,6 +117,11 @@ function macroTorch.getItemBagIdAndSlot(itemName)
     end
 end
 
+function macroTorch.isItemExist(itemName)
+    local bagId, slotIndex = macroTorch.getItemBagIdAndSlot(itemName)
+    return macroTorch.toBoolean(bagId and slotIndex)
+end
+
 function macroTorch.isItemCooledDown(itemName)
     local bagId, slotIndex = macroTorch.getItemBagIdAndSlot(itemName)
     if not bagId or not slotIndex then
@@ -178,6 +183,6 @@ function macroTorch.filterGroupMates(predFunc)
         end
     end
 
-    macroTorch.show('filterGroupMates result: ' .. table.concat(result, ', '))
+    -- macroTorch.show('filterGroupMates result: ' .. table.concat(result, ', '))
     return result
 end

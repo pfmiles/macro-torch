@@ -625,6 +625,9 @@ function macroTorch.atkPowerBurst()
     if GetInventoryItemCooldown("player", macroTorch.BURST_ITEM_LOC) == 0 then
         UseInventoryItem(macroTorch.BURST_ITEM_LOC)
     end
+    if not buffed('Juju Power') and macroTorch.isItemExist('Juju Power') then
+        macroTorch.player.useItem('Juju Power', true)
+    end
 end
 
 function macroTorch.druidBuffs()
