@@ -64,11 +64,6 @@ function macroTorch.catAtk()
     else
         -- maintain THV
         macroTorch.maintainTHV()
-        -- roughly bear form logic branch
-        if macroTorch.player.isFormActive('Dire Bear Form') then
-            macroTorch.bearAtk()
-            return
-        end
         -- 3.keep autoAttack, in combat & not prowling *
         if macroTorch.isFightStarted(prowling) then
             player.startAutoAtk()
@@ -79,6 +74,11 @@ function macroTorch.catAtk()
                 CastSpellByName('Berserk')
             end
             macroTorch.atkPowerBurst()
+        end
+        -- roughly bear form logic branch
+        if macroTorch.player.isFormActive('Dire Bear Form') then
+            macroTorch.bearAtk()
+            return
         end
         -- 5.starterMod
         if prowling then
@@ -548,6 +548,7 @@ end
 
 function macroTorch.safeRake()
     if SpellReady('Rake') and macroTorch.player.mana >= macroTorch.RAKE_E then
+        macroTorch.show('Rake present: ' .. macroTorch.isRakePresent() .. 'doing rake now.')
         CastSpellByName('Rake')
         macroTorch.context.rakeTimer = GetTime()
         return true
