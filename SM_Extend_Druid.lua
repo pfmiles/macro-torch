@@ -133,8 +133,13 @@ end
 
 -- whether the fight has started, considering prowling
 function macroTorch.isFightStarted(prowling)
-    return (not prowling and (macroTorch.inCombat or macroTorch.target.isPlayerControlled)) or
-        (prowling and macroTorch.target.isAttackingMe)
+    return (not prowling and
+            (macroTorch.player.isInCombat
+                or macroTorch.inCombat
+                or macroTorch.target.isPlayerControlled
+                or (macroTorch.target.isHostile and macroTorch.target.isNearBy)
+            ))
+        or (prowling and macroTorch.target.isAttackingMe)
 end
 
 function macroTorch.otMod(player, prowling, ooc, berserk, comboPoints)
@@ -625,8 +630,8 @@ function macroTorch.atkPowerBurst()
     if GetInventoryItemCooldown("player", macroTorch.BURST_ITEM_LOC) == 0 then
         UseInventoryItem(macroTorch.BURST_ITEM_LOC)
     end
-    if not buffed('Juju Power') and macroTorch.isItemExist('Juju Power') then
-        macroTorch.player.useItem('Juju Power', true)
+    if not buffed('Juju Power') and macroTorch.isItemExist('Juju Power') and not macroTorch.target.isPlayerControlled then
+        macroTorch.player.use('Juju Power', true)
     end
 end
 
