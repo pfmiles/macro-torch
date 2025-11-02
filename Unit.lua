@@ -174,14 +174,18 @@ macroTorch.UNIT_FIELD_FUNC_MAP = {
         local t = self.ref
         return macroTorch.toBoolean(UnitExists(t) and not UnitIsDead(t) and UnitCanAssist('player', t))
     end,
+    ['isHostile'] = function(self)
+        local t = self.ref
+        return macroTorch.toBoolean(UnitExists(t) and not UnitIsDead(t) and UnitIsEnemy(t, 'player'))
+    end,
     ['isAttackingMe'] = function(self)
         local t = self.ref
-        return macroTorch.toBoolean(self.isCanAttack and UnitAffectingCombat(t) and
+        return macroTorch.toBoolean(self.isCanAttack and
             UnitName("player") == UnitName(t .. "target"))
     end,
     ['isAttackingMyPet'] = function(self)
         local t = self.ref
-        return macroTorch.toBoolean(self.isCanAttack and UnitAffectingCombat(t) and
+        return macroTorch.toBoolean(self.isCanAttack and
             UnitName("pet") == UnitName(t .. "target"))
     end,
     ['isNearBy'] = function(self)
