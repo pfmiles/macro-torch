@@ -110,12 +110,24 @@ function macroTorch.catAtk()
         -- 9.combatBuffMod - tiger's fury *
         macroTorch.keepTigerFury()
         -- 10.debuffMod, including rip, rake and FF
-        macroTorch.keepRip(comboPoints, prowling)
-        macroTorch.keepRake(comboPoints, prowling)
-        macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
-        -- 11.regular attack tech mod
-        if macroTorch.isFightStarted(prowling) and comboPoints < 5 and (macroTorch.isRakePresent() or macroTorch.isImmune('Rake')) then
-            macroTorch.safeClaw()
+        if macroTorch.target.isPlayerControlled then
+            -- do a quick dps, if pvp, or in group/raid against trivial mobs
+            macroTorch.keepRip(comboPoints, prowling)
+            macroTorch.keepRake(comboPoints, prowling)
+            macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
+            -- 11.regular attack tech mod
+            if macroTorch.isFightStarted(prowling) and comboPoints < 5 and (macroTorch.isRakePresent() or macroTorch.isImmune('Rake')) then
+                macroTorch.safeClaw()
+            end
+        else
+            -- do deep dps
+            macroTorch.keepRip(comboPoints, prowling)
+            macroTorch.keepRake(comboPoints, prowling)
+            macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
+            -- 11.regular attack tech mod
+            if macroTorch.isFightStarted(prowling) and comboPoints < 5 and (macroTorch.isRakePresent() or macroTorch.isImmune('Rake')) then
+                macroTorch.safeClaw()
+            end
         end
         -- 12.energy res mod
         macroTorch.reshiftMod(player, prowling, ooc, berserk)
@@ -463,7 +475,7 @@ function macroTorch.ripLeft()
 end
 
 function macroTorch.isRakePresent()
-    return buffed('Rake', 'target') and macroTorch.rakeLeft() > 0
+    return macroTorch.toBoolean(buffed('Rake', 'target') and macroTorch.rakeLeft() > 0)
 end
 
 function macroTorch.rakeLeft()
@@ -548,7 +560,7 @@ end
 
 function macroTorch.safeRake()
     if SpellReady('Rake') and macroTorch.player.mana >= macroTorch.RAKE_E then
-        macroTorch.show('Rake present: ' .. macroTorch.isRakePresent() .. 'doing rake now.')
+        macroTorch.show('Rake present: ' .. tostring(macroTorch.isRakePresent()) .. ' doing rake now.')
         CastSpellByName('Rake')
         macroTorch.context.rakeTimer = GetTime()
         return true
@@ -586,7 +598,8 @@ end
 function macroTorch.safeFF()
     if SpellReady('Faerie Fire (Feral)') then
         -- CastSpellByName('Faerie Fire (Feral)')
-        lazyScript.SlashCommand('ff')
+        -- lazyScript.SlashCommand('ff')
+        macroTorch.player.cast('Faerie Fire (Feral)')
         macroTorch.context.ffTimer = GetTime()
         return true
     end
@@ -750,4 +763,5 @@ function macroTorch.bearAtk()
     if SpellReady('Maul') then
         macroTorch.player.cast('Maul')
     end
+    macroTorch.safeFF()
 end
