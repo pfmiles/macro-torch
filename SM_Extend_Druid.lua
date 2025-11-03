@@ -170,7 +170,6 @@ function macroTorch.otMod(player, prowling, ooc, berserk, comboPoints)
         player.use('Invulnerability Potion', true)
     end
     if (target.isAttackingMe or (target.classification == 'worldboss' and macroTorch.playerThreatPercent() >= macroTorch.COWER_THREAT_THRESHOLD)) and target.distance < 15 then
-        macroTorch.show('current threat: ' .. macroTorch.playerThreatPercent() .. ' doing ready cower!!!')
         macroTorch.readyCower()
     end
 end
@@ -627,6 +626,7 @@ end
 function macroTorch.readyCower()
     if SpellReady('Cower') then
         CastSpellByName('Cower')
+        macroTorch.show('current threat: ' .. macroTorch.playerThreatPercent() .. ' doing ready cower!!!')
         return true
     end
     return false
