@@ -114,7 +114,7 @@ function macroTorch.catAtk()
         macroTorch.keepRake(comboPoints, prowling)
         macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
         -- 11.regular attack tech mod
-        if macroTorch.isFightStarted(prowling) and comboPoints < 5 and macroTorch.isRakePresent() then
+        if macroTorch.isFightStarted(prowling) and comboPoints < 5 and (macroTorch.isRakePresent() or macroTorch.isImmune('Rake')) then
             macroTorch.safeClaw()
         end
         -- 12.energy res mod
@@ -419,8 +419,8 @@ function macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
         or macroTorch.target.isNearBy and (
             player.mana >= macroTorch.CLAW_E and comboPoints < 5
             or player.mana >= macroTorch.BITE_E and comboPoints == 5
-            or player.mana >= macroTorch.RAKE_E and not macroTorch.isRakePresent() and comboPoints < 5
-            or player.mana >= macroTorch.RIP_E and not macroTorch.isRipPresent() and comboPoints == 5
+            or player.mana >= macroTorch.RAKE_E and not macroTorch.isRakePresent() and not macroTorch.isImmune('Rake') and comboPoints < 5
+            or player.mana >= macroTorch.RIP_E and not macroTorch.isRipPresent() and not macroTorch.isImmune('Rip') and comboPoints == 5
             or comboPoints == 5
             or macroTorch.isKillshotOrLastChance(comboPoints)) then
         return
