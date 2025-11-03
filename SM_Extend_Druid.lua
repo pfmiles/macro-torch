@@ -111,23 +111,16 @@ function macroTorch.catAtk()
         macroTorch.keepTigerFury()
         -- 10.debuffMod, including rip, rake and FF
         if macroTorch.target.isPlayerControlled then
-            -- do a quick dps, if pvp, or in group/raid against trivial mobs
-            macroTorch.keepRip(comboPoints, prowling)
-            macroTorch.keepRake(comboPoints, prowling)
-            macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
-            -- 11.regular attack tech mod
-            if macroTorch.isFightStarted(prowling) and comboPoints < 5 and (macroTorch.isRakePresent() or macroTorch.isImmune('Rake')) then
-                macroTorch.safeClaw()
-            end
+            -- no need to do deep rip when pvp
+            macroTorch.quickKeepRip(comboPoints, prowling)
         else
-            -- do deep dps
             macroTorch.keepRip(comboPoints, prowling)
-            macroTorch.keepRake(comboPoints, prowling)
-            macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
-            -- 11.regular attack tech mod
-            if macroTorch.isFightStarted(prowling) and comboPoints < 5 and (macroTorch.isRakePresent() or macroTorch.isImmune('Rake')) then
-                macroTorch.safeClaw()
-            end
+        end
+        macroTorch.keepRake(comboPoints, prowling)
+        macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
+        -- 11.regular attack tech mod
+        if macroTorch.isFightStarted(prowling) and comboPoints < 5 and (macroTorch.isRakePresent() or macroTorch.isImmune('Rake')) then
+            macroTorch.safeClaw()
         end
         -- 12.energy res mod
         macroTorch.reshiftMod(player, prowling, ooc, berserk)
@@ -398,6 +391,19 @@ end
 
 function macroTorch.keepRip(comboPoints, prowling)
     if not macroTorch.isFightStarted(prowling) or macroTorch.isRipPresent() or comboPoints < 5 or macroTorch.isImmune('Rip') or macroTorch.isKillshotOrLastChance(comboPoints) then
+        return
+    end
+    -- boost attack power to rip when fighting world boss or player-controlled target
+    if macroTorch.target.classification == 'worldboss' or macroTorch.target.isPlayerControlled then
+        macroTorch.atkPowerBurst()
+    end
+    macroTorch.safeRip()
+end
+
+-- originates from keepRip, but no need to rip at 5cp
+function macroTorch.quickKeepRip(comboPoints, prowling)
+    -- quick keep rip, do at any cp
+    if not macroTorch.isFightStarted(prowling) or macroTorch.isRipPresent() or comboPoints == 0 or macroTorch.isImmune('Rip') or macroTorch.isKillshotOrLastChance(comboPoints) then
         return
     end
     -- boost attack power to rip when fighting world boss or player-controlled target
