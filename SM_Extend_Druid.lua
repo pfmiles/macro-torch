@@ -110,7 +110,7 @@ function macroTorch.catAtk()
         -- 9.combatBuffMod - tiger's fury *
         macroTorch.keepTigerFury()
         -- 10.debuffMod, including rip, rake and FF
-        if macroTorch.target.isPlayerControlled then
+        if macroTorch.isTrivialBattleOrPvp() then
             -- no need to do deep rip when pvp
             macroTorch.quickKeepRip(comboPoints, prowling)
         else
@@ -125,6 +125,16 @@ function macroTorch.catAtk()
         -- 12.energy res mod
         macroTorch.reshiftMod(player, prowling, ooc, berserk)
     end
+end
+
+function macroTorch.isTrivialBattleOrPvp()
+    local player = macroTorch.player
+    local target = macroTorch.target
+    return target.isPlayerControlled or
+        (
+        -- if the target's max health is less than we attack 20s with 500dps each person
+            (player.isInRaid or player.isInGroup) and (target.healthMax <= (macroTorch.mateNearMyTargetCount() + 1) * 500 * 20)
+        )
 end
 
 function macroTorch.combatUrgentHPRestore()
@@ -577,6 +587,7 @@ function macroTorch.safeRip()
     if SpellReady('Rip') and macroTorch.player.mana >= macroTorch.RIP_E then
         CastSpellByName('Rip')
         macroTorch.context.ripTimer = GetTime()
+        macroTorch.show('Ripped at combo points: ' .. tostring(GetComboPoints()))
         return true
     end
     return false
@@ -679,7 +690,7 @@ function macroTorch.unitTargetDistance(unitId)
     return distance
 end
 
--- count mates number near my current targetHealthVector
+-- count mates number near my current targetHealthVector, excludeing myself
 function macroTorch.mateNearMyTargetCount()
     local function mateNearMyTarget(unitId)
         local dis = macroTorch.unitTargetDistance(unitId)
