@@ -16,7 +16,8 @@
 ---小德专用start---
 
 --- The 'E' key regular dps function for feral cat druid
-function macroTorch.catAtk()
+--- if rough, then no shred, and doing quick rip
+function macroTorch.catAtk(rough)
     local p = 'player'
     local t = 'target'
     macroTorch.POUNCE_E = 50
@@ -96,7 +97,7 @@ function macroTorch.catAtk()
             macroTorch.cp5ReadyBite(comboPoints)
             -- no shred/claw at cp5 when ooc
             if comboPoints < 5 then
-                if isBehind then
+                if isBehind and not rough then
                     macroTorch.readyShred()
                 else
                     macroTorch.readyClaw()
@@ -110,7 +111,7 @@ function macroTorch.catAtk()
         -- 9.combatBuffMod - tiger's fury *
         macroTorch.keepTigerFury()
         -- 10.debuffMod, including rip, rake and FF
-        if macroTorch.isTrivialBattleOrPvp() then
+        if macroTorch.isTrivialBattleOrPvp() or rough then
             -- no need to do deep rip when pvp
             macroTorch.quickKeepRip(comboPoints, prowling)
         else
@@ -132,8 +133,8 @@ function macroTorch.isTrivialBattleOrPvp()
     local target = macroTorch.target
     return target.isPlayerControlled or
         (
-        -- if the target's max health is less than we attack 20s with 500dps each person
-            (player.isInRaid or player.isInGroup) and (target.healthMax <= (macroTorch.mateNearMyTargetCount() + 1) * 500 * 20)
+        -- if the target's max health is less than we attack 15s with 500dps each person
+            (player.isInRaid or player.isInGroup) and (target.healthMax <= (macroTorch.mateNearMyTargetCount() + 1) * 500 * 15)
         )
 end
 
