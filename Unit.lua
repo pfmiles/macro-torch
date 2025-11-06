@@ -70,6 +70,7 @@ function macroTorch.Unit:new(ref)
     end
 
     setmetatable(obj, {
+        -- k is the key of searching field, and t is the table itself
         __index = function(t, k)
             -- missing instance field search
             if macroTorch.UNIT_FIELD_FUNC_MAP[k] then

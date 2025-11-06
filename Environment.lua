@@ -47,5 +47,14 @@ function macroTorch.eventHandle(event)
         end
         macroTorch.inCombat = true
         macroTorch.show('Entering combat!')
+    elseif event == "UI_ERROR_MESSAGE" then
+        if not macroTorch.context then
+            macroTorch.context = {}
+        end
+        -- arg1 is a global var be set automatically, see https://wow.gamepedia.com/UI_ERROR_MESSAGE
+        -- SPELL_FAILED_NOT_BEHIND is a global constant, see https://wow.gamepedia.com/Constants/SPELL_FAILED_NOT_BEHIND
+        if (arg1 == SPELL_FAILED_NOT_BEHIND) then
+            macroTorch.context.behindAttackFailedTime = GetTime()
+        end
     end
 end
