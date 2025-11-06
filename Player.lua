@@ -97,10 +97,38 @@ function macroTorch.Player:new()
         return macroTorch.isCasting(spellName, 'spell')
     end
 
-    self.__index = self
-    setmetatable(obj, self)
+    -- impl hint: original '__index' & metatable setting:
+    -- self.__index = self
+    -- setmetatable(obj, self)
+
+    setmetatable(obj, {
+        -- k is the key of searching field, and t is the table itself
+        __index = function(t, k)
+            -- missing instance field search
+            if macroTorch.PLAYER_FIELD_FUNC_MAP[k] then
+                return macroTorch.PLAYER_FIELD_FUNC_MAP[k](t)
+            end
+            -- class field & method search
+            local class_val = self[k]
+            if class_val then
+                return class_val
+            end
+        end
+    })
+
     return obj
 end
+
+-- player fields to function mapping
+macroTorch.PLAYER_FIELD_FUNC_MAP = {
+    -- basic props
+
+    -- conditinal props
+    ['isBehindAttackJustFailed'] = function(self)
+        return macroTorch.context and macroTorch.context.behindAttackFailedTime and
+            (GetTime() - macroTorch.context.behindAttackFailedTime) <= 0.5
+    end,
+}
 
 macroTorch.player = macroTorch.Player:new()
 

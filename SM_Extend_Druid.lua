@@ -16,7 +16,7 @@
 ---小德专用start---
 
 --- The 'E' key regular dps function for feral cat druid
---- if rough, then no shred, and doing quick rip
+--- if rough, then no back attacks
 function macroTorch.catAtk(rough)
     local p = 'player'
     local t = 'target'
@@ -83,12 +83,16 @@ function macroTorch.catAtk(rough)
         end
         -- 5.starterMod
         if prowling then
-            if not macroTorch.isImmune('Pounce') then
-                -- macroTorch.show('Pounce immune: ' .. tostring(macroTorch.isImmune('Pounce')) .. ', do safePounce!')
-                macroTorch.safePounce()
+            if not rough then
+                if not macroTorch.isImmune('Pounce') then
+                    -- macroTorch.show('Pounce immune: ' .. tostring(macroTorch.isImmune('Pounce')) .. ', do safePounce!')
+                    macroTorch.safePounce()
+                else
+                    macroTorch.show('Pounce immune: ' .. tostring(macroTorch.isImmune('Pounce')) .. ', do Ravage!')
+                    CastSpellByName('Ravage')
+                end
             else
-                macroTorch.show('Pounce immune: ' .. tostring(macroTorch.isImmune('Pounce')) .. ', do Ravage!')
-                CastSpellByName('Ravage')
+                macroTorch.safeClaw()
             end
         end
         -- 7.oocMod
@@ -97,7 +101,7 @@ function macroTorch.catAtk(rough)
             macroTorch.cp5ReadyBite(comboPoints)
             -- no shred/claw at cp5 when ooc
             if comboPoints < 5 then
-                if isBehind and not rough then
+                if isBehind and not player.isBehindAttackJustFailed and not rough then
                     macroTorch.readyShred()
                 else
                     macroTorch.readyClaw()
@@ -111,7 +115,7 @@ function macroTorch.catAtk(rough)
         -- 9.combatBuffMod - tiger's fury *
         macroTorch.keepTigerFury()
         -- 10.debuffMod, including rip, rake and FF
-        if macroTorch.isTrivialBattleOrPvp() or rough then
+        if macroTorch.isTrivialBattleOrPvp() then
             -- no need to do deep rip when pvp
             macroTorch.quickKeepRip(comboPoints, prowling)
         else
