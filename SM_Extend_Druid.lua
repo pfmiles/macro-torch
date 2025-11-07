@@ -478,7 +478,8 @@ function macroTorch.tigerLeft()
 end
 
 function macroTorch.isRipPresent()
-    return buffed('Rip', 'target') and macroTorch.ripLeft() > 0
+    -- Ability_GhoulFrenzy
+    return macroTorch.toBoolean(macroTorch.target.hasBuff('Ability_GhoulFrenzy') and macroTorch.ripLeft() > 0)
 end
 
 function macroTorch.ripLeft()
