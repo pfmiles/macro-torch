@@ -514,7 +514,8 @@ function macroTorch.rakeLeft()
 end
 
 function macroTorch.isFFPresent()
-    return buffed('Faerie Fire ', 'target') and macroTorch.ffLeft() > 0
+    -- Spell_Nature_FaerieFire
+    return macroTorch.toBoolean(macroTorch.target.hasBuff('Spell_Nature_FaerieFire') and macroTorch.ffLeft() > 0)
 end
 
 function macroTorch.ffLeft()
@@ -531,7 +532,8 @@ function macroTorch.ffLeft()
 end
 
 function macroTorch.isPouncePresent()
-    return buffed('Pounce', 'target') and macroTorch.pounceLeft() > 0
+    -- Ability_Druid_SupriseAttack
+    return macroTorch.toBoolean(macroTorch.target.hasBuff('Ability_Druid_SupriseAttack') and macroTorch.pounceLeft() > 0)
 end
 
 function macroTorch.pounceLeft()
@@ -761,7 +763,7 @@ function macroTorch.bearAoe()
         return
     end
     -- if no [Demoralizing Roar] buff on target, use [Demoralizing Roar]
-    if macroTorch.target.isCanAttack and not buffed('Demoralizing Roar', 'target') then
+    if macroTorch.target.isCanAttack and not macroTorch.target.hasBuff('Ability_Druid_DemoralizingRoar') then
         macroTorch.player.cast('Demoralizing Roar')
     end
     if SpellReady('Swipe') then
