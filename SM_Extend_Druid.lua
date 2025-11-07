@@ -495,7 +495,8 @@ function macroTorch.ripLeft()
 end
 
 function macroTorch.isRakePresent()
-    return macroTorch.toBoolean(buffed('Rake', 'target') and macroTorch.rakeLeft() > 0)
+    -- Ability_Druid_Disembowel
+    return macroTorch.toBoolean(macroTorch.target.hasBuff('Ability_Druid_Disembowel') and macroTorch.rakeLeft() > 0)
 end
 
 function macroTorch.rakeLeft()
@@ -580,7 +581,8 @@ end
 
 function macroTorch.safeRake()
     if SpellReady('Rake') and macroTorch.player.mana >= macroTorch.RAKE_E then
-        macroTorch.show('Rake present: ' .. tostring(macroTorch.isRakePresent()) .. ' doing rake now.')
+        macroTorch.show('Rake present: ' ..
+            tostring(macroTorch.isRakePresent()) .. ' rake left: ' .. macroTorch.rakeLeft() .. ', doing rake now.')
         CastSpellByName('Rake')
         macroTorch.context.rakeTimer = GetTime()
         return true
