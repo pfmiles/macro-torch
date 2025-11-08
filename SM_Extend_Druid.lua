@@ -125,10 +125,19 @@ function macroTorch.catAtk(rough)
         macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
         -- 11.regular attack tech mod
         if macroTorch.isFightStarted(prowling) and comboPoints < 5 and (macroTorch.isRakePresent() or macroTorch.isImmune('Rake')) then
-            macroTorch.safeClaw()
+            macroTorch.regularAttack(isBehind, rough)
         end
         -- 12.energy res mod
         macroTorch.reshiftMod(player, prowling, ooc, berserk)
+    end
+end
+
+function macroTorch.regularAttack(isBehind, rough)
+    -- TODO need to test which is better: claw with 1 bleeding effect or shred
+    if isBehind and not macroTorch.player.isBehindAttackJustFailed and not rough and not macroTorch.isRakePresent() and not macroTorch.isRipPresent then
+        macroTorch.safeShred()
+    else
+        macroTorch.safeClaw()
     end
 end
 
@@ -174,7 +183,7 @@ function macroTorch.otMod(player, prowling, ooc, berserk, comboPoints)
         or not macroTorch.player.isInGroup then
         return
     end
-    if (target.isAttackingMe or macroTorch.playerThreatPercent() > 97) and not SpellReady('Cower') and target.classification == 'worldboss' then
+    if (target.isAttackingMe or macroTorch.playerThreatPercent() > 97) and not player.isSpellReady('Cower') and target.classification == 'worldboss' then
         player.use('Invulnerability Potion', true)
     end
     if (target.isAttackingMe or (target.classification == 'worldboss' and macroTorch.playerThreatPercent() >= macroTorch.COWER_THREAT_THRESHOLD)) and target.distance < 15 then
@@ -461,7 +470,7 @@ function macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
 end
 
 function macroTorch.isTigerPresent()
-    return buffed('Tiger\'s Fury') and macroTorch.tigerLeft() > 0
+    return macroTorch.toBoolean(macroTorch.player.hasBuff('Ability_Mount_JungleTiger') and macroTorch.tigerLeft() > 0)
 end
 
 function macroTorch.tigerLeft()
@@ -550,9 +559,9 @@ function macroTorch.pounceLeft()
 end
 
 function macroTorch.readyReshift()
-    if SpellReady('Reshift') then
-        CastSpellByName('Reshift')
+    if macroTorch.player.isSpellReady('Reshift') then
         macroTorch.show('Reshift!!! energy = ' .. macroTorch.player.mana .. ', tigerLeft = ' .. macroTorch.tigerLeft())
+        CastSpellByName('Reshift')
         return true
     end
     return false
@@ -563,7 +572,7 @@ function macroTorch.safeShred()
 end
 
 function macroTorch.readyShred()
-    if SpellReady('Shred') then
+    if macroTorch.player.isSpellReady('Shred') then
         CastSpellByName('Shred')
         return true
     end
@@ -575,7 +584,7 @@ function macroTorch.safeClaw()
 end
 
 function macroTorch.readyClaw()
-    if SpellReady('Claw') then
+    if macroTorch.player.isSpellReady('Claw') then
         CastSpellByName('Claw')
         return true
     end
@@ -583,7 +592,7 @@ function macroTorch.readyClaw()
 end
 
 function macroTorch.safeRake()
-    if SpellReady('Rake') and macroTorch.player.mana >= macroTorch.RAKE_E then
+    if macroTorch.player.isSpellReady('Rake') and macroTorch.player.mana >= macroTorch.RAKE_E then
         macroTorch.show('Rake present: ' ..
             tostring(macroTorch.isRakePresent()) .. ' rake left: ' .. macroTorch.rakeLeft() .. ', doing rake now.')
         CastSpellByName('Rake')
@@ -594,10 +603,10 @@ function macroTorch.safeRake()
 end
 
 function macroTorch.safeRip()
-    if SpellReady('Rip') and macroTorch.player.mana >= macroTorch.RIP_E then
+    if macroTorch.player.isSpellReady('Rip') and macroTorch.player.mana >= macroTorch.RIP_E then
+        macroTorch.show('Ripped at combo points: ' .. tostring(GetComboPoints()))
         CastSpellByName('Rip')
         macroTorch.context.ripTimer = GetTime()
-        macroTorch.show('Ripped at combo points: ' .. tostring(GetComboPoints()))
         return true
     end
     return false
@@ -608,7 +617,7 @@ function macroTorch.safeBite()
 end
 
 function macroTorch.readyBite()
-    if SpellReady('Ferocious Bite') then
+    if macroTorch.player.isSpellReady('Ferocious Bite') then
         CastSpellByName('Ferocious Bite')
         if macroTorch.isRipPresent() then
             macroTorch.context.ripTimer = GetTime()
@@ -622,9 +631,10 @@ function macroTorch.readyBite()
 end
 
 function macroTorch.safeFF()
-    if SpellReady('Faerie Fire (Feral)') then
-        -- CastSpellByName('Faerie Fire (Feral)')
-        -- lazyScript.SlashCommand('ff')
+    if macroTorch.player.isSpellReady('Faerie Fire (Feral)') then
+        macroTorch.show('FF present: ' ..
+            tostring(macroTorch.isFFPresent()) ..
+            ', FF left: ' .. macroTorch.ffLeft() .. ', doing FF now!')
         macroTorch.player.cast('Faerie Fire (Feral)')
         macroTorch.context.ffTimer = GetTime()
         return true
@@ -633,7 +643,10 @@ function macroTorch.safeFF()
 end
 
 function macroTorch.safeTigerFury()
-    if SpellReady('Tiger\'s Fury') and macroTorch.player.mana >= macroTorch.TIGER_E then
+    if macroTorch.player.isSpellReady('Tiger\'s Fury') and macroTorch.tigerSelfGCD() == 0 and macroTorch.player.mana >= macroTorch.TIGER_E then
+        macroTorch.show('Tiger\'s Fury present: ' ..
+            tostring(macroTorch.isTigerPresent()) ..
+            ', tiger left: ' .. macroTorch.tigerLeft() .. ', doing tiger fury now!')
         CastSpellByName('Tiger\'s Fury')
         macroTorch.context.tigerTimer = GetTime()
         return true
@@ -641,8 +654,19 @@ function macroTorch.safeTigerFury()
     return false
 end
 
+function macroTorch.tigerSelfGCD()
+    if not macroTorch or not macroTorch.context or not macroTorch.context.tigerTimer then
+        return 0
+    end
+    local selfGCDLeft = 1 - (GetTime() - macroTorch.context.tigerTimer)
+    if selfGCDLeft < 0 then
+        selfGCDLeft = 0
+    end
+    return selfGCDLeft
+end
+
 function macroTorch.safePounce()
-    if SpellReady('Pounce') and macroTorch.player.mana >= macroTorch.POUNCE_E then
+    if macroTorch.player.isSpellReady('Pounce') and macroTorch.player.mana >= macroTorch.POUNCE_E then
         CastSpellByName('Pounce')
         macroTorch.context.pounceTimer = GetTime()
         return true
@@ -651,9 +675,9 @@ function macroTorch.safePounce()
 end
 
 function macroTorch.readyCower()
-    if SpellReady('Cower') then
-        CastSpellByName('Cower')
+    if macroTorch.player.isSpellReady('Cower') then
         macroTorch.show('current threat: ' .. macroTorch.playerThreatPercent() .. ' doing ready cower!!!')
+        CastSpellByName('Cower')
         return true
     end
     return false
@@ -671,7 +695,8 @@ function macroTorch.atkPowerBurst()
     if GetInventoryItemCooldown("player", macroTorch.BURST_ITEM_LOC) == 0 then
         UseInventoryItem(macroTorch.BURST_ITEM_LOC)
     end
-    if not buffed('Juju Power') and macroTorch.isItemExist('Juju Power') and not macroTorch.target.isPlayerControlled then
+    -- juju power
+    if not macroTorch.player.hasBuff('INV_Misc_MonsterScales_11') and macroTorch.isItemExist('Juju Power') and not macroTorch.target.isPlayerControlled then
         macroTorch.player.use('Juju Power', true)
     end
 end
@@ -720,7 +745,7 @@ function macroTorch.druidStun()
     if not inBearForm then
         macroTorch.player.cast('Dire Bear Form')
     end
-    if inBearForm and macroTorch.player.mana == 0 and SpellReady('Enrage') then
+    if inBearForm and macroTorch.player.mana == 0 and macroTorch.player.isSpellReady('Enrage') then
         macroTorch.player.cast('Enrage')
     end
     if macroTorch.target.isNearBy then
@@ -734,15 +759,15 @@ end
 
 function macroTorch.druidDefend()
     -- [Barkskin (Feral)][Frenzied Regeneration]
-    if SpellReady('Barkskin (Feral)') then
+    if macroTorch.player.isSpellReady('Barkskin (Feral)') then
         macroTorch.player.cast('Barkskin (Feral)')
     end
-    if SpellReady('Frenzied Regeneration') then
+    if macroTorch.player.isSpellReady('Frenzied Regeneration') then
         local inBearForm = macroTorch.player.isFormActive('Dire Bear Form')
         if not inBearForm then
             macroTorch.player.cast('Dire Bear Form')
         end
-        if inBearForm and macroTorch.player.mana == 0 and SpellReady('Enrage') then
+        if inBearForm and macroTorch.player.mana == 0 and macroTorch.player.isSpellReady('Enrage') then
             macroTorch.player.cast('Enrage')
         end
         macroTorch.player.cast('Frenzied Regeneration')
@@ -766,7 +791,7 @@ function macroTorch.bearAoe()
     if macroTorch.target.isCanAttack and not macroTorch.target.hasBuff('Ability_Druid_DemoralizingRoar') then
         macroTorch.player.cast('Demoralizing Roar')
     end
-    if SpellReady('Swipe') then
+    if macroTorch.player.isSpellReady('Swipe') then
         macroTorch.player.cast('Swipe')
     end
 end
@@ -775,7 +800,7 @@ function macroTorch.bearAtk()
     if not macroTorch.player.isFormActive('Dire Bear Form') then
         return
     end
-    if macroTorch.player.mana == 0 and SpellReady('Enrage') then
+    if macroTorch.player.mana == 0 and macroTorch.player.isSpellReady('Enrage') then
         macroTorch.player.cast('Enrage')
     end
     local target = macroTorch.target
@@ -784,10 +809,10 @@ function macroTorch.bearAtk()
     --     macroTorch.player.cast('Growl')
     -- end
     -- [Savage Bite] as soon as I can, then [Maul] blindly
-    if SpellReady('Savage Bite') then
+    if macroTorch.player.isSpellReady('Savage Bite') then
         macroTorch.player.cast('Savage Bite')
     end
-    if SpellReady('Maul') then
+    if macroTorch.player.isSpellReady('Maul') then
         macroTorch.player.cast('Maul')
     end
     macroTorch.safeFF()
