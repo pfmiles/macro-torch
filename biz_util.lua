@@ -95,7 +95,9 @@ function macroTorch.isSpellCooledDown(spellName, bookType)
     if not spellId then
         return false
     end
-    return GetSpellCooldown(spellId, bookType) <= 0
+    local coolDown = GetSpellCooldown(spellId, bookType)
+    -- macroTorch.show("Cooldown: " .. tostring(coolDown))
+    return coolDown == 0
 end
 
 function macroTorch.getSpellTexture(spellName, bookType)
