@@ -60,6 +60,13 @@ function macroTorch.Player:new()
         return false
     end
 
+    -- tell if the specified spell is ready
+    -- @param spellName string spell name
+    -- @return boolean true if ready, false otherwise
+    function obj.isSpellReady(spellName)
+        return SpellReady(spellName) and macroTorch.isSpellCooledDown(spellName, 'spell')
+    end
+
     --- print all spells in book, for debug usages
     function obj.listAllSpells()
         return macroTorch.listAllSpells('spell')
