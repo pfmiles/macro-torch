@@ -133,8 +133,11 @@ function macroTorch.catAtk(rough)
 end
 
 function macroTorch.regularAttack(isBehind, rough)
-    -- TODO need to test which is better: claw with 1 bleeding effect or shred
-    if isBehind and not macroTorch.player.isBehindAttackJustFailed and not rough and not macroTorch.isRakePresent() and not macroTorch.isRipPresent then
+    -- claw with at least 1 bleeding effect or shred
+    if isBehind and not macroTorch.player.isBehindAttackJustFailed and not rough
+        and not macroTorch.isRakePresent()
+        and not macroTorch.isRipPresent()
+        and not macroTorch.isPouncePresent() then
         macroTorch.safeShred()
     else
         macroTorch.safeClaw()
