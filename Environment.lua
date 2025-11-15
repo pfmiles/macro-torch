@@ -20,6 +20,7 @@ macroTorch.context = {}
 --- all events handle globally
 function macroTorch.eventHandle(event)
     if event == 'PLAYER_REGEN_ENABLED' then
+        -- combat exiting
         if macroTorch.context then
             macroTorch.inCombat = false
 
@@ -31,6 +32,7 @@ function macroTorch.eventHandle(event)
         end
         macroTorch.show('macroTorch.context.rake/rip/ff/pounceTimer/THV cleared due to combat exiting!')
     elseif event == 'PLAYER_TARGET_CHANGED' then
+        -- target changed
         if macroTorch.player.isInCombat and macroTorch.target.isCanAttack then
             if macroTorch.context then
                 macroTorch.context.rakeTimer = nil
@@ -42,12 +44,14 @@ function macroTorch.eventHandle(event)
             macroTorch.show('macroTorch.context.rake/rip/ff/pounceTimer/THV cleared due to target change in combat!')
         end
     elseif event == 'PLAYER_REGEN_DISABLED' then
+        -- combat entering
         if not macroTorch.context then
             macroTorch.context = {}
         end
         macroTorch.inCombat = true
         macroTorch.show('Entering combat!')
     elseif event == "UI_ERROR_MESSAGE" then
+        -- on ui error message
         if not macroTorch.context then
             macroTorch.context = {}
         end
@@ -56,5 +60,10 @@ function macroTorch.eventHandle(event)
         if (arg1 == SPELL_FAILED_NOT_BEHIND) then
             macroTorch.context.behindAttackFailedTime = GetTime()
         end
+    elseif event == "CHAT_MSG_COMBAT_SELF_MISSES" or event == "CHAT_MSG_SPELL_SELF_DAMAGE" then
+        -- when player melee combat or spell is dodged, parried, blocked or resisted
+        macroTorch.CheckDodgeParryBlockResist("target", event, arg1)
+    elseif event == "CHAT_MSG_COMBAT_CREATURE_VS_SELF_MISSES" or event == "CHAT_MSG_SPELL_CREATURE_VS_SELF_DAMAGE" then
+        -- player dodged mob's attack
     end
 end

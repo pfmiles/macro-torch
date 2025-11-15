@@ -188,3 +188,79 @@ function macroTorch.filterGroupMates(predFunc)
     -- macroTorch.show('filterGroupMates result: ' .. table.concat(result, ', '))
     return result
 end
+
+function macroTorch.CheckDodgeParryBlockResist(unitId, event, arg1)
+    if not macroTorch.context then
+        macroTorch.context = {}
+    end
+
+    if not arg1 then
+        return
+    end
+
+    -- 尝试从 arg1 中匹配完整句式：Your <技能名> was dodged by <怪物名>.
+    local _, _, spell, mob = string.find(arg1, "Your (.-) was dodged by (.-)%.")
+    if spell and mob then
+        macroTorch.show("DODGE DETECTED: Spell[" .. spell .. "] by [" .. mob .. "] dodged")
+        if not macroTorch.context.dodgeTable then
+            macroTorch.context.dodgeTable = {}
+        end
+        if not macroTorch.context.dodgeTable[spell] then
+            macroTorch.context.dodgeTable[spell] = {}
+        end
+        macroTorch.context.dodgeTable[spell][mob] = GetTime()
+    end
+    -- Your Claw is parried by Vilemust Shadowstalker.
+    local _, _, spell, mob = string.find(arg1, "Your (.-) is parried by (.-)%.")
+    if spell and mob then
+        macroTorch.show("PARRY DETECTED: Spell[" .. spell .. "] by [" .. mob .. "] parried")
+        if not macroTorch.context.parryTable then
+            macroTorch.context.parryTable = {}
+        end
+        if not macroTorch.context.parryTable[spell] then
+            macroTorch.context.parryTable[spell] = {}
+        end
+        macroTorch.context.parryTable[spell][mob] = GetTime()
+    end
+    --- Your Rake was resisted by Vilemust Shadowstalker.
+    local _, _, spell, mob = string.find(arg1, "Your (.-) was resisted by (.-)%.")
+    if spell and mob then
+        macroTorch.show("RESIST DETECTED: Spell[" .. spell .. "] by [" .. mob .. "] resisted")
+        if not macroTorch.context.resistTable then
+            macroTorch.context.resistTable = {}
+        end
+        if not macroTorch.context.resistTable[spell] then
+            macroTorch.context.resistTable[spell] = {}
+        end
+        macroTorch.context.resistTable[spell][mob] = GetTime()
+    end
+    --- Your Rake failed. Vilemust Shadowstalker is immune.
+    local _, _, spell, mob = string.find(arg1, "Your (.-) failed. (.-) is immune%.")
+    if spell and mob then
+        macroTorch.show("IMMUNE DETECTED: Spell[" .. spell .. "] by [" .. mob .. "] immune")
+        if not macroTorch.context.immuneTable then
+            macroTorch.context.immuneTable = {}
+        end
+        if not macroTorch.context.immuneTable[spell] then
+            macroTorch.context.immuneTable[spell] = {}
+        end
+        macroTorch.context.immuneTable[spell][mob] = GetTime()
+    end
+
+    -- if dodged and dodgedSpell and parried and parriedSpell and blocked and blockedSpell and resistedSpell then
+    -- 	local now = GetTime()
+    -- 	if string.find(arg1, dodged) or string.find(arg1, dodgedSpell) then
+    -- 		lazyScript.lastDodgeTime[unitId] = now
+    -- 		lazyScript.d(unitId..DETECTED_DODGE..now)
+    -- 		elseif string.find(arg1, parried) or string.find(arg1, parriedSpell) then
+    -- 		lazyScript.lastParryTime[unitId] = now
+    -- 		lazyScript.d(unitId..DETECTED_PARRY..now)
+    -- 		elseif string.find(arg1, blocked) or string.find(arg1, blockedSpell) then
+    -- 		lazyScript.lastBlockTime[unitId] = now
+    -- 		lazyScript.d(unitId..DETECTED_BLOCK..now)
+    -- 		elseif string.find(arg1, resistedSpell) then
+    -- 		lazyScript.lastResistTime[unitId] = now
+    -- 		lazyScript.d(unitId..DETECTED_RESIST..now)
+    -- 	end
+    -- end
+end
