@@ -595,7 +595,7 @@ function macroTorch.readyClaw()
 end
 
 function macroTorch.safeRake()
-    if macroTorch.player.isSpellReady('Rake') and macroTorch.player.mana >= macroTorch.RAKE_E then
+    if macroTorch.player.isSpellReady('Rake') and macroTorch.isGcdOk() and macroTorch.player.mana >= macroTorch.RAKE_E and macroTorch.target.isNearBy then
         macroTorch.show('Rake present: ' ..
             tostring(macroTorch.isRakePresent()) .. ' rake left: ' .. macroTorch.rakeLeft() .. ', doing rake now.')
         CastSpellByName('Rake')
@@ -606,13 +606,17 @@ function macroTorch.safeRake()
 end
 
 function macroTorch.safeRip()
-    if macroTorch.player.isSpellReady('Rip') and macroTorch.player.mana >= macroTorch.RIP_E then
+    if macroTorch.player.isSpellReady('Rip') and macroTorch.isGcdOk() and macroTorch.player.mana >= macroTorch.RIP_E and macroTorch.target.isNearBy then
         macroTorch.show('Ripped at combo points: ' .. tostring(GetComboPoints()))
         CastSpellByName('Rip')
         macroTorch.context.ripTimer = GetTime()
         return true
     end
     return false
+end
+
+function macroTorch.isGcdOk()
+    return macroTorch.player.isActionCooledDown('Ability_Druid_Rake')
 end
 
 function macroTorch.safeBite()
@@ -669,7 +673,7 @@ function macroTorch.tigerSelfGCD()
 end
 
 function macroTorch.safePounce()
-    if macroTorch.player.isSpellReady('Pounce') and macroTorch.player.mana >= macroTorch.POUNCE_E then
+    if macroTorch.player.isSpellReady('Pounce') and macroTorch.isGcdOk() and macroTorch.player.mana >= macroTorch.POUNCE_E and macroTorch.target.isNearBy then
         CastSpellByName('Pounce')
         macroTorch.context.pounceTimer = GetTime()
         return true

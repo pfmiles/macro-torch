@@ -67,6 +67,14 @@ function macroTorch.Player:new()
         return macroTorch.toBoolean(SpellReady(spellName) and macroTorch.isSpellCooledDown(spellName, 'spell'))
     end
 
+    -- tell if the specified action is ready, such that GCD is ok
+    -- @param indicatorActionTexture the action texture of a spell in action bar, which is used to determine if GCD is ready
+    -- @return boolean true if ready, false otherwise
+    function obj.isActionCooledDown(indicatorActionTexture)
+        -- 'Ability_Druid_Rake' for example
+        return macroTorch.isActionCooledDown(indicatorActionTexture)
+    end
+
     --- print all spells in book, for debug usages
     function obj.listAllSpells()
         return macroTorch.listAllSpells('spell')
