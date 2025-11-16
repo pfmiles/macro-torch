@@ -18,17 +18,6 @@ macroTorch.env = {}
 
 macroTorch.context = {}
 
--- init immuneTable and bind it to the SM_EXTEND.immuneTable persistent var
-if not SM_EXTEND then
-    SM_EXTEND = {}
-end
-if not SM_EXTEND.immuneTable then
-    SM_EXTEND.immuneTable = {}
-end
-if not macroTorch.context.immuneTable then
-    macroTorch.context.immuneTable = SM_EXTEND.immuneTable
-end
-
 --- all events handle globally
 function macroTorch.eventHandle(event)
     if event == 'PLAYER_REGEN_ENABLED' then

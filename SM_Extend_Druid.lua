@@ -84,13 +84,7 @@ function macroTorch.catAtk(rough)
         -- 5.starterMod
         if prowling then
             if not rough then
-                if not macroTorch.isImmune('Pounce') then
-                    -- macroTorch.show('Pounce immune: ' .. tostring(macroTorch.isImmune('Pounce')) .. ', do safePounce!')
-                    macroTorch.safePounce()
-                else
-                    macroTorch.show('Pounce immune: ' .. tostring(macroTorch.isImmune('Pounce')) .. ', do Ravage!')
-                    CastSpellByName('Ravage')
-                end
+                macroTorch.safePounce()
             else
                 macroTorch.safeClaw()
             end
@@ -124,7 +118,7 @@ function macroTorch.catAtk(rough)
         macroTorch.keepRake(comboPoints, prowling)
         macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
         -- 11.regular attack tech mod
-        if macroTorch.isFightStarted(prowling) and comboPoints < 5 and (macroTorch.isRakePresent() or macroTorch.isImmune('Rake')) then
+        if macroTorch.isFightStarted(prowling) and comboPoints < 5 and (macroTorch.isRakePresent() or macroTorch.target.isImmune('Rake')) then
             macroTorch.regularAttack(isBehind, rough)
         end
         -- 12.energy res mod
@@ -209,14 +203,14 @@ function macroTorch.termMod(comboPoints)
 end
 
 function macroTorch.cp5Bite(comboPoints)
-    if comboPoints == 5 and (macroTorch.isImmune('Rip') or macroTorch.isRipPresent()) then
+    if comboPoints == 5 and (macroTorch.target.isImmune('Rip') or macroTorch.isRipPresent()) then
         macroTorch.safeBite()
     end
 end
 
 -- for ooc only
 function macroTorch.cp5ReadyBite(comboPoints)
-    if comboPoints == 5 and (macroTorch.isImmune('Rip') or macroTorch.isRipPresent()) then
+    if comboPoints == 5 and (macroTorch.target.isImmune('Rip') or macroTorch.isRipPresent()) then
         macroTorch.readyBite()
     end
 end
@@ -417,7 +411,7 @@ function macroTorch.keepTigerFury()
 end
 
 function macroTorch.keepRip(comboPoints, prowling)
-    if not macroTorch.isFightStarted(prowling) or macroTorch.isRipPresent() or comboPoints < 5 or macroTorch.isImmune('Rip') or macroTorch.isKillshotOrLastChance(comboPoints) then
+    if not macroTorch.isFightStarted(prowling) or macroTorch.isRipPresent() or comboPoints < 5 or macroTorch.target.isImmune('Rip') or macroTorch.isKillshotOrLastChance(comboPoints) then
         return
     end
     -- boost attack power to rip when fighting world boss or player-controlled target
@@ -430,7 +424,7 @@ end
 -- originates from keepRip, but no need to rip at 5cp
 function macroTorch.quickKeepRip(comboPoints, prowling)
     -- quick keep rip, do at any cp
-    if not macroTorch.isFightStarted(prowling) or macroTorch.isRipPresent() or comboPoints == 0 or macroTorch.isImmune('Rip') or macroTorch.isKillshotOrLastChance(comboPoints) then
+    if not macroTorch.isFightStarted(prowling) or macroTorch.isRipPresent() or comboPoints == 0 or macroTorch.target.isImmune('Rip') or macroTorch.isKillshotOrLastChance(comboPoints) then
         return
     end
     -- boost attack power to rip when fighting world boss or player-controlled target
@@ -442,7 +436,7 @@ end
 
 function macroTorch.keepRake(comboPoints, prowling)
     -- in no condition rake on 5cp
-    if not macroTorch.isFightStarted(prowling) or comboPoints == 5 or macroTorch.isRakePresent() or macroTorch.isImmune('Rake') or macroTorch.isKillshotOrLastChance(comboPoints) then
+    if not macroTorch.isFightStarted(prowling) or comboPoints == 5 or macroTorch.isRakePresent() or macroTorch.target.isImmune('Rake') or macroTorch.isKillshotOrLastChance(comboPoints) then
         return
     end
     -- boost attack power to rake when fighting world boss
@@ -456,15 +450,15 @@ end
 -- all in all: if in combat and there's nothing to do, then FF, no matter if FF debuff present, we wish to trigger more ooc through instant FFs
 function macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
     if ooc
-        or macroTorch.isImmune('Faerie Fire (Feral)')
+        or macroTorch.target.isImmune('Faerie Fire (Feral)')
         or macroTorch.canDoReshift(player, prowling, ooc, berserk)
         or not macroTorch.isFightStarted(prowling)
         or not macroTorch.target.isInCombat
         or macroTorch.target.isNearBy and (
             player.mana >= macroTorch.CLAW_E and comboPoints < 5
             or player.mana >= macroTorch.BITE_E and comboPoints == 5
-            or player.mana >= macroTorch.RAKE_E and not macroTorch.isRakePresent() and not macroTorch.isImmune('Rake') and comboPoints < 5
-            or player.mana >= macroTorch.RIP_E and not macroTorch.isRipPresent() and not macroTorch.isImmune('Rip') and comboPoints == 5
+            or player.mana >= macroTorch.RAKE_E and not macroTorch.isRakePresent() and not macroTorch.target.isImmune('Rake') and comboPoints < 5
+            or player.mana >= macroTorch.RIP_E and not macroTorch.isRipPresent() and not macroTorch.target.isImmune('Rip') and comboPoints == 5
             or comboPoints == 5
             or macroTorch.isKillshotOrLastChance(comboPoints)) then
         return
@@ -600,6 +594,15 @@ function macroTorch.safeRake()
             tostring(macroTorch.isRakePresent()) .. ' rake left: ' .. macroTorch.rakeLeft() .. ', doing rake now.')
         CastSpellByName('Rake')
         macroTorch.context.rakeTimer = GetTime()
+
+        -- record to immune if no bleeding effect
+        if macroTorch.player.isAttackSpellJustLanded('Rake', 5) and not macroTorch.toBoolean(macroTorch.target.hasBuff('Ability_Druid_Disembowel')) and not macroTorch.target.isPlayerControlled then
+            macroTorch.show('Rake on ' .. macroTorch.target.name .. ' not bleeding, record to immune.')
+            if not macroTorch.context.immuneTable['Rake'] then
+                macroTorch.context.immuneTable['Rake'] = {}
+            end
+            macroTorch.context.immuneTable['Rake'][macroTorch.target.name] = GetTime()
+        end
         return true
     end
     return false
@@ -638,10 +641,10 @@ function macroTorch.readyBite()
 end
 
 function macroTorch.safeFF()
-    if macroTorch.player.isSpellReady('Faerie Fire (Feral)') then
-        macroTorch.show('FF present: ' ..
-            tostring(macroTorch.isFFPresent()) ..
-            ', FF left: ' .. macroTorch.ffLeft() .. ', doing FF now!')
+    if macroTorch.player.isSpellReady('Faerie Fire (Feral)') and macroTorch.isGcdOk() then
+        -- macroTorch.show('FF present: ' ..
+        --     tostring(macroTorch.isFFPresent()) ..
+        --     ', FF left: ' .. macroTorch.ffLeft() .. ', doing FF now!')
         macroTorch.player.cast('Faerie Fire (Feral)')
         macroTorch.context.ffTimer = GetTime()
         return true
@@ -651,9 +654,9 @@ end
 
 function macroTorch.safeTigerFury()
     if macroTorch.player.isSpellReady('Tiger\'s Fury') and macroTorch.tigerSelfGCD() == 0 and macroTorch.player.mana >= macroTorch.TIGER_E then
-        macroTorch.show('Tiger\'s Fury present: ' ..
-            tostring(macroTorch.isTigerPresent()) ..
-            ', tiger left: ' .. macroTorch.tigerLeft() .. ', doing tiger fury now!')
+        -- macroTorch.show('Tiger\'s Fury present: ' ..
+        --     tostring(macroTorch.isTigerPresent()) ..
+        --     ', tiger left: ' .. macroTorch.tigerLeft() .. ', doing tiger fury now!')
         CastSpellByName('Tiger\'s Fury')
         macroTorch.context.tigerTimer = GetTime()
         return true

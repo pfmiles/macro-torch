@@ -133,6 +133,18 @@ function macroTorch.Player:new()
         return false
     end
 
+    -- to tell if the specified attack spell just landed(instantly) in specified time
+    function obj.isAttackSpellJustLanded(spellName, timeAfterLanded)
+        if not macroTorch.target.isCanAttack then
+            return false
+        end
+        local unitName = macroTorch.target.name
+        if (macroTorch.context and macroTorch.context.landTable and macroTorch.context.landTable[spellName] and macroTorch.context.landTable[spellName][unitName]) then
+            return (GetTime() - macroTorch.context.landTable[spellName][unitName]) < timeAfterLanded
+        end
+        return false
+    end
+
     -- impl hint: original '__index' & metatable setting:
     -- self.__index = self
     -- setmetatable(obj, self)
