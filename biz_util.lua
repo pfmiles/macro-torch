@@ -238,13 +238,12 @@ function macroTorch.CheckDodgeParryBlockResist(unitId, event, arg1)
     local _, _, spell, mob = string.find(arg1, "Your (.-) failed. (.-) is immune%.")
     if spell and mob then
         macroTorch.show("IMMUNE DETECTED: Spell[" .. spell .. "] by [" .. mob .. "] immune")
-        if not macroTorch.context.immuneTable then
-            macroTorch.context.immuneTable = {}
-        end
         if not macroTorch.context.immuneTable[spell] then
             macroTorch.context.immuneTable[spell] = {}
         end
-        macroTorch.context.immuneTable[spell][mob] = GetTime()
+        if not macroTorch.target.isPlayerControlled then
+            macroTorch.context.immuneTable[spell][mob] = GetTime()
+        end
     end
 
     -- if dodged and dodgedSpell and parried and parriedSpell and blocked and blockedSpell and resistedSpell then
@@ -263,4 +262,5 @@ function macroTorch.CheckDodgeParryBlockResist(unitId, event, arg1)
     -- 		lazyScript.d(unitId..DETECTED_RESIST..now)
     -- 	end
     -- end
+    -- macroTorch.show(macroTorch.tableToString(macroTorch.context.immuneTable))
 end

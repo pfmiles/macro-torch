@@ -37,3 +37,49 @@ function macroTorch.equalsIgnoreCase(str1, str2)
     end
     return string.lower(str1) == string.lower(str2)
 end
+
+-- 将table转换为可读的string格式
+-- @param tbl table 要转换的table
+-- @param indent number 缩进级别（内部使用）
+-- @param visited table 已访问的table（内部使用）
+-- @return string table的字符串表示
+function macroTorch.tableToString(tbl, indent, visited)
+    if not tbl then
+        return "nil"
+    end
+
+    indent = indent or 0
+    visited = visited or {}
+
+    -- 防止循环引用
+    if visited[tbl] then
+        return "{...}" -- 循环引用
+    end
+    visited[tbl] = true
+
+    local spaces = string.rep("  ", indent)
+    local result = "{\n"
+
+    for k, v in pairs(tbl) do
+        local keyStr
+        if type(k) == "string" then
+            keyStr = k
+        else
+            keyStr = "[" .. tostring(k) .. "]"
+        end
+
+        local valueStr
+        if type(v) == "table" then
+            valueStr = macroTorch.tableToString(v, indent + 1, visited)
+        elseif type(v) == "string" then
+            valueStr = "'" .. v .. "'"
+        else
+            valueStr = tostring(v)
+        end
+
+        result = result .. spaces .. "  " .. keyStr .. " = " .. valueStr .. ",\n"
+    end
+
+    result = result .. spaces .. "}"
+    return result
+end
