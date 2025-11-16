@@ -190,6 +190,8 @@ function macroTorch.filterGroupMates(predFunc)
 end
 
 function macroTorch.CheckDodgeParryBlockResist(unitId, event, arg1)
+    macroTorch.loadImmuneTable()
+    -- macroTorch.show('CheckDodgeParryBlockResist: ' .. event .. ', msg: ' .. arg1)
     if not macroTorch.context then
         macroTorch.context = {}
     end
@@ -197,11 +199,27 @@ function macroTorch.CheckDodgeParryBlockResist(unitId, event, arg1)
     if not arg1 then
         return
     end
+    -- Your Rake crits Apprentice Training Dummy for 597.
+    -- Your Rake hits Heroic Training Dummy for 173.
+    local _, _, spell, mob = string.find(arg1, "Your (.-) hits (.-) for %d+%.")
+    if not spell or not mob then
+        _, _, spell, mob = string.find(arg1, "Your (.-) crits (.-) for %d+%.")
+    end
+    if spell and mob then
+        -- macroTorch.show("HIT DETECTED: Spell[" .. spell .. "] by [" .. mob .. "]")
+        if not macroTorch.context.landTable then
+            macroTorch.context.landTable = {}
+        end
+        if not macroTorch.context.landTable[spell] then
+            macroTorch.context.landTable[spell] = {}
+        end
+        macroTorch.context.landTable[spell][mob] = GetTime()
+    end
 
     -- 尝试从 arg1 中匹配完整句式：Your <技能名> was dodged by <怪物名>.
     local _, _, spell, mob = string.find(arg1, "Your (.-) was dodged by (.-)%.")
     if spell and mob then
-        macroTorch.show("DODGE DETECTED: Spell[" .. spell .. "] by [" .. mob .. "] dodged")
+        -- macroTorch.show("DODGE DETECTED: Spell[" .. spell .. "] by [" .. mob .. "] dodged")
         if not macroTorch.context.dodgeTable then
             macroTorch.context.dodgeTable = {}
         end
@@ -213,7 +231,7 @@ function macroTorch.CheckDodgeParryBlockResist(unitId, event, arg1)
     -- Your Claw is parried by Vilemust Shadowstalker.
     local _, _, spell, mob = string.find(arg1, "Your (.-) is parried by (.-)%.")
     if spell and mob then
-        macroTorch.show("PARRY DETECTED: Spell[" .. spell .. "] by [" .. mob .. "] parried")
+        -- macroTorch.show("PARRY DETECTED: Spell[" .. spell .. "] by [" .. mob .. "] parried")
         if not macroTorch.context.parryTable then
             macroTorch.context.parryTable = {}
         end
@@ -225,7 +243,7 @@ function macroTorch.CheckDodgeParryBlockResist(unitId, event, arg1)
     --- Your Rake was resisted by Vilemust Shadowstalker.
     local _, _, spell, mob = string.find(arg1, "Your (.-) was resisted by (.-)%.")
     if spell and mob then
-        macroTorch.show("RESIST DETECTED: Spell[" .. spell .. "] by [" .. mob .. "] resisted")
+        -- macroTorch.show("RESIST DETECTED: Spell[" .. spell .. "] by [" .. mob .. "] resisted")
         if not macroTorch.context.resistTable then
             macroTorch.context.resistTable = {}
         end
@@ -263,4 +281,17 @@ function macroTorch.CheckDodgeParryBlockResist(unitId, event, arg1)
     -- 	end
     -- end
     -- macroTorch.show(macroTorch.tableToString(macroTorch.context.immuneTable))
+end
+
+function macroTorch.loadImmuneTable()
+    -- init immuneTable and bind it to the SM_EXTEND.immuneTable persistent var
+    if not SM_EXTEND then
+        SM_EXTEND = {}
+    end
+    if not SM_EXTEND.immuneTable then
+        SM_EXTEND.immuneTable = {}
+    end
+    if not macroTorch.context.immuneTable then
+        macroTorch.context.immuneTable = SM_EXTEND.immuneTable
+    end
 end
