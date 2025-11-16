@@ -112,6 +112,27 @@ function macroTorch.Player:new()
         return macroTorch.isCasting(spellName, 'spell')
     end
 
+    -- to tell if the specified attack spell just failed(dodge/parry/resist/immune) in specified time
+    function obj.isAttackSpellJustFailed(spellName, timeAfterFailed)
+        if not macroTorch.target.isCanAttack then
+            return false
+        end
+        local unitName = macroTorch.target.name
+        if macroTorch.context and macroTorch.context.dodgeTable and macroTorch.context.dodgeTable[spellName] and macroTorch.context.dodgeTable[spellName][unitName] then
+            return (GetTime() - macroTorch.context.dodgeTable[spellName][unitName]) < timeAfterFailed
+        end
+        if (macroTorch.context and macroTorch.context.parryTable and macroTorch.context.parryTable[spellName] and macroTorch.context.parryTable[spellName][unitName]) then
+            return (GetTime() - macroTorch.context.parryTable[spellName][unitName]) < timeAfterFailed
+        end
+        if (macroTorch.context and macroTorch.context.resistTable and macroTorch.context.resistTable[spellName] and macroTorch.context.resistTable[spellName][unitName]) then
+            return (GetTime() - macroTorch.context.resistTable[spellName][unitName]) < timeAfterFailed
+        end
+        if macroTorch.context and macroTorch.context.immuneTable and macroTorch.context.immuneTable[spellName] and macroTorch.context.immuneTable[spellName][unitName] then
+            return (GetTime() - macroTorch.context.immuneTable[spellName][unitName]) < timeAfterFailed
+        end
+        return false
+    end
+
     -- impl hint: original '__index' & metatable setting:
     -- self.__index = self
     -- setmetatable(obj, self)

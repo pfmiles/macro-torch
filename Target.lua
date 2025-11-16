@@ -34,7 +34,11 @@ function macroTorch.Target:new()
         end
     })
     -- obj method def
-    -- TODO
+    function obj.isImmune(spellName)
+        return macroTorch.toBoolean(macroTorch.context and macroTorch.context.immuneTable and
+            macroTorch.context.immuneTable[spellName] and macroTorch.context.immuneTable[spellName][obj.name])
+    end
+
     return obj
 end
 
