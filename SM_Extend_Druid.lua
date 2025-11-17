@@ -43,7 +43,7 @@ function macroTorch.catAtk(rough)
 
     macroTorch.COWER_THREAT_THRESHOLD = 80
     macroTorch.RESHIFT_ENERGY = 60
-    macroTorch.RESHIFT_E_DIFF_THRESHOLD = 2.5
+    macroTorch.RESHIFT_E_DIFF_THRESHOLD = 0
     macroTorch.BURST_ITEM_LOC = 14
     macroTorch.PLAYER_URGENT_HP_THRESHOLD = 10
 
@@ -390,7 +390,7 @@ function macroTorch.canDoReshift(player, prowling, ooc, berserk)
     if berserk then
         erps = erps + macroTorch.BERSERK_ERPS
     end
-    local diff = macroTorch.RESHIFT_ENERGY - macroTorch.TIGER_E - player.mana - erps
+    local diff = macroTorch.RESHIFT_ENERGY - macroTorch.TIGER_E - player.mana - (erps * 1.5)
     local ret = diff > macroTorch.RESHIFT_E_DIFF_THRESHOLD
 
     -- if ret then
