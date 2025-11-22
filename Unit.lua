@@ -60,11 +60,23 @@ function macroTorch.Unit:new(ref)
 
     -- list all buffs texture, for debug only
     function obj.listBuffs()
-        for i = 1, 40 do
-            local b = UnitBuff(obj.ref, i)
-            local d = UnitDebuff(obj.ref, i)
-            if b or d then
-                macroTorch.show('Found Buff: ' .. tostring(b or d))
+        for i = 1, 60 do
+            local b, blvl, bid, btype = UnitBuff(obj.ref, i)
+            if b then
+                macroTorch.show('Found Buff: ' ..
+                    tostring(b) ..
+                    ', level: ' .. tostring(blvl) .. ', id: ' .. tostring(bid) .. ', type: ' .. tostring(btype))
+            end
+        end
+    end
+
+    function obj.listDebuffs()
+        for i = 1, 60 do
+            local d, dlvl, dtype, did = UnitDebuff(obj.ref, i)
+            if d then
+                macroTorch.show('Found Debuff: ' ..
+                    tostring(d) ..
+                    ', level: ' .. tostring(dlvl) .. ', id: ' .. tostring(did) .. ', type: ' .. tostring(dtype))
             end
         end
     end
@@ -89,6 +101,14 @@ end
 -- unit fields to function mapping
 macroTorch.UNIT_FIELD_FUNC_MAP = {
     -- basic props
+    ['guid'] = function(self)
+        if SUPERWOW_STRING then
+            local a, guid = UnitExists(self.ref)
+            return guid
+        else
+            return nil
+        end
+    end,
     ['health'] = function(self)
         return UnitHealth(self.ref)
     end,

@@ -36,8 +36,47 @@ function macroTorch.Target:new()
     -- obj method def
     function obj.isImmune(spellName)
         macroTorch.loadImmuneTable()
-        return macroTorch.toBoolean(macroTorch.context and macroTorch.context.immuneTable and
+        return macroTorch.toBoolean(macroTorch.context.immuneTable and
             macroTorch.context.immuneTable[spellName] and macroTorch.context.immuneTable[spellName][obj.name])
+    end
+
+    -- record this target to the spell's persistent immune table
+    function obj.recordImmune(spellName)
+        macroTorch.loadImmuneTable()
+        if not macroTorch.context.immuneTable[spellName] then
+            macroTorch.context.immuneTable[spellName] = {}
+        end
+        if not macroTorch.target.isPlayerControlled and not obj.isDefiniteTempBleeding(spellName) and not macroTorch.context.immuneTable[spellName][obj.name] then
+            macroTorch.context.immuneTable[spellName][obj.name] = GetTime()
+            macroTorch.show("Spell: " .. spellName .. " is recorded IMMUNE to " .. obj.name)
+        end
+    end
+
+    function obj.removeFromImmune(spellName)
+        macroTorch.loadImmuneTable()
+        if macroTorch.context.immuneTable[spellName] and macroTorch.context.immuneTable[spellName][obj.name] then
+            macroTorch.context.immuneTable[spellName][obj.name] = nil
+        end
+    end
+
+    function obj.recordDefiniteTempBleeding(spellName)
+        if not macroTorch.loginContext.definiteTempBleedingTable then
+            macroTorch.loginContext.definiteTempBleedingTable = {}
+        end
+        if not macroTorch.loginContext.definiteTempBleedingTable[spellName] then
+            macroTorch.loginContext.definiteTempBleedingTable[spellName] = {}
+        end
+        if not macroTorch.loginContext.definiteTempBleedingTable[spellName][obj.name] then
+            macroTorch.show("Spell: " .. spellName .. " is recorded DEFINITE TEMP BLEEDING to " .. obj.name)
+        end
+        macroTorch.loginContext.definiteTempBleedingTable[spellName][obj.name] = GetTime()
+        obj.removeFromImmune(spellName)
+    end
+
+    function obj.isDefiniteTempBleeding(spellName)
+        return macroTorch.toBoolean(macroTorch.loginContext.definiteTempBleedingTable and
+            macroTorch.loginContext.definiteTempBleedingTable[spellName] and
+            macroTorch.loginContext.definiteTempBleedingTable[spellName][obj.name])
     end
 
     return obj

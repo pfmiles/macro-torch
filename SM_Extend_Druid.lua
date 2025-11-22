@@ -439,6 +439,15 @@ function macroTorch.quickKeepRip(comboPoints, prowling)
 end
 
 function macroTorch.keepRake(comboPoints, prowling)
+    -- record to immune if no bleeding effect
+    local landed = macroTorch.player.isAttackSpellJustLanded('Rake', 3)
+    local hasDebuff = macroTorch.toBoolean(macroTorch.target.hasBuff('Ability_Druid_Disembowel'))
+
+    if landed and hasDebuff and not macroTorch.target.isPlayerControlled then
+        macroTorch.target.recordDefiniteTempBleeding('Rake')
+    elseif landed and not hasDebuff and not macroTorch.target.isPlayerControlled then
+        macroTorch.target.recordImmune('Rake')
+    end
     -- in no condition rake on 5cp
     if not macroTorch.isFightStarted(prowling) or comboPoints == 5 or macroTorch.isRakePresent() or macroTorch.target.isImmune('Rake') or macroTorch.isKillshotOrLastChance(comboPoints) then
         return
@@ -511,13 +520,8 @@ function macroTorch.isRakePresent()
 end
 
 function macroTorch.rakeLeft()
-    local rakeLeft = 0
-    if not not macroTorch.context.rakeTimer then
-        rakeLeft = macroTorch.RAKE_DURATION - (GetTime() - macroTorch.context.rakeTimer)
-        if rakeLeft < 0 then
-            rakeLeft = 0
-        end
-    else
+    local rakeLeft = macroTorch.RAKE_DURATION - (GetTime() - macroTorch.player.attackSpellLastCastTime('Rake'))
+    if rakeLeft < 0 then
         rakeLeft = 0
     end
     return rakeLeft
@@ -597,16 +601,6 @@ function macroTorch.safeRake()
         macroTorch.show('Rake present: ' ..
             tostring(macroTorch.isRakePresent()) .. ' rake left: ' .. macroTorch.rakeLeft() .. ', doing rake now.')
         CastSpellByName('Rake')
-        macroTorch.context.rakeTimer = GetTime()
-
-        -- record to immune if no bleeding effect
-        if macroTorch.player.isAttackSpellJustLanded('Rake', 5) and not macroTorch.toBoolean(macroTorch.target.hasBuff('Ability_Druid_Disembowel')) and not macroTorch.target.isPlayerControlled then
-            macroTorch.show('Rake on ' .. macroTorch.target.name .. ' not bleeding, record to immune.')
-            if not macroTorch.context.immuneTable['Rake'] then
-                macroTorch.context.immuneTable['Rake'] = {}
-            end
-            macroTorch.context.immuneTable['Rake'][macroTorch.target.name] = GetTime()
-        end
         return true
     end
     return false
@@ -637,7 +631,7 @@ function macroTorch.readyBite()
             macroTorch.context.ripTimer = GetTime()
         end
         if macroTorch.isRakePresent() then
-            macroTorch.context.rakeTimer = GetTime()
+            macroTorch.player.renewSpellCastTime('Rake')
         end
         return true
     end
