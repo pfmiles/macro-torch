@@ -112,37 +112,60 @@ function macroTorch.Player:new()
         return macroTorch.isCasting(spellName, 'spell')
     end
 
-    -- to tell if the specified attack spell just failed(dodge/parry/resist/immune) in specified time
-    function obj.isAttackSpellJustFailed(spellName, timeAfterFailed)
-        if not macroTorch.target.isCanAttack then
-            return false
-        end
-        local unitName = macroTorch.target.name
-        if macroTorch.context and macroTorch.context.dodgeTable and macroTorch.context.dodgeTable[spellName] and macroTorch.context.dodgeTable[spellName][unitName] then
-            return (GetTime() - macroTorch.context.dodgeTable[spellName][unitName]) < timeAfterFailed
-        end
-        if (macroTorch.context and macroTorch.context.parryTable and macroTorch.context.parryTable[spellName] and macroTorch.context.parryTable[spellName][unitName]) then
-            return (GetTime() - macroTorch.context.parryTable[spellName][unitName]) < timeAfterFailed
-        end
-        if (macroTorch.context and macroTorch.context.resistTable and macroTorch.context.resistTable[spellName] and macroTorch.context.resistTable[spellName][unitName]) then
-            return (GetTime() - macroTorch.context.resistTable[spellName][unitName]) < timeAfterFailed
-        end
-        if macroTorch.context and macroTorch.context.immuneTable and macroTorch.context.immuneTable[spellName] and macroTorch.context.immuneTable[spellName][unitName] then
-            return (GetTime() - macroTorch.context.immuneTable[spellName][unitName]) < timeAfterFailed
-        end
-        return false
-    end
-
     -- to tell if the specified attack spell just landed(instantly) in specified time
     function obj.isAttackSpellJustLanded(spellName, timeAfterLanded)
+        if not macroTorch.target.isCanAttack or obj.attackSpellLastCastTime(spellName) == 0 then
+            return false
+        end
+        local lastCastTime = obj.attackSpellLastCastTime(spellName)
+        local lastFailedTime = obj.attackSpellLastFailedTime(spellName)
+        return (GetTime() - lastCastTime) < timeAfterLanded and
+            math.abs(lastFailedTime - lastCastTime) > 0.5
+    end
+
+    -- to tell if the specified attack spell just failed(dodge/parry/resist/immune) in specified time
+    function obj.isAttackSpellJustFailed(spellName, timeAfterFailed)
+        if not macroTorch.target.isCanAttack or obj.attackSpellLastFailedTime(spellName) == 0 then
+            return false
+        end
+        return (GetTime() - obj.attackSpellLastFailedTime(spellName)) < timeAfterFailed
+    end
+
+    function obj.attackSpellLastFailedTime(spellName)
         if not macroTorch.target.isCanAttack then
             return false
         end
         local unitName = macroTorch.target.name
-        if (macroTorch.context and macroTorch.context.landTable and macroTorch.context.landTable[spellName] and macroTorch.context.landTable[spellName][unitName]) then
-            return (GetTime() - macroTorch.context.landTable[spellName][unitName]) < timeAfterLanded
+        local dodgeTime, parryTime, resistTime, immuneTime = 0, 0, 0, 0
+        if (macroTorch.context.dodgeTable and macroTorch.context.dodgeTable[spellName] and macroTorch.context.dodgeTable[spellName][unitName]) then
+            dodgeTime = macroTorch.context.dodgeTable[spellName][unitName]
         end
-        return false
+        if (macroTorch.context.parryTable and macroTorch.context.parryTable[spellName] and macroTorch.context.parryTable[spellName][unitName]) then
+            parryTime = macroTorch.context.parryTable[spellName][unitName]
+        end
+        if (macroTorch.context.resistTable and macroTorch.context.resistTable[spellName] and macroTorch.context.resistTable[spellName][unitName]) then
+            resistTime = macroTorch.context.resistTable[spellName][unitName]
+        end
+        if macroTorch.context.immuneTable and macroTorch.context.immuneTable[spellName] and macroTorch.context.immuneTable[spellName][unitName] then
+            immuneTime = macroTorch.context.immuneTable[spellName][unitName]
+        end
+        return math.max(dodgeTime, parryTime, resistTime, immuneTime)
+    end
+
+    -- get the last time the specified attack spell just cast
+    function obj.attackSpellLastCastTime(spellName)
+        if not macroTorch.target.isCanAttack then
+            return 0
+        end
+        local unitName = macroTorch.target.name
+        if (macroTorch.context.landTable and macroTorch.context.landTable[spellName] and macroTorch.context.landTable[spellName][unitName]) then
+            return macroTorch.context.landTable[spellName][unitName]
+        end
+        return 0
+    end
+
+    function obj.renewSpellCastTime(spell)
+        macroTorch.recordCastTable(spell)
     end
 
     -- impl hint: original '__index' & metatable setting:
@@ -170,7 +193,12 @@ end
 -- player fields to function mapping
 macroTorch.PLAYER_FIELD_FUNC_MAP = {
     -- basic props
-
+    ['threatPercent'] = function(self)
+        local TWT = macroTorch.TWT
+        local p = 0
+        if TWT and TWT.threats and TWT.threats[TWT.name] then p = TWT.threats[TWT.name].perc or 0 end
+        return p
+    end,
     -- conditinal props
     ['isBehindAttackJustFailed'] = function(self)
         return macroTorch.context and macroTorch.context.behindAttackFailedTime and
