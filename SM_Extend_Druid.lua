@@ -415,6 +415,16 @@ function macroTorch.keepTigerFury()
 end
 
 function macroTorch.keepRip(comboPoints, prowling)
+    -- record to immune if no bleeding effect
+    local landed = macroTorch.player.isAttackSpellJustLanded('Rip', 3)
+    local hasDebuff = macroTorch.toBoolean(macroTorch.target.hasBuff('Ability_GhoulFrenzy'))
+
+    if landed and hasDebuff and not macroTorch.target.isPlayerControlled then
+        macroTorch.target.recordDefiniteTempBleeding('Rip')
+    elseif landed and not hasDebuff and not macroTorch.target.isPlayerControlled then
+        macroTorch.target.recordImmune('Rip')
+    end
+
     if not macroTorch.isFightStarted(prowling) or macroTorch.isRipPresent() or comboPoints < 5 or macroTorch.target.isImmune('Rip') or macroTorch.isKillshotOrLastChance(comboPoints) then
         return
     end
@@ -427,6 +437,15 @@ end
 
 -- originates from keepRip, but no need to rip at 5cp
 function macroTorch.quickKeepRip(comboPoints, prowling)
+    -- record to immune if no bleeding effect
+    local landed = macroTorch.player.isAttackSpellJustLanded('Rip', 3)
+    local hasDebuff = macroTorch.toBoolean(macroTorch.target.hasBuff('Ability_GhoulFrenzy'))
+
+    if landed and hasDebuff and not macroTorch.target.isPlayerControlled then
+        macroTorch.target.recordDefiniteTempBleeding('Rip')
+    elseif landed and not hasDebuff and not macroTorch.target.isPlayerControlled then
+        macroTorch.target.recordImmune('Rip')
+    end
     -- quick keep rip, do at any cp
     if not macroTorch.isFightStarted(prowling) or macroTorch.isRipPresent() or comboPoints == 0 or macroTorch.target.isImmune('Rip') or macroTorch.isKillshotOrLastChance(comboPoints) then
         return
@@ -502,13 +521,8 @@ function macroTorch.isRipPresent()
 end
 
 function macroTorch.ripLeft()
-    local ripLeft = 0
-    if not not macroTorch.context.ripTimer then
-        ripLeft = macroTorch.RIP_DURATION - (GetTime() - macroTorch.context.ripTimer)
-        if ripLeft < 0 then
-            ripLeft = 0
-        end
-    else
+    local ripLeft = macroTorch.RIP_DURATION - (GetTime() - macroTorch.player.attackSpellLastCastTime('Rip'))
+    if ripLeft < 0 then
         ripLeft = 0
     end
     return ripLeft
@@ -610,7 +624,6 @@ function macroTorch.safeRip()
     if macroTorch.player.isSpellReady('Rip') and macroTorch.isGcdOk() and macroTorch.player.mana >= macroTorch.RIP_E and macroTorch.target.isNearBy then
         macroTorch.show('Ripped at combo points: ' .. tostring(GetComboPoints()))
         CastSpellByName('Rip')
-        macroTorch.context.ripTimer = GetTime()
         return true
     end
     return false
@@ -628,7 +641,7 @@ function macroTorch.readyBite()
     if macroTorch.player.isSpellReady('Ferocious Bite') then
         CastSpellByName('Ferocious Bite')
         if macroTorch.isRipPresent() then
-            macroTorch.context.ripTimer = GetTime()
+            macroTorch.player.renewSpellCastTime('Rip')
         end
         if macroTorch.isRakePresent() then
             macroTorch.player.renewSpellCastTime('Rake')
