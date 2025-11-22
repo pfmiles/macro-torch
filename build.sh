@@ -15,11 +15,22 @@ if [ -f "macro_torch.lua" ]; then
     cat macro_torch.lua >> $target
 fi
 
+## impl_util.lua should be placed second
+if [ -f "impl_util.lua" ]; then
+    cat impl_util.lua >> $target
+fi
+
+## interface_debug.lua should be placed second
+if [ -f "interface_debug.lua" ]; then
+    cat interface_debug.lua >> $target
+fi
+
 ## Unit.lua should be placed second
 if [ -f "Unit.lua" ]; then
     cat Unit.lua >> $target
 fi
-find ./ -iname '*.lua'|grep -v "$target"|grep -v "Unit.lua"|grep -v "macro_torch.lua"|xargs cat >> $target
+
+find ./ -iname '*.lua'|grep -v "$target"|grep -v "Unit.lua"|grep -v "macro_torch.lua"|grep -v "impl_util.lua"|grep -v "interface_debug.lua"|xargs cat >> $target
 
 lang=$1
 

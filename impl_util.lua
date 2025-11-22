@@ -83,3 +83,15 @@ function macroTorch.tableToString(tbl, indent, visited)
     result = result .. spaces .. "}"
     return result
 end
+
+-- 定义计算table长度的函数
+function macroTorch.tableLen(tbl)
+    if not tbl then
+        return 0
+    end
+    local len = 0
+    for _ in pairs(tbl) do
+        len = len + 1
+    end
+    return len
+end
