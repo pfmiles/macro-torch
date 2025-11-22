@@ -84,7 +84,11 @@ function macroTorch.catAtk(rough)
         -- 5.starterMod
         if prowling then
             if not rough then
-                macroTorch.safePounce()
+                if not macroTorch.target.isImmune('Pounce') and macroTorch.target.health >= 1500 then
+                    macroTorch.safePounce()
+                else
+                    CastSpellByName('Ravage')
+                end
             else
                 macroTorch.safeClaw()
             end
