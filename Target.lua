@@ -52,7 +52,7 @@ function macroTorch.Target:new()
         end
     end
 
-    function obj.removeFromImmune(spellName)
+    function obj.removeImmune(spellName)
         macroTorch.loadImmuneTable()
         if macroTorch.context.immuneTable[spellName] and macroTorch.context.immuneTable[spellName][obj.name] then
             macroTorch.context.immuneTable[spellName][obj.name] = nil
