@@ -30,7 +30,7 @@ function macroTorch.setSpellTracing(spellGuid, spellName)
 end
 
 -- global event listening
-local frame = CreateFrame("macroTorchEventFrame")
+local frame = CreateFrame("Frame")
 
 -- frame:RegisterEvent("PLAYER_LOGIN")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -204,6 +204,15 @@ function macroTorch.computeLandTable(spell)
     if not lastCast then
         return
     end
+    local lastLanded = (macroTorch.loginContext and
+        macroTorch.loginContext.landTable and
+        macroTorch.loginContext.landTable[spell] and
+        macroTorch.loginContext.landTable[spell][mob] and
+        macroTorch.loginContext.landTable[spell][mob].top) or 0
+    -- already processed for this cast evnet
+    if lastLanded == lastCast then
+        return
+    end
     local lastFailedTime = (macroTorch.loginContext and
         macroTorch.loginContext.failTable and
         macroTorch.loginContext.failTable[spell] and
@@ -239,6 +248,28 @@ function macroTorch.consumeFailEvent(spell, logic)
         return
     end
     logic(macroTorch.loginContext.failTable[spell][mob].top)
+end
+
+function macroTorch.peekLandEvent(spell)
+    if not spell or not macroTorch.target.isCanAttack then
+        return
+    end
+    local mob = macroTorch.target.name
+    if not macroTorch.loginContext or not macroTorch.loginContext.landTable or not macroTorch.loginContext.landTable[spell] or not macroTorch.loginContext.landTable[spell][mob] then
+        return nil
+    end
+    return macroTorch.loginContext.landTable[spell][mob].top
+end
+
+function macroTorch.landTableAnyMatch(spell, predicate)
+    if not spell or not predicate or not macroTorch.target.isCanAttack then
+        return false
+    end
+    local mob = macroTorch.target.name
+    if not macroTorch.loginContext or not macroTorch.loginContext.landTable or not macroTorch.loginContext.landTable[spell] or not macroTorch.loginContext.landTable[spell][mob] then
+        return false
+    end
+    return macroTorch.loginContext.landTable[spell][mob].anyMatch(predicate)
 end
 
 -- load the immuneTable from SM_EXTEND.immuneTable persistent var
