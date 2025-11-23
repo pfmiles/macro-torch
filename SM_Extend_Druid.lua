@@ -596,6 +596,7 @@ function macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
             or player.mana >= macroTorch.BITE_E and comboPoints == 5
             or player.mana >= macroTorch.RAKE_E and not macroTorch.isRakePresent() and not macroTorch.target.isImmune('Rake') and comboPoints < 5
             or player.mana >= macroTorch.RIP_E and not macroTorch.isRipPresent() and not macroTorch.target.isImmune('Rip') and comboPoints == 5
+            or player.mana >= macroTorch.RIP_E and not macroTorch.isRipPresent() and not macroTorch.target.isImmune('Rip') and comboPoints > 0 and macroTorch.isTrivialBattleOrPvp()
             or comboPoints == 5
             or macroTorch.isKillshotOrLastChance(comboPoints)) then
         return
@@ -630,10 +631,15 @@ function macroTorch.ripLeft()
     if not lastLandedRipTime then
         return 0
     end
-    local ripLeft = macroTorch.RIP_DURATION - (GetTime() - lastLandedRipTime)
+    local ripDur = macroTorch.RIP_DURATION
+    if macroTorch.context.lastRipAtCp then
+        ripDur = 10 + (macroTorch.context.lastRipAtCp - 1) * 2
+    end
+    local ripLeft = ripDur - (GetTime() - lastLandedRipTime)
     if ripLeft < 0 then
         ripLeft = 0
     end
+    -- macroTorch.show('Rip left: ' .. ripLeft)
     return ripLeft
 end
 
@@ -651,6 +657,7 @@ function macroTorch.rakeLeft()
     if rakeLeft < 0 then
         rakeLeft = 0
     end
+    -- macroTorch.show('Rake left: ' .. rakeLeft)
     return rakeLeft
 end
 
@@ -736,6 +743,7 @@ function macroTorch.safeRip()
     if macroTorch.player.isSpellReady('Rip') and macroTorch.isGcdOk() and macroTorch.player.mana >= macroTorch.RIP_E and macroTorch.target.isNearBy then
         macroTorch.show('Ripped at combo points: ' .. tostring(GetComboPoints()))
         CastSpellByName('Rip')
+        macroTorch.context.lastRipAtCp = GetComboPoints()
         return true
     end
     return false
