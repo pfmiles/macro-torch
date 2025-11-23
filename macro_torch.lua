@@ -65,10 +65,7 @@ function macroTorch.eventHandle()
         -- target changed
         if macroTorch.player.isInCombat and macroTorch.target.isCanAttack then
             if macroTorch.context then
-                macroTorch.context.rakeTimer = nil
-                macroTorch.context.ripTimer = nil
                 macroTorch.context.ffTimer = nil
-                macroTorch.context.pounceTimer = nil
                 macroTorch.context.targetHealthVector = nil
             end
             macroTorch.show('Target change in combat!')
@@ -178,7 +175,7 @@ function macroTorch.recordFailTable(spell, failType)
 
     macroTorch.show(spell ..
         ' failed on ' ..
-        mob .. ' is recorded to failTable: ' .. item[1] .. '(' .. item[2] .. ')')
+        mob .. ' is recorded to failTable: ' .. item[1] .. '(' .. item[2] .. ')', 'red')
 end
 
 function macroTorch.computeLandTable(spell)
@@ -201,7 +198,7 @@ function macroTorch.computeLandTable(spell)
         macroTorch.loginContext.castTable[spell] and
         macroTorch.loginContext.castTable[spell][mob] and
         macroTorch.loginContext.castTable[spell][mob].top) or 0
-    if not lastCast then
+    if not lastCast or lastCast == 0 or GetTime() - lastCast > 0.9 then
         return
     end
     local lastLanded = (macroTorch.loginContext and
@@ -224,7 +221,7 @@ function macroTorch.computeLandTable(spell)
         macroTorch.loginContext.landTable[spell][mob].push(lastCast)
         macroTorch.show(spell ..
             ' cast on ' ..
-            mob .. ' landed: ' .. lastCast)
+            mob .. ' landed: ' .. lastCast, 'blue')
     end
 end
 
@@ -312,7 +309,13 @@ function macroTorch.CheckDodgeParryBlockResist(unitId, event, arg1)
     --     macroTorch.context.landTable[spell][mob] = GetTime()
     -- end
 
+    -- macroTorch.show(arg1)
     -- 尝试从 arg1 中匹配完整句式：Your <技能名> was dodged by <怪物名>.
+    local _, _, spell, mob = string.find(arg1, "Your (.-) missed (.-)%.")
+    if spell and mob then
+        -- macroTorch.show("MISS DETECTED: Spell[" .. spell .. "] by [" .. mob .. "] missed")
+        macroTorch.recordFailTable(spell, 'miss')
+    end
     local _, _, spell, mob = string.find(arg1, "Your (.-) was dodged by (.-)%.")
     if spell and mob then
         -- macroTorch.show("DODGE DETECTED: Spell[" .. spell .. "] by [" .. mob .. "] dodged")

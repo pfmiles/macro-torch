@@ -14,10 +14,6 @@
    limitations under the License.
 ]] --
 ---小德专用start---
-macroTorch.setSpellTracing(9827, 'Pounce')
-macroTorch.setSpellTracing(9904, 'Rake')
-macroTorch.setSpellTracing(9896, 'Rip')
-macroTorch.setSpellTracing(31018, 'Ferocious Bite')
 
 --- The 'E' key regular dps function for feral cat druid
 --- if rough, then no back attacks
@@ -50,6 +46,9 @@ function macroTorch.catAtk(rough)
     macroTorch.RESHIFT_E_DIFF_THRESHOLD = 0
     macroTorch.BURST_ITEM_LOC = 14
     macroTorch.PLAYER_URGENT_HP_THRESHOLD = 10
+
+    -- 附带debuff的主动技能land之后，debuff出现在目标身上的最大延迟时间
+    macroTorch.DEBUFF_LAND_LAG = 0.2
 
     local player = macroTorch.player
     local prowling = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Ambush')
@@ -139,6 +138,11 @@ function macroTorch.catAtk(rough)
     end
 end
 
+macroTorch.setSpellTracing(9827, 'Pounce')
+macroTorch.setSpellTracing(9904, 'Rake')
+macroTorch.setSpellTracing(9896, 'Rip')
+macroTorch.setSpellTracing(31018, 'Ferocious Bite')
+
 function macroTorch.maintainLandTables()
     macroTorch.computeLandTable('Pounce')
     macroTorch.computeLandTable('Rake')
@@ -151,83 +155,86 @@ function macroTorch.consumeBattleEvents()
     -- detect immune from fail events
     -- detect pounce auto immune
     macroTorch.consumeFailEvent('Pounce', function(failEvent)
-        if GetTime() - failEvent[1] > 3 or not failEvent[2] == 'immune' or not macroTorch.target.isCanAttack then
+        if GetTime() - failEvent[1] > 0.9 or not failEvent[2] == 'immune' or not macroTorch.target.isCanAttack then
             return
         end
-        -- 检测到3s内的一次immune事件，若整个landTable均无有效land记录，则加入immune列表, 若有任意记录，则从immune表中删除
+        -- 检测到0.9s内的一次immune事件，若整个landTable均无有效land记录，则加入immune列表, 若有任意land记录，则加入definite表
         local onceLanded = macroTorch.landTableAnyMatch('Pounce', function(landEvent)
             return macroTorch.toBoolean(landEvent)
         end)
         if onceLanded then
             macroTorch.target.removeImmune('Pounce')
         else
-            macroTorch.target.setImmune('Pounce')
+            macroTorch.target.recordImmune('Pounce')
         end
     end)
     -- detect rake auto immune
     macroTorch.consumeFailEvent('Rake', function(failEvent)
-        if GetTime() - failEvent[1] > 3 or not failEvent[2] == 'immune' or not macroTorch.target.isCanAttack then
+        if GetTime() - failEvent[1] > 0.9 or not failEvent[2] == 'immune' or not macroTorch.target.isCanAttack then
             return
         end
-        -- 检测到3s内的一次immune事件，若整个landTable均无有效land记录，则加入immune列表, 若有任意记录，则从immune表中删除
+        -- 检测到0.9s内的一次immune事件，若整个landTable均无有效land记录，则加入immune列表, 若有任意记录，则从immune表中删除
         local onceLanded = macroTorch.landTableAnyMatch('Rake', function(landEvent)
             return macroTorch.toBoolean(landEvent)
         end)
         if onceLanded then
             macroTorch.target.removeImmune('Rake')
         else
-            macroTorch.target.setImmune('Rake')
+            macroTorch.target.recordImmune('Rake')
         end
     end)
     -- detect rip auto immune
     macroTorch.consumeFailEvent('Rip', function(failEvent)
-        if GetTime() - failEvent[1] > 3 or not failEvent[2] == 'immune' or not macroTorch.target.isCanAttack then
+        if GetTime() - failEvent[1] > 0.9 or not failEvent[2] == 'immune' or not macroTorch.target.isCanAttack then
             return
         end
-        -- 检测到3s内的一次immune事件，若整个landTable均无有效land记录，则加入immune列表, 若有任意记录，则从immune表中删除
+        -- 检测到0.9s内的一次immune事件，若整个landTable均无有效land记录，则加入immune列表, 若有任意记录，则从immune表中删除
         local onceLanded = macroTorch.landTableAnyMatch('Rip', function(landEvent)
             return macroTorch.toBoolean(landEvent)
         end)
         if onceLanded then
             macroTorch.target.removeImmune('Rip')
         else
-            macroTorch.target.setImmune('Rip')
+            macroTorch.target.recordImmune('Rip')
         end
     end)
 
     -- detect immune from landed and no bleeding effect tests
     -- detect pounce
     macroTorch.consumeLandEvent('Pounce', function(landEvent)
-        if GetTime() - landEvent > 3 or not macroTorch.target.isCanAttack then
+        local timeElapsed = GetTime() - landEvent
+        if timeElapsed <= macroTorch.DEBUFF_LAND_LAG or timeElapsed > 0.9 or not macroTorch.target.isCanAttack then
             return
         end
-        -- 检测到3s以内的命中记录，若此时目标身上没有debuff, 则记录immune,否则删除immune记录
+        -- 检测到合适时间以内的命中记录，若此时目标身上没有debuff, 则记录immune,否则删除immune记录
         if not macroTorch.target.hasBuff('Ability_Druid_SupriseAttack') then
-            macroTorch.target.setImmune('Pounce')
+            macroTorch.target.recordImmune('Pounce')
         else
             macroTorch.target.removeImmune('Pounce')
         end
     end)
     -- detect rake
     macroTorch.consumeLandEvent('Rake', function(landEvent)
-        if GetTime() - landEvent > 3 or not macroTorch.target.isCanAttack then
+        local timeElapsed = GetTime() - landEvent
+        if timeElapsed <= macroTorch.DEBUFF_LAND_LAG or timeElapsed > 0.9 or not macroTorch.target.isCanAttack then
             return
         end
-        -- 检测到3s以内的命中记录，若此时目标身上没有debuff, 则记录immune,否则删除immune记录
+        -- 检测到合适时间以内的命中记录，若此时目标身上没有debuff, 则记录immune,否则删除immune记录
         if not macroTorch.target.hasBuff('Ability_Druid_Disembowel') then
-            macroTorch.target.setImmune('Rake')
+            macroTorch.target.recordImmune('Rake')
         else
             macroTorch.target.removeImmune('Rake')
         end
     end)
     -- detect rip
     macroTorch.consumeLandEvent('Rip', function(landEvent)
-        if GetTime() - landEvent > 3 or not macroTorch.target.isCanAttack then
+        local timeElapsed = GetTime() - landEvent
+        if timeElapsed <= macroTorch.DEBUFF_LAND_LAG or timeElapsed > 0.9 or not macroTorch.target.isCanAttack then
             return
         end
-        -- 检测到3s以内的命中记录，若此时目标身上没有debuff, 则记录immune,否则删除immune记录
+        -- 检测到合适时间以内的命中记录，若此时目标身上没有debuff, 则记录immune,否则删除immune记录
         if not macroTorch.target.hasBuff('Ability_GhoulFrenzy') then
-            macroTorch.target.setImmune('Rip')
+            macroTorch.target.recordImmune('Rip')
         else
             macroTorch.target.removeImmune('Rip')
         end
@@ -235,18 +242,20 @@ function macroTorch.consumeBattleEvents()
 
     -- deal with bites landing bleeding renewals
     macroTorch.consumeLandEvent('Ferocious Bite', function(landEvent)
-        if GetTime() - landEvent > 3 or not macroTorch.target.isCanAttack then
+        if GetTime() - landEvent > 0.9 or not macroTorch.target.isCanAttack then
             return
         end
-        -- 3s以内有命中过bite，若cp大于0,且本次landed事件还未处理,则刷新rake & rip时间
+        -- 0.9s以内有命中过bite，若cp大于0,且本次landed事件还未处理,则刷新rake & rip时间
         if macroTorch.context.lastProcessedBiteEvent and macroTorch.context.lastProcessedBiteEvent == landEvent then
             return
         end
         if GetComboPoints() > 0 then
             if macroTorch.isRakePresent() then
+                macroTorch.show('To renew rake: ')
                 macroTorch.recordCastTable('Rake')
             end
             if macroTorch.isRipPresent() then
+                macroTorch.show('To renew rip: ')
                 macroTorch.recordCastTable('Rip')
             end
         end
@@ -669,13 +678,12 @@ function macroTorch.isPouncePresent()
 end
 
 function macroTorch.pounceLeft()
-    local pounceLeft = 0
-    if not not macroTorch.context.pounceTimer then
-        pounceLeft = macroTorch.POUNCE_DURATION - (GetTime() - macroTorch.context.pounceTimer)
-        if pounceLeft < 0 then
-            pounceLeft = 0
-        end
-    else
+    local lastLandedPounceTime = macroTorch.peekLandEvent('Pounce')
+    if not lastLandedPounceTime then
+        return 0
+    end
+    local pounceLeft = macroTorch.POUNCE_DURATION - (GetTime() - lastLandedPounceTime)
+    if pounceLeft < 0 then
         pounceLeft = 0
     end
     return pounceLeft
@@ -787,7 +795,6 @@ end
 function macroTorch.safePounce()
     if macroTorch.player.isSpellReady('Pounce') and macroTorch.isGcdOk() and macroTorch.player.mana >= macroTorch.POUNCE_E and macroTorch.target.isNearBy then
         CastSpellByName('Pounce')
-        macroTorch.context.pounceTimer = GetTime()
         return true
     end
     return false
