@@ -18,17 +18,19 @@
 if not macroTorch then
     macroTorch = {}
 end
---- all spell names which has a lasting effect on the enemy
-if not macroTorch.effectLastingSpells then
-    macroTorch.effectLastingSpells = {
-        ["Rake"] = true,
-        ["Rip"] = true,
-        ["Pounce"] = true,
-    }
+
+if not macroTorch.tracingSpells then
+    macroTorch.tracingSpells = {}
+end
+
+function macroTorch.setSpellTracing(spellGuid, spellName)
+    if not macroTorch.tracingSpells[spellGuid] then
+        macroTorch.tracingSpells[spellGuid] = spellName
+    end
 end
 
 -- global event listening
-local frame = CreateFrame("Frame")
+local frame = CreateFrame("macroTorchEventFrame")
 
 -- frame:RegisterEvent("PLAYER_LOGIN")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -94,20 +96,6 @@ function macroTorch.eventHandle()
         macroTorch.inCombat = true
         macroTorch.show('Entering combat!')
     elseif event == "CHAT_MSG_COMBAT_SELF_MISSES" or event == "CHAT_MSG_SPELL_SELF_DAMAGE" then
-        -- macroTorch.show("event: " ..
-        --     tostring(event) ..
-        --     ", arg1: " ..
-        --     tostring(arg1) ..
-        --     ", arg2: " ..
-        --     tostring(arg2) ..
-        --     ", arg3: " ..
-        --     tostring(arg3) ..
-        --     ", arg4: " ..
-        --     tostring(arg4) ..
-        --     ", arg5: " ..
-        --     tostring(arg5) ..
-        --     ", arg6: " ..
-        --     tostring(arg6))
         -- when player melee combat or spell is dodged, parried, blocked or resisted
         macroTorch.CheckDodgeParryBlockResist("target", event, arg1)
     elseif event == "PLAYER_DEAD" then
@@ -117,37 +105,14 @@ function macroTorch.eventHandle()
     elseif event == "CHAT_MSG_SPELL_AURA_GONE_SELF" then
         -- when player lose a buff
     elseif event == "CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE" then
-        -- macroTorch.show("event: " ..
-        --     tostring(event) ..
-        --     ", arg1: " ..
-        --     tostring(arg1) ..
-        --     ", arg2: " ..
-        --     tostring(arg2) ..
-        --     ", arg3: " ..
-        --     tostring(arg3) ..
-        --     ", arg4: " ..
-        --     tostring(arg4) ..
-        --     ", arg5: " ..
-        --     tostring(arg5) ..
-        --     ", arg6: " ..
-        --     tostring(arg6))
+
     elseif event == "CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE" then
 
     elseif event == "UNIT_CASTEVENT" then
         -- when player myself cast a spell
         if arg1 == macroTorch.player.guid and arg3 == 'CAST' then
-            -- record self bleeding spell cast
-            if arg4 == 9827 then
-                -- pounce
-                macroTorch.recordCastTable('Pounce')
-            end
-            if arg4 == 9904 then
-                -- rake
-                macroTorch.recordCastTable('Rake')
-            end
-            if arg4 == 9896 then
-                -- rip
-                macroTorch.recordCastTable('Rip')
+            if arg4 and macroTorch.tracingSpells[arg4] then
+                macroTorch.recordCastTable(macroTorch.tracingSpells[arg4])
             end
         end
     elseif event == "RAW_COMBATLOG" then
@@ -169,21 +134,111 @@ end
 
 frame:SetScript("OnEvent", macroTorch.eventHandle)
 
+-- record traced spells' casts
 function macroTorch.recordCastTable(spell)
     if not spell or not macroTorch.target.isCanAttack then
         return
     end
-    if not macroTorch.context.landTable then
-        macroTorch.context.landTable = {}
+    if not macroTorch.loginContext.castTable then
+        macroTorch.loginContext.castTable = {}
     end
-    if not macroTorch.context.landTable[spell] then
-        macroTorch.context.landTable[spell] = {}
+    if not macroTorch.loginContext.castTable[spell] then
+        macroTorch.loginContext.castTable[spell] = {}
     end
-    macroTorch.context.landTable[spell][macroTorch.target.name] = GetTime()
+    local mob = macroTorch.target.name
+    if not macroTorch.loginContext.castTable[spell][mob] then
+        macroTorch.loginContext.castTable[spell][mob] = macroTorch.LRUStack:new(100)
+    end
+    macroTorch.loginContext.castTable[spell][mob].push(GetTime())
+
     macroTorch.show(spell ..
         ' cast on ' ..
-        macroTorch.target.name .. ' is recorded/renewed to landTable: ' ..
-        macroTorch.context.landTable[spell][macroTorch.target.name])
+        mob .. ' is recorded/renewed to castTable: ' ..
+        macroTorch.loginContext.castTable[spell][mob].top)
+end
+
+-- record traced spells' failures, icluding all types of failures: miss, parry, resist, immune
+-- it also computes the final 'landTable' immediately, cauz the cast event must arrived upon the fail event arrive
+function macroTorch.recordFailTable(spell, failType)
+    if not spell or not macroTorch.target.isCanAttack then
+        return
+    end
+    if not macroTorch.loginContext.failTable then
+        macroTorch.loginContext.failTable = {}
+    end
+    if not macroTorch.loginContext.failTable[spell] then
+        macroTorch.loginContext.failTable[spell] = {}
+    end
+    local mob = macroTorch.target.name
+    if not macroTorch.loginContext.failTable[spell][mob] then
+        macroTorch.loginContext.failTable[spell][mob] = macroTorch.LRUStack:new(100)
+    end
+    local item = { GetTime(), failType }
+    macroTorch.loginContext.failTable[spell][mob].push(item)
+
+    macroTorch.show(spell ..
+        ' failed on ' ..
+        mob .. ' is recorded to failTable: ' .. item[1] .. '(' .. item[2] .. ')')
+end
+
+function macroTorch.computeLandTable(spell)
+    if not spell or not macroTorch.target.isCanAttack then
+        return
+    end
+    -- compute the final 'landTable'
+    if not macroTorch.loginContext.landTable then
+        macroTorch.loginContext.landTable = {}
+    end
+    if not macroTorch.loginContext.landTable[spell] then
+        macroTorch.loginContext.landTable[spell] = {}
+    end
+    local mob = macroTorch.target.name
+    if not macroTorch.loginContext.landTable[spell][mob] then
+        macroTorch.loginContext.landTable[spell][mob] = macroTorch.LRUStack:new(100)
+    end
+    local lastCast = (macroTorch.loginContext and
+        macroTorch.loginContext.castTable and
+        macroTorch.loginContext.castTable[spell] and
+        macroTorch.loginContext.castTable[spell][mob] and
+        macroTorch.loginContext.castTable[spell][mob].top) or 0
+    if not lastCast then
+        return
+    end
+    local lastFailedTime = (macroTorch.loginContext and
+        macroTorch.loginContext.failTable and
+        macroTorch.loginContext.failTable[spell] and
+        macroTorch.loginContext.failTable[spell][mob] and
+        macroTorch.loginContext.failTable[spell][mob].top and
+        macroTorch.loginContext.failTable[spell][mob].top[1]) or 0
+    -- if no fail event near around the cast event, then it's a successful landed cast
+    if math.abs(lastFailedTime - lastCast) > 0.4 then
+        macroTorch.loginContext.landTable[spell][mob].push(lastCast)
+        macroTorch.show(spell ..
+            ' cast on ' ..
+            mob .. ' landed: ' .. lastCast)
+    end
+end
+
+function macroTorch.consumeLandEvent(spell, logic)
+    if not spell or not logic or not macroTorch.target.isCanAttack then
+        return
+    end
+    local mob = macroTorch.target.name
+    if not macroTorch.loginContext or not macroTorch.loginContext.landTable or not macroTorch.loginContext.landTable[spell] or not macroTorch.loginContext.landTable[spell][mob] or not macroTorch.loginContext.landTable[spell][mob].top then
+        return
+    end
+    logic(macroTorch.loginContext.landTable[spell][mob].top)
+end
+
+function macroTorch.consumeFailEvent(spell, logic)
+    if not spell or not logic or not macroTorch.target.isCanAttack then
+        return
+    end
+    local mob = macroTorch.target.name
+    if not macroTorch.loginContext or not macroTorch.loginContext.failTable or not macroTorch.loginContext.failTable[spell] or not macroTorch.loginContext.failTable[spell][mob] or not macroTorch.loginContext.failTable[spell][mob].top then
+        return
+    end
+    logic(macroTorch.loginContext.failTable[spell][mob].top)
 end
 
 -- load the immuneTable from SM_EXTEND.immuneTable persistent var
@@ -202,7 +257,6 @@ end
 
 -- records battle status
 function macroTorch.CheckDodgeParryBlockResist(unitId, event, arg1)
-    macroTorch.loadImmuneTable()
     -- macroTorch.show('CheckDodgeParryBlockResist: ' .. event .. ', msg: ' .. arg1)
 
     if not arg1 then
@@ -231,42 +285,24 @@ function macroTorch.CheckDodgeParryBlockResist(unitId, event, arg1)
     local _, _, spell, mob = string.find(arg1, "Your (.-) was dodged by (.-)%.")
     if spell and mob then
         -- macroTorch.show("DODGE DETECTED: Spell[" .. spell .. "] by [" .. mob .. "] dodged")
-        if not macroTorch.context.dodgeTable then
-            macroTorch.context.dodgeTable = {}
-        end
-        if not macroTorch.context.dodgeTable[spell] then
-            macroTorch.context.dodgeTable[spell] = {}
-        end
-        macroTorch.context.dodgeTable[spell][mob] = GetTime()
+        macroTorch.recordFailTable(spell, 'dodge')
     end
     -- Your Claw is parried by Vilemust Shadowstalker.
     local _, _, spell, mob = string.find(arg1, "Your (.-) is parried by (.-)%.")
     if spell and mob then
         -- macroTorch.show("PARRY DETECTED: Spell[" .. spell .. "] by [" .. mob .. "] parried")
-        if not macroTorch.context.parryTable then
-            macroTorch.context.parryTable = {}
-        end
-        if not macroTorch.context.parryTable[spell] then
-            macroTorch.context.parryTable[spell] = {}
-        end
-        macroTorch.context.parryTable[spell][mob] = GetTime()
+        macroTorch.recordFailTable(spell, 'parry')
     end
     --- Your Rake was resisted by Vilemust Shadowstalker.
     local _, _, spell, mob = string.find(arg1, "Your (.-) was resisted by (.-)%.")
     if spell and mob then
         -- macroTorch.show("RESIST DETECTED: Spell[" .. spell .. "] by [" .. mob .. "] resisted")
-        if not macroTorch.context.resistTable then
-            macroTorch.context.resistTable = {}
-        end
-        if not macroTorch.context.resistTable[spell] then
-            macroTorch.context.resistTable[spell] = {}
-        end
-        macroTorch.context.resistTable[spell][mob] = GetTime()
+        macroTorch.recordFailTable(spell, 'resist')
     end
     --- Your Rake failed. Vilemust Shadowstalker is immune.
     local _, _, spell, mob = string.find(arg1, "Your (.-) failed. (.-) is immune%.")
     if spell and mob then
         -- macroTorch.show("IMMUNE DETECTED: Spell[" .. spell .. "] by [" .. mob .. "] immune")
-        macroTorch.target.recordImmune(spell)
+        macroTorch.recordFailTable(spell, 'immune')
     end
 end
