@@ -48,7 +48,7 @@ function macroTorch.Target:new()
         end
         if not macroTorch.target.isPlayerControlled and not macroTorch.context.immuneTable[spellName][obj.name] then
             macroTorch.context.immuneTable[spellName][obj.name] = GetTime()
-            macroTorch.show("Spell: " .. spellName .. " is recorded IMMUNE to " .. obj.name)
+            macroTorch.show("Spell: " .. spellName .. " is recorded IMMUNE to " .. obj.name, 'yellow')
         end
     end
 
@@ -56,7 +56,7 @@ function macroTorch.Target:new()
         macroTorch.loadImmuneTable()
         if macroTorch.context.immuneTable[spellName] and macroTorch.context.immuneTable[spellName][obj.name] then
             macroTorch.context.immuneTable[spellName][obj.name] = nil
-            macroTorch.show("Spell: " .. spellName .. " is removed from IMMUNE to " .. obj.name)
+            macroTorch.show("Spell: " .. spellName .. " is removed from IMMUNE to " .. obj.name, 'yellow')
         end
     end
 

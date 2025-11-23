@@ -76,8 +76,15 @@ end
 
 --- 在聊天框中显示传入的内容，传入内容会被tostring
 ---@param a any
-function macroTorch.show(a)
-    DEFAULT_CHAT_FRAME:AddMessage(tostring(a))
+function macroTorch.show(a, color)
+    local col = color or 'white'
+    local c = ChatTypeInfo["SAY"]
+    if 'red' == col then
+        c = ChatTypeInfo["YELL"]
+    elseif 'yellow' == col then
+        c = ChatTypeInfo["SYSTEM"]
+    elseif 'blue' == col then
+        c = ChatTypeInfo["OFFICER"]
+    end
+    DEFAULT_CHAT_FRAME:AddMessage(tostring(a), c.r, c.g, c.b, c.id)
 end
-
-
