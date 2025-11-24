@@ -112,6 +112,37 @@ end
 
 frame:SetScript("OnEvent", macroTorch.eventHandle)
 
+-- sets the fixed periodic logic
+frame.lastUpdate = 0
+frame.leastUpdateInterval = 0.1
+if not macroTorch.periodicTasks then
+    macroTorch.periodicTasks = {}
+end
+function macroTorch.onPeriodicUpdate()
+    -- on periodic update
+    for _, task in pairs(macroTorch.periodicTasks) do
+        if GetTime() - frame.lastUpdate >= task.interval then
+            task.task()
+        end
+    end
+end
+
+function macroTorch.registerPeriodicTask(name, task)
+    macroTorch.periodicTasks[name] = task
+end
+
+frame:SetScript("OnUpdate", function()
+    if GetTime() - frame.lastUpdate >= frame.leastUpdateInterval then
+        -- 使用pcall安全执行onPeriodicUpdate，确保后续代码一定执行
+        local success, errorMsg = pcall(macroTorch.onPeriodicUpdate)
+        if not success then
+            -- 记录错误但不中断执行
+            macroTorch.show("onPeriodicUpdate执行错误: " .. tostring(errorMsg), "red")
+        end
+        frame.lastUpdate = GetTime()
+    end
+end)
+
 -- record traced spells' casts
 function macroTorch.recordCastTable(spell)
     if not spell or not macroTorch.target.isCanAttack then
