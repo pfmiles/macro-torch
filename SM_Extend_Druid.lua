@@ -66,13 +66,6 @@ function macroTorch.catAtk(rough)
     if not macroTorch.target.isCanAttack then
         macroTorch.targetEnemyMod()
     else
-        -- maintain THV
-        macroTorch.maintainTHV()
-        -- maintain spell land table
-        macroTorch.maintainLandTables()
-        -- immunement auto-detect
-        macroTorch.consumeBattleEvents()
-
         -- 3.keep autoAttack, in combat & not prowling *
         if macroTorch.isFightStarted(prowling) then
             player.startAutoAtk()
@@ -138,6 +131,7 @@ function macroTorch.catAtk(rough)
     end
 end
 
+-- tracing certain spells and maintain the landTable
 macroTorch.setSpellTracing(9827, 'Pounce')
 macroTorch.setSpellTracing(9904, 'Rake')
 macroTorch.setSpellTracing(9896, 'Rip')
@@ -150,15 +144,17 @@ function macroTorch.maintainLandTables()
     macroTorch.computeLandTable('Ferocious Bite')
 end
 
-function macroTorch.consumeBattleEvents()
+macroTorch.registerPeriodicTask('maintainLandTables', { interval = 0.1, task = macroTorch.maintainLandTables })
+
+function macroTorch.consumeDruidBattleEvents()
     macroTorch.loadImmuneTable()
     -- detect immune from fail events
     -- detect pounce auto immune
     macroTorch.consumeFailEvent('Pounce', function(failEvent)
-        if GetTime() - failEvent[1] > 0.9 or not failEvent[2] == 'immune' or not macroTorch.target.isCanAttack then
+        if GetTime() - failEvent[1] > 0.4 or not failEvent[2] == 'immune' or not macroTorch.target.isCanAttack then
             return
         end
-        -- 检测到0.9s内的一次immune事件，若整个landTable均无有效land记录，则加入immune列表, 若有任意land记录，则加入definite表
+        -- 检测到近期的一次immune事件，若整个landTable均无有效land记录，则加入immune列表, 若有任意land记录，则加入definite表
         local onceLanded = macroTorch.landTableAnyMatch('Pounce', function(landEvent)
             return macroTorch.toBoolean(landEvent)
         end)
@@ -170,10 +166,10 @@ function macroTorch.consumeBattleEvents()
     end)
     -- detect rake auto immune
     macroTorch.consumeFailEvent('Rake', function(failEvent)
-        if GetTime() - failEvent[1] > 0.9 or not failEvent[2] == 'immune' or not macroTorch.target.isCanAttack then
+        if GetTime() - failEvent[1] > 0.4 or not failEvent[2] == 'immune' or not macroTorch.target.isCanAttack then
             return
         end
-        -- 检测到0.9s内的一次immune事件，若整个landTable均无有效land记录，则加入immune列表, 若有任意记录，则从immune表中删除
+        -- 检测到近期的一次immune事件，若整个landTable均无有效land记录，则加入immune列表, 若有任意记录，则从immune表中删除
         local onceLanded = macroTorch.landTableAnyMatch('Rake', function(landEvent)
             return macroTorch.toBoolean(landEvent)
         end)
@@ -185,10 +181,10 @@ function macroTorch.consumeBattleEvents()
     end)
     -- detect rip auto immune
     macroTorch.consumeFailEvent('Rip', function(failEvent)
-        if GetTime() - failEvent[1] > 0.9 or not failEvent[2] == 'immune' or not macroTorch.target.isCanAttack then
+        if GetTime() - failEvent[1] > 0.4 or not failEvent[2] == 'immune' or not macroTorch.target.isCanAttack then
             return
         end
-        -- 检测到0.9s内的一次immune事件，若整个landTable均无有效land记录，则加入immune列表, 若有任意记录，则从immune表中删除
+        -- 检测到近期的一次immune事件，若整个landTable均无有效land记录，则加入immune列表, 若有任意记录，则从immune表中删除
         local onceLanded = macroTorch.landTableAnyMatch('Rip', function(landEvent)
             return macroTorch.toBoolean(landEvent)
         end)
@@ -203,7 +199,7 @@ function macroTorch.consumeBattleEvents()
     -- detect pounce
     macroTorch.consumeLandEvent('Pounce', function(landEvent)
         local timeElapsed = GetTime() - landEvent
-        if timeElapsed <= macroTorch.DEBUFF_LAND_LAG or timeElapsed > 0.9 or not macroTorch.target.isCanAttack then
+        if timeElapsed <= macroTorch.DEBUFF_LAND_LAG or timeElapsed > 0.6 or not macroTorch.target.isCanAttack then
             return
         end
         -- 检测到合适时间以内的命中记录，若此时目标身上没有debuff, 则记录immune,否则删除immune记录
@@ -216,7 +212,7 @@ function macroTorch.consumeBattleEvents()
     -- detect rake
     macroTorch.consumeLandEvent('Rake', function(landEvent)
         local timeElapsed = GetTime() - landEvent
-        if timeElapsed <= macroTorch.DEBUFF_LAND_LAG or timeElapsed > 0.9 or not macroTorch.target.isCanAttack then
+        if timeElapsed <= macroTorch.DEBUFF_LAND_LAG or timeElapsed > 0.6 or not macroTorch.target.isCanAttack then
             return
         end
         -- 检测到合适时间以内的命中记录，若此时目标身上没有debuff, 则记录immune,否则删除immune记录
@@ -229,7 +225,7 @@ function macroTorch.consumeBattleEvents()
     -- detect rip
     macroTorch.consumeLandEvent('Rip', function(landEvent)
         local timeElapsed = GetTime() - landEvent
-        if timeElapsed <= macroTorch.DEBUFF_LAND_LAG or timeElapsed > 0.9 or not macroTorch.target.isCanAttack then
+        if timeElapsed <= macroTorch.DEBUFF_LAND_LAG or timeElapsed > 0.6 or not macroTorch.target.isCanAttack then
             return
         end
         -- 检测到合适时间以内的命中记录，若此时目标身上没有debuff, 则记录immune,否则删除immune记录
@@ -242,26 +238,29 @@ function macroTorch.consumeBattleEvents()
 
     -- deal with bites landing bleeding renewals
     macroTorch.consumeLandEvent('Ferocious Bite', function(landEvent)
-        if GetTime() - landEvent > 0.9 or not macroTorch.target.isCanAttack then
+        if GetTime() - landEvent > 0.4 or not macroTorch.target.isCanAttack then
             return
         end
-        -- 0.9s以内有命中过bite，若cp大于0,且本次landed事件还未处理,则刷新rake & rip时间
+        -- 近期有命中过bite，若cp大于0,且本次landed事件还未处理,则刷新rake & rip时间
         if macroTorch.context.lastProcessedBiteEvent and macroTorch.context.lastProcessedBiteEvent == landEvent then
             return
         end
         if GetComboPoints() > 0 then
             if macroTorch.isRakePresent() then
-                macroTorch.show('To renew rake: ')
+                macroTorch.show('Renewing rake...')
                 macroTorch.recordCastTable('Rake')
             end
             if macroTorch.isRipPresent() then
-                macroTorch.show('To renew rip: ')
+                macroTorch.show('Renewing rip...')
                 macroTorch.recordCastTable('Rip')
             end
         end
         macroTorch.context.lastProcessedBiteEvent = landEvent
     end)
 end
+
+macroTorch.registerPeriodicTask('consumeDruidBattleEvents',
+    { interval = 0.1, task = macroTorch.consumeDruidBattleEvents })
 
 function macroTorch.regularAttack(isBehind, rough)
     -- claw with at least 1 bleeding effect or shred
@@ -385,6 +384,8 @@ function macroTorch.maintainTHV()
         end
     end
 end
+
+macroTorch.registerPeriodicTask('maintainTHV', { interval = 0.1, task = macroTorch.maintainTHV })
 
 -- compute current health-reducing-per-second
 function macroTorch.currentHRPS()
