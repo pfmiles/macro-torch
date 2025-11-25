@@ -41,7 +41,7 @@ function macroTorch.catAtk(rough)
     macroTorch.POUNCE_ERPS = 5 / 3
     macroTorch.BERSERK_ERPS = 20 / 2
 
-    macroTorch.COWER_THREAT_THRESHOLD = 80
+    macroTorch.COWER_THREAT_THRESHOLD = 75
     macroTorch.RESHIFT_ENERGY = 60
     macroTorch.RESHIFT_E_DIFF_THRESHOLD = 0
     macroTorch.BURST_ITEM_LOC = 14
@@ -146,96 +146,12 @@ end
 
 macroTorch.registerPeriodicTask('maintainLandTables', { interval = 0.1, task = macroTorch.maintainLandTables })
 
+-- register druid spells immune tracing
+macroTorch.setTraceSpellImmune('Pounce', 'Ability_Druid_SupriseAttack')
+macroTorch.setTraceSpellImmune('Rake', 'Ability_Druid_Disembowel')
+macroTorch.setTraceSpellImmune('Rip', 'Ability_GhoulFrenzy')
+
 function macroTorch.consumeDruidBattleEvents()
-    macroTorch.loadImmuneTable()
-    -- detect immune from fail events
-    -- detect pounce auto immune
-    macroTorch.consumeFailEvent('Pounce', function(failEvent)
-        if GetTime() - failEvent[1] > 0.4 or not failEvent[2] == 'immune' or not macroTorch.target.isCanAttack then
-            return
-        end
-        -- 检测到近期的一次immune事件，若整个landTable均无有效land记录，则加入immune列表, 若有任意land记录，则加入definite表
-        local onceLanded = macroTorch.landTableAnyMatch('Pounce', function(landEvent)
-            return macroTorch.toBoolean(landEvent)
-        end)
-        if onceLanded then
-            macroTorch.target.removeImmune('Pounce')
-        else
-            macroTorch.target.recordImmune('Pounce')
-        end
-    end)
-    -- detect rake auto immune
-    macroTorch.consumeFailEvent('Rake', function(failEvent)
-        if GetTime() - failEvent[1] > 0.4 or not failEvent[2] == 'immune' or not macroTorch.target.isCanAttack then
-            return
-        end
-        -- 检测到近期的一次immune事件，若整个landTable均无有效land记录，则加入immune列表, 若有任意记录，则从immune表中删除
-        local onceLanded = macroTorch.landTableAnyMatch('Rake', function(landEvent)
-            return macroTorch.toBoolean(landEvent)
-        end)
-        if onceLanded then
-            macroTorch.target.removeImmune('Rake')
-        else
-            macroTorch.target.recordImmune('Rake')
-        end
-    end)
-    -- detect rip auto immune
-    macroTorch.consumeFailEvent('Rip', function(failEvent)
-        if GetTime() - failEvent[1] > 0.4 or not failEvent[2] == 'immune' or not macroTorch.target.isCanAttack then
-            return
-        end
-        -- 检测到近期的一次immune事件，若整个landTable均无有效land记录，则加入immune列表, 若有任意记录，则从immune表中删除
-        local onceLanded = macroTorch.landTableAnyMatch('Rip', function(landEvent)
-            return macroTorch.toBoolean(landEvent)
-        end)
-        if onceLanded then
-            macroTorch.target.removeImmune('Rip')
-        else
-            macroTorch.target.recordImmune('Rip')
-        end
-    end)
-
-    -- detect immune from landed and no bleeding effect tests
-    -- detect pounce
-    macroTorch.consumeLandEvent('Pounce', function(landEvent)
-        local timeElapsed = GetTime() - landEvent
-        if timeElapsed <= macroTorch.DEBUFF_LAND_LAG or timeElapsed > 0.6 or not macroTorch.target.isCanAttack then
-            return
-        end
-        -- 检测到合适时间以内的命中记录，若此时目标身上没有debuff, 则记录immune,否则删除immune记录
-        if not macroTorch.target.hasBuff('Ability_Druid_SupriseAttack') then
-            macroTorch.target.recordImmune('Pounce')
-        else
-            macroTorch.target.removeImmune('Pounce')
-        end
-    end)
-    -- detect rake
-    macroTorch.consumeLandEvent('Rake', function(landEvent)
-        local timeElapsed = GetTime() - landEvent
-        if timeElapsed <= macroTorch.DEBUFF_LAND_LAG or timeElapsed > 0.6 or not macroTorch.target.isCanAttack then
-            return
-        end
-        -- 检测到合适时间以内的命中记录，若此时目标身上没有debuff, 则记录immune,否则删除immune记录
-        if not macroTorch.target.hasBuff('Ability_Druid_Disembowel') then
-            macroTorch.target.recordImmune('Rake')
-        else
-            macroTorch.target.removeImmune('Rake')
-        end
-    end)
-    -- detect rip
-    macroTorch.consumeLandEvent('Rip', function(landEvent)
-        local timeElapsed = GetTime() - landEvent
-        if timeElapsed <= macroTorch.DEBUFF_LAND_LAG or timeElapsed > 0.6 or not macroTorch.target.isCanAttack then
-            return
-        end
-        -- 检测到合适时间以内的命中记录，若此时目标身上没有debuff, 则记录immune,否则删除immune记录
-        if not macroTorch.target.hasBuff('Ability_GhoulFrenzy') then
-            macroTorch.target.recordImmune('Rip')
-        else
-            macroTorch.target.removeImmune('Rip')
-        end
-    end)
-
     -- deal with bites landing bleeding renewals
     macroTorch.consumeLandEvent('Ferocious Bite', function(landEvent)
         if GetTime() - landEvent > 0.4 or not macroTorch.target.isCanAttack then
