@@ -1,4 +1,4 @@
--- sets what spells to trace
+-- sets what spells to trace casts
 if not macroTorch.tracingSpells then
     macroTorch.tracingSpells = {}
 end
@@ -6,6 +6,17 @@ end
 function macroTorch.setSpellTracing(spellGuid, spellName)
     if not macroTorch.tracingSpells[spellGuid] then
         macroTorch.tracingSpells[spellGuid] = spellName
+    end
+end
+
+-- sets what spells to tracer immune
+if not macroTorch.traceSpellImmunes then
+    macroTorch.traceSpellImmunes = {}
+end
+
+function macroTorch.setTraceSpellImmune(spellName, spellDebuffTexture)
+    if not macroTorch.traceSpellImmunes[spellName] then
+        macroTorch.traceSpellImmunes[spellName] = spellDebuffTexture
     end
 end
 
@@ -142,6 +153,48 @@ frame:SetScript("OnUpdate", function()
         frame.lastUpdate = GetTime()
     end
 end)
+
+-- set up the automatic immune tracing
+function macroTorch.spellsImmuneTracing()
+    if not macroTorch.traceSpellImmunes or macroTorch.tableLen(macroTorch.traceSpellImmunes) == 0 or not macroTorch.inCombat then
+        return
+    end
+    macroTorch.loadImmuneTable()
+
+    for spellName, spellDebuffTexture in pairs(macroTorch.traceSpellImmunes) do
+        -- detect immune from fail events
+        macroTorch.consumeFailEvent(spellName, function(failEvent)
+            if GetTime() - failEvent[1] > 0.4 or not failEvent[2] == 'immune' or not macroTorch.target.isCanAttack then
+                return
+            end
+            -- 检测到近期的一次immune事件，若整个landTable均无有效land记录，则加入immune列表, 若有任意land记录，则加入definite表
+            local onceLanded = macroTorch.landTableAnyMatch(spellName, function(landEvent)
+                return macroTorch.toBoolean(landEvent)
+            end)
+            if onceLanded then
+                macroTorch.target.removeImmune(spellName)
+            else
+                macroTorch.target.recordImmune(spellName)
+            end
+        end)
+        -- detect immune from landed and no bleeding effect tests
+        macroTorch.consumeLandEvent(spellName, function(landEvent)
+            local timeElapsed = GetTime() - landEvent
+            if timeElapsed <= macroTorch.DEBUFF_LAND_LAG or timeElapsed > 0.6 or not macroTorch.target.isCanAttack then
+                return
+            end
+            -- 检测到合适时间以内的命中记录，若此时目标身上没有debuff, 则记录immune,否则删除immune记录
+            if not macroTorch.target.hasBuff(spellDebuffTexture) then
+                macroTorch.target.recordImmune(spellName)
+            else
+                macroTorch.target.removeImmune(spellName)
+            end
+        end)
+    end
+end
+
+macroTorch.registerPeriodicTask('spellsImmuneTracing',
+    { interval = 0.1, task = macroTorch.spellsImmuneTracing })
 
 -- record traced spells' casts
 function macroTorch.recordCastTable(spell)
