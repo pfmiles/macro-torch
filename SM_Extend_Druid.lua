@@ -47,9 +47,6 @@ function macroTorch.catAtk(rough)
     macroTorch.BURST_ITEM_LOC = 14
     macroTorch.PLAYER_URGENT_HP_THRESHOLD = 10
 
-    -- 附带debuff的主动技能land之后，debuff出现在目标身上的最大延迟时间
-    macroTorch.DEBUFF_LAND_LAG = 0.2
-
     local player = macroTorch.player
     local prowling = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Ambush')
     local berserk = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Druid_Berserk')
@@ -136,15 +133,6 @@ macroTorch.setSpellTracing(9827, 'Pounce')
 macroTorch.setSpellTracing(9904, 'Rake')
 macroTorch.setSpellTracing(9896, 'Rip')
 macroTorch.setSpellTracing(31018, 'Ferocious Bite')
-
-function macroTorch.maintainLandTables()
-    macroTorch.computeLandTable('Pounce')
-    macroTorch.computeLandTable('Rake')
-    macroTorch.computeLandTable('Rip')
-    macroTorch.computeLandTable('Ferocious Bite')
-end
-
-macroTorch.registerPeriodicTask('maintainLandTables', { interval = 0.1, task = macroTorch.maintainLandTables })
 
 -- register druid spells immune tracing
 macroTorch.setTraceSpellImmune('Pounce', 'Ability_Druid_SupriseAttack')

@@ -1,3 +1,6 @@
+-- 附带debuff的主动技能land之后，debuff出现在目标身上的最大延迟时间
+macroTorch.DEBUFF_LAND_LAG = 0.2
+
 -- sets what spells to trace casts
 if not macroTorch.tracingSpells then
     macroTorch.tracingSpells = {}
@@ -154,6 +157,19 @@ frame:SetScript("OnUpdate", function()
     end
 end)
 
+-- set up the land event generation for spells set tracing
+function macroTorch.maintainLandTables()
+    if not macroTorch.tracingSpells or macroTorch.tableLen(macroTorch.tracingSpells) == 0 or not macroTorch.inCombat then
+        return
+    end
+    for _, spellName in pairs(macroTorch.tracingSpells) do
+        macroTorch.computeLandTable(spellName)
+    end
+end
+
+macroTorch.registerPeriodicTask('maintainLandTables', { interval = 0.1, task = macroTorch.maintainLandTables })
+
+
 -- set up the automatic immune tracing
 function macroTorch.spellsImmuneTracing()
     if not macroTorch.traceSpellImmunes or macroTorch.tableLen(macroTorch.traceSpellImmunes) == 0 or not macroTorch.inCombat then
@@ -174,6 +190,7 @@ function macroTorch.spellsImmuneTracing()
             if onceLanded then
                 macroTorch.target.removeImmune(spellName)
             else
+                macroTorch.show("recording immune by fail event: " .. macroTorch.tableToString(failEvent))
                 macroTorch.target.recordImmune(spellName)
             end
         end)
@@ -185,6 +202,7 @@ function macroTorch.spellsImmuneTracing()
             end
             -- 检测到合适时间以内的命中记录，若此时目标身上没有debuff, 则记录immune,否则删除immune记录
             if not macroTorch.target.hasBuff(spellDebuffTexture) then
+                macroTorch.show("recording immune by land event: " .. landEvent)
                 macroTorch.target.recordImmune(spellName)
             else
                 macroTorch.target.removeImmune(spellName)
@@ -262,7 +280,9 @@ function macroTorch.computeLandTable(spell)
         macroTorch.loginContext.landTable[spell][mob] = macroTorch.LRUStack:new(100)
     end
     local lastCast = macroTorch.peekCastEvent(spell) or 0
-    if not lastCast or lastCast == 0 or GetTime() - lastCast > 0.9 then
+    -- blip: there must be a short delay to wait the possible fail event to come
+    local blip = GetTime() - lastCast
+    if not lastCast or lastCast == 0 or blip <= 0.02 or blip > 0.9 then
         return
     end
     local lastLanded = macroTorch.peekLandEvent(spell) or 0
