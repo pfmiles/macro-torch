@@ -293,7 +293,7 @@ function macroTorch.computeLandTable(spell)
     local lastFail = macroTorch.peekFailEvent(spell)
     local lastFailedTime = lastFail and lastFail[1] or 0
     -- if no fail event near around the cast event, then it's a successful landed cast
-    if math.abs(lastFailedTime - lastCast) > 0.2 then
+    if math.abs(lastFailedTime - lastCast) > 0.05 then
         macroTorch.loginContext.landTable[spell][mob].push(lastCast)
         macroTorch.show(spell ..
             ' cast on ' ..
