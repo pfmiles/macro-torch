@@ -109,6 +109,11 @@ function macroTorch.eventHandle()
         end
     elseif event == "RAW_COMBATLOG" then
         -- when player cast a spell
+        -- local args_str = tostring(arg1) ..
+        --     '_' .. tostring(arg2) .. '_' .. tostring(arg3) .. '_' .. tostring(arg4) .. '_' .. tostring(arg5)
+        -- if args_str and string.find(string.lower(args_str), "dodge") then
+        --     macroTorch.show(args_str)
+        -- end
     elseif event == "UI_ERROR_MESSAGE" then
         -- on ui error message
         if not macroTorch.context then
@@ -180,7 +185,7 @@ function macroTorch.spellsImmuneTracing()
     for spellName, spellDebuffTexture in pairs(macroTorch.traceSpellImmunes) do
         -- detect immune from fail events
         macroTorch.consumeFailEvent(spellName, function(failEvent)
-            if GetTime() - failEvent[1] > 0.4 or not failEvent[2] == 'immune' or not macroTorch.target.isCanAttack then
+            if GetTime() - failEvent[1] > 0.4 or failEvent[2] ~= 'immune' or not macroTorch.target.isCanAttack then
                 return
             end
             -- 检测到近期的一次immune事件，若整个landTable均无有效land记录，则加入immune列表, 若有任意land记录，则加入definite表
@@ -380,11 +385,13 @@ end
 
 -- records battle status
 function macroTorch.CheckDodgeParryBlockResist(unitId, eventType, eventMsg)
-    -- macroTorch.show('CheckDodgeParryBlockResist: ' .. event .. ', msg: ' .. arg1)
-
     if not eventMsg then
         return
     end
+
+    -- if arg1 and string.find(string.lower(arg1), "block") then
+    --     macroTorch.show('CheckDodgeParryBlockResist: ' .. event .. ', msg: ' .. arg1)
+    -- end
 
     -- landTable的写入已由UNIT_CASTEVENT事件负责，只记录自己的动作，更加准确
     -- Your Rake crits Apprentice Training Dummy for 597.
@@ -427,6 +434,12 @@ function macroTorch.CheckDodgeParryBlockResist(unitId, eventType, eventMsg)
     if spell and mob then
         -- macroTorch.show("RESIST DETECTED: Spell[" .. spell .. "] by [" .. mob .. "] resisted")
         macroTorch.recordFailTable(spell, 'resist')
+    end
+    -- Your Rake was blocked by Vilemust Shadowstalker.
+    local _, _, spell, mob = string.find(eventMsg, "Your (.-) was blocked by (.-)%.")
+    if spell and mob then
+        -- macroTorch.show("BLOCK DETECTED: Spell[" .. spell .. "] by [" .. mob .. "] blocked")
+        macroTorch.recordFailTable(spell, 'block')
     end
     --- Your Rake failed. Vilemust Shadowstalker is immune.
     local _, _, spell, mob = string.find(eventMsg, "Your (.-) failed. (.-) is immune%.")
