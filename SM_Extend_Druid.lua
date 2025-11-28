@@ -636,8 +636,9 @@ end
 
 function macroTorch.safeRake()
     if macroTorch.player.isSpellReady('Rake') and macroTorch.isGcdOk() and macroTorch.player.mana >= macroTorch.RAKE_E and macroTorch.target.isNearBy then
-        macroTorch.show('Rake present: ' ..
-            tostring(macroTorch.isRakePresent()) .. ' rake left: ' .. macroTorch.rakeLeft() .. ', doing rake now.')
+        macroTorch.show('Doing rake now! Rake present: ' ..
+            tostring(macroTorch.target.hasBuff('Ability_Druid_Disembowel')) ..
+            ', rake left: ' .. macroTorch.rakeLeft())
         CastSpellByName('Rake')
         return true
     end
@@ -646,7 +647,10 @@ end
 
 function macroTorch.safeRip()
     if macroTorch.player.isSpellReady('Rip') and macroTorch.isGcdOk() and macroTorch.player.mana >= macroTorch.RIP_E and macroTorch.target.isNearBy then
-        macroTorch.show('Ripped at combo points: ' .. tostring(GetComboPoints()))
+        macroTorch.show('Ripped at combo points: ' ..
+            tostring(GetComboPoints()) ..
+            ', rip present: ' ..
+            tostring(macroTorch.target.hasBuff('Ability_GhoulFrenzy')) .. ', rip left: ' .. macroTorch.ripLeft())
         CastSpellByName('Rip')
         macroTorch.context.lastRipAtCp = GetComboPoints()
         return true
