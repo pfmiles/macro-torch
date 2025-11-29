@@ -42,6 +42,7 @@ frame:RegisterEvent("CHAT_MSG_SPELL_SELF_DAMAGE")
 -- frame:RegisterEvent("CHAT_MSG_SPELL_AURA_GONE_SELF")
 frame:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE")
 frame:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE")
+frame:RegisterEvent("UI_ERROR_MESSAGE")
 
 -- super wow specific
 if SUPERWOW_STRING then
@@ -116,12 +117,11 @@ function macroTorch.eventHandle()
         -- end
     elseif event == "UI_ERROR_MESSAGE" then
         -- on ui error message
-        if not macroTorch.context then
-            macroTorch.context = {}
-        end
+        -- macroTorch.show('Error msg: ' ..
+        --     tostring(arg1) .. '_' .. tostring(arg2) .. '_' .. tostring(arg3) .. '_' .. tostring(arg4))
         -- arg1 is a global var be set automatically, see https://wow.gamepedia.com/UI_ERROR_MESSAGE
         -- SPELL_FAILED_NOT_BEHIND is a global constant, see https://wow.gamepedia.com/Constants/SPELL_FAILED_NOT_BEHIND
-        if (arg1 == SPELL_FAILED_NOT_BEHIND) then
+        if (tostring(arg1) == 'You must be behind your target') then
             macroTorch.context.behindAttackFailedTime = GetTime()
         end
     elseif event == "CHAT_MSG_COMBAT_CREATURE_VS_SELF_MISSES" or event == "CHAT_MSG_SPELL_CREATURE_VS_SELF_DAMAGE" then
