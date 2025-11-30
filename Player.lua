@@ -37,6 +37,13 @@ function macroTorch.Player:new()
         end
     end
 
+    -- tell if the player has the specified item in bag
+    -- @param itemName string item name
+    -- @return boolean true if has, false otherwise
+    function obj.hasItem(itemName)
+        return macroTorch.isItemExist(itemName)
+    end
+
     -- get spell id by name
     -- @param spellName string spell name
     -- @return number spell id

@@ -72,6 +72,12 @@ function macroTorch.catAtk(rough)
             if not berserk then
                 CastSpellByName('Berserk')
             end
+            -- juju flurry
+            if not macroTorch.player.hasBuff('INV_Misc_MonsterScales_17') then
+                if player.hasItem('Juju Flurry') and not macroTorch.target.isPlayerControlled then
+                    macroTorch.player.use('Juju Flurry', true)
+                end
+            end
             macroTorch.atkPowerBurst()
         end
         -- roughly bear form logic branch
@@ -739,7 +745,7 @@ function macroTorch.atkPowerBurst()
         UseInventoryItem(macroTorch.BURST_ITEM_LOC)
     end
     -- juju power
-    if not macroTorch.player.hasBuff('INV_Misc_MonsterScales_11') and macroTorch.isItemExist('Juju Power') and not macroTorch.target.isPlayerControlled then
+    if not macroTorch.player.hasBuff('INV_Misc_MonsterScales_11') and macroTorch.player.hasItem('Juju Power') and not macroTorch.target.isPlayerControlled then
         macroTorch.player.use('Juju Power', true)
     end
 end
