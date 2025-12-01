@@ -17,6 +17,7 @@ if not macroTorch.traceSpellImmunes then
     macroTorch.traceSpellImmunes = {}
 end
 
+-- register a spell to trace its immune, this spell must be also set tracing
 function macroTorch.setTraceSpellImmune(spellName, spellDebuffTexture)
     if not macroTorch.traceSpellImmunes[spellName] then
         macroTorch.traceSpellImmunes[spellName] = spellDebuffTexture
@@ -189,12 +190,7 @@ function macroTorch.spellsImmuneTracing()
                 return
             end
             -- 检测到近期的一次immune事件，若整个landTable均无有效land记录，则加入immune列表, 若有任意land记录，则加入definite表
-            local onceLanded = macroTorch.landTableAnyMatch(spellName, function(landEvent)
-                return macroTorch.toBoolean(landEvent)
-            end)
-            if onceLanded then
-                macroTorch.target.removeImmune(spellName)
-            else
+            if not macroTorch.target.isDefiniteBleeding(spellName) then
                 macroTorch.show("recording immune by fail event: " .. macroTorch.tableToString(failEvent))
                 macroTorch.target.recordImmune(spellName)
             end
@@ -206,11 +202,11 @@ function macroTorch.spellsImmuneTracing()
                 return
             end
             -- 检测到合适时间以内的命中记录，若此时目标身上没有debuff, 则记录immune,否则删除immune记录
-            if not macroTorch.target.hasBuff(spellDebuffTexture) then
+            if not macroTorch.target.hasBuff(spellDebuffTexture) and not macroTorch.target.isDefiniteBleeding(spellName) then
                 macroTorch.show("recording immune by land event: " .. landEvent)
                 macroTorch.target.recordImmune(spellName)
             else
-                macroTorch.target.removeImmune(spellName)
+                macroTorch.target.recordDefiniteBleeding(spellName)
             end
         end)
     end
