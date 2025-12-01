@@ -35,6 +35,9 @@ function macroTorch.Target:new()
     })
     -- obj method def
     function obj.isImmune(spellName)
+        if obj.isDefiniteBleeding(spellName) then
+            return false
+        end
         macroTorch.loadImmuneTable()
         return macroTorch.toBoolean(macroTorch.context.immuneTable and
             macroTorch.context.immuneTable[spellName] and macroTorch.context.immuneTable[spellName][obj.name])
@@ -42,6 +45,9 @@ function macroTorch.Target:new()
 
     -- record this target to the spell's persistent immune table
     function obj.recordImmune(spellName)
+        if obj.isDefiniteBleeding(spellName) then
+            return
+        end
         macroTorch.loadImmuneTable()
         if not macroTorch.context.immuneTable[spellName] then
             macroTorch.context.immuneTable[spellName] = {}
@@ -58,6 +64,25 @@ function macroTorch.Target:new()
             macroTorch.context.immuneTable[spellName][obj.name] = nil
             macroTorch.show("Spell: " .. spellName .. " is removed from IMMUNE to " .. obj.name, 'yellow')
         end
+    end
+
+    function obj.recordDefiniteBleeding(spellName)
+        obj.removeImmune(spellName)
+        macroTorch.loadDefiniteBleedingTable()
+        if not macroTorch.context.definiteBleedingTable[spellName] then
+            macroTorch.context.definiteBleedingTable[spellName] = {}
+        end
+        if not macroTorch.target.isPlayerControlled and not macroTorch.context.definiteBleedingTable[spellName][obj.name] then
+            macroTorch.context.definiteBleedingTable[spellName][obj.name] = true
+            macroTorch.show("Spell: " .. spellName .. " is recorded DEFINITE_BLEEDING to " .. obj.name, 'yellow')
+        end
+    end
+
+    function obj.isDefiniteBleeding(spellName)
+        macroTorch.loadDefiniteBleedingTable()
+        return macroTorch.toBoolean(macroTorch.context.definiteBleedingTable and
+            macroTorch.context.definiteBleedingTable[spellName] and
+            macroTorch.context.definiteBleedingTable[spellName][obj.name])
     end
 
     return obj
