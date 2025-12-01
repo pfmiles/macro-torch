@@ -458,8 +458,12 @@ function macroTorch.loadImmuneTable()
     if not SM_EXTEND.immuneTable then
         SM_EXTEND.immuneTable = {}
     end
+    local playerCls = macroTorch.player.class
+    if not SM_EXTEND.immuneTable[playerCls] then
+        SM_EXTEND.immuneTable[playerCls] = {}
+    end
     if not macroTorch.context.immuneTable then
-        macroTorch.context.immuneTable = SM_EXTEND.immuneTable
+        macroTorch.context.immuneTable = SM_EXTEND.immuneTable[playerCls]
     end
 end
 
@@ -472,7 +476,11 @@ function macroTorch.loadDefiniteBleedingTable()
     if not SM_EXTEND.definiteBleedingTable then
         SM_EXTEND.definiteBleedingTable = {}
     end
+    local playerCls = macroTorch.player.class
+    if not SM_EXTEND.definiteBleedingTable[playerCls] then
+        SM_EXTEND.definiteBleedingTable[playerCls] = {}
+    end
     if not macroTorch.context.definiteBleedingTable then
-        macroTorch.context.definiteBleedingTable = SM_EXTEND.definiteBleedingTable
+        macroTorch.context.definiteBleedingTable = SM_EXTEND.definiteBleedingTable[playerCls]
     end
 end
