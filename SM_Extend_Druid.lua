@@ -216,8 +216,7 @@ end
 
 function macroTorch.otMod(player, prowling, ooc, berserk, comboPoints)
     local target = macroTorch.target
-    if macroTorch.canDoReshift(player, prowling, ooc, berserk)
-        or not player.isInCombat
+    if not player.isInCombat
         or not target.isInCombat
         or prowling
         or macroTorch.isKillshotOrLastChance(comboPoints)
@@ -228,6 +227,9 @@ function macroTorch.otMod(player, prowling, ooc, berserk, comboPoints)
     end
     if (target.isAttackingMe or macroTorch.playerThreatPercent() > 97) and not player.isSpellReady('Cower') and target.classification == 'worldboss' then
         player.use('Invulnerability Potion', true)
+    end
+    if macroTorch.canDoReshift(player, prowling, ooc, berserk) then
+        return
     end
     if (target.isAttackingMe or (target.classification == 'worldboss' and macroTorch.playerThreatPercent() >= macroTorch.COWER_THREAT_THRESHOLD)) and target.distance < 15 then
         macroTorch.readyCower()
