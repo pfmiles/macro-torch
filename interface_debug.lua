@@ -85,6 +85,8 @@ function macroTorch.show(a, color)
         c = ChatTypeInfo["SYSTEM"]
     elseif 'blue' == col then
         c = ChatTypeInfo["OFFICER"]
+    elseif 'green' == col then
+        c = { r = 0, g = 0.5, b = 0.9, id = 'custom_green' }
     end
     DEFAULT_CHAT_FRAME:AddMessage(tostring(a), c.r, c.g, c.b, c.id)
 end

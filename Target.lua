@@ -74,7 +74,7 @@ function macroTorch.Target:new()
         end
         if not macroTorch.target.isPlayerControlled and not macroTorch.context.definiteBleedingTable[spellName][obj.name] then
             macroTorch.context.definiteBleedingTable[spellName][obj.name] = true
-            macroTorch.show("Spell: " .. spellName .. " is recorded DEFINITE_BLEEDING to " .. obj.name, 'yellow')
+            macroTorch.show("Spell: " .. spellName .. " is recorded DEFINITE_BLEEDING to " .. obj.name, 'green')
         end
     end
 
