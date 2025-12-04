@@ -33,6 +33,18 @@ function macroTorch.Unit:new(ref)
         return false
     end
 
+    function obj.buffed(buffName, buffTexture)
+        if buffName then
+            if buffed(buffName) then
+                return true
+            end
+        end
+        if buffTexture then
+            return obj.hasBuff(buffTexture)
+        end
+        return false
+    end
+
     -- get the count of stacks of buff or debuff
     -- @param spellOrItemName the name of the spell or item
     -- @return the count of stacks of buff or debuff

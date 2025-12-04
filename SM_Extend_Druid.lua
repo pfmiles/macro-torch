@@ -839,7 +839,7 @@ function macroTorch.bearAoe()
         return
     end
     -- if no [Demoralizing Roar] buff on target, use [Demoralizing Roar]
-    if macroTorch.target.isCanAttack and not macroTorch.target.hasBuff('Ability_Druid_DemoralizingRoar') then
+    if macroTorch.target.isCanAttack and not macroTorch.target.buffed('Demoralizing Roar', 'Ability_Druid_DemoralizingRoar') then
         macroTorch.player.cast('Demoralizing Roar')
     end
     if macroTorch.player.isSpellReady('Swipe') then
@@ -851,20 +851,28 @@ function macroTorch.bearAtk()
     if not macroTorch.player.isFormActive('Dire Bear Form') then
         return
     end
-    if macroTorch.player.mana == 0 and macroTorch.player.isSpellReady('Enrage') then
-        macroTorch.player.cast('Enrage')
-    end
+    -- if macroTorch.player.mana == 0 and macroTorch.player.isSpellReady('Enrage') then
+    --     macroTorch.player.cast('Enrage')
+    -- end
     local target = macroTorch.target
+    local player = macroTorch.player
     -- if target is not attacking me and it's not a player controlled target and Growl ready, use Growl
     -- if target.isCanAttack and not target.isPlayerControlled and not target.isAttackingMe and SpellReady('Growl') then
     --     macroTorch.player.cast('Growl')
     -- end
     -- [Savage Bite] as soon as I can, then [Maul] blindly
-    if macroTorch.player.isSpellReady('Savage Bite') then
-        macroTorch.player.cast('Savage Bite')
+    if player.buffed('Clearcasting', 'Spell_Shadow_ManaBurn') and player.isSpellReady('Savage Bite') then
+        player.cast('Savage Bite')
     end
     if macroTorch.player.isSpellReady('Maul') then
         macroTorch.player.cast('Maul')
+    end
+    if not target.isAttackingMe and not target.isPlayerControlled then
+        if player.isSpellReady('Growl') then
+            player.cast('Growl')
+        elseif player.isSpellReady('Challenging Roar') then
+            player.cast('Challenging Roar')
+        end
     end
     macroTorch.safeFF()
 end
