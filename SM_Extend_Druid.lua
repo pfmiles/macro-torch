@@ -876,3 +876,64 @@ function macroTorch.bearAtk()
     end
     macroTorch.safeFF()
 end
+
+-- for some problematic battle
+function macroTorch.bruteForce()
+    local p = 'player'
+
+    local player = macroTorch.player
+    local prowling = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Ambush')
+    local berserk = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Druid_Berserk')
+    local comboPoints = GetComboPoints()
+    local ooc = macroTorch.isBuffOrDebuffPresent(p, 'Spell_Shadow_ManaBurn')
+
+    -- 1.health & mana saver in combat *
+    if macroTorch.inCombat then
+        macroTorch.combatUrgentHPRestore()
+        -- macroTorch.useItemIfManaPercentLessThan(p, 20, 'Mana Potion') TODO 由于cat形态下无法读取真正的mana，因此这里暂时作废
+    end
+    -- 3.keep autoAttack, in combat & not prowling *
+    if macroTorch.inCombat then
+        player.startAutoAtk()
+    end
+    -- 4.rushMod, incuding trinckets, berserk and potions *
+    if IsShiftKeyDown() then
+        if not berserk then
+            CastSpellByName('Berserk')
+        end
+        -- juju flurry
+        if not macroTorch.player.hasBuff('INV_Misc_MonsterScales_17') then
+            if player.hasItem('Juju Flurry') then
+                macroTorch.player.use('Juju Flurry', true)
+            end
+        end
+        macroTorch.atkPowerBurst()
+    end
+    -- 7.oocMod
+    if ooc then
+        macroTorch.tryBiteKillshot(comboPoints)
+        macroTorch.cp5ReadyBite(comboPoints)
+        -- no shred/claw at cp5 when ooc
+        if comboPoints < 5 then
+            if not player.isBehindAttackJustFailed then
+                macroTorch.readyShred()
+            else
+                macroTorch.readyClaw()
+            end
+        end
+    end
+    -- 6.termMod: term on rip or killshot
+    macroTorch.termMod(comboPoints)
+    -- 9.combatBuffMod - tiger's fury *
+    macroTorch.keepTigerFury()
+    -- 10.debuffMod, including rip, rake and FF
+    macroTorch.keepRip(comboPoints, prowling)
+    macroTorch.keepRake(comboPoints, prowling)
+    macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
+    -- 11.regular attack tech mod
+    if macroTorch.inCombat and comboPoints < 5 and (macroTorch.isRakePresent() or macroTorch.target.isImmune('Rake')) then
+        macroTorch.regularAttack(nil, nil)
+    end
+    -- 12.energy res mod
+    macroTorch.reshiftMod(player, prowling, ooc, berserk)
+end
