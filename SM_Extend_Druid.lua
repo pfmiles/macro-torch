@@ -97,8 +97,20 @@ function macroTorch.catAtk(rough)
                 macroTorch.safeClaw()
             end
         end
+
+        -- TODO for Firelord debug only
+        local isFirelord = 'Firelord' == macroTorch.target.name
+        if isFirelord then
+            macroTorch.lowLog('Firelord isBehind: ' .. isBehind)
+        end
+
         -- 7.oocMod
         if (not prowling or macroTorch.target.isAttackingMe) and ooc then
+            -- TODO for Firelord debug only
+            if isFirelord then
+                macroTorch.lowLog('Firelord ooc entered. Is attacking me: ' ..
+                    macroTorch.target.isAttackingMe .. ', target health: ' .. macroTorch.target.health)
+            end
             macroTorch.tryBiteKillshot(comboPoints)
             macroTorch.cp5ReadyBite(comboPoints)
             -- no shred/claw at cp5 when ooc
@@ -125,12 +137,25 @@ function macroTorch.catAtk(rough)
         end
         macroTorch.keepRake(comboPoints, prowling)
         macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
+        -- TODO for Firelord debug only
+        if isFirelord then
+            macroTorch.lowLog('Firelord prior regularAttack. Fight started: ' ..
+                macroTorch.isFightStarted(prowling) .. ', isRakePresent: ' .. macroTorch.isRakePresent())
+        end
         -- 11.regular attack tech mod
         if macroTorch.isFightStarted(prowling) and comboPoints < 5 and (macroTorch.isRakePresent() or macroTorch.target.isImmune('Rake')) then
             macroTorch.regularAttack(isBehind, rough)
         end
         -- 12.energy res mod
         macroTorch.reshiftMod(player, prowling, ooc, berserk)
+    end
+end
+
+-- TODO for Firelord debug only
+function macroTorch.lowLog(msg)
+    if not macroTorch.context or not macroTorch.context.lowLogTime or GetTime() - macroTorch.context.lowLogTime > 5 then
+        macroTorch.show(msg)
+        macroTorch.context.lowLogTime = GetTime()
     end
 end
 
@@ -173,6 +198,19 @@ macroTorch.registerPeriodicTask('consumeDruidBattleEvents',
     { interval = 0.1, task = macroTorch.consumeDruidBattleEvents })
 
 function macroTorch.regularAttack(isBehind, rough)
+    -- TODO for Firelord debug only
+    local isFirelord = 'Firelord' == macroTorch.target.name
+    if isFirelord then
+        macroTorch.lowLog('Firelord regularAttack entered, isBehind: ' ..
+            isBehind ..
+            ', is rough: ' ..
+            rough ..
+            ', isBehindAttackJustFailed: ' ..
+            macroTorch.player.isBehindAttackJustFailed ..
+            ', isRakePresent: ' ..
+            macroTorch.isRakePresent() ..
+            ', isRipPresent: ' .. macroTorch.isRipPresent() .. ', isPouncePresent: ' .. macroTorch.isPouncePresent())
+    end
     -- claw with at least 1 bleeding effect or shred
     if isBehind and not macroTorch.player.isBehindAttackJustFailed and not rough
         and not macroTorch.isRakePresent()
@@ -215,6 +253,9 @@ function macroTorch.isFightStarted(prowling)
 end
 
 function macroTorch.otMod(player, prowling, ooc, berserk, comboPoints)
+    if string.find(macroTorch.target.name, 'Training Dummy') then
+        return
+    end
     local target = macroTorch.target
     if not player.isInCombat
         or not target.isInCombat
@@ -251,6 +292,11 @@ function macroTorch.termMod(comboPoints)
 end
 
 function macroTorch.cp5Bite(comboPoints)
+    -- TODO for Firelord debug only
+    local isFirelord = 'Firelord' == macroTorch.target.name
+    if isFirelord then
+        macroTorch.lowLog('Firelord cp5Bite entered, isRipPresent: ' .. macroTorch.isRipPresent())
+    end
     if comboPoints == 5 and (macroTorch.target.isImmune('Rip') or macroTorch.isRipPresent()) then
         macroTorch.safeBite()
     end
@@ -419,11 +465,7 @@ function macroTorch.reshiftMod(player, prowling, ooc, berserk)
     end
 end
 
--- reshift at anytime in battle & not prowling & not ooc when: the current 'enerty restoration per-second' is lesser than '30 - currentEnergyBeforeReshift'
-function macroTorch.canDoReshift(player, prowling, ooc, berserk)
-    if not player.isInCombat or prowling or ooc then
-        return false
-    end
+function macroTorch.computeErps()
     local erps = macroTorch.AUTO_TICK_ERPS
     if macroTorch.isTigerPresent() then
         erps = erps + macroTorch.TIGER_ERPS
@@ -437,10 +479,18 @@ function macroTorch.canDoReshift(player, prowling, ooc, berserk)
     if macroTorch.isPouncePresent() then
         erps = erps + macroTorch.POUNCE_ERPS
     end
-    if berserk then
+    if macroTorch.player.buffed('Berserk', 'Ability_Druid_Berserk') then
         erps = erps + macroTorch.BERSERK_ERPS
     end
-    local diff = macroTorch.RESHIFT_ENERGY - macroTorch.TIGER_E - player.mana - (erps * 1.5)
+    return erps
+end
+
+-- reshift at anytime in battle & not prowling & not ooc when: the current 'enerty restoration per-second' is lesser than '30 - currentEnergyBeforeReshift'
+function macroTorch.canDoReshift(player, prowling, ooc, berserk)
+    if not player.isInCombat or prowling or ooc then
+        return false
+    end
+    local diff = macroTorch.RESHIFT_ENERGY - macroTorch.TIGER_E - player.mana - (macroTorch.computeErps() * 1.5)
     local ret = diff > macroTorch.RESHIFT_E_DIFF_THRESHOLD
 
     -- if ret then
@@ -499,17 +549,18 @@ end
 -- no FF in: 1) melee range if other techs can use, 2) when ooc 3) immune 4) killshot 5) eager to reshift 6) cp5 7) player not in combat 8) prowling 9) target not in combat
 -- all in all: if in combat and there's nothing to do, then FF, no matter if FF debuff present, we wish to trigger more ooc through instant FFs
 function macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
+    local energy1sLater = player.mana + macroTorch.computeErps()
     if ooc
         or macroTorch.target.isImmune('Faerie Fire (Feral)')
         or macroTorch.canDoReshift(player, prowling, ooc, berserk)
         or not macroTorch.isFightStarted(prowling)
         or not macroTorch.target.isInCombat
         or macroTorch.target.isNearBy and (
-            player.mana >= macroTorch.CLAW_E and comboPoints < 5
-            or player.mana >= macroTorch.BITE_E and comboPoints == 5
-            or player.mana >= macroTorch.RAKE_E and not macroTorch.isRakePresent() and not macroTorch.target.isImmune('Rake') and comboPoints < 5
-            or player.mana >= macroTorch.RIP_E and not macroTorch.isRipPresent() and not macroTorch.target.isImmune('Rip') and comboPoints == 5
-            or player.mana >= macroTorch.RIP_E and not macroTorch.isRipPresent() and not macroTorch.target.isImmune('Rip') and comboPoints > 0 and macroTorch.isTrivialBattleOrPvp()
+            energy1sLater >= macroTorch.CLAW_E and comboPoints < 5
+            or energy1sLater >= macroTorch.BITE_E and comboPoints == 5
+            or energy1sLater >= macroTorch.RAKE_E and not macroTorch.isRakePresent() and not macroTorch.target.isImmune('Rake') and comboPoints < 5
+            or energy1sLater >= macroTorch.RIP_E and not macroTorch.isRipPresent() and not macroTorch.target.isImmune('Rip') and comboPoints == 5
+            or energy1sLater >= macroTorch.RIP_E and not macroTorch.isRipPresent() and not macroTorch.target.isImmune('Rip') and comboPoints > 0 and macroTorch.isTrivialBattleOrPvp()
             or comboPoints == 5
             or macroTorch.isKillshotOrLastChance(comboPoints)) then
         return
