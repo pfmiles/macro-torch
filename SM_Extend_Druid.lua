@@ -17,7 +17,7 @@
 
 --- The 'E' key regular dps function for feral cat druid
 --- if rough, then no back attacks
-function macroTorch.catAtk(rough)
+function macroTorch.catAtk(rough, speedRun)
     local p = 'player'
     local t = 'target'
     macroTorch.POUNCE_E = 50
@@ -26,7 +26,7 @@ function macroTorch.catAtk(rough)
     macroTorch.RAKE_E = 32
     macroTorch.BITE_E = 35
     macroTorch.RIP_E = 30
-    macroTorch.TIGER_E = 30
+    macroTorch.TIGER_E = 25
 
     macroTorch.TIGER_DURATION = 18
     macroTorch.RIP_DURATION = 18
@@ -66,6 +66,9 @@ function macroTorch.catAtk(rough)
         -- 3.keep autoAttack, in combat & not prowling *
         if macroTorch.isFightStarted(prowling) then
             player.startAutoAtk()
+            if speedRun then
+                macroTorch.keepSpeedRunBuffs()
+            end
         end
         -- 4.rushMod, incuding trinckets, berserk and potions *
         if IsShiftKeyDown() then
@@ -98,19 +101,8 @@ function macroTorch.catAtk(rough)
             end
         end
 
-        -- TODO for Firelord debug only
-        local isFirelord = 'Firelord' == macroTorch.target.name
-        if isFirelord then
-            macroTorch.lowLog('Firelord isBehind: ' .. isBehind)
-        end
-
         -- 7.oocMod
         if (not prowling or macroTorch.target.isAttackingMe) and ooc then
-            -- TODO for Firelord debug only
-            if isFirelord then
-                macroTorch.lowLog('Firelord ooc entered. Is attacking me: ' ..
-                    macroTorch.target.isAttackingMe .. ', target health: ' .. macroTorch.target.health)
-            end
             macroTorch.tryBiteKillshot(comboPoints)
             macroTorch.cp5ReadyBite(comboPoints)
             -- no shred/claw at cp5 when ooc
@@ -137,11 +129,6 @@ function macroTorch.catAtk(rough)
         end
         macroTorch.keepRake(comboPoints, prowling)
         macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
-        -- TODO for Firelord debug only
-        if isFirelord then
-            macroTorch.lowLog('Firelord prior regularAttack. Fight started: ' ..
-                macroTorch.isFightStarted(prowling) .. ', isRakePresent: ' .. macroTorch.isRakePresent())
-        end
         -- 11.regular attack tech mod
         if macroTorch.isFightStarted(prowling) and comboPoints < 5 and (macroTorch.isRakePresent() or macroTorch.target.isImmune('Rake')) then
             macroTorch.regularAttack(isBehind, rough)
@@ -151,11 +138,10 @@ function macroTorch.catAtk(rough)
     end
 end
 
--- TODO for Firelord debug only
-function macroTorch.lowLog(msg)
-    if not macroTorch.context or not macroTorch.context.lowLogTime or GetTime() - macroTorch.context.lowLogTime > 5 then
-        macroTorch.show(msg)
-        macroTorch.context.lowLogTime = GetTime()
+function macroTorch.keepSpeedRunBuffs()
+    -- special juju flurry for speed run
+    if macroTorch.target.healthPercent > 80 and not macroTorch.player.buffed('Juju Flurry', 'INV_Misc_MonsterScales_17') and macroTorch.player.isItemCooledDown('Juju Flurry') then
+        macroTorch.player.use('Juju Flurry', true)
     end
 end
 
@@ -198,19 +184,6 @@ macroTorch.registerPeriodicTask('consumeDruidBattleEvents',
     { interval = 0.1, task = macroTorch.consumeDruidBattleEvents })
 
 function macroTorch.regularAttack(isBehind, rough)
-    -- TODO for Firelord debug only
-    local isFirelord = 'Firelord' == macroTorch.target.name
-    if isFirelord then
-        macroTorch.lowLog('Firelord regularAttack entered, isBehind: ' ..
-            isBehind ..
-            ', is rough: ' ..
-            rough ..
-            ', isBehindAttackJustFailed: ' ..
-            macroTorch.player.isBehindAttackJustFailed ..
-            ', isRakePresent: ' ..
-            macroTorch.isRakePresent() ..
-            ', isRipPresent: ' .. macroTorch.isRipPresent() .. ', isPouncePresent: ' .. macroTorch.isPouncePresent())
-    end
     -- claw with at least 1 bleeding effect or shred
     if isBehind and not macroTorch.player.isBehindAttackJustFailed and not rough
         and not macroTorch.isRakePresent()
@@ -292,11 +265,6 @@ function macroTorch.termMod(comboPoints)
 end
 
 function macroTorch.cp5Bite(comboPoints)
-    -- TODO for Firelord debug only
-    local isFirelord = 'Firelord' == macroTorch.target.name
-    if isFirelord then
-        macroTorch.lowLog('Firelord cp5Bite entered, isRipPresent: ' .. macroTorch.isRipPresent())
-    end
     if comboPoints == 5 and (macroTorch.target.isImmune('Rip') or macroTorch.isRipPresent()) then
         macroTorch.safeBite()
     end
