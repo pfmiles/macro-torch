@@ -901,10 +901,12 @@ function macroTorch.bruteForce()
     local p = 'player'
 
     local player = macroTorch.player
+    local target = macroTorch.target
     local prowling = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Ambush')
     local berserk = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Druid_Berserk')
     local comboPoints = GetComboPoints()
     local ooc = macroTorch.isBuffOrDebuffPresent(p, 'Spell_Shadow_ManaBurn')
+    local isBehind = macroTorch.isTargetValidCanAttack('target') and UnitXP('behind', 'player', 'target') or false
 
     -- 1.health & mana saver in combat *
     if macroTorch.inCombat then
@@ -918,41 +920,43 @@ function macroTorch.bruteForce()
     -- 4.rushMod, incuding trinckets, berserk and potions *
     if IsShiftKeyDown() then
         if not berserk then
-            CastSpellByName('Berserk')
+            player.cast('Berserk')
         end
         -- juju flurry
-        if not macroTorch.player.hasBuff('INV_Misc_MonsterScales_17') then
+        if not player.hasBuff('INV_Misc_MonsterScales_17') then
             if player.hasItem('Juju Flurry') then
-                macroTorch.player.use('Juju Flurry', true)
+                player.use('Juju Flurry', true)
             end
         end
         macroTorch.atkPowerBurst()
     end
-    -- 7.oocMod
-    if ooc then
-        macroTorch.tryBiteKillshot(comboPoints)
-        macroTorch.cp5ReadyBite(comboPoints)
-        -- no shred/claw at cp5 when ooc
+    if macroTorch.isKillshotOrLastChance(comboPoints) then
+        if comboPoints > 0 then
+            player.cast('Ferocious Bite')
+        else
+            player.cast('Claw')
+        end
+    else
+        macroTorch.keepTigerFury()
         if comboPoints < 5 then
-            if not player.isBehindAttackJustFailed then
-                macroTorch.readyShred()
+            if not target.isImmune('Rake') and not macroTorch.isRakePresent() then
+                player.cast('Rake')
             else
-                macroTorch.readyClaw()
+                if isBehind and (not macroTorch.isRipPresent() and not macroTorch.isRakePresent() and not macroTorch.isPouncePresent() or ooc) then
+                    player.cast('Shred')
+                else
+                    player.cast('Claw')
+                end
+            end
+        else
+            if macroTorch.isRipPresent() or macroTorch.target.isImmune('Rip') then
+                player.cast('Ferocious Bite')
+            else
+                player.cast('Rip')
             end
         end
     end
-    -- 6.termMod: term on rip or killshot
-    macroTorch.termMod(comboPoints)
-    -- 9.combatBuffMod - tiger's fury *
-    macroTorch.keepTigerFury()
-    -- 10.debuffMod, including rip, rake and FF
-    macroTorch.keepRip(comboPoints, prowling)
-    macroTorch.keepRake(comboPoints, prowling)
     macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
-    -- 11.regular attack tech mod
-    if macroTorch.inCombat and comboPoints < 5 and (macroTorch.isRakePresent() or macroTorch.target.isImmune('Rake')) then
-        macroTorch.regularAttack(nil, nil)
-    end
     -- 12.energy res mod
     macroTorch.reshiftMod(player, prowling, ooc, berserk)
 end
