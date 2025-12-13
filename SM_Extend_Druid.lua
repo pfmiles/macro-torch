@@ -517,18 +517,18 @@ end
 -- no FF in: 1) melee range if other techs can use, 2) when ooc 3) immune 4) killshot 5) eager to reshift 6) cp5 7) player not in combat 8) prowling 9) target not in combat
 -- all in all: if in combat and there's nothing to do, then FF, no matter if FF debuff present, we wish to trigger more ooc through instant FFs
 function macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
-    local energy1sLater = player.mana + macroTorch.computeErps()
     if ooc
         or macroTorch.target.isImmune('Faerie Fire (Feral)')
         or macroTorch.canDoReshift(player, prowling, ooc, berserk)
         or not macroTorch.isFightStarted(prowling)
         or not macroTorch.target.isInCombat
         or macroTorch.target.isNearBy and (
-            energy1sLater >= macroTorch.CLAW_E and comboPoints < 5
-            or energy1sLater >= macroTorch.BITE_E and comboPoints == 5
-            or energy1sLater >= macroTorch.RAKE_E and not macroTorch.isRakePresent() and not macroTorch.target.isImmune('Rake') and comboPoints < 5
-            or energy1sLater >= macroTorch.RIP_E and not macroTorch.isRipPresent() and not macroTorch.target.isImmune('Rip') and comboPoints == 5
-            or energy1sLater >= macroTorch.RIP_E and not macroTorch.isRipPresent() and not macroTorch.target.isImmune('Rip') and comboPoints > 0 and macroTorch.isTrivialBattleOrPvp()
+            player.mana >= macroTorch.CLAW_E and comboPoints < 5
+            or player.mana >= macroTorch.BITE_E and comboPoints == 5
+            or player.mana >= macroTorch.RAKE_E and not macroTorch.isRakePresent() and not macroTorch.target.isImmune('Rake') and comboPoints < 5
+            or player.mana >= macroTorch.RIP_E and not macroTorch.isRipPresent() and not macroTorch.target.isImmune('Rip') and comboPoints == 5
+            or player.mana >= macroTorch.RIP_E and not macroTorch.isRipPresent() and not macroTorch.target.isImmune('Rip') and comboPoints > 0 and macroTorch.isTrivialBattleOrPvp()
+            or macroTorch.isTrivialBattleOrPvp() and macroTorch.isFFPresent() and (player.mana + macroTorch.computeErps()) >= macroTorch.TIGER_E
             or comboPoints == 5
             or macroTorch.isKillshotOrLastChance(comboPoints)) then
         return
