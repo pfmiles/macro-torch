@@ -14,6 +14,50 @@
    limitations under the License.
 ]] --
 ---小德专用start---
+macroTorch.Druid = macroTorch.Player:new()
+
+function macroTorch.Druid:new()
+    local obj = {}
+
+    -- cast spell by name
+    -- @param spellName string spell name
+    -- @param onSelf boolean true if cast on self, current target otherwise
+    -- function obj.cast(spellName, onSelf)
+    --     macroTorch.castSpellByName(spellName, 'spell')
+    -- end
+
+    -- impl hint: original '__index' & metatable setting:
+    -- self.__index = self
+    -- setmetatable(obj, self)
+
+    setmetatable(obj, {
+        -- k is the key of searching field, and t is the table itself
+        __index = function(t, k)
+            -- missing instance field search
+            if macroTorch.DRUID_FIELD_FUNC_MAP[k] then
+                return macroTorch.DRUID_FIELD_FUNC_MAP[k](t)
+            end
+            -- class field & method search
+            local class_val = self[k]
+            if class_val then
+                return class_val
+            end
+        end
+    })
+
+    return obj
+end
+
+-- player fields to function mapping
+macroTorch.DRUID_FIELD_FUNC_MAP = {
+    -- basic props
+    ['comboPoints'] = function(self)
+        return GetComboPoints()
+    end,
+    -- conditinal props
+}
+
+macroTorch.druid = macroTorch.Druid:new()
 
 --- The 'E' key regular dps function for feral cat druid
 --- if rough, then no back attacks
@@ -48,9 +92,9 @@ function macroTorch.catAtk(rough, speedRun)
     macroTorch.PLAYER_URGENT_HP_THRESHOLD = 10
 
     local player = macroTorch.player
-    local prowling = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Ambush')
-    local berserk = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Druid_Berserk')
-    local comboPoints = GetComboPoints()
+    local prowling = player.buffed('Prowl', 'Ability_Ambush')
+    local berserk = player.buffed('Berserk', 'Ability_Druid_Berserk')
+    local comboPoints = player.comboPoints
     local ooc = macroTorch.isBuffOrDebuffPresent(p, 'Spell_Shadow_ManaBurn')
     local isBehind = macroTorch.isTargetValidCanAttack(t) and UnitXP('behind', 'player', 'target') or false
 
