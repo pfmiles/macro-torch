@@ -56,6 +56,9 @@ function macroTorch.eventHandle()
         -- on player login
     elseif event == 'PLAYER_ENTERING_WORLD' then
         -- on player entering world
+        if 'Druid' == macroTorch.player.class then
+            macroTorch.player = macroTorch.druid
+        end
         macroTorch.loginContext = {}
     elseif event == 'PLAYER_TARGET_CHANGED' then
         -- target changed
