@@ -92,11 +92,12 @@ function macroTorch.catAtk(rough, speedRun)
     macroTorch.PLAYER_URGENT_HP_THRESHOLD = 10
 
     local player = macroTorch.player
+    local target = macroTorch.target
     local prowling = player.buffed('Prowl', 'Ability_Ambush')
     local berserk = player.buffed('Berserk', 'Ability_Druid_Berserk')
     local comboPoints = player.comboPoints
-    local ooc = macroTorch.isBuffOrDebuffPresent(p, 'Spell_Shadow_ManaBurn')
-    local isBehind = macroTorch.isTargetValidCanAttack(t) and player.isBehindTarget
+    local ooc = player.buffed('Clearcasting', 'Spell_Shadow_ManaBurn')
+    local isBehind = target.isCanAttack and player.isBehindTarget
 
     -- 1.health & mana saver in combat *
     if macroTorch.isFightStarted(prowling) then
@@ -104,7 +105,7 @@ function macroTorch.catAtk(rough, speedRun)
         -- macroTorch.useItemIfManaPercentLessThan(p, 20, 'Mana Potion') TODO 由于cat形态下无法读取真正的mana，因此这里暂时作废
     end
     -- 2.targetEnemy *
-    if not macroTorch.target.isCanAttack then
+    if not target.isCanAttack then
         player.targetEnemy()
     else
         -- 3.keep autoAttack, in combat & not prowling *
@@ -120,22 +121,22 @@ function macroTorch.catAtk(rough, speedRun)
                 CastSpellByName('Berserk')
             end
             -- juju flurry
-            if not macroTorch.player.hasBuff('INV_Misc_MonsterScales_17') then
-                if player.hasItem('Juju Flurry') and not macroTorch.target.isPlayerControlled then
-                    macroTorch.player.use('Juju Flurry', true)
+            if not player.hasBuff('INV_Misc_MonsterScales_17') then
+                if player.hasItem('Juju Flurry') and not target.isPlayerControlled then
+                    player.use('Juju Flurry', true)
                 end
             end
             macroTorch.atkPowerBurst()
         end
         -- roughly bear form logic branch
-        if macroTorch.player.isFormActive('Dire Bear Form') then
+        if player.isFormActive('Dire Bear Form') then
             macroTorch.bearAtk()
             return
         end
         -- 5.starterMod
         if prowling then
             if not rough then
-                if not macroTorch.target.isImmune('Pounce') and macroTorch.target.health >= 1500 then
+                if not target.isImmune('Pounce') and target.health >= 1500 then
                     macroTorch.safePounce()
                 else
                     CastSpellByName('Ravage')
@@ -146,7 +147,7 @@ function macroTorch.catAtk(rough, speedRun)
         end
 
         -- 7.oocMod
-        if (not prowling or macroTorch.target.isAttackingMe) and ooc then
+        if (not prowling or target.isAttackingMe) and ooc then
             macroTorch.tryBiteKillshot(comboPoints)
             macroTorch.cp5ReadyBite(comboPoints)
             -- no shred/claw at cp5 when ooc
@@ -174,7 +175,7 @@ function macroTorch.catAtk(rough, speedRun)
         macroTorch.keepRake(comboPoints, prowling)
         macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
         -- 11.regular attack tech mod
-        if macroTorch.isFightStarted(prowling) and comboPoints < 5 and (macroTorch.isRakePresent() or macroTorch.target.isImmune('Rake')) then
+        if macroTorch.isFightStarted(prowling) and comboPoints < 5 and (macroTorch.isRakePresent() or target.isImmune('Rake')) then
             macroTorch.regularAttack(isBehind, rough)
         end
         -- 12.energy res mod
