@@ -87,6 +87,18 @@ function macroTorch.Player:new()
         return macroTorch.listAllSpells('spell')
     end
 
+    -- target nearest enemy if curent target is not attackable
+    function obj.targetEnemy()
+        if not macroTorch.target.isCanAttack then
+            if macroTorch.target.isFriendly and macroTorch.targettarget.isCanAttack then
+                AssistUnit('target')
+            else
+                ClearTarget()
+                TargetNearestEnemy()
+            end
+        end
+    end
+
     -- start auto attack, this requires "Attack" action be placed in any action slot
     function obj.startAutoAtk()
         macroTorch.toggleAutoAtk(true)
@@ -154,6 +166,9 @@ macroTorch.PLAYER_FIELD_FUNC_MAP = {
     ['isBehindAttackJustFailed'] = function(self)
         return macroTorch.context and macroTorch.context.behindAttackFailedTime and
             (GetTime() - macroTorch.context.behindAttackFailedTime) <= 0.5
+    end,
+    ['isBehindTarget'] = function(self)
+        return UnitXP and macroTorch.target.isExist and UnitXP('behind', 'player', 'target') or false
     end,
 }
 

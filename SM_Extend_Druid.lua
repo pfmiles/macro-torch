@@ -96,7 +96,7 @@ function macroTorch.catAtk(rough, speedRun)
     local berserk = player.buffed('Berserk', 'Ability_Druid_Berserk')
     local comboPoints = player.comboPoints
     local ooc = macroTorch.isBuffOrDebuffPresent(p, 'Spell_Shadow_ManaBurn')
-    local isBehind = macroTorch.isTargetValidCanAttack(t) and UnitXP('behind', 'player', 'target') or false
+    local isBehind = macroTorch.isTargetValidCanAttack(t) and player.isBehindTarget
 
     -- 1.health & mana saver in combat *
     if macroTorch.isFightStarted(prowling) then
@@ -105,7 +105,7 @@ function macroTorch.catAtk(rough, speedRun)
     end
     -- 2.targetEnemy *
     if not macroTorch.target.isCanAttack then
-        macroTorch.targetEnemyMod()
+        player.targetEnemy()
     else
         -- 3.keep autoAttack, in combat & not prowling *
         if macroTorch.isFightStarted(prowling) then
@@ -291,15 +291,6 @@ function macroTorch.otMod(player, prowling, ooc, berserk, comboPoints)
     end
     if (target.isAttackingMe or (target.classification == 'worldboss' and macroTorch.playerThreatPercent() >= macroTorch.COWER_THREAT_THRESHOLD)) and target.distance < 15 then
         macroTorch.readyCower()
-    end
-end
-
-function macroTorch.targetEnemyMod()
-    if macroTorch.target.isFriendly and macroTorch.targettarget.isCanAttack then
-        AssistUnit('target')
-    else
-        ClearTarget()
-        TargetNearestEnemy()
     end
 end
 
