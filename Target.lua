@@ -24,11 +24,11 @@ function macroTorch.Target:new()
     -- set the metatable of the obj to the Target class, when method/field missing, try to find it firstly in TARGET_FIELD_FUNC_MAP, then in the Target class
     setmetatable(obj, {
         __index = function(t, k)
-            if macroTorch.TARGET_FIELD_FUNC_MAP[k] then
+            if macroTorch.TARGET_FIELD_FUNC_MAP[k] ~= nil then
                 return macroTorch.TARGET_FIELD_FUNC_MAP[k](t)
             end
             local class_val = self[k]
-            if class_val then
+            if class_val ~= nil then
                 return class_val
             end
         end

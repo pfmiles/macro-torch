@@ -10,12 +10,12 @@ function macroTorch.LRUStack:new(maxSize)
         -- k is the key of searching field, and t is the table itself
         __index = function(t, k)
             -- missing instance field search
-            if macroTorch.ES_FIELD_FUNC_MAP[k] then
+            if macroTorch.ES_FIELD_FUNC_MAP[k] ~= nil then
                 return macroTorch.ES_FIELD_FUNC_MAP[k](t)
             end
             -- class field & method search
             local class_val = self[k]
-            if class_val then
+            if class_val ~= nil then
                 return class_val
             end
         end

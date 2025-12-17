@@ -139,12 +139,12 @@ function macroTorch.Player:new()
         -- k is the key of searching field, and t is the table itself
         __index = function(t, k)
             -- missing instance field search
-            if macroTorch.PLAYER_FIELD_FUNC_MAP[k] then
+            if macroTorch.PLAYER_FIELD_FUNC_MAP[k] ~= nil then
                 return macroTorch.PLAYER_FIELD_FUNC_MAP[k](t)
             end
             -- class field & method search
             local class_val = self[k]
-            if class_val then
+            if class_val ~= nil then
                 return class_val
             end
         end
@@ -168,7 +168,8 @@ macroTorch.PLAYER_FIELD_FUNC_MAP = {
             (GetTime() - macroTorch.context.behindAttackFailedTime) <= 0.5
     end,
     ['isBehindTarget'] = function(self)
-        return UnitXP and macroTorch.target.isExist and UnitXP('behind', 'player', 'target') or false
+        return macroTorch.target.isExist and macroTorch.isFunctionExist('UnitXP') and
+            UnitXP('behind', 'player', 'target')
     end,
 }
 
