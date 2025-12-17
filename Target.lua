@@ -102,13 +102,6 @@ function macroTorch.isTargetAttackingMe()
         UnitName("player") == UnitName("targettarget")
 end
 
---- 判断指定的目标是否存在且活着且可被玩家攻击
----@param t string 指定的目标
----@return boolean true/false
-function macroTorch.isTargetValidCanAttack(t)
-    return UnitExists(t) and not UnitIsDead(t) and UnitCanAttack('player', t)
-end
-
 --- 判断指定的目标是否友好
 ---@param t string 指定的目标
 ---@return boolean true/false
