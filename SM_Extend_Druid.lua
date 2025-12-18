@@ -392,9 +392,9 @@ function macroTorch.isKillshotOrLastChance(comboPoints)
         -- normal battle in a 5-man group
         local nearMateNum = macroTorch.mateNearMyTargetCount() or 0
         local less = 4 - nearMateNum
-        if less > 0 then
-            macroTorch.show('nearMateNum: ' .. tostring(nearMateNum) .. ', less: ' .. tostring(less))
-        end
+        -- if less > 0 then
+        --     macroTorch.show('nearMateNum: ' .. tostring(nearMateNum) .. ', less: ' .. tostring(less))
+        -- end
         return comboPoints == 1 and
             targetHealth <
             (macroTorch.KS_CP1_Health_group - less * (macroTorch.KS_CP1_Health_group - macroTorch.KS_CP1_Health) / 4) or
