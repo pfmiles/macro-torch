@@ -284,13 +284,13 @@ function macroTorch.otMod(player, prowling, ooc, berserk, comboPoints)
         or not macroTorch.player.isInGroup then
         return
     end
-    if (target.isAttackingMe or macroTorch.playerThreatPercent() > 97) and not player.isSpellReady('Cower') and target.classification == 'worldboss' then
+    if (target.isAttackingMe or player.threatPercent > 97) and not player.isSpellReady('Cower') and target.classification == 'worldboss' then
         player.use('Invulnerability Potion', true)
     end
     if macroTorch.canDoReshift(player, prowling, ooc, berserk) then
         return
     end
-    if (target.isAttackingMe or (target.classification == 'worldboss' and macroTorch.playerThreatPercent() >= macroTorch.COWER_THREAT_THRESHOLD)) and target.distance < 15 then
+    if (target.isAttackingMe or (target.classification == 'worldboss' and player.threatPercent >= macroTorch.COWER_THREAT_THRESHOLD)) and target.distance < 15 then
         macroTorch.readyCower()
     end
 end
@@ -782,18 +782,11 @@ end
 
 function macroTorch.readyCower()
     if macroTorch.player.isSpellReady('Cower') then
-        macroTorch.show('current threat: ' .. macroTorch.playerThreatPercent() .. ' doing ready cower!!!')
+        macroTorch.show('current threat: ' .. macroTorch.player.threatPercent .. ' doing ready cower!!!')
         CastSpellByName('Cower')
         return true
     end
     return false
-end
-
-function macroTorch.playerThreatPercent()
-    local TWT = macroTorch.TWT
-    local p = 0
-    if TWT and TWT.threats and TWT.threats[TWT.name] then p = TWT.threats[TWT.name].perc or 0 end
-    return p
 end
 
 -- burst through boosting attack power
@@ -942,7 +935,7 @@ function macroTorch.bruteForce()
     local berserk = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Druid_Berserk')
     local comboPoints = GetComboPoints()
     local ooc = macroTorch.isBuffOrDebuffPresent(p, 'Spell_Shadow_ManaBurn')
-    local isBehind = macroTorch.isTargetValidCanAttack('target') and UnitXP('behind', 'player', 'target') or false
+    local isBehind = target.isCanAttack and player.isBehindTarget
 
     -- 1.health & mana saver in combat *
     if macroTorch.inCombat then
