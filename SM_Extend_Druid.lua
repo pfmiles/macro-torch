@@ -118,7 +118,7 @@ function macroTorch.catAtk(rough, speedRun)
         -- 4.rushMod, incuding trinckets, berserk and potions *
         if IsShiftKeyDown() then
             if not berserk then
-                CastSpellByName('Berserk')
+                player.cast('Berserk')
             end
             -- juju flurry
             if not player.hasBuff('INV_Misc_MonsterScales_17') then
@@ -139,7 +139,7 @@ function macroTorch.catAtk(rough, speedRun)
                 if not target.isImmune('Pounce') and target.health >= 1500 then
                     macroTorch.safePounce()
                 else
-                    CastSpellByName('Ravage')
+                    player.cast('Ravage')
                 end
             else
                 macroTorch.safeClaw()
@@ -246,7 +246,7 @@ function macroTorch.isTrivialBattleOrPvp()
     return target.isPlayerControlled or
         (
         -- if the target's max health is less than we attack 15s with 500dps each person
-            (player.isInRaid or player.isInGroup) and (target.healthMax <= (macroTorch.mateNearMyTargetCount() + 1) * 500 * 15)
+            (player.isInRaid or player.isInGroup) and (target.healthMax <= (player.mateNearMyTargetCount + 1) * 500 * 15)
         )
 end
 
@@ -390,7 +390,7 @@ function macroTorch.isKillshotOrLastChance(comboPoints)
         return comboPoints >= 3 and macroTorch.target.healthPercent <= 2
     elseif macroTorch.player.isInGroup and not macroTorch.player.isInRaid and not fightWorldBoss and not isPvp then
         -- normal battle in a 5-man group
-        local nearMateNum = macroTorch.mateNearMyTargetCount() or 0
+        local nearMateNum = macroTorch.player.mateNearMyTargetCount or 0
         local less = 4 - nearMateNum
         -- if less > 0 then
         --     macroTorch.show('nearMateNum: ' .. tostring(nearMateNum) .. ', less: ' .. tostring(less))
@@ -413,7 +413,7 @@ function macroTorch.isKillshotOrLastChance(comboPoints)
     elseif macroTorch.player.isInRaid and not fightWorldBoss and not isPvp then
         -- normal battle in a raid
         local raidNum = GetNumRaidMembers() or 0
-        local nearMateNum = macroTorch.mateNearMyTargetCount() or 0
+        local nearMateNum = macroTorch.player.mateNearMyTargetCount or 0
         -- if nearMateNum < raidNum - 1 then
         --     macroTorch.show('raidNum: ' .. tostring(raidNum) .. ', nearMateNum: ' .. tostring(nearMateNum))
         -- end
@@ -810,31 +810,6 @@ function macroTorch.druidBuffs()
     if not buffed('Nature\'s Grasp', 'player') then
         CastSpellByName('Nature\'s Grasp', true)
     end
-end
-
--- get the distance between specified unit and my target
-function macroTorch.unitTargetDistance(unitId)
-    if not UnitExists(unitId) or UnitIsDead(unitId) or not macroTorch.target.isExist then
-        return nil
-    end
-    local distance = UnitXP("distanceBetween", unitId, "target")
-    if not distance or distance < 0 then
-        return nil
-    end
-    return distance
-end
-
--- count mates number near my current targetHealthVector, excludeing myself
-function macroTorch.mateNearMyTargetCount()
-    local function mateNearMyTarget(unitId)
-        local dis = macroTorch.unitTargetDistance(unitId)
-        if not dis then
-            return false
-        end
-        return dis <= 43
-    end
-    local nearMates = macroTorch.filterGroupMates(mateNearMyTarget)
-    return macroTorch.tableLen(nearMates)
 end
 
 function macroTorch.druidStun()

@@ -148,6 +148,18 @@ function macroTorch.isCasting(spellName, bookType)
     return macroTorch.toBoolean(IsCurrentCast(spellId, bookType))
 end
 
+-- get the distance between specified unit and my target
+function macroTorch.unitTargetDistance(unitId)
+    if not UnitExists(unitId) or UnitIsDead(unitId) or not macroTorch.target.isExist then
+        return nil
+    end
+    local distance = UnitXP("distanceBetween", unitId, "target")
+    if not distance or distance < 0 then
+        return nil
+    end
+    return distance
+end
+
 -- 过滤出符合条件的团队成员
 -- @param predFunc function 过滤函数, 参数为unitId，返回值为boolean
 -- @return table 符合条件的团队成员的unitId数组

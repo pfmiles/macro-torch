@@ -171,6 +171,17 @@ macroTorch.PLAYER_FIELD_FUNC_MAP = {
         return macroTorch.target.isExist and macroTorch.isFunctionExist('UnitXP') and
             UnitXP('behind', 'player', 'target')
     end,
+    ['mateNearMyTargetCount'] = function(self)
+        local function mateNearMyTarget(unitId)
+            local dis = macroTorch.unitTargetDistance(unitId)
+            if not dis then
+                return false
+            end
+            return dis <= 43
+        end
+        local nearMates = macroTorch.filterGroupMates(mateNearMyTarget)
+        return macroTorch.tableLen(nearMates)
+    end,
 }
 
 macroTorch.player = macroTorch.Player:new()
