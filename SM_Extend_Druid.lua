@@ -331,55 +331,8 @@ macroTorch.KS_CP3_Health_raid_pps = macroTorch.KS_CP3_Health_group / 5
 macroTorch.KS_CP4_Health_raid_pps = macroTorch.KS_CP4_Health_group / 5
 macroTorch.KS_CP5_Health_raid_pps = macroTorch.KS_CP5_Health_group / 5
 
--- maintain the target health vector
-function macroTorch.maintainTHV()
-    if macroTorch.context then
-        local target = macroTorch.target
-        if not macroTorch.context.targetHealthVector then
-            macroTorch.context.targetHealthVector = {}
-        end
-        if target.isCanAttack and target.isInCombat then
-            table.insert(macroTorch.context.targetHealthVector, { target.health, GetTime() })
-            while macroTorch.tableLen(macroTorch.context.targetHealthVector) > 100 do
-                table.remove(macroTorch.context.targetHealthVector, 1)
-            end
-        end
-    end
-end
-
-macroTorch.registerPeriodicTask('maintainTHV', { interval = 0.1, task = macroTorch.maintainTHV })
-
--- compute current health-reducing-per-second
-function macroTorch.currentHRPS()
-    if macroTorch.tableLen(macroTorch.context.targetHealthVector) < 2 then
-        return 0
-    end
-
-    -- 使用最小二乘法拟合线性回归，计算血量减少的速率
-    local sumX = 0
-    local sumY = 0
-    local sumXY = 0
-    local sumXX = 0
-    local n = macroTorch.tableLen(macroTorch.context.targetHealthVector)
-
-    -- 计算各项求和值
-    for i = 1, n do
-        local health, time = unpack(macroTorch.context.targetHealthVector[i])
-        sumX = sumX + time
-        sumY = sumY + health
-        sumXY = sumXY + time * health
-        sumXX = sumXX + time * time
-    end
-
-    -- 计算线性回归的斜率（即HRPS）
-    local slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX)
-
-    -- 返回斜率的相反数，因为我们要的是血量减少速率
-    return -slope
-end
-
 function macroTorch.isKillshotOrLastChance(comboPoints)
-    if macroTorch.isLastChance() then
+    if macroTorch.target.willDieInSeconds(2) then
         return true
     end
     local targetHealth = macroTorch.target.health
@@ -440,17 +393,6 @@ function macroTorch.isKillshotOrLastChance(comboPoints)
             comboPoints == 4 and targetHealth < macroTorch.KS_CP4_Health or
             comboPoints == 5 and targetHealth < macroTorch.KS_CP5_Health
     end
-end
-
-function macroTorch.isLastChance()
-    if macroTorch.currentHRPS() <= 0 then
-        return false
-    end
-    local ret = macroTorch.target.health <= macroTorch.currentHRPS() * 2
-    -- if ret then
-    --     macroTorch.show('Last chance! 2*HRPS: ' .. tostring(macroTorch.currentHRPS() * 2))
-    -- end
-    return ret
 end
 
 function macroTorch.tryBiteKillshot(comboPoints)
