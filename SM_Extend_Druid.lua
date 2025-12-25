@@ -88,7 +88,6 @@ function macroTorch.catAtk(rough, speedRun)
     macroTorch.COWER_THREAT_THRESHOLD = 75
     macroTorch.RESHIFT_ENERGY = 60
     macroTorch.RESHIFT_E_DIFF_THRESHOLD = 0
-    macroTorch.BURST_ITEM_LOC = 14
     macroTorch.PLAYER_URGENT_HP_THRESHOLD = 10
 
     local player = macroTorch.player
@@ -733,9 +732,7 @@ end
 
 -- burst through boosting attack power
 function macroTorch.atkPowerBurst()
-    if GetInventoryItemCooldown("player", macroTorch.BURST_ITEM_LOC) == 0 then
-        UseInventoryItem(macroTorch.BURST_ITEM_LOC)
-    end
+    macroTorch.player.useTrinket2()
     -- juju power
     if not macroTorch.player.hasBuff('INV_Misc_MonsterScales_11') and macroTorch.player.hasItem('Juju Power') and not macroTorch.target.isPlayerControlled then
         macroTorch.player.use('Juju Power', true)
