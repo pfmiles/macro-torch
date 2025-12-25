@@ -51,6 +51,18 @@ function macroTorch.Player:new()
         return macroTorch.getSpellIdByName(spellName, 'spell')
     end
 
+    function obj.useTrinket1()
+        if GetInventoryItemCooldown("player", 13) == 0 then
+            UseInventoryItem(13)
+        end
+    end
+
+    function obj.useTrinket2()
+        if GetInventoryItemCooldown("player", 14) == 0 then
+            UseInventoryItem(14)
+        end
+    end
+
     -- tell if the specified stance or form is active
     -- @param formName string stance or form name
     -- @return boolean true if active, false otherwise
