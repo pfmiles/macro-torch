@@ -63,6 +63,11 @@ function macroTorch.Player:new()
         end
     end
 
+    -- 随机选择一个坐骑并施放
+    function obj.randomMount(mounts)
+        CastSpellByName(mounts[math.random(1, table.getn(mounts))])
+    end
+
     -- tell if the specified stance or form is active
     -- @param formName string stance or form name
     -- @return boolean true if active, false otherwise
@@ -92,6 +97,10 @@ function macroTorch.Player:new()
     function obj.isActionCooledDown(indicatorActionTexture)
         -- 'Ability_Druid_Rake' for example
         return macroTorch.isActionCooledDown(indicatorActionTexture)
+    end
+
+    function obj.isInBattleField()
+        return GetBattlefieldInstanceRunTime() > 0
     end
 
     --- print all spells in book, for debug usages
