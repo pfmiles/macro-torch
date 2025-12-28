@@ -99,3 +99,11 @@ function macroTorch.tableLen(tbl)
     end
     return len
 end
+
+-- 从给定的一维数组中随机返回一个元素
+function macroTorch.randomPick(arr)
+    if type(arr) ~= "table" or macroTorch.tableLen(arr) == 0 then
+        return nil
+    end
+    return arr[math.random(1, macroTorch.tableLen(arr))]
+end

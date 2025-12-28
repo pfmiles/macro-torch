@@ -336,7 +336,7 @@ function macroTorch.isKillshotOrLastChance(comboPoints)
     end
     local targetHealth = macroTorch.target.health
     local fightWorldBoss = macroTorch.target.classification == 'worldboss'
-    local isPvp = macroTorch.target.isPlayerControlled or GetBattlefieldInstanceRunTime() > 0
+    local isPvp = macroTorch.target.isPlayerControlled or macroTorch.player.isInBattleField()
     if macroTorch.player.isInGroup and fightWorldBoss then
         -- fight world boss in a group or raid
         return comboPoints >= 3 and macroTorch.target.healthPercent <= 2
