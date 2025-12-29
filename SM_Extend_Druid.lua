@@ -364,7 +364,7 @@ function macroTorch.isKillshotOrLastChance(comboPoints)
             (macroTorch.KS_CP5_Health_group - less * (macroTorch.KS_CP5_Health_group - macroTorch.KS_CP5_Health) / 4)
     elseif macroTorch.player.isInRaid and not fightWorldBoss and not isPvp then
         -- normal battle in a raid
-        local raidNum = GetNumRaidMembers() or 0
+        local raidNum = macroTorch.player.raidMemberCount or 0
         local nearMateNum = macroTorch.player.mateNearMyTargetCount or 0
         -- if nearMateNum < raidNum - 1 then
         --     macroTorch.show('raidNum: ' .. tostring(raidNum) .. ', nearMateNum: ' .. tostring(nearMateNum))

@@ -192,6 +192,15 @@ macroTorch.PLAYER_FIELD_FUNC_MAP = {
         return macroTorch.target.isExist and macroTorch.isFunctionExist('UnitXP') and
             UnitXP('behind', 'player', 'target')
     end,
+    ['isInGroup'] = function(self)
+        return (GetNumPartyMembers() or 0) > 0
+    end,
+    ['groupMemberCount'] = function(self)
+        return GetNumPartyMembers() or 0
+    end,
+    ['raidMemberCount'] = function(self)
+        return GetNumRaidMembers() or 0
+    end,
     ['mateNearMyTargetCount'] = function(self)
         local function mateNearMyTarget(unitId)
             local dis = macroTorch.unitTargetDistance(unitId)
