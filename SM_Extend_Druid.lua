@@ -55,6 +55,15 @@ macroTorch.DRUID_FIELD_FUNC_MAP = {
         return GetComboPoints()
     end,
     -- conditinal props
+    ['isOoc'] = function(self)
+        return self.buffed('Clearcasting', 'Spell_Shadow_ManaBurn')
+    end,
+    ['isProwling'] = function(self)
+        return self.buffed('Prowl', 'Ability_Ambush')
+    end,
+    ['isBerserk'] = function(self)
+        return self.buffed('Berserk', 'Ability_Druid_Berserk')
+    end,
 }
 
 macroTorch.druid = macroTorch.Druid:new()
@@ -92,10 +101,10 @@ function macroTorch.catAtk(rough, speedRun)
 
     local player = macroTorch.player
     local target = macroTorch.target
-    local prowling = player.buffed('Prowl', 'Ability_Ambush')
-    local berserk = player.buffed('Berserk', 'Ability_Druid_Berserk')
+    local prowling = player.isProwling
+    local berserk = player.isBerserk
     local comboPoints = player.comboPoints
-    local ooc = player.buffed('Clearcasting', 'Spell_Shadow_ManaBurn')
+    local ooc = player.isOoc
     local isBehind = target.isCanAttack and player.isBehindTarget
 
     -- 1.health & mana saver in combat *
@@ -145,7 +154,7 @@ function macroTorch.catAtk(rough, speedRun)
             end
         end
 
-        -- 7.oocMod
+        -- 7.oocMod: 没有前行且ooc 或 前行但目标正在攻击我
         if (not prowling or target.isAttackingMe) and ooc then
             macroTorch.tryBiteKillshot(comboPoints)
             macroTorch.cp5ReadyBite(comboPoints)
@@ -200,6 +209,7 @@ macroTorch.setTraceSpellImmune('Pounce', 'Ability_Druid_SupriseAttack')
 macroTorch.setTraceSpellImmune('Rake', 'Ability_Druid_Disembowel')
 macroTorch.setTraceSpellImmune('Rip', 'Ability_GhoulFrenzy')
 
+-- 职业特定的天赋行为需要自己追踪
 function macroTorch.consumeDruidBattleEvents()
     -- deal with bites landing bleeding renewals
     macroTorch.consumeLandEvent('Ferocious Bite', function(landEvent)
@@ -210,6 +220,7 @@ function macroTorch.consumeDruidBattleEvents()
         if macroTorch.context.lastProcessedBiteEvent and macroTorch.context.lastProcessedBiteEvent == landEvent then
             return
         end
+        -- 撕咬后还剩下cp，才说明刷新了rake & rip时间
         if GetComboPoints() > 0 then
             if macroTorch.isRakePresent() then
                 macroTorch.show('Renewing rake...')
@@ -245,7 +256,7 @@ function macroTorch.isTrivialBattleOrPvp()
     return target.isPlayerControlled or
         (
         -- if the target's max health is less than we attack 15s with 500dps each person
-            (player.isInRaid or player.isInGroup) and (target.healthMax <= (player.mateNearMyTargetCount + 1) * 500 * 15)
+            (player.isInRaid or player.isInGroup) and (target.healthMax <= (player.mateNearMyTargetCount + 1) * 500 * 20)
         )
 end
 
@@ -264,7 +275,7 @@ function macroTorch.isFightStarted(prowling)
             (macroTorch.player.isInCombat
                 or macroTorch.inCombat
                 or macroTorch.target.isPlayerControlled
-                or (macroTorch.target.isHostile and macroTorch.target.isNearBy)
+                or (macroTorch.target.isHostile and macroTorch.target.isInCombat)
             ))
         or (prowling and macroTorch.target.isAttackingMe)
 end
@@ -289,7 +300,7 @@ function macroTorch.otMod(player, prowling, ooc, berserk, comboPoints)
     if macroTorch.canDoReshift(player, prowling, ooc, berserk) then
         return
     end
-    if (target.isAttackingMe or (target.classification == 'worldboss' and player.threatPercent >= macroTorch.COWER_THREAT_THRESHOLD)) and target.distance < 15 then
+    if target.isAttackingMe or (target.classification == 'worldboss' and player.threatPercent >= macroTorch.COWER_THREAT_THRESHOLD) then
         macroTorch.readyCower()
     end
 end
@@ -301,6 +312,7 @@ end
 
 function macroTorch.cp5Bite(comboPoints)
     if comboPoints == 5 and (macroTorch.target.isImmune('Rip') or macroTorch.isRipPresent()) then
+        macroTorch.energyDischargeBeforeBite()
         macroTorch.safeBite()
     end
 end
@@ -308,7 +320,23 @@ end
 -- for ooc only
 function macroTorch.cp5ReadyBite(comboPoints)
     if comboPoints == 5 and (macroTorch.target.isImmune('Rip') or macroTorch.isRipPresent()) then
+        macroTorch.energyDischargeBeforeBite()
         macroTorch.readyBite()
+    end
+end
+
+-- 撕咬前的泄能逻辑: 当前多余能量用作撕咬加成不划算，将其拆成2个技能使用
+function macroTorch.energyDischargeBeforeBite()
+    if macroTorch.player.isOoc then
+        if macroTorch.player.isBehindTarget then
+            macroTorch.safeShred()
+        else
+            macroTorch.safeClaw()
+        end
+    elseif macroTorch.player.mana >= macroTorch.BITE_E + macroTorch.SHRED_E and macroTorch.player.isBehindTarget then
+        macroTorch.safeShred()
+    elseif macroTorch.player.mana >= macroTorch.BITE_E + macroTorch.CLAW_E then
+        macroTorch.safeClaw()
     end
 end
 
@@ -397,9 +425,12 @@ end
 function macroTorch.tryBiteKillshot(comboPoints)
     if macroTorch.isKillshotOrLastChance(comboPoints) then
         if comboPoints > 0 then
-            CastSpellByName('Ferocious Bite')
+            macroTorch.player.cast('Ferocious Bite')
         else
-            CastSpellByName('Claw')
+            if macroTorch.player.isBehindTarget then
+                macroTorch.safeShred()
+            end
+            macroTorch.player.cast('Claw')
         end
     end
 end
@@ -424,7 +455,7 @@ function macroTorch.computeErps()
     if macroTorch.isPouncePresent() then
         erps = erps + macroTorch.POUNCE_ERPS
     end
-    if macroTorch.player.buffed('Berserk', 'Ability_Druid_Berserk') then
+    if macroTorch.player.isBerserk then
         erps = erps + macroTorch.BERSERK_ERPS
     end
     return erps
@@ -485,10 +516,14 @@ function macroTorch.keepRake(comboPoints, prowling)
         return
     end
     -- boost attack power to rake when fighting world boss
-    if macroTorch.target.classification == 'worldboss' and macroTorch.target.isNearBy then
+    if macroTorch.target.classification == 'worldboss' and macroTorch.isNearBy() then
         macroTorch.atkPowerBurst()
     end
     macroTorch.safeRake()
+end
+
+function macroTorch.isNearBy()
+    return macroTorch.target.distance <= 3
 end
 
 -- no FF in: 1) melee range if other techs can use, 2) when ooc 3) immune 4) killshot 5) eager to reshift 6) cp5 7) player not in combat 8) prowling 9) target not in combat
@@ -499,7 +534,7 @@ function macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
         or macroTorch.canDoReshift(player, prowling, ooc, berserk)
         or not macroTorch.isFightStarted(prowling)
         or not macroTorch.target.isInCombat
-        or macroTorch.target.isNearBy and (
+        or macroTorch.isNearBy() and (
             player.mana >= macroTorch.CLAW_E and comboPoints < 5
             or player.mana >= macroTorch.BITE_E and comboPoints == 5
             or player.mana >= macroTorch.RAKE_E and not macroTorch.isRakePresent() and not macroTorch.target.isImmune('Rake') and comboPoints < 5
@@ -540,6 +575,7 @@ function macroTorch.ripLeft()
     if not lastLandedRipTime then
         return 0
     end
+    -- rip的连击点数每增一点，持续时间加2s
     local ripDur = macroTorch.RIP_DURATION
     if macroTorch.context.lastRipAtCp then
         ripDur = 10 + (macroTorch.context.lastRipAtCp - 1) * 2
@@ -608,7 +644,7 @@ end
 function macroTorch.readyReshift()
     if macroTorch.player.isSpellReady('Reshift') then
         macroTorch.show('Reshift!!! energy = ' .. macroTorch.player.mana .. ', tigerLeft = ' .. macroTorch.tigerLeft())
-        CastSpellByName('Reshift')
+        macroTorch.player.cast('Reshift')
         return true
     end
     return false
@@ -620,7 +656,7 @@ end
 
 function macroTorch.readyShred()
     if macroTorch.player.isSpellReady('Shred') then
-        CastSpellByName('Shred')
+        macroTorch.player.cast('Shred')
         return true
     end
     return false
@@ -632,31 +668,31 @@ end
 
 function macroTorch.readyClaw()
     if macroTorch.player.isSpellReady('Claw') then
-        CastSpellByName('Claw')
+        macroTorch.player.cast('Claw')
         return true
     end
     return false
 end
 
 function macroTorch.safeRake()
-    if macroTorch.player.isSpellReady('Rake') and macroTorch.isGcdOk() and macroTorch.player.mana >= macroTorch.RAKE_E and macroTorch.target.isNearBy then
+    if macroTorch.player.isSpellReady('Rake') and macroTorch.isGcdOk() and macroTorch.player.mana >= macroTorch.RAKE_E and macroTorch.isNearBy() then
         macroTorch.show('Doing rake now! Rake present: ' ..
             tostring(macroTorch.target.hasBuff('Ability_Druid_Disembowel')) ..
             ', rake left: ' .. macroTorch.rakeLeft())
-        CastSpellByName('Rake')
+        macroTorch.player.cast('Rake')
         return true
     end
     return false
 end
 
 function macroTorch.safeRip()
-    if macroTorch.player.isSpellReady('Rip') and macroTorch.isGcdOk() and macroTorch.player.mana >= macroTorch.RIP_E and macroTorch.target.isNearBy then
+    if macroTorch.player.isSpellReady('Rip') and macroTorch.isGcdOk() and macroTorch.player.mana >= macroTorch.RIP_E and macroTorch.isNearBy() then
         macroTorch.show('Ripped at combo points: ' ..
-            tostring(GetComboPoints()) ..
+            tostring(macroTorch.player.comboPoints) ..
             ', rip present: ' ..
             tostring(macroTorch.target.hasBuff('Ability_GhoulFrenzy')) .. ', rip left: ' .. macroTorch.ripLeft())
-        CastSpellByName('Rip')
-        macroTorch.context.lastRipAtCp = GetComboPoints()
+        macroTorch.player.cast('Rip')
+        macroTorch.context.lastRipAtCp = macroTorch.player.comboPoints
         return true
     end
     return false
@@ -671,8 +707,8 @@ function macroTorch.safeBite()
 end
 
 function macroTorch.readyBite()
-    if macroTorch.player.isSpellReady('Ferocious Bite') and macroTorch.isGcdOk() and macroTorch.target.isNearBy then
-        CastSpellByName('Ferocious Bite')
+    if macroTorch.player.isSpellReady('Ferocious Bite') and macroTorch.isGcdOk() and macroTorch.isNearBy() then
+        macroTorch.player.cast('Ferocious Bite')
         return true
     end
     return false
@@ -695,7 +731,7 @@ function macroTorch.safeTigerFury()
         -- macroTorch.show('Tiger\'s Fury present: ' ..
         --     tostring(macroTorch.isTigerPresent()) ..
         --     ', tiger left: ' .. macroTorch.tigerLeft() .. ', doing tiger fury now!')
-        CastSpellByName('Tiger\'s Fury')
+        macroTorch.player.cast('Tiger\'s Fury')
         macroTorch.context.tigerTimer = GetTime()
         return true
     end
@@ -714,8 +750,8 @@ function macroTorch.tigerSelfGCD()
 end
 
 function macroTorch.safePounce()
-    if macroTorch.player.isSpellReady('Pounce') and macroTorch.isGcdOk() and macroTorch.player.mana >= macroTorch.POUNCE_E and macroTorch.target.isNearBy then
-        CastSpellByName('Pounce')
+    if macroTorch.player.isSpellReady('Pounce') and macroTorch.isGcdOk() and macroTorch.player.mana >= macroTorch.POUNCE_E and macroTorch.isNearBy() then
+        macroTorch.player.cast('Pounce')
         return true
     end
     return false
@@ -724,7 +760,7 @@ end
 function macroTorch.readyCower()
     if macroTorch.player.isSpellReady('Cower') then
         macroTorch.show('current threat: ' .. macroTorch.player.threatPercent .. ' doing ready cower!!!')
-        CastSpellByName('Cower')
+        macroTorch.player.cast('Cower')
         return true
     end
     return false
@@ -740,14 +776,14 @@ function macroTorch.atkPowerBurst()
 end
 
 function macroTorch.druidBuffs()
-    if not buffed('Mark of the Wild', 'player') then
-        CastSpellByName('Mark of the Wild', true)
+    if not macroTorch.player.buffed('Mark of the Wild') then
+        macroTorch.player.cast('Mark of the Wild', true)
     end
-    if not buffed('Thorns', 'player') then
-        CastSpellByName('Thorns', true)
+    if not macroTorch.player.buffed('Thorns') then
+        macroTorch.player.cast('Thorns', true)
     end
-    if not buffed('Nature\'s Grasp', 'player') then
-        CastSpellByName('Nature\'s Grasp', true)
+    if not macroTorch.player.buffed('Nature\'s Grasp') then
+        macroTorch.player.cast('Nature\'s Grasp', true)
     end
 end
 
@@ -761,7 +797,7 @@ function macroTorch.druidStun()
     if inBearForm and macroTorch.player.mana == 0 and macroTorch.player.isSpellReady('Enrage') then
         macroTorch.player.cast('Enrage')
     end
-    if macroTorch.target.isNearBy then
+    if macroTorch.isNearBy() then
         macroTorch.player.cast('Bash')
     else
         if macroTorch.isSpellExist('Feral Charge', 'spell') then
@@ -823,7 +859,7 @@ function macroTorch.bearAtk()
     --     macroTorch.player.cast('Growl')
     -- end
     -- [Savage Bite] as soon as I can, then [Maul] blindly
-    if player.buffed('Clearcasting', 'Spell_Shadow_ManaBurn') and player.isSpellReady('Savage Bite') then
+    if player.isOoc and player.isSpellReady('Savage Bite') then
         player.cast('Savage Bite')
     end
     if macroTorch.player.isSpellReady('Maul') then
@@ -845,10 +881,10 @@ function macroTorch.bruteForce()
 
     local player = macroTorch.player
     local target = macroTorch.target
-    local prowling = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Ambush')
-    local berserk = macroTorch.isBuffOrDebuffPresent(p, 'Ability_Druid_Berserk')
-    local comboPoints = GetComboPoints()
-    local ooc = macroTorch.isBuffOrDebuffPresent(p, 'Spell_Shadow_ManaBurn')
+    local prowling = player.isProwling
+    local berserk = player.isBerserk
+    local comboPoints = player.comboPoints
+    local ooc = player.isOoc
     local isBehind = target.isCanAttack and player.isBehindTarget
 
     -- 1.health & mana saver in combat *
