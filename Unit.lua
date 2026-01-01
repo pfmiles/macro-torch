@@ -146,7 +146,7 @@ macroTorch.UNIT_FIELD_FUNC_MAP = {
         return UnitMana(self.ref) / UnitManaMax(self.ref) * 100
     end,
     ['distance'] = function(self)
-        return UnitXP("distanceBetween", "player", self.ref)
+        return UnitXP and UnitXP("distanceBetween", "player", self.ref) or 0
     end,
     -- elemental, undead, etc
     ['type'] = function(self)
