@@ -129,7 +129,7 @@ function macroTorch.catAtk(rough, speedRun)
                 player.cast('Berserk')
             end
             -- juju flurry
-            if not player.hasBuff('INV_Misc_MonsterScales_17') then
+            if not player.hasBuff('INV_Misc_MonsterScales_17') and not player.isFormActive('Dire Bear Form') then
                 if player.hasItem('Juju Flurry') and not target.isPlayerControlled then
                     player.use('Juju Flurry', true)
                 end
@@ -254,10 +254,8 @@ function macroTorch.isTrivialBattleOrPvp()
     local player = macroTorch.player
     local target = macroTorch.target
     return target.isPlayerControlled or
-        (
         -- if the target's max health is less than we attack 15s with 500dps each person
-            (player.isInRaid or player.isInGroup) and (target.healthMax <= (player.mateNearMyTargetCount + 1) * 500 * 20)
-        )
+        target.healthMax <= (player.mateNearMyTargetCount + 1) * 500 * 20
 end
 
 function macroTorch.combatUrgentHPRestore()
@@ -862,16 +860,23 @@ function macroTorch.bearAtk()
     if player.isOoc and player.isSpellReady('Savage Bite') then
         player.cast('Savage Bite')
     end
+    -- if solo, auto demo roar when could
+    if not player.isInGroup and not target.buffed('Demoralizing Roar', 'Ability_Druid_DemoralizingRoar') then
+        player.cast('Demoralizing Roar')
+    end
+    -- normal attack
     if macroTorch.player.isSpellReady('Maul') then
         macroTorch.player.cast('Maul')
     end
-    if not target.isAttackingMe and not target.isPlayerControlled then
+    -- if in group, tanking
+    if player.isInGroup and not target.isAttackingMe and not target.isPlayerControlled then
         if player.isSpellReady('Growl') then
             player.cast('Growl')
         elseif player.isSpellReady('Challenging Roar') then
             player.cast('Challenging Roar')
         end
     end
+    -- ff when nothing to do
     macroTorch.safeFF()
 end
 
@@ -902,7 +907,7 @@ function macroTorch.bruteForce()
             player.cast('Berserk')
         end
         -- juju flurry
-        if not player.hasBuff('INV_Misc_MonsterScales_17') then
+        if not player.hasBuff('INV_Misc_MonsterScales_17') and not player.isFormActive('Dire Bear Form') then
             if player.hasItem('Juju Flurry') then
                 player.use('Juju Flurry', true)
             end
