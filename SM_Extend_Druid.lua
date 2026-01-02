@@ -74,7 +74,7 @@ function macroTorch.catAtk(rough, speedRun)
     local p = 'player'
     local t = 'target'
     macroTorch.POUNCE_E = 50
-    macroTorch.CLAW_E = 37
+    macroTorch.CLAW_E = macroTorch.computeClaw_E()
     macroTorch.SHRED_E = 54
     macroTorch.RAKE_E = 32
     macroTorch.BITE_E = 35
@@ -189,6 +189,16 @@ function macroTorch.catAtk(rough, speedRun)
         -- 12.energy res mod
         macroTorch.reshiftMod(player, prowling, ooc, berserk)
     end
+end
+
+function macroTorch.computeClaw_E()
+    local CLAW_E = 45
+    local player = macroTorch.player
+    if player.isItemEquipped('Idol of Ferocity') then
+        CLAW_E = CLAW_E - 3
+    end
+    CLAW_E = CLAW_E - player.talentRank('Ferocity')
+    return CLAW_E
 end
 
 function macroTorch.keepSpeedRunBuffs()

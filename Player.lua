@@ -152,6 +152,32 @@ function macroTorch.Player:new()
         return macroTorch.isCasting(spellName, 'spell')
     end
 
+    function obj.isItemEquipped(itemName)
+        return macroTorch.getEquippedItemSlot(itemName) ~= nil
+    end
+
+    function obj.countEquippedItemNameContains(itemName)
+        local count = 0
+        for slot = 1, 18 do
+            local link = macroTorch.getEquippedItemLink(slot)
+            if link and strfind(link, itemName) then
+                count = count + 1
+            end
+        end
+        return count
+    end
+
+    function obj.useEquippedItem(itemName)
+        local slot = macroTorch.getEquippedItemSlot(itemName)
+        if slot then
+            UseInventoryItem(slot)
+        end
+    end
+
+    function obj.talentRank(talentName)
+        return macroTorch.getTalentRank(talentName)
+    end
+
     -- impl hint: original '__index' & metatable setting:
     -- self.__index = self
     -- setmetatable(obj, self)
