@@ -207,7 +207,7 @@ function macroTorch.computeShred_E()
 end
 
 function macroTorch.computeRake_E()
-    local RAKE_E = 38
+    local RAKE_E = 37
     return RAKE_E - macroTorch.player.talentRank('Ferocity')
 end
 
