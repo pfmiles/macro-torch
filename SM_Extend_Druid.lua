@@ -79,7 +79,7 @@ function macroTorch.catAtk(rough, speedRun)
     macroTorch.RAKE_E = macroTorch.computeRake_E()
     macroTorch.BITE_E = 35
     macroTorch.RIP_E = 30
-    macroTorch.TIGER_E = 25
+    macroTorch.TIGER_E = macroTorch.computeTiger_E()
 
     macroTorch.TIGER_DURATION = 18
     macroTorch.RIP_DURATION = 18
@@ -209,6 +209,14 @@ end
 function macroTorch.computeRake_E()
     local RAKE_E = 38
     return RAKE_E - macroTorch.player.talentRank('Ferocity')
+end
+
+function macroTorch.computeTiger_E()
+    local TIGER_E = 30
+    if macroTorch.player.countEquippedItemNameContains('Cenarion') >= 5 then
+        TIGER_E = TIGER_E - 5
+    end
+    return TIGER_E
 end
 
 function macroTorch.keepSpeedRunBuffs()
