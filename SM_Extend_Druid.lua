@@ -81,7 +81,7 @@ function macroTorch.catAtk(rough, speedRun)
     macroTorch.RIP_E = 30
     macroTorch.TIGER_E = macroTorch.computeTiger_E()
 
-    macroTorch.TIGER_DURATION = 18
+    macroTorch.TIGER_DURATION = macroTorch.computeTiger_Duration()
     macroTorch.RIP_DURATION = 18
     macroTorch.RAKE_DURATION = 9
     macroTorch.FF_DURATION = 40
@@ -217,6 +217,12 @@ function macroTorch.computeTiger_E()
         TIGER_E = TIGER_E - 5
     end
     return TIGER_E
+end
+
+function macroTorch.computeTiger_Duration()
+    local tiger_duration = 6
+    tiger_duration = tiger_duration + macroTorch.player.talentRank('Blood Frenzy') * 6
+    return tiger_duration
 end
 
 function macroTorch.keepSpeedRunBuffs()
