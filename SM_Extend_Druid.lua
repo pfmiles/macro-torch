@@ -75,7 +75,7 @@ function macroTorch.catAtk(rough, speedRun)
     local t = 'target'
     macroTorch.POUNCE_E = 50
     macroTorch.CLAW_E = macroTorch.computeClaw_E()
-    macroTorch.SHRED_E = 54
+    macroTorch.SHRED_E = macroTorch.computeShred_E()
     macroTorch.RAKE_E = 32
     macroTorch.BITE_E = 35
     macroTorch.RIP_E = 30
@@ -199,6 +199,11 @@ function macroTorch.computeClaw_E()
     end
     CLAW_E = CLAW_E - player.talentRank('Ferocity')
     return CLAW_E
+end
+
+function macroTorch.computeShred_E()
+    local SHRED_E = 60
+    return SHRED_E - macroTorch.player.talentRank('Improved Shred') * 6
 end
 
 function macroTorch.keepSpeedRunBuffs()
