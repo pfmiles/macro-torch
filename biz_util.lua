@@ -188,3 +188,66 @@ function macroTorch.filterGroupMates(predFunc)
     -- macroTorch.show('filterGroupMates result: ' .. table.concat(result, ', '))
     return result
 end
+
+-- 获取天赋等级
+-- @param talentName string 天赋名称
+-- @return number 天赋等级
+function macroTorch.getTalentRank(talentName)
+    -- GetNumTalentTabs()
+    for tabIndex = 1, GetNumTalentTabs() do
+        -- GetTalentInfo(tabIndex,talentIndex)   - return name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq
+        for talentIndex = 1, GetNumTalents(tabIndex) do
+            local name, _, _, _, rank, _, _, _ = GetTalentInfo(tabIndex, talentIndex)
+            if name == talentName then
+                return rank
+            end
+        end
+    end
+    error("talent not found: " .. tostring(talentName))
+end
+
+-- 检查身上装备格子的装备名称
+-- @param slot number 装备格子索引:
+-- 1=头部
+-- 2=项链
+-- 3=肩部
+-- 4=衬衫
+-- 5=胸部
+-- 6=腰带
+-- 7=腿部
+-- 8=脚部
+-- 9=手腕
+-- 10=手套
+-- 11=戒指1
+-- 12=戒指2
+-- 13=饰品1
+-- 14=饰品2
+-- 15=背部
+-- 16=主手武器
+-- 17=副手武器
+-- 18=远程武器
+function macroTorch.getEquippedItemLink(slot)
+    return GetInventoryItemLink("player", slot)
+end
+
+function macroTorch.getEquippedItemSlot(itemName)
+    for slot = 1, 18 do
+        local link = macroTorch.getEquippedItemLink(slot)
+        if link and strfind(link, itemName) then
+            return slot
+        end
+    end
+    return nil
+end
+
+-- 装备背包中物品到指定装备格子
+-- @param itemName string 物品名称
+-- @param slot number 装备格子索引
+function macroTorch.equipItem(itemName, slot)
+    local bagId, slotIndex = macroTorch.getItemBagIdAndSlot(itemName)
+    if not bagId or not slotIndex then
+        return
+    end
+    PickupContainerItem(bagId, slotIndex)
+    EquipCursorItem(slot)
+end
