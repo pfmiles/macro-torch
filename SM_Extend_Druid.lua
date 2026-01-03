@@ -512,7 +512,7 @@ end
 
 -- tiger fury when near
 function macroTorch.keepTigerFury()
-    if macroTorch.isTigerPresent() or macroTorch.target.distance > 15 then
+    if macroTorch.isTigerPresent() or macroTorch.target.distance > 20 then
         return
     end
     macroTorch.safeTigerFury()
@@ -916,8 +916,6 @@ end
 
 -- for some problematic battle
 function macroTorch.bruteForce()
-    local p = 'player'
-
     local player = macroTorch.player
     local target = macroTorch.target
     local prowling = player.isProwling

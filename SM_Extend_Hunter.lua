@@ -14,151 +14,93 @@
    limitations under the License.
 ]] --
 ---猎人专用---
---- 钉刺逻辑
-function macroTorch.hunterStings()
-    local t = 'target'
-    local isPlayerTarget = UnitIsPlayer(t)
-    local isManaTarget = UnitPowerType(t) == 0
+macroTorch.Hunter = macroTorch.Player:new()
 
-    if isPlayerTarget then
-        if isManaTarget then
-            ---如果是法系玩家目标，上吸蓝钉刺 TODO
-            ---TODO 吸蓝sting
-        else
-            ---如果是非法系的玩家目标，上减力减敏钉刺 TODO
-            CastSpellByName('毒蝎钉刺')
-        end
-    else
-        ---其它毒蛇钉刺有效目标，上毒蛇钉刺
-        local targetType = UnitCreatureType(t)
-        if targetType and not string.find(targetType, '元素生物') and not string.find(targetType, '机械生物') and
-            macroTorch.getUnitHealthPercent(t) > 50 then
-            macroTorch.castIfBuffAbsent(t, '毒蛇钉刺', 'Hunter_Quickshot')
-        end
-    end
-end
+function macroTorch.Hunter:new()
+    local obj = {}
 
-function macroTorch.MeleeSeq()
-    if HasPetUI() and not UnitIsDead('pet') then
-        PetDefensiveMode()
-        PetAttack()
-    end
-    macroTorch.startAutoAtk()
-    if not macroTorch.isBuffOrDebuffPresent('target', 'Rogue_Trip') then
-        CastSpellByName('摔绊')
-    end
-    CastSpellByName('猫鼬撕咬')
-    CastSpellByName('猛禽一击')
-end
+    -- cast spell by name
+    -- @param spellName string spell name
+    -- @param onSelf boolean true if cast on self, current target otherwise
+    -- function obj.cast(spellName, onSelf)
+    --     macroTorch.castSpellByName(spellName, 'spell')
+    -- end
 
-function macroTorch.RangedSeq()
-    if HasPetUI() and not UnitIsDead('pet') then
-        PetDefensiveMode()
-        PetAttack()
-    end
-    local t = 'target'
-    macroTorch.castIfBuffAbsent(t, '猎人印记', 'Hunter_SniperShot')
-    macroTorch.startAutoShoot()
-    macroTorch.hunterStings()
-    --CastSpellByName('Trueshot')
-    Quiver.CastNoClip('Trueshot')
-    --CastSpellByName('奥术射击')
-    Quiver.CastNoClip('Arcane Shot')
-end
+    -- impl hint: original '__index' & metatable setting:
+    -- self.__index = self
+    -- setmetatable(obj, self)
 
---- hunter attack all in one
----@param pvp boolean whether or not attack player targets
-function macroTorch.hunterAtk(pvp)
-    local t = 'target'
-    if macroTorch.isTargetValidCanAttack(t) and (pvp or not macroTorch.isPlayerOrPlayerControlled(t)) then
-        if CheckInteractDistance(t, 3) then
-            macroTorch.MeleeSeq()
-        else
-            macroTorch.RangedSeq()
-        end
-    else
-        local pt = 'pettarget'
-        if HasPetUI() and not UnitIsDead('pet') and macroTorch.isTargetValidCanAttack(pt) and
-            (pvp or not macroTorch.isPlayerOrPlayerControlled(pt)) then
-            TargetUnit(pt)
-        else
-            TargetNearestEnemy()
-        end
-        if macroTorch.isTargetValidCanAttack(t) and (pvp or not macroTorch.isPlayerOrPlayerControlled(t)) then
-            if CheckInteractDistance(t, 3) then
-                macroTorch.MeleeSeq()
-            else
-                macroTorch.RangedSeq()
+    setmetatable(obj, {
+        -- k is the key of searching field, and t is the table itself
+        __index = function(t, k)
+            -- missing instance field search
+            if macroTorch.HUNTER_FIELD_FUNC_MAP[k] ~= nil then
+                return macroTorch.HUNTER_FIELD_FUNC_MAP[k](t)
+            end
+            -- class field & method search
+            local class_val = self[k]
+            if class_val ~= nil then
+                return class_val
             end
         end
+    })
+
+    function obj.callPet()
+        if macroTorch.pet.isExist then
+            macroTorch.player.cast('Dismiss Pet')
+        else
+            macroTorch.player.cast('Call Pet')
+        end
     end
+
+    return obj
 end
 
-function macroTorch.changeStance()
-    if macroTorch.isBuffOrDebuffPresent('player', 'Mount_JungleTiger') then
-        local t = 'target'
-        if macroTorch.isTargetValidCanAttack(t) then
-            if CheckInteractDistance(t, 3) then
-                CastSpellByName('灵猴守护')
-            else
-                CastSpellByName('雄鹰守护')
+-- player fields to function mapping
+macroTorch.HUNTER_FIELD_FUNC_MAP = {
+    -- basic props
+    -- ['comboPoints'] = function(self)
+    --     return GetComboPoints()
+    -- end,
+    -- conditinal props
+}
+
+macroTorch.hunter = macroTorch.Hunter:new()
+
+-- tracing certain spells and maintain the landTable
+-- macroTorch.setSpellTracingByName('Serpent Sting', 'spell')
+
+-- register druid spells immune tracing
+macroTorch.setTraceSpellImmuneByName('Serpent Sting', 'spell')
+
+function macroTorch.hunterAtk()
+    local player = macroTorch.player
+    local target = macroTorch.target
+    player.targetEnemy()
+    if target.isCanAttack then
+        if target.distance < 8 then
+            player.startAutoAtk()
+            macroTorch.safeRaptorStrike()
+        else
+            if not target.buffed(nil, 'Ability_Hunter_SniperShot') then
+                player.cast("Hunter's Mark")
             end
-        else
-            CastSpellByName('灵猴守护')
+            player.startAutoShoot()
         end
-    else
-        CastSpellByName('猎豹守护')
     end
 end
 
---- 强制陷阱
----@param trap string
-function macroTorch.forceTrap(trap)
-    local p = 'player'
-    if UnitAffectingCombat(p) then
-        -- 宠物停止攻击
-        if HasPetUI() and not UnitIsDead('pet') then
-            PetPassiveMode()
-            PetStopAttack()
-            PetFollow()
-        end
-        -- 如果没有在假死状态，假死
-        macroTorch.castIfBuffAbsent(p, '假死', 'Rogue_FeignDeath')
-    end
-    CastSpellByName(trap)
-end
-
---- 控制序列
-function macroTorch.hunterCtrl()
-    macroTorch.castIfBuffAbsent('target', '震荡射击', 'Devour')
-    CastSpellByName('Intimidation')
-end
-
---the param is around -0.09 ~ -0.1 with 160ms lag
---the lesser param, the harder for ss to fire
---the param should adjust with lag
-function macroTorch.qqShot()
-    local a, b = Quiver.GetSecondsRemainingShoot();
-    if a then
-        local x, y, z = GetNetStats();
-        local bias = (z - 160) / 1000;
-        if b < (-0.1 + bias) then
-            CastSpellByName('Steady Shot');
-        end
-    else
-        lazyScript.SlashCommand('betweenSteady');
-        CastSpellByName('Steady Shot');
+function macroTorch.readyRaptorStrike()
+    local player = macroTorch.player
+    if player.isSpellReady('Raptor Strike') then
+        player.cast('Raptor Strike')
     end
 end
 
-function macroTorch.meleeOrRangedAtk(pvp)
-    local t = 'target'
-    if macroTorch.isTargetValidCanAttack(t) and (pvp or not macroTorch.isPlayerOrPlayerControlled(t)) then
-        if CheckInteractDistance(t, 3) then
-            lazyScript.SlashCommand('meleeAtk')
-        else
-            lazyScript.SlashCommand('rangedAtkPre')
-            macroTorch.qqShot()
-        end
+function macroTorch.safeRaptorStrike()
+    local player = macroTorch.player
+    local RAPTOR_E = 15
+    if player.mana >= RAPTOR_E then
+        macroTorch.readyRaptorStrike()
     end
 end
