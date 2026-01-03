@@ -12,6 +12,14 @@ function macroTorch.setSpellTracing(spellGuid, spellName)
     end
 end
 
+function macroTorch.setSpellTracingByName(spellName, bookType)
+    local spellUniqId = macroTorch.getSpellUniqIdByName(spellName, bookType)
+    if not spellUniqId then
+        return
+    end
+    macroTorch.setSpellTracing(spellUniqId, spellName)
+end
+
 -- sets what spells to tracer immune
 if not macroTorch.traceSpellImmunes then
     macroTorch.traceSpellImmunes = {}
@@ -22,6 +30,15 @@ function macroTorch.setTraceSpellImmune(spellName, spellDebuffTexture)
     if not macroTorch.traceSpellImmunes[spellName] then
         macroTorch.traceSpellImmunes[spellName] = spellDebuffTexture
     end
+end
+
+-- note: only works when the spell and the corresponding debuff has the same texture
+function macroTorch.setTraceSpellImmuneByName(spellName, bookType)
+    local spellDebuffTexture = macroTorch.getSpellTexture(spellName, bookType)
+    if not spellDebuffTexture then
+        return
+    end
+    macroTorch.setTraceSpellImmune(spellName, spellDebuffTexture)
 end
 
 -- global event listening

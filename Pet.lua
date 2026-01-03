@@ -19,29 +19,116 @@ macroTorch.Pet = macroTorch.Unit:new("pet")
 function macroTorch.Pet:new()
     local obj = {}
 
-    -- list all spells of the pet, for debug usages
-    function obj.listAllSpells()
-        return macroTorch.listAllSpells('pet')
+    -- PetAggressiveMode()   - Set your pet in aggressive mode.
+    function obj.aggressiveMode()
+        PetAggressiveMode()
     end
 
-    -- get spell id by name
-    -- @param spellName string spell name
-    -- @return number spell id
-    function obj.getSpellIdByName(spellName)
-        return macroTorch.getSpellIdByName(spellName, 'pet')
+    -- PetAttack()   - Instruct your pet to attack your target.
+    function obj.attack()
+        PetAttack()
+    end
+
+    -- PetStopAttack()   - Stop the attack of the pet.
+    function obj.stopAttack()
+        PetStopAttack()
+    end
+
+    -- PetDefensiveMode()   - Set your pet in defensive mode.
+    function obj.defensiveMode()
+        PetDefensiveMode()
+    end
+
+    -- PetDismiss()   - Dismiss your pet.
+    function obj.dismiss()
+        PetDismiss()
+    end
+
+    -- PetFollow()   - Instruct your pet to follow you.
+    function obj.follow()
+        PetFollow()
+    end
+
+    -- PetPassiveMode()   - Set your pet into passive mode.
+    function obj.passiveMode()
+        PetPassiveMode()
+    end
+
+    -- PetWait()   - Instruct your pet to remain still.
+    function obj.wait()
+        PetWait()
+    end
+
+    function obj.togglePet()
+        if HasPetUI() then
+            if UnitIsDead("pet") then
+                CastSpellByName("Revive Pet")
+            else
+                CastSpellByName("Dismiss Pet")
+            end
+        else
+            CastSpellByName("Call Pet")
+        end
+    end
+
+    function obj.cast(spellName)
+        macroTorch.castSpellByName(spellName, 'pet')
     end
 
     function obj.isSpellCooledDown(spellName)
         return macroTorch.isSpellCooledDown(spellName, 'pet')
     end
 
-    function obj.isCasting(spellName)
-        return macroTorch.isCasting(spellName, 'pet')
+    function obj.isAutoCast(spellName)
+        local spellId = macroTorch.getSpellIdByName(spellName, 'pet')
+        if not spellId then
+            return false
+        end
+        return macroTorch.toBoolean(GetSpellAutocast(spellId, 'pet'))
     end
 
-    self.__index = self
-    setmetatable(obj, self)
+    function obj.toggleAutoCast(spellName)
+        local spellId = macroTorch.getSpellIdByName(spellName, 'pet')
+        if not spellId then
+            return false
+        end
+        ToggleSpellAutocast(spellId, 'pet')
+    end
+
+    -- impl hint: original '__index' & metatable setting:
+    -- self.__index = self
+    -- setmetatable(obj, self)
+    setmetatable(obj, {
+        -- k is the key of searching field, and t is the table itself
+        __index = function(t, k)
+            -- missing instance field search
+            if macroTorch.PET_FIELD_FUNC_MAP[k] ~= nil then
+                return macroTorch.PET_FIELD_FUNC_MAP[k](t)
+            end
+            -- class field & method search
+            local class_val = self[k]
+            if class_val ~= nil then
+                return class_val
+            end
+        end
+    })
+
     return obj
 end
+
+-- pet fields to function mapping
+macroTorch.PET_FIELD_FUNC_MAP = {
+    -- basic props
+    -- ['threatPercent'] = function(self)
+    --     local TWT = macroTorch.TWT
+    --     local p = 0
+    --     if TWT and TWT.threats and TWT.threats[TWT.name] then p = TWT.threats[TWT.name].perc or 0 end
+    --     return p
+    -- end,
+    -- conditinal props
+    ['isAttackActive'] = function(self)
+        return macroTorch.toBoolean(IsPetAttackActive())
+    end,
+}
 
 macroTorch.pet = macroTorch.Pet:new()

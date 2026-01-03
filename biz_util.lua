@@ -33,6 +33,17 @@ function macroTorch.getSpellIdByName(spellName, bookType)
     return nil
 end
 
+function macroTorch.getSpellUniqIdByName(spellName, bookType)
+    local spellId = macroTorch.getSpellIdByName(spellName, bookType)
+    if not spellId then
+        return nil
+    end
+    local _, _, c = GetSpellName(spellId, bookType)
+    return c
+end
+
+
+
 function macroTorch.isSpellExist(spellName, bookType)
     return macroTorch.toBoolean(macroTorch.getSpellIdByName(spellName, bookType))
 end
