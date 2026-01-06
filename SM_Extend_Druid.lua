@@ -45,6 +45,35 @@ function macroTorch.Druid:new()
         end
     })
 
+    function obj.showEnergyUsageSet()
+        macroTorch.POUNCE_E = 50
+        macroTorch.CLAW_E = macroTorch.computeClaw_E()
+        macroTorch.SHRED_E = macroTorch.computeShred_E()
+        macroTorch.RAKE_E = macroTorch.computeRake_E()
+        macroTorch.BITE_E = 35
+        macroTorch.RIP_E = 30
+        macroTorch.TIGER_E = macroTorch.computeTiger_E()
+
+        macroTorch.TIGER_DURATION = macroTorch.computeTiger_Duration()
+
+        macroTorch.show('POUNCE_E: ' ..
+            macroTorch.POUNCE_E ..
+            ', CLAW_E: ' ..
+            macroTorch.CLAW_E ..
+            ', SHRED_E: ' ..
+            macroTorch.SHRED_E ..
+            ', RAKE_E: ' ..
+            macroTorch.RAKE_E ..
+            ', BITE_E: ' ..
+            macroTorch.BITE_E ..
+            ', RIP_E: ' ..
+            macroTorch.RIP_E ..
+            ', TIGER_E: ' ..
+            macroTorch.TIGER_E ..
+            ', TIGER_DURATION: ' ..
+            macroTorch.TIGER_DURATION)
+    end
+
     return obj
 end
 
@@ -207,8 +236,12 @@ function macroTorch.computeShred_E()
 end
 
 function macroTorch.computeRake_E()
-    local RAKE_E = 37
-    return RAKE_E - macroTorch.player.talentRank('Ferocity')
+    local RAKE_E = 40
+    local player = macroTorch.player
+    if player.isItemEquipped('Idol of Ferocity') then
+        RAKE_E = RAKE_E - 3
+    end
+    return RAKE_E - player.talentRank('Ferocity')
 end
 
 function macroTorch.computeTiger_E()
