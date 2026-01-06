@@ -361,9 +361,9 @@ end
 function macroTorch.energyDischargeBeforeBite()
     if macroTorch.player.isOoc then
         if macroTorch.player.isBehindTarget then
-            macroTorch.safeShred()
+            macroTorch.readyShred()
         else
-            macroTorch.safeClaw()
+            macroTorch.readyClaw()
         end
     elseif macroTorch.player.mana >= macroTorch.BITE_E + macroTorch.SHRED_E and macroTorch.player.isBehindTarget then
         macroTorch.safeShred()
@@ -741,6 +741,7 @@ end
 function macroTorch.readyBite()
     if macroTorch.player.isSpellReady('Ferocious Bite') and macroTorch.isGcdOk() and macroTorch.isNearBy() then
         macroTorch.player.cast('Ferocious Bite')
+        macroTorch.show('Bite at energy: ' .. macroTorch.player.mana .. ', ooc: ' .. tostring(macroTorch.player.isOoc))
         return true
     end
     return false
