@@ -30,7 +30,7 @@ function macroTorch.showAllActionProps()
     for i = 1, 172 do
         local a = GetActionTexture(i)
         if a then
-            macroTorch.show(a .. ':')
+            macroTorch.show(a .. ':' .. tostring(GetActionText(i)))
             macroTorch.show('IsAttackAction:' .. tostring(IsAttackAction(i)))
             macroTorch.show('ActionHasRange:' .. tostring(ActionHasRange(i)))
             macroTorch.show('IsCurrentAction:' .. tostring(IsCurrentAction(i)))
