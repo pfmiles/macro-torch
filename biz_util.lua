@@ -42,8 +42,6 @@ function macroTorch.getSpellUniqIdByName(spellName, bookType)
     return c
 end
 
-
-
 function macroTorch.isSpellExist(spellName, bookType)
     return macroTorch.toBoolean(macroTorch.getSpellIdByName(spellName, bookType))
 end
@@ -250,6 +248,13 @@ function macroTorch.getEquippedItemSlot(itemName)
     end
     return nil
 end
+
+function macroTorch.isRangedWeaponEquipped(weaponName)
+    local link = macroTorch.getEquippedItemLink(18)
+    return macroTorch.toBoolean(link and strfind(link, weaponName))
+end
+
+macroTorch.isRelicEquipped = macroTorch.isRangedWeaponEquipped
 
 -- 装备背包中物品到指定装备格子
 -- @param itemName string 物品名称

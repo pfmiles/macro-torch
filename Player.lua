@@ -156,6 +156,10 @@ function macroTorch.Player:new()
         return macroTorch.getEquippedItemSlot(itemName) ~= nil
     end
 
+    function obj.isRangedWeaponEquipped(weaponName)
+        return macroTorch.isRangedWeaponEquipped(weaponName)
+    end
+
     function obj.countEquippedItemNameContains(itemName)
         local count = 0
         for slot = 1, 18 do
@@ -165,6 +169,10 @@ function macroTorch.Player:new()
             end
         end
         return count
+    end
+
+    function obj.equipItem(itemName, slot)
+        macroTorch.equipItem(itemName, slot)
     end
 
     function obj.useEquippedItem(itemName)
@@ -373,13 +381,14 @@ function macroTorch.stopAutoAtk()
 end
 
 -- 定义可复用的查找字符串集合
-local RANGED_WEAPON_KEYWORDS = { 'Weapon', 'Staff' }
+local RANGED_WEAPON_KEYWORDS = { 'Weapon', 'Staff', 'Bow', 'Gun' }
 
 --- 开启自动射击, 这需要“射击”技能被放在任意一个技能栏格子里
 function macroTorch.startAutoShoot()
     for i = 1, 172 do
         local a = GetActionTexture(i)
-        if a and macroTorch.containsAnyKeyword(a, RANGED_WEAPON_KEYWORDS) and ActionHasRange(i) and not IsAutoRepeatAction(i) then
+        if a and macroTorch.containsAnyKeyword(a, RANGED_WEAPON_KEYWORDS) and ActionHasRange(i) and not IsAutoRepeatAction(i) and not IsCurrentAction(i) then
+            macroTorch.show(a .. ':' .. tostring(i))
             UseAction(i)
             return
         end
@@ -390,7 +399,7 @@ end
 function macroTorch.stopAutoShoot()
     for i = 1, 172 do
         local a = GetActionTexture(i)
-        if a and macroTorch.containsAnyKeyword(a, RANGED_WEAPON_KEYWORDS) and ActionHasRange(i) and IsAutoRepeatAction(i) then
+        if a and macroTorch.containsAnyKeyword(a, RANGED_WEAPON_KEYWORDS) and ActionHasRange(i) and IsAutoRepeatAction(i) and IsCurrentAction(i) then
             UseAction(i)
             return
         end
