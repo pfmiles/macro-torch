@@ -74,6 +74,21 @@ function macroTorch.Druid:new()
             macroTorch.TIGER_DURATION)
     end
 
+    function obj.isRelicEquipped(relicName)
+        return macroTorch.isRelicEquipped(relicName)
+    end
+
+    function obj.ensureRelicEquipped(relicName)
+        if not obj.isRelicEquipped(relicName) then
+            obj.equipRelic(relicName)
+        end
+        return obj.isRelicEquipped(relicName)
+    end
+
+    function obj.equipRelic(relicName)
+        macroTorch.equipItem(relicName, 18)
+    end
+
     return obj
 end
 
@@ -495,7 +510,7 @@ function macroTorch.tryBiteKillshot(comboPoints)
             if macroTorch.player.isBehindTarget then
                 macroTorch.safeShred()
             end
-            macroTorch.player.cast('Claw')
+            macroTorch.readyClaw()
         end
     end
 end
@@ -733,7 +748,12 @@ end
 
 function macroTorch.readyClaw()
     if macroTorch.player.isSpellReady('Claw') then
-        macroTorch.player.cast('Claw')
+        if macroTorch.player.hasItem('Idol of Ferocity') then
+            macroTorch.player.ensureRelicEquipped('Idol of Ferocity')
+            macroTorch.player.cast('Claw')
+        else
+            macroTorch.player.cast('Claw')
+        end
         return true
     end
     return false
@@ -744,7 +764,12 @@ function macroTorch.safeRake()
         macroTorch.show('Doing rake now! Rake present: ' ..
             tostring(macroTorch.target.hasBuff('Ability_Druid_Disembowel')) ..
             ', rake left: ' .. macroTorch.rakeLeft())
-        macroTorch.player.cast('Rake')
+        if macroTorch.player.hasItem('Idol of Savagery') then
+            macroTorch.player.ensureRelicEquipped('Idol of Savagery')
+            macroTorch.player.cast('Rake')
+        else
+            macroTorch.player.cast('Rake')
+        end
         return true
     end
     return false
@@ -756,7 +781,12 @@ function macroTorch.safeRip()
             tostring(macroTorch.player.comboPoints) ..
             ', rip present: ' ..
             tostring(macroTorch.target.hasBuff('Ability_GhoulFrenzy')) .. ', rip left: ' .. macroTorch.ripLeft())
-        macroTorch.player.cast('Rip')
+        if macroTorch.player.hasItem('Idol of Savagery') then
+            macroTorch.player.ensureRelicEquipped('Idol of Savagery')
+            macroTorch.player.cast('Rip')
+        else
+            macroTorch.player.cast('Rip')
+        end
         macroTorch.context.lastRipAtCp = macroTorch.player.comboPoints
         return true
     end
@@ -984,7 +1014,7 @@ function macroTorch.bruteForce()
         if comboPoints > 0 then
             player.cast('Ferocious Bite')
         else
-            player.cast('Claw')
+            macroTorch.readyClaw()
         end
     else
         macroTorch.keepTigerFury()
@@ -995,7 +1025,7 @@ function macroTorch.bruteForce()
                 if isBehind and (not macroTorch.isRipPresent() and not macroTorch.isRakePresent() and not macroTorch.isPouncePresent() or ooc) then
                     player.cast('Shred')
                 else
-                    player.cast('Claw')
+                    macroTorch.readyClaw()
                 end
             end
         else
