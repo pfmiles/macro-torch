@@ -55,6 +55,7 @@ function macroTorch.Druid:new()
         macroTorch.TIGER_E = macroTorch.computeTiger_E()
 
         macroTorch.TIGER_DURATION = macroTorch.computeTiger_Duration()
+        macroTorch.RAKE_DURATION = macroTorch.computeRake_Duration()
 
         macroTorch.show('POUNCE_E: ' ..
             macroTorch.POUNCE_E ..
@@ -71,7 +72,10 @@ function macroTorch.Druid:new()
             ', TIGER_E: ' ..
             macroTorch.TIGER_E ..
             ', TIGER_DURATION: ' ..
-            macroTorch.TIGER_DURATION)
+            macroTorch.TIGER_DURATION ..
+            ', RAKE_DURATION: ' ..
+            macroTorch.RAKE_DURATION
+        )
     end
 
     function obj.isRelicEquipped(relicName)
@@ -127,7 +131,7 @@ function macroTorch.catAtk(rough, speedRun)
 
     macroTorch.TIGER_DURATION = macroTorch.computeTiger_Duration()
     macroTorch.RIP_DURATION = 18
-    macroTorch.RAKE_DURATION = 9
+    macroTorch.RAKE_DURATION = macroTorch.computeRake_Duration()
     macroTorch.FF_DURATION = 40
     macroTorch.POUNCE_DURATION = 18
 
@@ -257,6 +261,14 @@ function macroTorch.computeRake_E()
         RAKE_E = RAKE_E - 3
     end
     return RAKE_E - player.talentRank('Ferocity')
+end
+
+function macroTorch.computeRake_Duration()
+    local rakeDuration = 9
+    if macroTorch.player.isRelicEquipped('Idol of Savagery') then
+        rakeDuration = rakeDuration * 0.9
+    end
+    return rakeDuration
 end
 
 function macroTorch.computeTiger_E()
@@ -392,7 +404,10 @@ end
 
 function macroTorch.cp5Bite(comboPoints)
     if comboPoints == 5 and (macroTorch.target.isImmune('Rip') or macroTorch.isRipPresent()) then
-        macroTorch.energyDischargeBeforeBite()
+        -- only discharge enerty when rip time left is greater then 1.5s
+        if macroTorch.ripLeft() > 1.5 then
+            macroTorch.energyDischargeBeforeBite()
+        end
         macroTorch.safeBite()
     end
 end
@@ -400,7 +415,10 @@ end
 -- for ooc only
 function macroTorch.cp5ReadyBite(comboPoints)
     if comboPoints == 5 and (macroTorch.target.isImmune('Rip') or macroTorch.isRipPresent()) then
-        macroTorch.energyDischargeBeforeBite()
+        -- only discharge enerty when rip time left is greater then 1.5s
+        if macroTorch.ripLeft() > 1.5 then
+            macroTorch.energyDischargeBeforeBite()
+        end
         macroTorch.readyBite()
     end
 end
@@ -659,6 +677,10 @@ function macroTorch.ripLeft()
     local ripDur = macroTorch.RIP_DURATION
     if macroTorch.context.lastRipAtCp then
         ripDur = 10 + (macroTorch.context.lastRipAtCp - 1) * 2
+    end
+    -- if Savagery idol equipped, reduce rip duration by 10%
+    if macroTorch.player.isRelicEquipped('Idol of Savagery') then
+        ripDur = ripDur * 0.9
     end
     local ripLeft = ripDur - (GetTime() - lastLandedRipTime)
     if ripLeft < 0 then
