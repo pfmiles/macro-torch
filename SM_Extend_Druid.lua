@@ -405,7 +405,7 @@ end
 function macroTorch.cp5Bite(comboPoints)
     if comboPoints == 5 and (macroTorch.target.isImmune('Rip') or macroTorch.isRipPresent()) then
         -- only discharge enerty when rip time left is greater then 1.5s
-        if macroTorch.ripLeft() > 1.5 then
+        if macroTorch.ripLeft() > 1.2 then
             macroTorch.energyDischargeBeforeBite()
         end
         macroTorch.safeBite()
@@ -416,7 +416,7 @@ end
 function macroTorch.cp5ReadyBite(comboPoints)
     if comboPoints == 5 and (macroTorch.target.isImmune('Rip') or macroTorch.isRipPresent()) then
         -- only discharge enerty when rip time left is greater then 1.5s
-        if macroTorch.ripLeft() > 1.5 then
+        if macroTorch.ripLeft() > 1.2 then
             macroTorch.energyDischargeBeforeBite()
         end
         macroTorch.readyBite()
