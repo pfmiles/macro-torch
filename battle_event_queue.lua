@@ -160,15 +160,31 @@ if not macroTorch.periodicTasks then
 end
 function macroTorch.onPeriodicUpdate()
     -- on periodic update
-    for _, task in pairs(macroTorch.periodicTasks) do
+    for name, task in pairs(macroTorch.periodicTasks) do
         if GetTime() - frame.lastUpdate >= task.interval then
-            task.task()
+            if not task.times or task.times > 0 then
+                if task.times then
+                    task.times = task.times - 1
+                end
+                task.task()
+            else
+                macroTorch.removePeriodicTask(name)
+            end
         end
     end
 end
 
 function macroTorch.registerPeriodicTask(name, task)
     macroTorch.periodicTasks[name] = task
+end
+
+function macroTorch.removePeriodicTask(name)
+    macroTorch.periodicTasks[name] = nil
+end
+
+-- sets a function to run specified times with specified interval
+function macroTorch.setRepeat(name, interval, times, func)
+    macroTorch.registerPeriodicTask(name, { interval = interval, times = times, task = func })
 end
 
 frame:SetScript("OnUpdate", function()
