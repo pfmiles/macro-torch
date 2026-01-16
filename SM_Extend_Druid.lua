@@ -204,16 +204,7 @@ function macroTorch.catAtk(rough, speedRun)
 
         -- 7.oocMod: 没有前行且ooc 或 前行但目标正在攻击我
         if (not prowling or target.isAttackingMe) and ooc then
-            macroTorch.tryBiteKillshot(comboPoints)
-            macroTorch.cp5ReadyBite(comboPoints)
-            -- no shred/claw at cp5 when ooc
-            if comboPoints < 5 then
-                if isBehind and not player.isBehindAttackJustFailed and not rough then
-                    macroTorch.readyShred()
-                else
-                    macroTorch.readyClaw()
-                end
-            end
+            macroTorch.oocMod(rough, isBehind, comboPoints)
         end
         -- 6.termMod: term on rip or killshot
         macroTorch.termMod(comboPoints)
@@ -386,7 +377,7 @@ function macroTorch.otMod(player, prowling, ooc, berserk, comboPoints)
         or not macroTorch.player.isInGroup then
         return
     end
-    if (target.isAttackingMe or player.threatPercent > 97) and not player.isSpellReady('Cower') and target.classification == 'worldboss' then
+    if target.isAttackingMe and not player.isSpellReady('Cower') and target.classification == 'worldboss' then
         player.use('Invulnerability Potion', true)
     end
     if macroTorch.canDoReshift(player, prowling, ooc, berserk) then
@@ -404,22 +395,12 @@ end
 
 function macroTorch.cp5Bite(comboPoints)
     if comboPoints == 5 and (macroTorch.target.isImmune('Rip') or macroTorch.isRipPresent()) then
-        -- only discharge enerty when rip time left is greater then 1.5s
-        if macroTorch.ripLeft() > 1.2 then
+        -- only discharge enerty when rip time left is greater then 1.8s
+        local leftLimit = 1.8
+        if not ((macroTorch.isRipPresent() and macroTorch.ripLeft() <= leftLimit)) then
             macroTorch.energyDischargeBeforeBite()
         end
         macroTorch.safeBite()
-    end
-end
-
--- for ooc only
-function macroTorch.cp5ReadyBite(comboPoints)
-    if comboPoints == 5 and (macroTorch.target.isImmune('Rip') or macroTorch.isRipPresent()) then
-        -- only discharge enerty when rip time left is greater then 1.5s
-        if macroTorch.ripLeft() > 1.2 then
-            macroTorch.energyDischargeBeforeBite()
-        end
-        macroTorch.readyBite()
     end
 end
 
@@ -435,6 +416,20 @@ function macroTorch.energyDischargeBeforeBite()
         macroTorch.safeShred()
     elseif macroTorch.player.mana >= macroTorch.BITE_E + macroTorch.CLAW_E then
         macroTorch.safeClaw()
+    end
+end
+
+function macroTorch.oocMod(rough, isBehind, comboPoints)
+    macroTorch.tryBiteKillshot(comboPoints)
+    if comboPoints < 5 then
+        if isBehind and not macroTorch.player.isBehindAttackJustFailed and not rough then
+            macroTorch.readyShred()
+        else
+            macroTorch.readyClaw()
+        end
+    else
+        -- cp5 bite when ooc
+        macroTorch.cp5Bite(comboPoints)
     end
 end
 
