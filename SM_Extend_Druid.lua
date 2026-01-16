@@ -786,12 +786,12 @@ function macroTorch.safeRake()
         macroTorch.show('Doing rake now! Rake present: ' ..
             tostring(macroTorch.target.hasBuff('Ability_Druid_Disembowel')) ..
             ', rake left: ' .. macroTorch.rakeLeft())
-        if macroTorch.player.hasItem('Idol of Savagery') then
-            macroTorch.player.ensureRelicEquipped('Idol of Savagery')
-            macroTorch.player.cast('Rake')
-        else
-            macroTorch.player.cast('Rake')
-        end
+        -- if macroTorch.player.hasItem('Idol of Savagery') then
+        --     macroTorch.player.ensureRelicEquipped('Idol of Savagery')
+        --     macroTorch.player.cast('Rake')
+        -- else
+        macroTorch.player.cast('Rake')
+        -- end
         return true
     end
     return false
