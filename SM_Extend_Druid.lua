@@ -93,6 +93,121 @@ function macroTorch.Druid:new()
         macroTorch.equipItem(relicName, 18)
     end
 
+    --- The 'E' key regular dps function for feral cat druid
+    --- if rough, then no back attacks
+    function obj.catAtk(rough, speedRun)
+        macroTorch.POUNCE_E = 50
+        macroTorch.CLAW_E = macroTorch.computeClaw_E()
+        macroTorch.SHRED_E = macroTorch.computeShred_E()
+        macroTorch.RAKE_E = macroTorch.computeRake_E()
+        macroTorch.BITE_E = 35
+        macroTorch.RIP_E = 30
+        macroTorch.TIGER_E = macroTorch.computeTiger_E()
+
+        macroTorch.TIGER_DURATION = macroTorch.computeTiger_Duration()
+        macroTorch.RIP_DURATION = 18
+        macroTorch.RAKE_DURATION = macroTorch.computeRake_Duration()
+        macroTorch.FF_DURATION = 40
+        macroTorch.POUNCE_DURATION = 18
+
+        macroTorch.AUTO_TICK_ERPS = 20 / 2
+        macroTorch.TIGER_ERPS = 10 / 3
+        macroTorch.RAKE_ERPS = 5 / 3
+        macroTorch.RIP_ERPS = 5 / 2
+        macroTorch.POUNCE_ERPS = 5 / 3
+        macroTorch.BERSERK_ERPS = 20 / 2
+
+        macroTorch.COWER_THREAT_THRESHOLD = 75
+        macroTorch.RESHIFT_ENERGY = 60
+        macroTorch.RESHIFT_E_DIFF_THRESHOLD = 0
+        macroTorch.PLAYER_URGENT_HP_THRESHOLD = 10
+
+        local player = macroTorch.player
+        local target = macroTorch.target
+        local prowling = player.isProwling
+        local berserk = player.isBerserk
+        local comboPoints = player.comboPoints
+        local ooc = player.isOoc
+        local isBehind = target.isCanAttack and player.isBehindTarget
+
+        -- 0.idol dance
+        macroTorch.idolDance()
+
+        -- 1.health & mana saver in combat *
+        if macroTorch.isFightStarted(prowling) then
+            macroTorch.combatUrgentHPRestore()
+            -- macroTorch.useItemIfManaPercentLessThan(p, 20, 'Mana Potion') TODO 由于cat形态下无法读取真正的mana，因此这里暂时作废
+        end
+        -- 2.targetEnemy *
+        if not target.isCanAttack then
+            player.targetEnemy()
+        else
+            -- 3.keep autoAttack, in combat & not prowling *
+            if macroTorch.isFightStarted(prowling) then
+                player.startAutoAtk()
+                if speedRun then
+                    macroTorch.keepSpeedRunBuffs()
+                end
+            end
+            -- 4.rushMod, incuding trinckets, berserk and potions *
+            if IsShiftKeyDown() then
+                if not berserk then
+                    player.cast('Berserk')
+                end
+                -- juju flurry
+                if not player.hasBuff('INV_Misc_MonsterScales_17') and not player.isFormActive('Dire Bear Form') then
+                    if player.hasItem('Juju Flurry') and not target.isPlayerControlled then
+                        player.use('Juju Flurry', true)
+                    end
+                end
+                macroTorch.atkPowerBurst()
+            end
+            -- roughly bear form logic branch
+            if player.isFormActive('Dire Bear Form') then
+                macroTorch.bearAtk()
+                return
+            end
+            -- 5.starterMod
+            if prowling then
+                if not rough then
+                    if not target.isImmune('Pounce') and target.health >= 1500 then
+                        macroTorch.safePounce()
+                    else
+                        player.cast('Ravage')
+                    end
+                else
+                    macroTorch.safeClaw()
+                end
+            end
+
+            -- 7.oocMod: 没有前行且ooc 或 前行但目标正在攻击我
+            if (not prowling or target.isAttackingMe) and ooc then
+                macroTorch.oocMod(rough, isBehind, comboPoints)
+            end
+            -- 6.termMod: term on rip or killshot
+            macroTorch.termMod(comboPoints)
+            -- 8.OT mod
+            macroTorch.otMod(player, prowling, ooc, berserk, comboPoints)
+            -- 9.combatBuffMod - tiger's fury *
+            macroTorch.keepTigerFury()
+            -- 10.debuffMod, including rip, rake and FF
+            if macroTorch.isTrivialBattleOrPvp() then
+                -- no need to do deep rip when pvp
+                macroTorch.quickKeepRip(comboPoints, prowling)
+            else
+                macroTorch.keepRip(comboPoints, prowling)
+            end
+            macroTorch.keepRake(comboPoints, prowling)
+            macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
+            -- 11.regular attack tech mod
+            if macroTorch.isFightStarted(prowling) and comboPoints < 5 and (macroTorch.isRakePresent() or target.isImmune('Rake')) then
+                macroTorch.regularAttack(isBehind, rough)
+            end
+            -- 12.energy res mod
+            macroTorch.reshiftMod(player, prowling, ooc, berserk)
+        end
+    end
+
     return obj
 end
 
@@ -116,117 +231,19 @@ macroTorch.DRUID_FIELD_FUNC_MAP = {
 
 macroTorch.druid = macroTorch.Druid:new()
 
---- The 'E' key regular dps function for feral cat druid
---- if rough, then no back attacks
-function macroTorch.catAtk(rough, speedRun)
-    local p = 'player'
-    local t = 'target'
-    macroTorch.POUNCE_E = 50
-    macroTorch.CLAW_E = macroTorch.computeClaw_E()
-    macroTorch.SHRED_E = macroTorch.computeShred_E()
-    macroTorch.RAKE_E = macroTorch.computeRake_E()
-    macroTorch.BITE_E = 35
-    macroTorch.RIP_E = 30
-    macroTorch.TIGER_E = macroTorch.computeTiger_E()
-
-    macroTorch.TIGER_DURATION = macroTorch.computeTiger_Duration()
-    macroTorch.RIP_DURATION = 18
-    macroTorch.RAKE_DURATION = macroTorch.computeRake_Duration()
-    macroTorch.FF_DURATION = 40
-    macroTorch.POUNCE_DURATION = 18
-
-    macroTorch.AUTO_TICK_ERPS = 20 / 2
-    macroTorch.TIGER_ERPS = 10 / 3
-    macroTorch.RAKE_ERPS = 5 / 3
-    macroTorch.RIP_ERPS = 5 / 2
-    macroTorch.POUNCE_ERPS = 5 / 3
-    macroTorch.BERSERK_ERPS = 20 / 2
-
-    macroTorch.COWER_THREAT_THRESHOLD = 75
-    macroTorch.RESHIFT_ENERGY = 60
-    macroTorch.RESHIFT_E_DIFF_THRESHOLD = 0
-    macroTorch.PLAYER_URGENT_HP_THRESHOLD = 10
-
-    local player = macroTorch.player
-    local target = macroTorch.target
-    local prowling = player.isProwling
-    local berserk = player.isBerserk
-    local comboPoints = player.comboPoints
-    local ooc = player.isOoc
-    local isBehind = target.isCanAttack and player.isBehindTarget
-
-    -- 1.health & mana saver in combat *
-    if macroTorch.isFightStarted(prowling) then
-        macroTorch.combatUrgentHPRestore()
-        -- macroTorch.useItemIfManaPercentLessThan(p, 20, 'Mana Potion') TODO 由于cat形态下无法读取真正的mana，因此这里暂时作废
-    end
-    -- 2.targetEnemy *
-    if not target.isCanAttack then
-        player.targetEnemy()
+function macroTorch.idolDance()
+    if macroTorch.player.comboPoints == 5 then
+        if macroTorch.player.hasItem('Idol of Savagery')
+            and not macroTorch.target.isImmune('Rip')
+            and not macroTorch.isRipPresent()
+            and not macroTorch.target.willDieInSeconds(4)
+            and not macroTorch.isTrivialBattle() then
+            macroTorch.player.ensureRelicEquipped('Idol of Savagery')
+        end
     else
-        -- 3.keep autoAttack, in combat & not prowling *
-        if macroTorch.isFightStarted(prowling) then
-            player.startAutoAtk()
-            if speedRun then
-                macroTorch.keepSpeedRunBuffs()
-            end
+        if macroTorch.player.hasItem('Idol of Ferocity') then
+            macroTorch.player.ensureRelicEquipped('Idol of Ferocity')
         end
-        -- 4.rushMod, incuding trinckets, berserk and potions *
-        if IsShiftKeyDown() then
-            if not berserk then
-                player.cast('Berserk')
-            end
-            -- juju flurry
-            if not player.hasBuff('INV_Misc_MonsterScales_17') and not player.isFormActive('Dire Bear Form') then
-                if player.hasItem('Juju Flurry') and not target.isPlayerControlled then
-                    player.use('Juju Flurry', true)
-                end
-            end
-            macroTorch.atkPowerBurst()
-        end
-        -- roughly bear form logic branch
-        if player.isFormActive('Dire Bear Form') then
-            macroTorch.bearAtk()
-            return
-        end
-        -- 5.starterMod
-        if prowling then
-            if not rough then
-                if not target.isImmune('Pounce') and target.health >= 1500 then
-                    macroTorch.safePounce()
-                else
-                    player.cast('Ravage')
-                end
-            else
-                macroTorch.safeClaw()
-            end
-        end
-
-        -- 7.oocMod: 没有前行且ooc 或 前行但目标正在攻击我
-        if (not prowling or target.isAttackingMe) and ooc then
-            macroTorch.oocMod(rough, isBehind, comboPoints)
-        end
-        -- 6.termMod: term on rip or killshot
-        macroTorch.termMod(comboPoints)
-        -- 8.OT mod
-        macroTorch.otMod(player, prowling, ooc, berserk, comboPoints)
-        -- 9.combatBuffMod - tiger's fury *
-        macroTorch.keepTigerFury()
-        -- 10.debuffMod, including rip, rake and FF
-        if macroTorch.isTrivialBattleOrPvp() then
-            -- no need to do deep rip when pvp
-            macroTorch.quickKeepRip(comboPoints, prowling)
-        else
-            macroTorch.keepRip(comboPoints, prowling)
-        end
-        macroTorch.keepRake(comboPoints, prowling)
-        macroTorch.keepFF(ooc, player, comboPoints, prowling, berserk)
-        -- 11.regular attack tech mod
-        if macroTorch.isFightStarted(prowling) and comboPoints < 5 and (macroTorch.isRakePresent() or target.isImmune('Rake')) then
-            macroTorch.regularAttack(isBehind, rough)
-        end
-        -- 12.energy res mod
-        macroTorch.reshiftMod(player, prowling, ooc, berserk)
     end
 end
 
@@ -336,11 +353,13 @@ function macroTorch.regularAttack(isBehind, rough)
 end
 
 function macroTorch.isTrivialBattleOrPvp()
-    local player = macroTorch.player
-    local target = macroTorch.target
-    return target.isPlayerControlled or
-        -- if the target's max health is less than we attack 15s with 500dps each person
-        target.healthMax <= (player.mateNearMyTargetCount + 1) * 500 * 20
+    return macroTorch.target.isPlayerControlled or
+        macroTorch.isTrivialBattle()
+end
+
+function macroTorch.isTrivialBattle()
+    -- if the target's max health is less than we attack 15s with 500dps each person
+    return macroTorch.target.healthMax <= (macroTorch.player.mateNearMyTargetCount + 1) * 500 * 20
 end
 
 function macroTorch.combatUrgentHPRestore()
@@ -400,7 +419,11 @@ function macroTorch.cp5Bite(comboPoints)
         if not ((macroTorch.isRipPresent() and macroTorch.ripLeft() <= leftLimit)) then
             macroTorch.energyDischargeBeforeBite()
         end
-        macroTorch.safeBite()
+        if macroTorch.player.isOoc then
+            macroTorch.readyBite()
+        else
+            macroTorch.safeBite()
+        end
     end
 end
 
@@ -781,12 +804,7 @@ function macroTorch.safeRake()
         macroTorch.show('Doing rake now! Rake present: ' ..
             tostring(macroTorch.target.hasBuff('Ability_Druid_Disembowel')) ..
             ', rake left: ' .. macroTorch.rakeLeft())
-        -- if macroTorch.player.hasItem('Idol of Savagery') then
-        --     macroTorch.player.ensureRelicEquipped('Idol of Savagery')
-        --     macroTorch.player.cast('Rake')
-        -- else
         macroTorch.player.cast('Rake')
-        -- end
         return true
     end
     return false
@@ -798,12 +816,7 @@ function macroTorch.safeRip()
             tostring(macroTorch.player.comboPoints) ..
             ', rip present: ' ..
             tostring(macroTorch.target.hasBuff('Ability_GhoulFrenzy')) .. ', rip left: ' .. macroTorch.ripLeft())
-        if macroTorch.player.hasItem('Idol of Savagery') then
-            macroTorch.player.ensureRelicEquipped('Idol of Savagery')
-            macroTorch.player.cast('Rip')
-        else
-            macroTorch.player.cast('Rip')
-        end
+        macroTorch.player.cast('Rip')
         macroTorch.context.lastRipAtCp = macroTorch.player.comboPoints
         return true
     end
