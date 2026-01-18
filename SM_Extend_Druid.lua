@@ -56,7 +56,7 @@ function macroTorch.Druid:new()
 
         macroTorch.POUNCE_DURATION = 18
         macroTorch.TIGER_DURATION = macroTorch.computeTiger_Duration()
-        macroTorch.RAKE_DURATION = macroTorch.computeRake_Duration()
+        macroTorch.RAKE_DURATION = 9
         macroTorch.RIP_DURATION = 10
 
         macroTorch.show('POUNCE_E: ' ..
@@ -129,7 +129,7 @@ function macroTorch.Druid:new()
 
         clickContext.TIGER_DURATION = macroTorch.computeTiger_Duration()
         macroTorch.RIP_DURATION = 10
-        macroTorch.RAKE_DURATION = macroTorch.computeRake_Duration()
+        macroTorch.RAKE_DURATION = 9
         clickContext.FF_DURATION = 40
         clickContext.POUNCE_DURATION = 18
 
@@ -262,7 +262,7 @@ function macroTorch.idolDance(clickContext)
             if player.hasItem('Idol of Savagery')
                 and not target.isImmune('Rip')
                 and not macroTorch.isRipPresent(clickContext)
-                and not target.willDieInSeconds(4)
+                and not target.willDieInSeconds(20)
                 and not macroTorch.isTrivialBattle(clickContext) then
                 player.ensureRelicEquipped('Idol of Savagery')
             end
@@ -353,11 +353,15 @@ function macroTorch.consumeDruidBattleEvents()
         if GetComboPoints() > 0 then
             local clickContext = {}
             if macroTorch.isRakePresent(clickContext) then
-                macroTorch.show('Renewing rake...')
+                macroTorch.show('Renewing rake... left: ' ..
+                    tostring(macroTorch.rakeLeft(clickContext)) ..
+                    ', bleed idol: ' .. tostring(macroTorch.context.lastRakeEquippedSavagery))
                 macroTorch.recordCastTable('Rake')
             end
             if macroTorch.isRipPresent(clickContext) then
-                macroTorch.show('Renewing rip...')
+                macroTorch.show('Renewing rip... left: ' ..
+                    tostring(macroTorch.ripLeft(clickContext)) ..
+                    ', bleed idol: ' .. tostring(macroTorch.context.lastRipEquippedSavagery))
                 macroTorch.recordCastTable('Rip')
             end
         end
@@ -452,8 +456,7 @@ end
 function macroTorch.cp5Bite(clickContext)
     if clickContext.comboPoints == 5 and (macroTorch.target.isImmune('Rip') or macroTorch.isRipPresent(clickContext)) then
         -- only discharge enerty when rip time left is greater then 1.8s
-        local leftLimit = 1.8
-        if not ((macroTorch.isRipPresent(clickContext) and macroTorch.ripLeft(clickContext) <= leftLimit)) then
+        if not ((macroTorch.isRipPresent(clickContext) and macroTorch.ripLeft(clickContext) <= 1.8)) then
             macroTorch.energyDischargeBeforeBite(clickContext)
         end
         if clickContext.ooc then
@@ -467,14 +470,17 @@ end
 -- 撕咬前的泄能逻辑: 当前多余能量用作撕咬加成不划算，将其拆成2个技能使用
 function macroTorch.energyDischargeBeforeBite(clickContext)
     if clickContext.ooc then
+        -- macroTorch.show('Discharging before bite(ooc), rip left: ' .. macroTorch.ripLeft(clickContext))
         if clickContext.isBehind then
             macroTorch.readyShred(clickContext)
         else
             macroTorch.readyClaw(clickContext)
         end
     elseif macroTorch.player.mana >= clickContext.BITE_E + clickContext.SHRED_E and clickContext.isBehind then
+        -- macroTorch.show('Discharging before bite, rip left: ' .. macroTorch.ripLeft(clickContext))
         macroTorch.safeShred(clickContext)
     elseif macroTorch.player.mana >= clickContext.BITE_E + clickContext.CLAW_E then
+        -- macroTorch.show('Discharging before bite, rip left: ' .. macroTorch.ripLeft(clickContext))
         macroTorch.safeClaw(clickContext)
     end
 end
@@ -619,10 +625,15 @@ function macroTorch.canDoReshift(clickContext)
     if not macroTorch.player.isInCombat or clickContext.prowling or clickContext.ooc then
         return false
     end
-    local diff = clickContext.RESHIFT_ENERGY - clickContext.TIGER_E - macroTorch.player.mana -
-        (macroTorch.computeErps(clickContext) * 1.5)
+    return macroTorch.computeReshiftEarning(clickContext) > clickContext.RESHIFT_E_DIFF_THRESHOLD
+end
 
-    return diff > clickContext.RESHIFT_E_DIFF_THRESHOLD
+function macroTorch.computeReshiftEarning(clickContext)
+    if clickContext.computeReshiftEarning == nil then
+        clickContext.computeReshiftEarning = clickContext.RESHIFT_ENERGY - clickContext.TIGER_E - macroTorch.player.mana -
+            (macroTorch.computeErps(clickContext) * 1.5)
+    end
+    return clickContext.computeReshiftEarning
 end
 
 -- tiger fury when near
@@ -743,7 +754,7 @@ function macroTorch.ripLeft(clickContext)
                 ripDur = ripDur + (macroTorch.context.lastRipAtCp - 1) * 2
             end
             -- if Savagery idol equipped, reduce rip duration by 10%
-            if macroTorch.player.isRelicEquipped('Idol of Savagery') then
+            if macroTorch.context.lastRipEquippedSavagery then
                 ripDur = ripDur * 0.9
             end
             local ripLeft = ripDur - (GetTime() - lastLandedRipTime)
@@ -770,7 +781,11 @@ function macroTorch.rakeLeft(clickContext)
         if not lastLandedRakeTime then
             clickContext.rakeLeft = 0
         else
-            local rakeLeft = macroTorch.RAKE_DURATION - (GetTime() - lastLandedRakeTime)
+            local rakeDuration = macroTorch.RAKE_DURATION
+            if macroTorch.context.lastRakeEquippedSavagery then
+                rakeDuration = rakeDuration * 0.9
+            end
+            local rakeLeft = rakeDuration - (GetTime() - lastLandedRakeTime)
             if rakeLeft < 0 then
                 rakeLeft = 0
             end
@@ -831,7 +846,9 @@ end
 function macroTorch.readyReshift(clickContext)
     if macroTorch.player.isSpellReady('Reshift') then
         macroTorch.show('Reshift!!! energy = ' ..
-            macroTorch.player.mana .. ', tigerLeft = ' .. macroTorch.tigerLeft(clickContext))
+            macroTorch.player.mana ..
+            ', earning: ' ..
+            macroTorch.computeReshiftEarning(clickContext) .. ', tigerLeft = ' .. macroTorch.tigerLeft(clickContext))
         macroTorch.player.cast('Reshift')
         return true
     end
@@ -864,9 +881,11 @@ end
 
 function macroTorch.safeRake(clickContext)
     if macroTorch.player.isSpellReady('Rake') and macroTorch.isGcdOk(clickContext) and macroTorch.player.mana >= clickContext.RAKE_E and macroTorch.isNearBy(clickContext) then
-        macroTorch.show('Doing rake now! Rake present: ' ..
-            tostring(macroTorch.target.hasBuff('Ability_Druid_Disembowel')) ..
-            ', rake left: ' .. macroTorch.rakeLeft(clickContext))
+        macroTorch.show('Rake!!! Rake present: ' ..
+            tostring(macroTorch.isRakePresent(clickContext)) ..
+            ', bleed idol equipped: ' ..
+            tostring(macroTorch.player.isRelicEquipped('Idol of Savagery')))
+        macroTorch.context.lastRakeEquippedSavagery = macroTorch.player.isRelicEquipped('Idol of Savagery')
         macroTorch.player.cast('Rake')
         return true
     end
@@ -875,11 +894,13 @@ end
 
 function macroTorch.safeRip(clickContext)
     if macroTorch.player.isSpellReady('Rip') and macroTorch.isGcdOk(clickContext) and macroTorch.player.mana >= clickContext.RIP_E and macroTorch.isNearBy(clickContext) then
-        macroTorch.show('Ripped at combo points: ' ..
-            tostring(macroTorch.player.comboPoints) ..
+        macroTorch.show('Rip!!! At cp: ' ..
+            tostring(clickContext.comboPoints) ..
             ', rip present: ' ..
-            tostring(macroTorch.target.hasBuff('Ability_GhoulFrenzy')) ..
-            ', rip left: ' .. macroTorch.ripLeft(clickContext))
+            tostring(macroTorch.isRipPresent(clickContext)) ..
+            ', bleed idol equipped: ' ..
+            tostring(macroTorch.player.isRelicEquipped('Idol of Savagery')))
+        macroTorch.context.lastRipEquippedSavagery = macroTorch.player.isRelicEquipped('Idol of Savagery')
         macroTorch.player.cast('Rip')
         macroTorch.context.lastRipAtCp = clickContext.comboPoints
         return true
@@ -909,9 +930,11 @@ end
 
 function macroTorch.safeFF(clickContext)
     if macroTorch.player.isSpellReady('Faerie Fire (Feral)') and macroTorch.isGcdOk(clickContext) then
-        -- macroTorch.show('FF present: ' ..
-        --     tostring(macroTorch.isFFPresent()) ..
-        --     ', FF left: ' .. macroTorch.ffLeft() .. ', doing FF now!')
+        macroTorch.show('FF!!! FF present: ' ..
+            tostring(macroTorch.isFFPresent(clickContext)) ..
+            ', FF left: ' ..
+            tostring(macroTorch.ffLeft(clickContext)) ..
+            ', at energy: ' .. macroTorch.player.mana .. ', cp: ' .. clickContext.comboPoints)
         macroTorch.player.cast('Faerie Fire (Feral)')
         macroTorch.context.ffTimer = GetTime()
         return true
@@ -921,9 +944,9 @@ end
 
 function macroTorch.safeTigerFury(clickContext)
     if macroTorch.player.isSpellReady('Tiger\'s Fury') and macroTorch.tigerSelfGCD(clickContext) == 0 and macroTorch.player.mana >= clickContext.TIGER_E then
-        -- macroTorch.show('Tiger\'s Fury present: ' ..
-        --     tostring(macroTorch.isTigerPresent()) ..
-        --     ', tiger left: ' .. macroTorch.tigerLeft() .. ', doing tiger fury now!')
+        -- macroTorch.show('Tiger!!! Tiger present: ' ..
+        --     tostring(macroTorch.isTigerPresent(clickContext)) ..
+        --     ', tiger left: ' .. macroTorch.tigerLeft(clickContext))
         macroTorch.player.cast('Tiger\'s Fury')
         macroTorch.context.tigerTimer = GetTime()
         return true
