@@ -153,8 +153,8 @@ function macroTorch.Druid:new()
         clickContext.ooc = player.isOoc
         clickContext.isBehind = target.isCanAttack and player.isBehindTarget
 
-        -- 0.idol dance
-        macroTorch.idolDance(clickContext)
+        -- 0.idol recover
+        macroTorch.recoverNormalRelic(clickContext, 'Idol of Ferocity')
 
         -- 1.health & mana saver in combat *
         if macroTorch.isFightStarted(clickContext) then
@@ -204,7 +204,7 @@ function macroTorch.Druid:new()
             end
 
             -- 7.oocMod: 没有前行且ooc 或 前行但目标正在攻击我
-            if (not clickContext.prowling or target.isAttackingMe) and clickContext.ooc then
+            if not clickContext.prowling or target.isAttackingMe then
                 macroTorch.oocMod(clickContext)
             end
             -- 6.termMod: term on rip or killshot
@@ -254,23 +254,17 @@ macroTorch.DRUID_FIELD_FUNC_MAP = {
 
 macroTorch.druid = macroTorch.Druid:new()
 
-function macroTorch.idolDance(clickContext)
+function macroTorch.recoverNormalRelic(clickContext, relicName)
     local player = macroTorch.player
-    local target = macroTorch.target
-    if macroTorch.player.isFormActive('Cat Form') then
-        if clickContext.comboPoints == 5 then
-            if player.hasItem('Idol of Savagery')
-                and not target.isImmune('Rip')
-                and not macroTorch.isRipPresent(clickContext)
-                and not target.willDieInSeconds(20)
-                and not macroTorch.isTrivialBattle(clickContext) then
-                player.ensureRelicEquipped('Idol of Savagery')
-            end
-        else
-            if player.hasItem('Idol of Ferocity') then
-                player.ensureRelicEquipped('Idol of Ferocity')
-            end
-        end
+    if not player.isFormActive('Cat Form') then
+        return
+    end
+    if not player.hasItem(relicName) or player.isRelicEquipped(relicName) then
+        return
+    end
+    if not macroTorch.isFightStarted(clickContext) or (clickContext.comboPoints < 5 and not clickContext.ooc and player.mana + (macroTorch.computeErps(clickContext) * 3) < 100) then
+        macroTorch.show('Recovering normal relic at energy: ' .. player.mana)
+        macroTorch.player.ensureRelicEquipped(relicName)
     end
 end
 
@@ -392,7 +386,7 @@ end
 function macroTorch.isTrivialBattle(clickContext)
     if clickContext.isTrivialBattle == nil then
         -- if the target's max health is less than we attack 15s with 500dps each person
-        clickContext.isTrivialBattle = macroTorch.target.healthMax <=
+        clickContext.isTrivialBattle = macroTorch.target.willDieInSeconds(20) or macroTorch.target.healthMax <=
             (macroTorch.player.mateNearMyTargetCount + 1) * 500 * 20
     end
     return clickContext.isTrivialBattle
@@ -471,12 +465,8 @@ end
 function macroTorch.energyDischargeBeforeBite(clickContext)
     if clickContext.ooc then
         -- macroTorch.show('Discharging before bite(ooc), rip left: ' .. macroTorch.ripLeft(clickContext))
-        if clickContext.isBehind then
-            macroTorch.readyShred(clickContext)
-        else
-            macroTorch.readyClaw(clickContext)
-        end
-    elseif macroTorch.player.mana >= clickContext.BITE_E + clickContext.SHRED_E and clickContext.isBehind then
+        macroTorch.doDischargeEnergy(clickContext)
+    elseif macroTorch.player.mana >= clickContext.BITE_E + clickContext.SHRED_E and clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed and not clickContext.rough then
         -- macroTorch.show('Discharging before bite, rip left: ' .. macroTorch.ripLeft(clickContext))
         macroTorch.safeShred(clickContext)
     elseif macroTorch.player.mana >= clickContext.BITE_E + clickContext.CLAW_E then
@@ -486,16 +476,31 @@ function macroTorch.energyDischargeBeforeBite(clickContext)
 end
 
 function macroTorch.oocMod(clickContext)
+    if not clickContext.ooc then
+        return
+    end
     macroTorch.tryBiteKillshot(clickContext)
     if clickContext.comboPoints < 5 then
+        macroTorch.doDischargeEnergy(clickContext)
+    else
+        -- cp5 bite when ooc
+        macroTorch.cp5Bite(clickContext)
+    end
+end
+
+function macroTorch.doDischargeEnergy(clickContext)
+    if clickContext.ooc then
         if clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed and not clickContext.rough then
             macroTorch.readyShred(clickContext)
         else
             macroTorch.readyClaw(clickContext)
         end
     else
-        -- cp5 bite when ooc
-        macroTorch.cp5Bite(clickContext)
+        if clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed and not clickContext.rough then
+            macroTorch.safeShred(clickContext)
+        else
+            macroTorch.safeClaw(clickContext)
+        end
     end
 end
 
@@ -586,7 +591,7 @@ function macroTorch.tryBiteKillshot(clickContext)
         if clickContext.comboPoints > 0 then
             macroTorch.player.cast('Ferocious Bite')
         else
-            if macroTorch.player.isBehindTarget then
+            if clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed and not clickContext.rough then
                 macroTorch.safeShred(clickContext)
             end
             macroTorch.readyClaw(clickContext)
@@ -652,7 +657,31 @@ function macroTorch.keepRip(clickContext)
     if macroTorch.target.classification == 'worldboss' or macroTorch.target.isPlayerControlled then
         macroTorch.atkPowerBurst(clickContext)
     end
-    macroTorch.safeRip(clickContext)
+    -- if Savegery Idol not equipped, discharge energy before change
+    macroTorch.dischargeEnergyChangeRelicAndRip(clickContext, true)
+end
+
+-- energy discharge needed due to possible energy overflow before rip
+function macroTorch.dischargeEnergyChangeRelicAndRip(clickContext, equipSavagery)
+    if clickContext.ooc then
+        -- macroTorch.show('Discharging before bite(ooc), rip left: ' .. macroTorch.ripLeft(clickContext))
+        macroTorch.doDischargeEnergy(clickContext)
+    elseif equipSavagery and macroTorch.player.hasItem('Idol of Savagery') and not macroTorch.player.isRelicEquipped('Idol of Savagery') then
+        -- discharge energy if overflows
+        if macroTorch.player.mana + (macroTorch.computeErps(clickContext) * 1.5) - clickContext.RIP_E >= 100 then
+            macroTorch.doDischargeEnergy(clickContext)
+        else
+            -- macroTorch.show('Switching relic: Idol of Savagery')
+            macroTorch.player.ensureRelicEquipped('Idol of Savagery')
+        end
+    else
+        if macroTorch.player.mana + macroTorch.computeErps(clickContext) - clickContext.RIP_E >= 100 then
+            -- discharge if energy overflows
+            macroTorch.doDischargeEnergy(clickContext)
+        else
+            macroTorch.safeRip(clickContext)
+        end
+    end
 end
 
 -- originates from keepRip, but no need to rip at 5cp
@@ -665,7 +694,7 @@ function macroTorch.quickKeepRip(clickContext)
     if macroTorch.target.classification == 'worldboss' or macroTorch.target.isPlayerControlled then
         macroTorch.atkPowerBurst(clickContext)
     end
-    macroTorch.safeRip(clickContext)
+    macroTorch.dischargeEnergyChangeRelicAndRip(clickContext, false)
 end
 
 function macroTorch.keepRake(clickContext)
