@@ -262,8 +262,8 @@ function macroTorch.recoverNormalRelic(clickContext, relicName)
     if not player.hasItem(relicName) or player.isRelicEquipped(relicName) then
         return
     end
-    if not macroTorch.isFightStarted(clickContext) or (clickContext.comboPoints < 5 and not clickContext.ooc and player.mana + (macroTorch.computeErps(clickContext) * 3) < 100) then
-        macroTorch.show('Recovering normal relic at energy: ' .. player.mana)
+    if not macroTorch.isFightStarted(clickContext) or (clickContext.comboPoints < 5 and not clickContext.ooc and player.mana + (macroTorch.computeErps(clickContext) * 2.5) <= 100) then
+        -- macroTorch.show('Recovering normal relic at energy: ' .. player.mana)
         macroTorch.player.ensureRelicEquipped(relicName)
     end
 end
@@ -472,6 +472,8 @@ function macroTorch.energyDischargeBeforeBite(clickContext)
     elseif macroTorch.player.mana >= clickContext.BITE_E + clickContext.CLAW_E then
         -- macroTorch.show('Discharging before bite, rip left: ' .. macroTorch.ripLeft(clickContext))
         macroTorch.safeClaw(clickContext)
+    elseif not macroTorch.isRakePresent(clickContext) and macroTorch.player.mana >= clickContext.BITE_E + clickContext.RAKE_E then
+        macroTorch.safeRake(clickContext)
     end
 end
 
@@ -667,16 +669,16 @@ function macroTorch.dischargeEnergyChangeRelicAndRip(clickContext, equipSavagery
         -- macroTorch.show('Discharging before bite(ooc), rip left: ' .. macroTorch.ripLeft(clickContext))
         macroTorch.doDischargeEnergy(clickContext)
     elseif equipSavagery and macroTorch.player.hasItem('Idol of Savagery') and not macroTorch.player.isRelicEquipped('Idol of Savagery') then
-        -- discharge energy if overflows
-        if macroTorch.player.mana + (macroTorch.computeErps(clickContext) * 1.5) - clickContext.RIP_E >= 100 then
+        -- discharge energy if overflows due to idol change, idol change need 1.5s + 1s(for perhaps ooc occured)
+        if macroTorch.player.mana + macroTorch.computeErps(clickContext) * 2.5 > 100 then
             macroTorch.doDischargeEnergy(clickContext)
         else
-            -- macroTorch.show('Switching relic: Idol of Savagery')
+            -- macroTorch.show('Switching relic: Idol of Savagery at energy: ' .. macroTorch.player.mana)
             macroTorch.player.ensureRelicEquipped('Idol of Savagery')
         end
     else
-        if macroTorch.player.mana + macroTorch.computeErps(clickContext) - clickContext.RIP_E >= 100 then
-            -- discharge if energy overflows
+        if macroTorch.player.mana + macroTorch.computeErps(clickContext) * 2 - clickContext.RIP_E > 100 then
+            -- discharge if energy overflows due to energy generation is faster than rip energy cost, 1s for rip gcd and 1s for passible ooc
             macroTorch.doDischargeEnergy(clickContext)
         else
             macroTorch.safeRip(clickContext)
