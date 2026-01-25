@@ -331,6 +331,7 @@ macroTorch.setSpellTracing(31018, 'Ferocious Bite')
 macroTorch.setTraceSpellImmune('Pounce', 'Ability_Druid_SupriseAttack')
 macroTorch.setTraceSpellImmune('Rake', 'Ability_Druid_Disembowel')
 macroTorch.setTraceSpellImmune('Rip', 'Ability_GhoulFrenzy')
+macroTorch.setTraceSpellImmune('Faerie Fire (Feral)', 'Spell_Nature_FaerieFire')
 
 -- 职业特定的天赋行为需要自己追踪
 function macroTorch.consumeDruidBattleEvents()
@@ -965,7 +966,7 @@ function macroTorch.safeFF(clickContext)
             tostring(macroTorch.isFFPresent(clickContext)) ..
             ', FF left: ' ..
             tostring(macroTorch.ffLeft(clickContext)) ..
-            ', at energy: ' .. macroTorch.player.mana .. ', cp: ' .. clickContext.comboPoints)
+            ', at energy: ' .. macroTorch.player.mana .. ', cp: ' .. tostring(clickContext.comboPoints))
         macroTorch.player.cast('Faerie Fire (Feral)')
         macroTorch.context.ffTimer = GetTime()
         return true
@@ -1103,6 +1104,8 @@ end
 
 function macroTorch.bearAtk()
     local clickContext = {}
+    clickContext.FF_DURATION = 40
+
     if not macroTorch.player.isFormActive('Dire Bear Form') then
         return
     end
@@ -1133,6 +1136,8 @@ function macroTorch.bearAtk()
             player.cast('Growl')
         elseif player.isSpellReady('Challenging Roar') then
             player.cast('Challenging Roar')
+        elseif player.isSpellReady('Savage Bite') then
+            player.cast('Savage Bite')
         end
     end
     -- ff when nothing to do
