@@ -66,37 +66,59 @@ function macroTorch.listAllSpells(bookType)
     end
 end
 
--- toggle auto attack status
-function macroTorch.toggleAutoAtk(start)
-    for i = 1, 172 do
-        local a = GetActionTexture(i)
-        if a and IsAttackAction(i) and not ActionHasRange(i) then
-            local isCur = IsCurrentAction(i)
-            if (start and not isCur) or (not start and isCur) then
-                UseAction(i)
+-- get the action slot index of which the melee attack action be placed in
+function macroTorch.findAttackActionSlot()
+    if not macroTorch.context then
+        macroTorch.context = {}
+    end
+    if not macroTorch.context.attackSlot then
+        for i = 1, 120 do
+            if GetActionTexture(i) and IsAttackAction(i) and not ActionHasRange(i) then
+                macroTorch.context.attackSlot = i
+                break
             end
-            return
         end
     end
-    macroTorch.show(
-        "ERROR: No attack action found in any of the action slots, please place \"Attack\" action in any action slot!")
+    if not macroTorch.context.attackSlot then
+        macroTorch.show(
+            "Couldn't find attack action in any of your action slot. Place it in any of the action slots plz.", 'red')
+        return false
+    end
+    return macroTorch.context.attackSlot
 end
 
-local RANGED_WEAPON_KEYWORDS = { 'Weapon', 'Staff' }
--- start auto shoot, this requires ranged weapon action be placed in any of the action slots
-function macroTorch.toggleAutoShoot(start)
-    for i = 1, 172 do
-        local a = GetActionTexture(i)
-        if a and macroTorch.containsAnyKeyword(a, RANGED_WEAPON_KEYWORDS) and ActionHasRange(i) then
-            local isCur = IsCurrentAction(i)
-            if (start and not isCur) or (not start and isCur) then
-                UseAction(i)
-            end
-            return
+function macroTorch.getRangedWeaponTexture()
+    local slotId, _ = GetInventorySlotInfo("RangedSlot")
+    return GetInventoryItemTexture("player", slotId)
+end
+
+-- find the action slot index of which the shoot action be placed in
+function macroTorch.findAutoShootActionSlot()
+    local texture = macroTorch.getRangedWeaponTexture()
+    if texture then
+        if macroTorch.context.autoShootSlot then
+            return macroTorch.context.autoShootSlot
         end
+
+        for i = 1, 120 do
+            if (not GetActionText(i)) then        -- ignore any Player macros :-)
+                if (not IsEquippedAction(i)) then -- ignore any equip macros :-)
+                    if (ActionHasRange(i) and GetActionTexture(i) == texture) then
+                        macroTorch.context.autoShootSlot = i
+                        break
+                    end
+                end
+            end
+        end
+
+        if (not macroTorch.context.autoShootSlot) then
+            macroTorch.show('Could not find auto shoot action in any of your action slots, place it in one of them plz.',
+                'red')
+        end
+    else
+        macroTorch.context.autoShootSlot = nil
     end
-    macroTorch.show(
-        "ERROR: No ranged weapon action found in any of the action slots, please place \"Ranged Weapon(like bow or wand)\" action in any action slot!")
+    return macroTorch.context.autoShootSlot
 end
 
 function macroTorch.isSpellCooledDown(spellName, bookType)
