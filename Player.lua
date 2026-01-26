@@ -122,22 +122,30 @@ function macroTorch.Player:new()
 
     -- start auto attack, this requires "Attack" action be placed in any action slot
     function obj.startAutoAtk()
-        macroTorch.toggleAutoAtk(true)
+        if not obj.isAutoAttacking then
+            UseAction(macroTorch.findAttackActionSlot())
+        end
     end
 
     -- stop auto attack, this requires "Attack" action be placed in any action slot
     function obj.stopAutoAtk()
-        macroTorch.toggleAutoAtk(false)
+        if obj.isAutoAttacking then
+            UseAction(macroTorch.findAttackActionSlot())
+        end
     end
 
     -- start auto shoot, this requires ranged weapon action be placed in any of the action slots
     function obj.startAutoShoot()
-        macroTorch.toggleAutoShoot(true)
+        if not obj.isAutoShooting then
+            UseAction(macroTorch.findAutoShootActionSlot())
+        end
     end
 
     -- stop auto shoot, this requires ranged weapon action be placed in any of the action slots
     function obj.stopAutoShoot()
-        macroTorch.toggleAutoShoot(false)
+        if obj.isAutoShooting then
+            UseAction(macroTorch.findAutoShootActionSlot())
+        end
     end
 
     function obj.isSpellCooledDown(spellName)
@@ -228,6 +236,12 @@ macroTorch.PLAYER_FIELD_FUNC_MAP = {
     end,
     ['isInGroup'] = function(self)
         return (GetNumPartyMembers() or 0) > 0
+    end,
+    ['isAutoAttacking'] = function(self)
+        return (IsCurrentAction(macroTorch.findAttackActionSlot()) == 1)
+    end,
+    ['isAutoShooting'] = function(self)
+        return (IsAutoRepeatAction(macroTorch.findAutoShootActionSlot()) == 1)
     end,
     ['groupMemberCount'] = function(self)
         return GetNumPartyMembers() or 0

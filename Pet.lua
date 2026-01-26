@@ -30,9 +30,9 @@ function macroTorch.Pet:new()
     end
 
     -- PetStopAttack()   - Stop the attack of the pet.
-    function obj.stopAttack()
-        PetStopAttack()
-    end
+    -- function obj.stopAttack()
+    --     PetStopAttack()
+    -- end
 
     -- PetDefensiveMode()   - Set your pet in defensive mode.
     function obj.defensiveMode()

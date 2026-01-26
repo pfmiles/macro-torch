@@ -76,17 +76,38 @@ macroTorch.setTraceSpellImmuneByName('Serpent Sting', 'spell')
 function macroTorch.hunterAtk()
     local player = macroTorch.player
     local target = macroTorch.target
+    local pet = macroTorch.pet
     player.targetEnemy()
     if target.isCanAttack then
+        pet.attack()
         if target.distance < 8 then
+            -- melee logic
             player.startAutoAtk()
             macroTorch.safeRaptorStrike()
         else
+            -- ranged logic
             if not target.buffed(nil, 'Ability_Hunter_SniperShot') then
                 player.cast("Hunter's Mark")
             end
             player.startAutoShoot()
+            macroTorch.player.cast('Arcane Shot')
         end
+    end
+end
+
+function macroTorch.hunterSting()
+    local player = macroTorch.player
+    local target = macroTorch.target
+    if not target.buffed('Serpent Sting') and not target.isImmune('Serpent Sting') then
+        player.cast('Serpent Sting')
+    end
+end
+
+function macroTorch.hunterCtrl()
+    if macroTorch.target.distance < 8 then
+        macroTorch.player.cast('Wing Clip')
+    else
+        macroTorch.player.cast('Concussive Shot')
     end
 end
 
