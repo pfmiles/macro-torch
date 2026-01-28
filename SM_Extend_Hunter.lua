@@ -77,20 +77,31 @@ function macroTorch.hunterAtk()
     local player = macroTorch.player
     local target = macroTorch.target
     local pet = macroTorch.pet
+    local clickContext = {}
+    clickContext.RAPTOR_E = 32
+    clickContext.MONGOOSE_E = 28
+
+    clickContext.ARCANE_E = 35
+    clickContext.MULTI_E = 100
+
+    clickContext.prowling = player.buffed('Shadowmeld')
+
     player.targetEnemy()
-    if target.isCanAttack then
+    if target.isCanAttack and macroTorch.isFightStarted(clickContext) then
         pet.attack()
         if target.distance < 8 then
             -- melee logic
             player.startAutoAtk()
-            macroTorch.safeRaptorStrike()
+            macroTorch.safeMongooseBite(clickContext)
+            macroTorch.safeRaptorStrike(clickContext)
         else
             -- ranged logic
             if not target.buffed(nil, 'Ability_Hunter_SniperShot') then
                 player.cast("Hunter's Mark")
             end
             player.startAutoShoot()
-            macroTorch.player.cast('Arcane Shot')
+            macroTorch.safeArcaneShot(clickContext)
+            macroTorch.safeMultiShot(clickContext)
         end
     end
 end
@@ -111,17 +122,58 @@ function macroTorch.hunterCtrl()
     end
 end
 
-function macroTorch.readyRaptorStrike()
+function macroTorch.readyRaptorStrike(clickContext)
     local player = macroTorch.player
     if player.isSpellReady('Raptor Strike') then
         player.cast('Raptor Strike')
     end
 end
 
-function macroTorch.safeRaptorStrike()
+function macroTorch.safeRaptorStrike(clickContext)
     local player = macroTorch.player
-    local RAPTOR_E = 15
-    if player.mana >= RAPTOR_E then
-        macroTorch.readyRaptorStrike()
+    if player.mana >= clickContext.RAPTOR_E then
+        macroTorch.readyRaptorStrike(clickContext)
+    end
+end
+
+function macroTorch.readyMongooseBite(clickContext)
+    local player = macroTorch.player
+    if player.isSpellReady('Mongoose Bite') then
+        player.cast('Mongoose Bite')
+    end
+end
+
+function macroTorch.safeMongooseBite(clickContext)
+    local player = macroTorch.player
+    if player.mana >= clickContext.MONGOOSE_E then
+        macroTorch.readyMongooseBite(clickContext)
+    end
+end
+
+function macroTorch.readyArcaneShot(clickContext)
+    local player = macroTorch.player
+    if player.isSpellReady('Arcane Shot') then
+        player.cast('Arcane Shot')
+    end
+end
+
+function macroTorch.safeArcaneShot(clickContext)
+    local player = macroTorch.player
+    if player.mana >= clickContext.ARCANE_E then
+        macroTorch.readyArcaneShot(clickContext)
+    end
+end
+
+function macroTorch.readyMultiShot(clickContext)
+    local player = macroTorch.player
+    if player.isSpellReady('Multi-Shot') then
+        player.cast('Multi-Shot')
+    end
+end
+
+function macroTorch.safeMultiShot(clickContext)
+    local player = macroTorch.player
+    if player.mana >= clickContext.MULTI_E then
+        macroTorch.readyMultiShot(clickContext)
     end
 end
