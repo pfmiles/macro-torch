@@ -80,8 +80,9 @@ function macroTorch.hunterAtk()
     local clickContext = {}
     clickContext.RAPTOR_E = 32
     clickContext.MONGOOSE_E = 28
+    clickContext.DISENGAGE_E = 50
 
-    clickContext.ARCANE_E = 35
+    clickContext.ARCANE_E = 50
     clickContext.MULTI_E = 100
 
     clickContext.prowling = player.buffed('Shadowmeld')
@@ -89,6 +90,7 @@ function macroTorch.hunterAtk()
     player.targetEnemy()
     if target.isCanAttack and macroTorch.isFightStarted(clickContext) then
         pet.attack()
+        macroTorch.htOtMod(clickContext)
         if target.distance < 8 then
             -- melee logic
             player.startAutoAtk()
@@ -175,5 +177,42 @@ function macroTorch.safeMultiShot(clickContext)
     local player = macroTorch.player
     if player.mana >= clickContext.MULTI_E then
         macroTorch.readyMultiShot(clickContext)
+    end
+end
+
+function macroTorch.readyDisengage(clickContext)
+    local player = macroTorch.player
+    if player.isSpellReady('Disengage') then
+        player.cast('Disengage')
+    end
+end
+
+function macroTorch.safeDisengage(clickContext)
+    local player = macroTorch.player
+    if player.mana >= clickContext.DISENGAGE_E then
+        macroTorch.readyDisengage(clickContext)
+    end
+end
+
+function macroTorch.htOtMod(clickContext)
+    if string.find(macroTorch.target.name, 'Training Dummy') then
+        return
+    end
+    local player = macroTorch.player
+    local target = macroTorch.target
+    if not player.isInCombat
+        or not target.isInCombat
+        or clickContext.prowling
+        or target.willDieInSeconds(2)
+        or not target.isCanAttack
+        or target.isPlayerControlled
+        or not macroTorch.player.isInGroup then
+        return
+    end
+    if target.isAttackingMe and not player.isSpellReady('Disengage') and target.classification == 'worldboss' then
+        player.use('Invulnerability Potion', true)
+    end
+    if target.isAttackingMe or (target.classification == 'worldboss' and player.threatPercent >= macroTorch.COWER_THREAT_THRESHOLD) then
+        macroTorch.readyDisengage(clickContext)
     end
 end
