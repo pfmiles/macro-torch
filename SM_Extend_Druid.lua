@@ -386,9 +386,11 @@ end
 
 function macroTorch.isTrivialBattle(clickContext)
     if clickContext.isTrivialBattle == nil then
+        local trivialDieTime = 25
         -- if the target's max health is less than we attack 15s with 500dps each person
-        clickContext.isTrivialBattle = macroTorch.target.willDieInSeconds(20) or macroTorch.target.healthMax <=
-            (macroTorch.player.mateNearMyTargetCount + 1) * 500 * 20
+        clickContext.isTrivialBattle = macroTorch.target.willDieInSeconds(trivialDieTime) or
+            macroTorch.target.healthMax <=
+            (macroTorch.player.mateNearMyTargetCount + 1) * 500 * trivialDieTime
     end
     return clickContext.isTrivialBattle
 end
@@ -656,6 +658,9 @@ function macroTorch.keepRip(clickContext)
     if not macroTorch.isFightStarted(clickContext) or macroTorch.isRipPresent(clickContext) or clickContext.comboPoints < 5 or macroTorch.target.isImmune('Rip') or macroTorch.isKillshotOrLastChance(clickContext) then
         return
     end
+    if not macroTorch.isNearBy(clickContext) then
+        return
+    end
     -- boost attack power to rip when fighting world boss or player-controlled target
     if macroTorch.target.classification == 'worldboss' or macroTorch.target.isPlayerControlled then
         macroTorch.atkPowerBurst(clickContext)
@@ -691,6 +696,9 @@ end
 function macroTorch.quickKeepRip(clickContext)
     -- quick keep rip, do at any cp
     if not macroTorch.isFightStarted(clickContext) or macroTorch.isRipPresent(clickContext) or clickContext.comboPoints == 0 or macroTorch.target.isImmune('Rip') or macroTorch.isKillshotOrLastChance(clickContext) then
+        return
+    end
+    if not macroTorch.isNearBy(clickContext) then
         return
     end
     -- boost attack power to rip when fighting world boss or player-controlled target
