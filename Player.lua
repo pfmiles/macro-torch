@@ -156,6 +156,19 @@ function macroTorch.Player:new()
         return macroTorch.isItemCooledDown(itemName)
     end
 
+    function obj.getItemCoolDown(itemName)
+        if obj.isItemEquipped(itemName) then
+            return GetInventoryItemCooldown("player", macroTorch.getEquippedItemSlot(itemName))
+        else
+            if macroTorch.isItemExist(itemName) then
+                local bagId, slotIndex = macroTorch.getItemBagIdAndSlot(itemName)
+                return GetContainerItemCooldown(bagId, slotIndex)
+            else
+                return nil
+            end
+        end
+    end
+
     function obj.isCasting(spellName)
         return macroTorch.isCasting(spellName, 'spell')
     end
@@ -192,6 +205,55 @@ function macroTorch.Player:new()
 
     function obj.talentRank(talentName)
         return macroTorch.getTalentRank(talentName)
+    end
+
+    -- load useable item to the slot in which the swappingItem is placed, give up if the useable item is in CD
+    function obj.loadUseableItem(useableItems, swappingItem)
+        for _, useableItem in ipairs(useableItems) do
+            if obj.getItemCoolDown(useableItem) == 0 then
+                local swappingSlot = macroTorch.getEquippedItemSlot(swappingItem)
+                if swappingSlot then
+                    if not macroTorch.itemLoadingTable then
+                        macroTorch.itemLoadingTable = {}
+                    end
+                    if not macroTorch.itemLoadingTable[swappingSlot] then
+                        macroTorch.itemLoadingTable[swappingSlot] = {}
+                    end
+                    if macroTorch.itemLoadingTable[swappingSlot].useableItem == nil then
+                        macroTorch.itemLoadingTable[swappingSlot].swappingItem = swappingItem
+                        macroTorch.itemLoadingTable[swappingSlot].useableItem = useableItem
+                        macroTorch.itemLoadingTable[swappingSlot].useableItemUsed = false
+                        obj.equipItem(useableItem, swappingSlot)
+                        macroTorch.show("Useable item loaded: " .. useableItem)
+                        return
+                    end
+                end
+            end
+        end
+    end
+
+    -- use loaded useable item and swap it back to the original one
+    function obj.castLoadedItem()
+        if not macroTorch.itemLoadingTable then
+            return
+        end
+        for swappingSlot, loadingTable in pairs(macroTorch.itemLoadingTable) do
+            if swappingSlot and loadingTable.useableItem and loadingTable.swappingItem and obj.isItemEquipped(loadingTable.useableItem) then
+                if loadingTable.useableItemUsed == false then
+                    obj.useEquippedItem(loadingTable.useableItem)
+                    macroTorch.show("Useable item casted: " .. loadingTable.useableItem)
+                    loadingTable.useableItemUsed = true
+                else
+                    obj.equipItem(loadingTable.swappingItem, swappingSlot)
+                    macroTorch.show("Useable item swapped back: " .. loadingTable.useableItem)
+                    macroTorch.itemLoadingTable[swappingSlot] = nil
+                end
+                return
+            else
+                -- sth got wrong, just reset
+                macroTorch.itemLoadingTable[swappingSlot] = nil
+            end
+        end
     end
 
     -- impl hint: original '__index' & metatable setting:
