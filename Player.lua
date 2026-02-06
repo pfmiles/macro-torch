@@ -209,7 +209,7 @@ function macroTorch.Player:new()
 
     -- load useable item to the slot in which the swappingItem is placed, give up if the useable item is in CD
     function obj.loadUseableItem(useableItems, swappingItem)
-        for _, useableItem in ipairs(useableItems) do
+        for saying, useableItem in pairs(useableItems) do
             if obj.getItemCoolDown(useableItem) == 0 then
                 local swappingSlot = macroTorch.getEquippedItemSlot(swappingItem)
                 if swappingSlot then
@@ -223,6 +223,9 @@ function macroTorch.Player:new()
                         macroTorch.itemLoadingTable[swappingSlot].swappingItem = swappingItem
                         macroTorch.itemLoadingTable[swappingSlot].useableItem = useableItem
                         macroTorch.itemLoadingTable[swappingSlot].useableItemUsed = false
+                        if saying and not macroTorch.isNumber(saying) then
+                            macroTorch.itemLoadingTable[swappingSlot].saying = saying
+                        end
                         obj.equipItem(useableItem, swappingSlot)
                         macroTorch.show("Useable item loaded: " .. useableItem)
                         return
@@ -242,6 +245,9 @@ function macroTorch.Player:new()
                 if loadingTable.useableItemUsed == false then
                     obj.useEquippedItem(loadingTable.useableItem)
                     macroTorch.show("Useable item casted: " .. loadingTable.useableItem)
+                    if loadingTable.saying then
+                        obj.say(loadingTable.saying)
+                    end
                     loadingTable.useableItemUsed = true
                 else
                     obj.equipItem(loadingTable.swappingItem, swappingSlot)
@@ -253,6 +259,12 @@ function macroTorch.Player:new()
                 -- sth got wrong, just reset
                 macroTorch.itemLoadingTable[swappingSlot] = nil
             end
+        end
+    end
+
+    function obj.say(text)
+        if text then
+            SendChatMessage(text)
         end
     end
 

@@ -107,3 +107,8 @@ function macroTorch.randomPick(arr)
     end
     return arr[math.random(1, macroTorch.tableLen(arr))]
 end
+
+-- 检查值是否为数字
+function macroTorch.isNumber(value)
+    return type(value) == "number" or tonumber(value) ~= nil
+end
