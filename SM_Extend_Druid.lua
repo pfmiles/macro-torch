@@ -1142,10 +1142,10 @@ function macroTorch.bearAtk()
     if player.isInGroup and not target.isAttackingMe and not target.isPlayerControlled then
         if player.isSpellReady('Growl') then
             player.cast('Growl')
+        elseif player.mana >= 25 and player.isSpellReady('Savage Bite') then
+            player.cast('Savage Bite')
         elseif player.isSpellReady('Challenging Roar') then
             player.cast('Challenging Roar')
-        elseif player.isSpellReady('Savage Bite') then
-            player.cast('Savage Bite')
         end
     end
     -- ff when nothing to do
