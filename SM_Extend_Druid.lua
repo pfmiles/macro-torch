@@ -1217,3 +1217,12 @@ function macroTorch.bruteForce()
     -- 12.energy res mod
     macroTorch.reshiftMod(clickContext)
 end
+
+function macroTorch.pokemonLoad()
+    macroTorch.player.loadUseableItem(
+        {
+            ['Go, Battle Chicken! I choose you!'] = 'Gnomish Battle Chicken',
+            ['Come on out, Arcanite Dragonling!'] = 'Arcanite Dragonling',
+            ['Go, Glowing Cat! I choose you!'] = 'Glowing Cat Figurine'
+        }, 'Blackhand\'s Breadth')
+end
