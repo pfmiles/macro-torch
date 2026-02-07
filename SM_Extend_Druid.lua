@@ -168,7 +168,7 @@ function macroTorch.Druid:new()
             -- 3.keep autoAttack, in combat & not prowling *
             if macroTorch.isFightStarted(clickContext) then
                 player.startAutoAtk()
-                if clickContext.speedRun then
+                if clickContext.speedRun or target.classification == 'worldboss' then
                     macroTorch.keepSpeedRunBuffs(clickContext)
                 end
             end
@@ -316,7 +316,7 @@ end
 
 function macroTorch.keepSpeedRunBuffs(clickContext)
     -- special juju flurry for speed run
-    if macroTorch.target.healthPercent > 80 and not macroTorch.player.buffed('Juju Flurry', 'INV_Misc_MonsterScales_17') and macroTorch.player.isItemCooledDown('Juju Flurry') then
+    if (macroTorch.target.healthPercent > 80 or macroTorch.target.classification == 'worldboss') and not macroTorch.player.buffed('Juju Flurry', 'INV_Misc_MonsterScales_17') and macroTorch.player.isItemCooledDown('Juju Flurry') then
         macroTorch.player.use('Juju Flurry', true)
     end
 end
@@ -1219,10 +1219,21 @@ function macroTorch.bruteForce()
 end
 
 function macroTorch.pokemonLoad()
-    macroTorch.player.loadUseableItem(
-        {
-            ['Go, Battle Chicken! I choose you!'] = 'Gnomish Battle Chicken',
-            ['Come on out, Arcanite Dragonling!'] = 'Arcanite Dragonling',
-            ['Go, Glowing Cat! I choose you!'] = 'Glowing Cat Figurine'
-        }, 'Blackhand\'s Breadth')
+    local battleChickenSaying = 'Go, Battle Chicken! I choose you!'
+    local arcaniteDragonlingSaying = 'Come on out, Arcanite Dragonling!'
+    local glowingCatFigurineSaying = 'Go, Glowing Cat! I choose you!'
+
+    local orderedTable = {
+        keys = {
+            battleChickenSaying,
+            arcaniteDragonlingSaying,
+            glowingCatFigurineSaying
+        },
+        values = {
+            [battleChickenSaying] = 'Gnomish Battle Chicken',
+            [arcaniteDragonlingSaying] = 'Arcanite Dragonling',
+            [glowingCatFigurineSaying] = 'Glowing Cat Figurine'
+        }
+    }
+    macroTorch.player.loadUseableItem(orderedTable, 'Blackhand\'s Breadth')
 end
