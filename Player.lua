@@ -208,8 +208,9 @@ function macroTorch.Player:new()
     end
 
     -- load useable item to the slot in which the swappingItem is placed, give up if the useable item is in CD
-    function obj.loadUseableItem(useableItems, swappingItem)
-        for saying, useableItem in pairs(useableItems) do
+    function obj.loadUseableItem(useableItemsTable, swappingItem)
+        for _, saying in ipairs(useableItemsTable.keys) do
+            local useableItem = useableItemsTable.values[saying]
             if obj.getItemCoolDown(useableItem) == 0 then
                 local swappingSlot = macroTorch.getEquippedItemSlot(swappingItem)
                 if swappingSlot then
