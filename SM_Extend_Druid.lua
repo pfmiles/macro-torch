@@ -153,6 +153,9 @@ function macroTorch.Druid:new()
         clickContext.ooc = player.isOoc
         clickContext.isBehind = target.isCanAttack and player.isBehindTarget
 
+        clickContext.isInBearForm = player.isFormActive('Dire Bear Form')
+        clickContext.isInCatForm = player.isFormActive('Cat Form')
+
         -- 0.idol recover
         macroTorch.recoverNormalRelic(clickContext, 'Idol of Ferocity')
 
@@ -168,7 +171,7 @@ function macroTorch.Druid:new()
             -- 3.keep autoAttack, in combat & not prowling *
             if macroTorch.isFightStarted(clickContext) then
                 player.startAutoAtk()
-                if clickContext.speedRun or target.classification == 'worldboss' then
+                if clickContext.speedRun or target.classification == 'worldboss' and not clickContext.isInBearForm then
                     macroTorch.keepSpeedRunBuffs(clickContext)
                 end
             end
@@ -178,7 +181,7 @@ function macroTorch.Druid:new()
                     player.cast('Berserk')
                 end
                 -- juju flurry
-                if not player.hasBuff('INV_Misc_MonsterScales_17') and not player.isFormActive('Dire Bear Form') then
+                if not player.hasBuff('INV_Misc_MonsterScales_17') and not clickContext.isInBearForm then
                     if player.hasItem('Juju Flurry') and not target.isPlayerControlled then
                         player.use('Juju Flurry', true)
                     end
@@ -186,7 +189,7 @@ function macroTorch.Druid:new()
                 macroTorch.atkPowerBurst(clickContext)
             end
             -- roughly bear form logic branch
-            if player.isFormActive('Dire Bear Form') then
+            if clickContext.isInBearForm then
                 macroTorch.bearAtk(clickContext)
                 return
             end
@@ -1221,17 +1224,21 @@ end
 function macroTorch.pokemonLoad()
     local battleChickenSaying = 'Go, Battle Chicken! I choose you!'
     local arcaniteDragonlingSaying = 'Come on out, Arcanite Dragonling!'
+    local trackingHoundSaying = 'Go, Tracking Hound! I choose you!'
     local glowingCatFigurineSaying = 'Go, Glowing Cat! I choose you!'
+
 
     local orderedTable = {
         keys = {
             battleChickenSaying,
             arcaniteDragonlingSaying,
+            trackingHoundSaying,
             glowingCatFigurineSaying
         },
         values = {
             [battleChickenSaying] = 'Gnomish Battle Chicken',
             [arcaniteDragonlingSaying] = 'Arcanite Dragonling',
+            [trackingHoundSaying] = 'Dog Whistle',
             [glowingCatFigurineSaying] = 'Glowing Cat Figurine'
         }
     }

@@ -153,19 +153,52 @@ function macroTorch.Player:new()
     end
 
     function obj.isItemCooledDown(itemName)
+        if obj.isItemEquipped(itemName) then
+            return obj.isEquippedItemCooledDown(itemName)
+        else
+            return obj.isItemInBagCooledDown(itemName)
+        end
+    end
+
+    function obj.isEquippedItemCooledDown(itemName)
+        local slot = macroTorch.getEquippedItemSlot(itemName)
+        if slot then
+            return GetInventoryItemCooldown("player", slot) == 0
+        else
+            return false
+        end
+    end
+
+    function obj.isItemInBagCooledDown(itemName)
         return macroTorch.isItemCooledDown(itemName)
     end
 
+    -- get the coolDown, including items both in bag and equipped
+    -- @param itemName string item name
+    -- @return number coolDown time in seconds
     function obj.getItemCoolDown(itemName)
         if obj.isItemEquipped(itemName) then
-            return GetInventoryItemCooldown("player", macroTorch.getEquippedItemSlot(itemName))
+            return obj.getEquippedItemCoolDown(itemName)
         else
-            if macroTorch.isItemExist(itemName) then
-                local bagId, slotIndex = macroTorch.getItemBagIdAndSlot(itemName)
-                return GetContainerItemCooldown(bagId, slotIndex)
-            else
-                return nil
-            end
+            return obj.getItemInBagCoolDown(itemName)
+        end
+    end
+
+    function obj.getItemInBagCoolDown(itemName)
+        if macroTorch.isItemExist(itemName) then
+            local bagId, slotIndex = macroTorch.getItemBagIdAndSlot(itemName)
+            return GetContainerItemCooldown(bagId, slotIndex)
+        else
+            return nil
+        end
+    end
+
+    function obj.getEquippedItemCoolDown(itemName)
+        local slot = macroTorch.getEquippedItemSlot(itemName)
+        if slot then
+            return GetInventoryItemCooldown("player", slot)
+        else
+            return nil
         end
     end
 
@@ -244,10 +277,14 @@ function macroTorch.Player:new()
         for swappingSlot, loadingTable in pairs(macroTorch.itemLoadingTable) do
             if swappingSlot and loadingTable.useableItem and loadingTable.swappingItem and obj.isItemEquipped(loadingTable.useableItem) then
                 if loadingTable.useableItemUsed == false then
-                    obj.useEquippedItem(loadingTable.useableItem)
-                    macroTorch.show("Useable item casted: " .. loadingTable.useableItem)
-                    if loadingTable.saying then
-                        obj.say(loadingTable.saying)
+                    if obj.isEquippedItemCooledDown(loadingTable.useableItem) then
+                        obj.useEquippedItem(loadingTable.useableItem)
+                        macroTorch.show("Useable item casted: " .. loadingTable.useableItem)
+                        if loadingTable.saying then
+                            obj.say(loadingTable.saying)
+                        end
+                    else
+                        macroTorch.show("Useable item is in CD: " .. loadingTable.useableItem)
                     end
                     loadingTable.useableItemUsed = true
                 else
