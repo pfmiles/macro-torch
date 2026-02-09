@@ -171,9 +171,6 @@ function macroTorch.Druid:new()
             -- 3.keep autoAttack, in combat & not prowling *
             if macroTorch.isFightStarted(clickContext) then
                 player.startAutoAtk()
-                if clickContext.speedRun or target.classification == 'worldboss' and not clickContext.isInBearForm then
-                    macroTorch.keepSpeedRunBuffs(clickContext)
-                end
             end
             -- 4.rushMod, incuding trinckets, berserk and potions *
             if IsShiftKeyDown() then
@@ -315,13 +312,6 @@ function macroTorch.computeTiger_Duration()
     local tiger_duration = 6
     tiger_duration = tiger_duration + macroTorch.player.talentRank('Blood Frenzy') * 6
     return tiger_duration
-end
-
-function macroTorch.keepSpeedRunBuffs(clickContext)
-    -- special juju flurry for speed run
-    if (macroTorch.target.healthPercent > 80 or macroTorch.target.classification == 'worldboss') and not macroTorch.player.buffed('Juju Flurry', 'INV_Misc_MonsterScales_17') and macroTorch.player.isItemCooledDown('Juju Flurry') then
-        macroTorch.player.use('Juju Flurry', true)
-    end
 end
 
 -- tracing certain spells and maintain the landTable
