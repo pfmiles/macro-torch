@@ -187,7 +187,12 @@ function macroTorch.Player:new()
     function obj.getItemInBagCoolDown(itemName)
         if macroTorch.isItemExist(itemName) then
             local bagId, slotIndex = macroTorch.getItemBagIdAndSlot(itemName)
-            return GetContainerItemCooldown(bagId, slotIndex)
+            local start, totalCd = GetContainerItemCooldown(bagId, slotIndex)
+            if start > 0 and totalCd > 0 then
+                return totalCd - (GetTime() - start)
+            else
+                return 0
+            end
         else
             return nil
         end
@@ -196,7 +201,12 @@ function macroTorch.Player:new()
     function obj.getEquippedItemCoolDown(itemName)
         local slot = macroTorch.getEquippedItemSlot(itemName)
         if slot then
-            return GetInventoryItemCooldown("player", slot)
+            local start, totalCd = GetInventoryItemCooldown("player", slot)
+            if start > 0 and totalCd > 0 then
+                return totalCd - (GetTime() - start)
+            else
+                return 0
+            end
         else
             return nil
         end
@@ -244,7 +254,7 @@ function macroTorch.Player:new()
     function obj.loadUseableItem(useableItemsTable, swappingItem)
         for _, saying in ipairs(useableItemsTable.keys) do
             local useableItem = useableItemsTable.values[saying]
-            if obj.getItemCoolDown(useableItem) == 0 then
+            if obj.hasItem(useableItem) and obj.getItemInBagCoolDown(useableItem) <= 30 then
                 local swappingSlot = macroTorch.getEquippedItemSlot(swappingItem)
                 if swappingSlot then
                     if not macroTorch.itemLoadingTable then
