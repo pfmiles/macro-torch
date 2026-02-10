@@ -173,18 +173,7 @@ function macroTorch.Druid:new()
                 player.startAutoAtk()
             end
             -- 4.rushMod, incuding trinckets, berserk and potions *
-            if IsShiftKeyDown() then
-                if not clickContext.berserk then
-                    player.cast('Berserk')
-                end
-                -- juju flurry
-                if not player.hasBuff('INV_Misc_MonsterScales_17') and not clickContext.isInBearForm then
-                    if player.hasItem('Juju Flurry') and not target.isPlayerControlled then
-                        player.use('Juju Flurry', true)
-                    end
-                end
-                macroTorch.atkPowerBurst(clickContext)
-            end
+            macroTorch.burstMod(clickContext)
             -- roughly bear form logic branch
             if clickContext.isInBearForm then
                 macroTorch.bearAtk(clickContext)
@@ -253,6 +242,51 @@ macroTorch.DRUID_FIELD_FUNC_MAP = {
 }
 
 macroTorch.druid = macroTorch.Druid:new()
+
+function macroTorch.burstMod(clickContext)
+    local player = macroTorch.player
+    local target = macroTorch.target
+    -- put on the flags
+    if IsShiftKeyDown() then
+        if not macroTorch.context.burstFlags then
+            macroTorch.context.burstFlags = {}
+        end
+    end
+    -- consume the flags
+    if macroTorch.context.burstFlags then
+        local flags = macroTorch.context.burstFlags
+
+        -- berserk
+        if not flags.berserk then
+            if not clickContext.berserk then
+                player.cast('Berserk')
+            end
+            flags.berserk = true
+            return
+        end
+
+        -- juju flurry
+        if not flags.jujuFlurry then
+            if not player.hasBuff('INV_Misc_MonsterScales_17') and not clickContext.isInBearForm and player.hasItem('Juju Flurry') and player.isItemInBagCooledDown('Juju Flurry') and not target.isPlayerControlled then
+                player.use('Juju Flurry', true)
+            end
+            flags.jujuFlurry = true
+            return
+        end
+
+        -- ATK power
+        if not flags.atkPowerBurst then
+            macroTorch.atkPowerBurst(clickContext)
+            flags.atkPowerBurst = true
+            return
+        end
+
+        -- reset flags if all set
+        if flags.berserk and flags.jujuFlurry and flags.atkPowerBurst then
+            macroTorch.context.burstFlags = nil
+        end
+    end
+end
 
 function macroTorch.recoverNormalRelic(clickContext, relicName)
     local player = macroTorch.player
@@ -1021,10 +1055,17 @@ end
 
 -- burst through boosting attack power
 function macroTorch.atkPowerBurst(clickContext)
-    macroTorch.player.useTrinket2()
+    local player = macroTorch.player
+    local target = macroTorch.target
+
+    -- trinket
+    if player.isTrinket2CooledDown() then
+        player.useTrinket2()
+    end
+
     -- juju power
-    if not macroTorch.player.hasBuff('INV_Misc_MonsterScales_11') and macroTorch.player.hasItem('Juju Power') and not macroTorch.target.isPlayerControlled then
-        macroTorch.player.use('Juju Power', true)
+    if not player.hasBuff('INV_Misc_MonsterScales_11') and not clickContext.isInBearForm and player.hasItem('Juju Power') and player.isItemInBagCooledDown('Juju Power') and not target.isPlayerControlled then
+        player.use('Juju Power', true)
     end
 end
 
