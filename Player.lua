@@ -57,10 +57,18 @@ function macroTorch.Player:new()
         end
     end
 
+    function obj.isTrinket1CooledDown()
+        return GetInventoryItemCooldown("player", 13) == 0
+    end
+
     function obj.useTrinket2()
         if GetInventoryItemCooldown("player", 14) == 0 then
             UseInventoryItem(14)
         end
+    end
+
+    function obj.isTrinket2CooledDown()
+        return GetInventoryItemCooldown("player", 14) == 0
     end
 
     -- 随机选择一个坐骑并施放
@@ -161,7 +169,10 @@ function macroTorch.Player:new()
     end
 
     function obj.isEquippedItemCooledDown(itemName)
-        local slot = macroTorch.getEquippedItemSlot(itemName)
+        return obj.isEquippedItemInSlotCooledDown(obj.macroTorch.getEquippedItemSlot(itemName))
+    end
+
+    function obj.isEquippedItemInSlotCooledDown(slot)
         if slot then
             return GetInventoryItemCooldown("player", slot) == 0
         else
