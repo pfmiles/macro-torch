@@ -718,7 +718,7 @@ end
 -- originates from keepRip, but no need to rip at 5cp
 function macroTorch.quickKeepRip(clickContext)
     -- discharge cps when greater than 2
-    if clickContext.comboPoints >= 3 then
+    if clickContext.comboPoints >= 3 and not macroTorch.isRipPresent(clickContext) and not macroTorch.target.isImmune('Rip') then
         macroTorch.energyDischargeBeforeBite(clickContext)
         macroTorch.safeBite(clickContext)
     end
