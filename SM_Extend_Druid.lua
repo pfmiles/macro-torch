@@ -155,8 +155,17 @@ function macroTorch.Druid:new()
         clickContext.isInBearForm = player.isFormActive('Dire Bear Form')
         clickContext.isInCatForm = player.isFormActive('Cat Form')
 
+        clickContext.isImmuneRake = target.isImmune('Rake')
+        clickContext.isImmuneRip = target.isImmune('Rip')
+
+        if clickContext.isImmuneRip then
+            clickContext.normalRelic = 'Idol of Ferocity'
+        else
+            clickContext.normalRelic = 'Idol of Savagery'
+        end
+
         -- 0.idol recover
-        macroTorch.recoverNormalRelic(clickContext, 'Idol of Ferocity')
+        macroTorch.recoverNormalRelic(clickContext, clickContext.normalRelic)
 
         -- 1.health & mana saver in combat *
         if macroTorch.isFightStarted(clickContext) then
@@ -207,7 +216,7 @@ function macroTorch.Druid:new()
             macroTorch.keepRake(clickContext)
             macroTorch.keepFF(clickContext)
             -- 11.regular attack tech mod
-            if macroTorch.isFightStarted(clickContext) and clickContext.comboPoints < 5 and (macroTorch.isRakePresent(clickContext) or target.isImmune('Rake')) then
+            if macroTorch.isFightStarted(clickContext) and clickContext.comboPoints < 5 and (macroTorch.isRakePresent(clickContext) or clickContext.isImmuneRake) then
                 macroTorch.regularAttack(clickContext)
             end
             -- 12.energy res mod
@@ -473,7 +482,7 @@ function macroTorch.termMod(clickContext)
 end
 
 function macroTorch.cp5Bite(clickContext)
-    if clickContext.comboPoints == 5 and (macroTorch.target.isImmune('Rip') or macroTorch.isRipPresent(clickContext)) then
+    if clickContext.comboPoints == 5 and (clickContext.isImmuneRip or macroTorch.isRipPresent(clickContext)) then
         -- only discharge enerty when rip time left is greater then 1.8s
         if not ((macroTorch.isRipPresent(clickContext) and macroTorch.ripLeft(clickContext) <= 1.8)) then
             macroTorch.energyDischargeBeforeBite(clickContext)
@@ -677,7 +686,7 @@ function macroTorch.keepTigerFury(clickContext)
 end
 
 function macroTorch.keepRip(clickContext)
-    if not macroTorch.isFightStarted(clickContext) or macroTorch.isRipPresent(clickContext) or clickContext.comboPoints < 5 or macroTorch.target.isImmune('Rip') or macroTorch.isKillshotOrLastChance(clickContext) then
+    if not macroTorch.isFightStarted(clickContext) or macroTorch.isRipPresent(clickContext) or clickContext.comboPoints < 5 or clickContext.isImmuneRip or macroTorch.isKillshotOrLastChance(clickContext) then
         return
     end
     if not macroTorch.isNearBy(clickContext) then
@@ -718,12 +727,12 @@ end
 -- originates from keepRip, but no need to rip at 5cp
 function macroTorch.quickKeepRip(clickContext)
     -- discharge cps when greater than 2
-    if clickContext.comboPoints >= 3 and not macroTorch.isRipPresent(clickContext) and not macroTorch.target.isImmune('Rip') then
+    if clickContext.comboPoints >= 3 and not macroTorch.isRipPresent(clickContext) and not clickContext.isImmuneRip then
         macroTorch.energyDischargeBeforeBite(clickContext)
         macroTorch.safeBite(clickContext)
     end
     -- quick keep rip, do when cp < 3
-    if not macroTorch.isFightStarted(clickContext) or macroTorch.isRipPresent(clickContext) or clickContext.comboPoints == 0 or clickContext.comboPoints >= 3 or macroTorch.target.isImmune('Rip') or macroTorch.isKillshotOrLastChance(clickContext) then
+    if not macroTorch.isFightStarted(clickContext) or macroTorch.isRipPresent(clickContext) or clickContext.comboPoints == 0 or clickContext.comboPoints >= 3 or clickContext.isImmuneRip or macroTorch.isKillshotOrLastChance(clickContext) then
         return
     end
     if not macroTorch.isNearBy(clickContext) then
@@ -738,7 +747,7 @@ end
 
 function macroTorch.keepRake(clickContext)
     -- in no condition rake on 5cp
-    if not macroTorch.isFightStarted(clickContext) or clickContext.comboPoints == 5 or macroTorch.isRakePresent(clickContext) or macroTorch.target.isImmune('Rake') or macroTorch.isKillshotOrLastChance(clickContext) then
+    if not macroTorch.isFightStarted(clickContext) or clickContext.comboPoints == 5 or macroTorch.isRakePresent(clickContext) or clickContext.isImmuneRake or macroTorch.isKillshotOrLastChance(clickContext) then
         return
     end
     -- boost attack power to rake when fighting world boss
@@ -767,9 +776,9 @@ function macroTorch.keepFF(clickContext)
         or macroTorch.isNearBy(clickContext) and (
             player.mana >= clickContext.CLAW_E and clickContext.comboPoints < 5
             or player.mana >= clickContext.BITE_E and clickContext.comboPoints == 5
-            or player.mana >= clickContext.RAKE_E and not macroTorch.isRakePresent(clickContext) and not macroTorch.target.isImmune('Rake') and clickContext.comboPoints < 5
-            or player.mana >= clickContext.RIP_E and not macroTorch.isRipPresent(clickContext) and not macroTorch.target.isImmune('Rip') and clickContext.comboPoints == 5
-            or player.mana >= clickContext.RIP_E and not macroTorch.isRipPresent(clickContext) and not macroTorch.target.isImmune('Rip') and clickContext.comboPoints > 0 and macroTorch.isTrivialBattleOrPvp(clickContext)
+            or player.mana >= clickContext.RAKE_E and not macroTorch.isRakePresent(clickContext) and not clickContext.isImmuneRake and clickContext.comboPoints < 5
+            or player.mana >= clickContext.RIP_E and not macroTorch.isRipPresent(clickContext) and not clickContext.isImmuneRip and clickContext.comboPoints == 5
+            or player.mana >= clickContext.RIP_E and not macroTorch.isRipPresent(clickContext) and not clickContext.isImmuneRip and clickContext.comboPoints > 0 and macroTorch.isTrivialBattleOrPvp(clickContext)
             or macroTorch.isTrivialBattleOrPvp(clickContext) and macroTorch.isFFPresent(clickContext) and (player.mana + macroTorch.computeErps(clickContext)) >= clickContext.TIGER_E
             or clickContext.comboPoints == 5
             or macroTorch.isKillshotOrLastChance(clickContext)) then
