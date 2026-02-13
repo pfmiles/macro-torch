@@ -293,6 +293,9 @@ function macroTorch.burstMod(clickContext)
 end
 
 function macroTorch.recoverNormalRelic(clickContext, relicName)
+    if not macroTorch.target.isCanAttack then
+        return
+    end
     local player = macroTorch.player
     if not player.isFormActive('Cat Form') then
         return
