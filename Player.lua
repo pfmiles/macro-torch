@@ -169,7 +169,7 @@ function macroTorch.Player:new()
     end
 
     function obj.isEquippedItemCooledDown(itemName)
-        return obj.isEquippedItemInSlotCooledDown(obj.macroTorch.getEquippedItemSlot(itemName))
+        return obj.isEquippedItemInSlotCooledDown(macroTorch.getEquippedItemSlot(itemName))
     end
 
     function obj.isEquippedItemInSlotCooledDown(slot)
