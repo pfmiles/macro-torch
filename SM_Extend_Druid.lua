@@ -60,27 +60,27 @@ function macroTorch.Druid:new()
         macroTorch.RIP_DURATION = 10
 
         macroTorch.show('POUNCE_E: ' ..
-            macroTorch.POUNCE_E ..
-            ', CLAW_E: ' ..
-            macroTorch.CLAW_E ..
-            ', SHRED_E: ' ..
-            macroTorch.SHRED_E ..
-            ', RAKE_E: ' ..
-            macroTorch.RAKE_E ..
-            ', BITE_E: ' ..
-            macroTorch.BITE_E ..
-            ', RIP_E: ' ..
-            macroTorch.RIP_E ..
-            ', TIGER_E: ' ..
-            macroTorch.TIGER_E ..
-            ', POUNCE_DURATION: ' ..
-            macroTorch.POUNCE_DURATION ..
-            ', TIGER_DURATION: ' ..
-            macroTorch.TIGER_DURATION ..
-            ', RAKE_DURATION: ' ..
-            macroTorch.RAKE_DURATION ..
-            ', RIP_DURATION: ' ..
-            macroTorch.RIP_DURATION
+                macroTorch.POUNCE_E ..
+                ', CLAW_E: ' ..
+                macroTorch.CLAW_E ..
+                ', SHRED_E: ' ..
+                macroTorch.SHRED_E ..
+                ', RAKE_E: ' ..
+                macroTorch.RAKE_E ..
+                ', BITE_E: ' ..
+                macroTorch.BITE_E ..
+                ', RIP_E: ' ..
+                macroTorch.RIP_E ..
+                ', TIGER_E: ' ..
+                macroTorch.TIGER_E ..
+                ', POUNCE_DURATION: ' ..
+                macroTorch.POUNCE_DURATION ..
+                ', TIGER_DURATION: ' ..
+                macroTorch.TIGER_DURATION ..
+                ', RAKE_DURATION: ' ..
+                macroTorch.RAKE_DURATION ..
+                ', RIP_DURATION: ' ..
+                macroTorch.RIP_DURATION
         )
     end
 
@@ -383,14 +383,14 @@ function macroTorch.consumeDruidBattleEvents()
             local clickContext = {}
             if macroTorch.isRakePresent(clickContext) then
                 macroTorch.show('Renewing rake... left: ' ..
-                    tostring(macroTorch.rakeLeft(clickContext)) ..
-                    ', bleed idol: ' .. tostring(macroTorch.context.lastRakeEquippedSavagery))
+                        tostring(macroTorch.rakeLeft(clickContext)) ..
+                        ', bleed idol: ' .. tostring(macroTorch.context.lastRakeEquippedSavagery))
                 macroTorch.recordCastTable('Rake')
             end
             if macroTorch.isRipPresent(clickContext) then
                 macroTorch.show('Renewing rip... left: ' ..
-                    tostring(macroTorch.ripLeft(clickContext)) ..
-                    ', bleed idol: ' .. tostring(macroTorch.context.lastRipEquippedSavagery))
+                        tostring(macroTorch.ripLeft(clickContext)) ..
+                        ', bleed idol: ' .. tostring(macroTorch.context.lastRipEquippedSavagery))
                 macroTorch.recordCastTable('Rip')
             end
         end
@@ -399,23 +399,53 @@ function macroTorch.consumeDruidBattleEvents()
 end
 
 macroTorch.registerPeriodicTask('consumeDruidBattleEvents',
-    { interval = 0.1, task = macroTorch.consumeDruidBattleEvents })
+        { interval = 0.1, task = macroTorch.consumeDruidBattleEvents })
 
 function macroTorch.regularAttack(clickContext)
-    -- claw with at least 1 bleeding effect or shred
-    if clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed
-        and not macroTorch.isRakePresent(clickContext)
-        and not macroTorch.isRipPresent(clickContext)
-        and not macroTorch.isPouncePresent(clickContext) then
-        macroTorch.safeShred(clickContext)
+    -- Count active bleeding effects
+    local bleedCount = 0
+    if macroTorch.isRakePresent(clickContext) then
+        bleedCount = bleedCount + 1
+    end
+    if macroTorch.isRipPresent(clickContext) then
+        bleedCount = bleedCount + 1
+    end
+    if macroTorch.isPouncePresent(clickContext) then
+        bleedCount = bleedCount + 1
+    end
+
+    -- Determine which methods to use based on ooc
+    -- ooc doesn't consume energy, so use ready methods instead of safe methods
+    local shredMethod = clickContext.ooc and macroTorch.readyShred or macroTorch.safeShred
+    local clawMethod = clickContext.ooc and macroTorch.readyClaw or macroTorch.safeClaw
+
+    -- New logic based on bleeding count:
+    -- 0-1 bleeding: prioritize shred (if behind and not failed)
+    -- 2 bleeding: prioritize claw (even with ooc, because both readyShred and readyClaw don't consume energy)
+    -- 3+ bleeding: always use claw, even with ooc
+    if bleedCount <= 1 then
+        -- 0 or 1 bleeding: use shred if conditions met
+        if clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed then
+            shredMethod(clickContext)
+        else
+            clawMethod(clickContext)
+        end
+    elseif bleedCount == 2 then
+        -- 2 bleeding: prioritize claw, but if ooc and behind then still use shred
+        if clickContext.ooc and clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed then
+            shredMethod(clickContext)
+        else
+            clawMethod(clickContext)
+        end
     else
-        macroTorch.safeClaw(clickContext)
+        -- 3+ bleeding: always use claw
+        clawMethod(clickContext)
     end
 end
 
 function macroTorch.isTrivialBattleOrPvp(clickContext)
     return macroTorch.target.isPlayerControlled or
-        macroTorch.isTrivialBattle(clickContext)
+            macroTorch.isTrivialBattle(clickContext)
 end
 
 function macroTorch.isTrivialBattle(clickContext)
@@ -423,8 +453,8 @@ function macroTorch.isTrivialBattle(clickContext)
         local trivialDieTime = 25
         -- if the target's max health is less than we attack 15s with 500dps each person
         clickContext.isTrivialBattle = macroTorch.target.willDieInSeconds(trivialDieTime) or
-            macroTorch.target.healthMax <=
-            (macroTorch.player.mateNearMyTargetCount + 1) * 500 * trivialDieTime
+                macroTorch.target.healthMax <=
+                        (macroTorch.player.mateNearMyTargetCount + 1) * 500 * trivialDieTime
     end
     return clickContext.isTrivialBattle
 end
@@ -441,14 +471,13 @@ end
 -- whether the fight has started, considering prowling
 function macroTorch.isFightStarted(clickContext)
     if clickContext.isFightStarted == nil then
-        clickContext.isFightStarted =
-            (not clickContext.prowling and
+        clickContext.isFightStarted = (not clickContext.prowling and
                 (macroTorch.player.isInCombat
-                    or macroTorch.inCombat
-                    or macroTorch.target.isPlayerControlled
-                    or (macroTorch.target.isHostile and macroTorch.target.isInCombat)
+                        or macroTorch.inCombat
+                        or macroTorch.target.isPlayerControlled
+                        or (macroTorch.target.isHostile and macroTorch.target.isInCombat)
                 ))
-            or (clickContext.prowling and macroTorch.target.isAttackingMe)
+                or (clickContext.prowling and macroTorch.target.isAttackingMe)
     end
     return clickContext.isFightStarted
 end
@@ -460,12 +489,12 @@ function macroTorch.otMod(clickContext)
     local player = macroTorch.player
     local target = macroTorch.target
     if not player.isInCombat
-        or not target.isInCombat
-        or clickContext.prowling
-        or macroTorch.isKillshotOrLastChance(clickContext)
-        or not target.isCanAttack
-        or target.isPlayerControlled
-        or not macroTorch.player.isInGroup then
+            or not target.isInCombat
+            or clickContext.prowling
+            or macroTorch.isKillshotOrLastChance(clickContext)
+            or not target.isCanAttack
+            or target.isPlayerControlled
+            or not macroTorch.player.isInGroup then
         return
     end
     if target.isAttackingMe and not player.isSpellReady('Cower') and target.classification == 'worldboss' then
@@ -579,20 +608,20 @@ function macroTorch.isKillshotOrLastChance(clickContext)
         --     macroTorch.show('nearMateNum: ' .. tostring(nearMateNum) .. ', less: ' .. tostring(less))
         -- end
         return clickContext.comboPoints == 1 and
-            targetHealth <
-            (macroTorch.KS_CP1_Health_group - less * (macroTorch.KS_CP1_Health_group - macroTorch.KS_CP1_Health) / 4) or
-            clickContext.comboPoints == 2 and
-            targetHealth <
-            (macroTorch.KS_CP2_Health_group - less * (macroTorch.KS_CP2_Health_group - macroTorch.KS_CP2_Health) / 4) or
-            clickContext.comboPoints == 3 and
-            targetHealth <
-            (macroTorch.KS_CP3_Health_group - less * (macroTorch.KS_CP3_Health_group - macroTorch.KS_CP3_Health) / 4) or
-            clickContext.comboPoints == 4 and
-            targetHealth <
-            (macroTorch.KS_CP4_Health_group - less * (macroTorch.KS_CP4_Health_group - macroTorch.KS_CP4_Health) / 4) or
-            clickContext.comboPoints == 5 and
-            targetHealth <
-            (macroTorch.KS_CP5_Health_group - less * (macroTorch.KS_CP5_Health_group - macroTorch.KS_CP5_Health) / 4)
+                targetHealth <
+                        (macroTorch.KS_CP1_Health_group - less * (macroTorch.KS_CP1_Health_group - macroTorch.KS_CP1_Health) / 4) or
+                clickContext.comboPoints == 2 and
+                        targetHealth <
+                                (macroTorch.KS_CP2_Health_group - less * (macroTorch.KS_CP2_Health_group - macroTorch.KS_CP2_Health) / 4) or
+                clickContext.comboPoints == 3 and
+                        targetHealth <
+                                (macroTorch.KS_CP3_Health_group - less * (macroTorch.KS_CP3_Health_group - macroTorch.KS_CP3_Health) / 4) or
+                clickContext.comboPoints == 4 and
+                        targetHealth <
+                                (macroTorch.KS_CP4_Health_group - less * (macroTorch.KS_CP4_Health_group - macroTorch.KS_CP4_Health) / 4) or
+                clickContext.comboPoints == 5 and
+                        targetHealth <
+                                (macroTorch.KS_CP5_Health_group - less * (macroTorch.KS_CP5_Health_group - macroTorch.KS_CP5_Health) / 4)
     elseif macroTorch.player.isInRaid and not fightWorldBoss and not isPvp then
         -- normal battle in a raid
         local raidNum = macroTorch.player.raidMemberCount or 0
@@ -606,22 +635,22 @@ function macroTorch.isKillshotOrLastChance(clickContext)
             more = 0
         end
         return clickContext.comboPoints == 1 and
-            targetHealth < (macroTorch.KS_CP1_Health_group + macroTorch.KS_CP1_Health_raid_pps * more) or
-            clickContext.comboPoints == 2 and
-            targetHealth < (macroTorch.KS_CP2_Health_group + macroTorch.KS_CP2_Health_raid_pps * more) or
-            clickContext.comboPoints == 3 and
-            targetHealth < (macroTorch.KS_CP3_Health_group + macroTorch.KS_CP3_Health_raid_pps * more) or
-            clickContext.comboPoints == 4 and
-            targetHealth < (macroTorch.KS_CP4_Health_group + macroTorch.KS_CP4_Health_raid_pps * more) or
-            clickContext.comboPoints == 5 and
-            targetHealth < (macroTorch.KS_CP5_Health_group + macroTorch.KS_CP5_Health_raid_pps * more)
+                targetHealth < (macroTorch.KS_CP1_Health_group + macroTorch.KS_CP1_Health_raid_pps * more) or
+                clickContext.comboPoints == 2 and
+                        targetHealth < (macroTorch.KS_CP2_Health_group + macroTorch.KS_CP2_Health_raid_pps * more) or
+                clickContext.comboPoints == 3 and
+                        targetHealth < (macroTorch.KS_CP3_Health_group + macroTorch.KS_CP3_Health_raid_pps * more) or
+                clickContext.comboPoints == 4 and
+                        targetHealth < (macroTorch.KS_CP4_Health_group + macroTorch.KS_CP4_Health_raid_pps * more) or
+                clickContext.comboPoints == 5 and
+                        targetHealth < (macroTorch.KS_CP5_Health_group + macroTorch.KS_CP5_Health_raid_pps * more)
     else
         -- fight alone or pvp
         return clickContext.comboPoints == 1 and targetHealth < macroTorch.KS_CP1_Health or
-            clickContext.comboPoints == 2 and targetHealth < macroTorch.KS_CP2_Health or
-            clickContext.comboPoints == 3 and targetHealth < macroTorch.KS_CP3_Health or
-            clickContext.comboPoints == 4 and targetHealth < macroTorch.KS_CP4_Health or
-            clickContext.comboPoints == 5 and targetHealth < macroTorch.KS_CP5_Health
+                clickContext.comboPoints == 2 and targetHealth < macroTorch.KS_CP2_Health or
+                clickContext.comboPoints == 3 and targetHealth < macroTorch.KS_CP3_Health or
+                clickContext.comboPoints == 4 and targetHealth < macroTorch.KS_CP4_Health or
+                clickContext.comboPoints == 5 and targetHealth < macroTorch.KS_CP5_Health
     end
 end
 
@@ -675,7 +704,7 @@ end
 function macroTorch.computeReshiftEarning(clickContext)
     if clickContext.computeReshiftEarning == nil then
         clickContext.computeReshiftEarning = clickContext.RESHIFT_ENERGY - clickContext.TIGER_E - macroTorch.player.mana -
-            (macroTorch.computeErps(clickContext) * 1.5)
+                (macroTorch.computeErps(clickContext) * 1.5)
     end
     return clickContext.computeReshiftEarning
 end
@@ -701,7 +730,7 @@ function macroTorch.keepRip(clickContext)
     end
     -- if Savegery Idol not equipped, discharge energy before change
     macroTorch.dischargeEnergyChangeRelicAndRip(clickContext,
-        not clickContext.rough and not macroTorch.isTrivialBattleOrPvp(clickContext))
+            not clickContext.rough and not macroTorch.isTrivialBattleOrPvp(clickContext))
 end
 
 -- energy discharge needed due to possible energy overflow before rip
@@ -772,19 +801,19 @@ end
 function macroTorch.keepFF(clickContext)
     local player = macroTorch.player
     if clickContext.ooc
-        or macroTorch.target.isImmune('Faerie Fire (Feral)')
-        or macroTorch.canDoReshift(clickContext)
-        or not macroTorch.isFightStarted(clickContext)
-        or not macroTorch.target.isInCombat
-        or macroTorch.isNearBy(clickContext) and (
+            or macroTorch.target.isImmune('Faerie Fire (Feral)')
+            or macroTorch.canDoReshift(clickContext)
+            or not macroTorch.isFightStarted(clickContext)
+            or not macroTorch.target.isInCombat
+            or macroTorch.isNearBy(clickContext) and (
             player.mana >= clickContext.CLAW_E and clickContext.comboPoints < 5
-            or player.mana >= clickContext.BITE_E and clickContext.comboPoints == 5
-            or player.mana >= clickContext.RAKE_E and not macroTorch.isRakePresent(clickContext) and not clickContext.isImmuneRake and clickContext.comboPoints < 5
-            or player.mana >= clickContext.RIP_E and not macroTorch.isRipPresent(clickContext) and not clickContext.isImmuneRip and clickContext.comboPoints == 5
-            or player.mana >= clickContext.RIP_E and not macroTorch.isRipPresent(clickContext) and not clickContext.isImmuneRip and clickContext.comboPoints > 0 and macroTorch.isTrivialBattleOrPvp(clickContext)
-            or macroTorch.isTrivialBattleOrPvp(clickContext) and macroTorch.isFFPresent(clickContext) and (player.mana + macroTorch.computeErps(clickContext)) >= clickContext.TIGER_E
-            or clickContext.comboPoints == 5
-            or macroTorch.isKillshotOrLastChance(clickContext)) then
+                    or player.mana >= clickContext.BITE_E and clickContext.comboPoints == 5
+                    or player.mana >= clickContext.RAKE_E and not macroTorch.isRakePresent(clickContext) and not clickContext.isImmuneRake and clickContext.comboPoints < 5
+                    or player.mana >= clickContext.RIP_E and not macroTorch.isRipPresent(clickContext) and not clickContext.isImmuneRip and clickContext.comboPoints == 5
+                    or player.mana >= clickContext.RIP_E and not macroTorch.isRipPresent(clickContext) and not clickContext.isImmuneRip and clickContext.comboPoints > 0 and macroTorch.isTrivialBattleOrPvp(clickContext)
+                    or macroTorch.isTrivialBattleOrPvp(clickContext) and macroTorch.isFFPresent(clickContext) and (player.mana + macroTorch.computeErps(clickContext)) >= clickContext.TIGER_E
+                    or clickContext.comboPoints == 5
+                    or macroTorch.isKillshotOrLastChance(clickContext)) then
         return
     end
     macroTorch.safeFF(clickContext)
@@ -793,7 +822,7 @@ end
 function macroTorch.isTigerPresent(clickContext)
     if clickContext.isTigerPresent == nil then
         clickContext.isTigerPresent = macroTorch.toBoolean(macroTorch.player.hasBuff('Ability_Mount_JungleTiger') and
-            macroTorch.tigerLeft(clickContext) > 0)
+                macroTorch.tigerLeft(clickContext) > 0)
     end
     return clickContext.isTigerPresent
 end
@@ -817,7 +846,7 @@ end
 function macroTorch.isRipPresent(clickContext)
     if clickContext.isRipPresent == nil then
         clickContext.isRipPresent = macroTorch.toBoolean(macroTorch.target.hasBuff('Ability_GhoulFrenzy') and
-            macroTorch.ripLeft(clickContext) > 0)
+                macroTorch.ripLeft(clickContext) > 0)
     end
     return clickContext.isRipPresent
 end
@@ -850,7 +879,7 @@ end
 function macroTorch.isRakePresent(clickContext)
     if clickContext.isRakePresent == nil then
         clickContext.isRakePresent = macroTorch.toBoolean(macroTorch.target.hasBuff('Ability_Druid_Disembowel') and
-            macroTorch.rakeLeft(clickContext) > 0)
+                macroTorch.rakeLeft(clickContext) > 0)
     end
     return clickContext.isRakePresent
 end
@@ -878,7 +907,7 @@ end
 function macroTorch.isFFPresent(clickContext)
     if clickContext.isFFPresent == nil then
         clickContext.isFFPresent = macroTorch.toBoolean(macroTorch.target.hasBuff('Spell_Nature_FaerieFire') and
-            macroTorch.ffLeft(clickContext) > 0)
+                macroTorch.ffLeft(clickContext) > 0)
     end
     return clickContext.isFFPresent
 end
@@ -902,7 +931,7 @@ end
 function macroTorch.isPouncePresent(clickContext)
     if clickContext.isPouncePresent == nil then
         clickContext.isPouncePresent = macroTorch.toBoolean(macroTorch.target.hasBuff('Ability_Druid_SupriseAttack') and
-            macroTorch.pounceLeft(clickContext) > 0)
+                macroTorch.pounceLeft(clickContext) > 0)
     end
     return clickContext.isPouncePresent
 end
@@ -926,9 +955,9 @@ end
 function macroTorch.readyReshift(clickContext)
     if macroTorch.player.isSpellReady('Reshift') then
         macroTorch.show('Reshift!!! energy = ' ..
-            macroTorch.player.mana ..
-            ', earning: ' ..
-            macroTorch.computeReshiftEarning(clickContext) .. ', tigerLeft = ' .. macroTorch.tigerLeft(clickContext))
+                macroTorch.player.mana ..
+                ', earning: ' ..
+                macroTorch.computeReshiftEarning(clickContext) .. ', tigerLeft = ' .. macroTorch.tigerLeft(clickContext))
         macroTorch.player.cast('Reshift')
         return true
     end
@@ -962,9 +991,9 @@ end
 function macroTorch.safeRake(clickContext)
     if macroTorch.player.isSpellReady('Rake') and macroTorch.isGcdOk(clickContext) and macroTorch.player.mana >= clickContext.RAKE_E and macroTorch.isNearBy(clickContext) then
         macroTorch.show('Rake!!! Rake present: ' ..
-            tostring(macroTorch.isRakePresent(clickContext)) ..
-            ', bleed idol equipped: ' ..
-            tostring(macroTorch.player.isRelicEquipped('Idol of Savagery')))
+                tostring(macroTorch.isRakePresent(clickContext)) ..
+                ', bleed idol equipped: ' ..
+                tostring(macroTorch.player.isRelicEquipped('Idol of Savagery')))
         macroTorch.context.lastRakeEquippedSavagery = macroTorch.player.isRelicEquipped('Idol of Savagery')
         macroTorch.player.cast('Rake')
         return true
@@ -975,11 +1004,11 @@ end
 function macroTorch.safeRip(clickContext)
     if macroTorch.player.isSpellReady('Rip') and macroTorch.isGcdOk(clickContext) and macroTorch.player.mana >= clickContext.RIP_E and macroTorch.isNearBy(clickContext) then
         macroTorch.show('Rip!!! At cp: ' ..
-            tostring(clickContext.comboPoints) ..
-            ', rip present: ' ..
-            tostring(macroTorch.isRipPresent(clickContext)) ..
-            ', bleed idol equipped: ' ..
-            tostring(macroTorch.player.isRelicEquipped('Idol of Savagery')))
+                tostring(clickContext.comboPoints) ..
+                ', rip present: ' ..
+                tostring(macroTorch.isRipPresent(clickContext)) ..
+                ', bleed idol equipped: ' ..
+                tostring(macroTorch.player.isRelicEquipped('Idol of Savagery')))
         macroTorch.context.lastRipEquippedSavagery = macroTorch.player.isRelicEquipped('Idol of Savagery')
         macroTorch.player.cast('Rip')
         macroTorch.context.lastRipAtCp = clickContext.comboPoints
@@ -1011,10 +1040,10 @@ end
 function macroTorch.safeFF(clickContext)
     if macroTorch.player.isSpellReady('Faerie Fire (Feral)') and macroTorch.isGcdOk(clickContext) then
         macroTorch.show('FF!!! FF present: ' ..
-            tostring(macroTorch.isFFPresent(clickContext)) ..
-            ', FF left: ' ..
-            tostring(macroTorch.ffLeft(clickContext)) ..
-            ', at energy: ' .. macroTorch.player.mana .. ', cp: ' .. tostring(clickContext.comboPoints))
+                tostring(macroTorch.isFFPresent(clickContext)) ..
+                ', FF left: ' ..
+                tostring(macroTorch.ffLeft(clickContext)) ..
+                ', at energy: ' .. macroTorch.player.mana .. ', cp: ' .. tostring(clickContext.comboPoints))
         macroTorch.player.cast('Faerie Fire (Feral)')
         macroTorch.context.ffTimer = GetTime()
         return true
@@ -1204,7 +1233,6 @@ function macroTorch.pokemonLoad()
     local arcaniteDragonlingSaying = 'Come on out, Arcanite Dragonling!'
     local trackingHoundSaying = 'Go, Tracking Hound! I choose you!'
     local glowingCatFigurineSaying = 'Go, Glowing Cat! I choose you!'
-
 
     local orderedTable = {
         keys = {
