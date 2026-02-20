@@ -132,6 +132,7 @@ function macroTorch.Druid:new()
         clickContext.FF_DURATION = 40
         clickContext.POUNCE_DURATION = 18
 
+        -- TODO 有些回能手段需要靠天赋或装备计算出来，并非固定
         clickContext.AUTO_TICK_ERPS = 20 / 2
         clickContext.TIGER_ERPS = 10 / 3
         clickContext.RAKE_ERPS = 5 / 3
@@ -142,7 +143,7 @@ function macroTorch.Druid:new()
         macroTorch.COWER_THREAT_THRESHOLD = 75
         clickContext.RESHIFT_ENERGY = 60
         clickContext.RESHIFT_E_DIFF_THRESHOLD = 0
-        clickContext.PLAYER_URGENT_HP_THRESHOLD = 10
+        clickContext.PLAYER_URGENT_HP_THRESHOLD = 15
 
         local player = macroTorch.player
         local target = macroTorch.target
@@ -196,7 +197,7 @@ function macroTorch.Druid:new()
                 end
             end
 
-            -- 7.oocMod: 没有前行且ooc 或 前行但目标正在攻击我
+            -- 7.oocMod: 没有潜行且ooc 或 前行但目标正在攻击我
             if not clickContext.prowling or target.isAttackingMe then
                 macroTorch.oocMod(clickContext)
             end
@@ -491,7 +492,7 @@ function macroTorch.otMod(clickContext)
     if not player.isInCombat
             or not target.isInCombat
             or clickContext.prowling
-            or macroTorch.isKillshotOrLastChance(clickContext)
+            or macroTorch.isKillShotOrLastChance(clickContext)
             or not target.isCanAttack
             or target.isPlayerControlled
             or not macroTorch.player.isInGroup then
@@ -509,13 +510,13 @@ function macroTorch.otMod(clickContext)
 end
 
 function macroTorch.termMod(clickContext)
-    macroTorch.tryBiteKillshot(clickContext)
+    macroTorch.tryBiteKillShot(clickContext)
     macroTorch.cp5Bite(clickContext)
 end
 
 function macroTorch.cp5Bite(clickContext)
     if clickContext.comboPoints == 5 and (clickContext.isImmuneRip or macroTorch.isRipPresent(clickContext)) then
-        -- only discharge enerty when rip time left is greater then 1.8s
+        -- only discharge energy when rip time left is greater then 1.8s
         if not ((macroTorch.isRipPresent(clickContext) and macroTorch.ripLeft(clickContext) <= 1.8)) then
             macroTorch.energyDischargeBeforeBite(clickContext)
         end
@@ -529,16 +530,16 @@ end
 
 -- 撕咬前的泄能逻辑: 当前多余能量用作撕咬加成不划算，将其拆成2个技能使用
 function macroTorch.energyDischargeBeforeBite(clickContext)
-    if clickContext.ooc then
-        -- macroTorch.show('Discharging before bite(ooc), rip left: ' .. macroTorch.ripLeft(clickContext))
-        macroTorch.doDischargeEnergy(clickContext)
-    elseif macroTorch.player.mana >= clickContext.BITE_E + clickContext.SHRED_E and clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed then
-        -- macroTorch.show('Discharging before bite, rip left: ' .. macroTorch.ripLeft(clickContext))
-        macroTorch.safeShred(clickContext)
-    elseif macroTorch.player.mana >= clickContext.BITE_E + clickContext.CLAW_E then
-        -- macroTorch.show('Discharging before bite, rip left: ' .. macroTorch.ripLeft(clickContext))
-        macroTorch.safeClaw(clickContext)
-    elseif not macroTorch.isRakePresent(clickContext) and macroTorch.player.mana >= clickContext.BITE_E + clickContext.RAKE_E then
+    -- Try to discharge energy with regular attack first
+    if clickContext.ooc
+            or (macroTorch.player.mana >= clickContext.BITE_E + clickContext.SHRED_E and clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed)
+            or macroTorch.player.mana >= clickContext.BITE_E + clickContext.CLAW_E then
+        macroTorch.regularAttack(clickContext)
+        return
+    end
+
+    -- If regular attack not possible and no Rake, use Rake
+    if not macroTorch.isRakePresent(clickContext) and macroTorch.player.mana >= clickContext.BITE_E + clickContext.RAKE_E then
         macroTorch.safeRake(clickContext)
     end
 end
@@ -547,28 +548,13 @@ function macroTorch.oocMod(clickContext)
     if not clickContext.ooc then
         return
     end
-    macroTorch.tryBiteKillshot(clickContext)
+    macroTorch.tryBiteKillShot(clickContext)
     if clickContext.comboPoints < 5 then
-        macroTorch.doDischargeEnergy(clickContext)
+        -- regular attack to discharge ooc
+        macroTorch.regularAttack(clickContext)
     else
         -- cp5 bite when ooc
         macroTorch.cp5Bite(clickContext)
-    end
-end
-
-function macroTorch.doDischargeEnergy(clickContext)
-    if clickContext.ooc then
-        if clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed then
-            macroTorch.readyShred(clickContext)
-        else
-            macroTorch.readyClaw(clickContext)
-        end
-    else
-        if clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed then
-            macroTorch.safeShred(clickContext)
-        else
-            macroTorch.safeClaw(clickContext)
-        end
     end
 end
 
@@ -590,7 +576,7 @@ macroTorch.KS_CP3_Health_raid_pps = macroTorch.KS_CP3_Health_group / 5
 macroTorch.KS_CP4_Health_raid_pps = macroTorch.KS_CP4_Health_group / 5
 macroTorch.KS_CP5_Health_raid_pps = macroTorch.KS_CP5_Health_group / 5
 
-function macroTorch.isKillshotOrLastChance(clickContext)
+function macroTorch.isKillShotOrLastChance(clickContext)
     if macroTorch.target.willDieInSeconds(2) then
         return true
     end
@@ -654,15 +640,12 @@ function macroTorch.isKillshotOrLastChance(clickContext)
     end
 end
 
-function macroTorch.tryBiteKillshot(clickContext)
-    if macroTorch.isKillshotOrLastChance(clickContext) then
+function macroTorch.tryBiteKillShot(clickContext)
+    if macroTorch.isKillShotOrLastChance(clickContext) then
         if clickContext.comboPoints > 0 then
             macroTorch.player.cast('Ferocious Bite')
         else
-            if clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed then
-                macroTorch.safeShred(clickContext)
-            end
-            macroTorch.readyClaw(clickContext)
+            macroTorch.regularAttack(clickContext)
         end
     end
 end
@@ -718,68 +701,85 @@ function macroTorch.keepTigerFury(clickContext)
 end
 
 function macroTorch.keepRip(clickContext)
-    if not macroTorch.isFightStarted(clickContext) or macroTorch.isRipPresent(clickContext) or clickContext.comboPoints < 5 or clickContext.isImmuneRip or macroTorch.isKillshotOrLastChance(clickContext) then
+    -- Check preconditions for applying Rip
+    if not macroTorch.isFightStarted(clickContext)
+            or macroTorch.isRipPresent(clickContext)
+            or clickContext.comboPoints < 5
+            or clickContext.isImmuneRip
+            or macroTorch.isKillShotOrLastChance(clickContext)
+            or not macroTorch.isNearBy(clickContext) then
         return
     end
-    if not macroTorch.isNearBy(clickContext) then
-        return
-    end
-    -- boost attack power to rip when fighting world boss or player-controlled target
+
+    -- Boost attack power for important targets
     if macroTorch.target.classification == 'worldboss' or macroTorch.target.isPlayerControlled then
         macroTorch.atkPowerBurst(clickContext)
     end
-    -- if Savegery Idol not equipped, discharge energy before change
-    macroTorch.dischargeEnergyChangeRelicAndRip(clickContext,
-            not clickContext.rough and not macroTorch.isTrivialBattleOrPvp(clickContext))
+
+    -- Switch relic if needed and apply Rip
+    local shouldEquipSavagery = not clickContext.rough and not macroTorch.isTrivialBattleOrPvp(clickContext)
+    macroTorch.dischargeEnergyChangeRelicAndRip(clickContext, shouldEquipSavagery)
 end
 
 -- energy discharge needed due to possible energy overflow before rip
 function macroTorch.dischargeEnergyChangeRelicAndRip(clickContext, equipSavagery)
+    -- ooc: just discharge energy
     if clickContext.ooc then
-        -- macroTorch.show('Discharging before bite(ooc), rip left: ' .. macroTorch.ripLeft(clickContext))
-        macroTorch.doDischargeEnergy(clickContext)
-    elseif equipSavagery and macroTorch.player.hasItem('Idol of Savagery') and not macroTorch.player.isRelicEquipped('Idol of Savagery') then
-        -- discharge energy if overflows due to idol change, idol change need 1.5s + 1s(for perhaps ooc occured)
-        if macroTorch.player.mana + macroTorch.computeErps(clickContext) * 2.5 > 100 then
-            macroTorch.doDischargeEnergy(clickContext)
-        else
-            -- macroTorch.show('Switching relic: Idol of Savagery at energy: ' .. macroTorch.player.mana)
-            macroTorch.player.ensureRelicEquipped('Idol of Savagery')
-        end
-    else
-        if macroTorch.player.mana + macroTorch.computeErps(clickContext) * 2 - clickContext.RIP_E > 100 then
-            -- discharge if energy overflows due to energy generation is faster than rip energy cost, 1s for rip gcd and 1s for passible ooc
-            macroTorch.doDischargeEnergy(clickContext)
-        else
-            macroTorch.safeRip(clickContext)
-        end
+        macroTorch.regularAttack(clickContext)
+        return
     end
+
+    -- need to switch relic and have it
+    if equipSavagery and macroTorch.player.hasItem('Idol of Savagery') and not macroTorch.player.isRelicEquipped('Idol of Savagery') then
+        -- 2.5s = 1.5s for relic change + 1s for possible ooc
+        if macroTorch.player.mana + macroTorch.computeErps(clickContext) * 2.5 > 100 then
+            macroTorch.regularAttack(clickContext)
+            return
+        end
+        macroTorch.player.ensureRelicEquipped('Idol of Savagery')
+        return
+    end
+
+    -- about to rip: check if energy would overflow during 2s (1s rip gcd + 1s possible ooc)
+    if macroTorch.player.mana + macroTorch.computeErps(clickContext) * 2 - clickContext.RIP_E > 100 then
+        macroTorch.regularAttack(clickContext)
+        return
+    end
+
+    macroTorch.safeRip(clickContext)
 end
 
--- originates from keepRip, but no need to rip at 5cp
 function macroTorch.quickKeepRip(clickContext)
-    -- discharge cps when greater than 2
+    -- For cp >= 3: discharge and bite
     if clickContext.comboPoints >= 3 and not macroTorch.isRipPresent(clickContext) and not clickContext.isImmuneRip then
         macroTorch.energyDischargeBeforeBite(clickContext)
         macroTorch.safeBite(clickContext)
-    end
-    -- quick keep rip, do when cp < 3
-    if not macroTorch.isFightStarted(clickContext) or macroTorch.isRipPresent(clickContext) or clickContext.comboPoints == 0 or clickContext.comboPoints >= 3 or clickContext.isImmuneRip or macroTorch.isKillshotOrLastChance(clickContext) then
         return
     end
-    if not macroTorch.isNearBy(clickContext) then
+
+    -- For cp < 3: quick apply Rip
+    if not macroTorch.isFightStarted(clickContext)
+            or macroTorch.isRipPresent(clickContext)
+            or clickContext.comboPoints == 0
+            or clickContext.comboPoints >= 3
+            or clickContext.isImmuneRip
+            or macroTorch.isKillShotOrLastChance(clickContext)
+            or not macroTorch.isNearBy(clickContext) then
         return
     end
-    -- boost attack power to rip when fighting world boss or player-controlled target
+
+    -- Boost attack power for important targets
     if macroTorch.target.classification == 'worldboss' or macroTorch.target.isPlayerControlled then
         macroTorch.atkPowerBurst(clickContext)
     end
+
+    -- Apply Rip without switching relic (rough or pvp mode)
     macroTorch.dischargeEnergyChangeRelicAndRip(clickContext, false)
 end
 
 function macroTorch.keepRake(clickContext)
     -- in no condition rake on 5cp
-    if not macroTorch.isFightStarted(clickContext) or clickContext.comboPoints == 5 or macroTorch.isRakePresent(clickContext) or clickContext.isImmuneRake or macroTorch.isKillshotOrLastChance(clickContext) then
+    if not macroTorch.isFightStarted(clickContext) or clickContext.comboPoints == 5 or macroTorch.isRakePresent(clickContext) or clickContext.isImmuneRake or macroTorch.isKillShotOrLastChance(clickContext) then
         return
     end
     -- boost attack power to rake when fighting world boss
@@ -813,7 +813,7 @@ function macroTorch.keepFF(clickContext)
                     or player.mana >= clickContext.RIP_E and not macroTorch.isRipPresent(clickContext) and not clickContext.isImmuneRip and clickContext.comboPoints > 0 and macroTorch.isTrivialBattleOrPvp(clickContext)
                     or macroTorch.isTrivialBattleOrPvp(clickContext) and macroTorch.isFFPresent(clickContext) and (player.mana + macroTorch.computeErps(clickContext)) >= clickContext.TIGER_E
                     or clickContext.comboPoints == 5
-                    or macroTorch.isKillshotOrLastChance(clickContext)) then
+                    or macroTorch.isKillShotOrLastChance(clickContext)) then
         return
     end
     macroTorch.safeFF(clickContext)
