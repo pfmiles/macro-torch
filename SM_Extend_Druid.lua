@@ -57,7 +57,7 @@ function macroTorch.Druid:new()
         macroTorch.POUNCE_DURATION = 18
         macroTorch.TIGER_DURATION = macroTorch.computeTiger_Duration()
         macroTorch.RAKE_DURATION = 9
-        macroTorch.RIP_DURATION = 10
+        macroTorch.RIP_BASE_DURATION = 10
 
         macroTorch.show('POUNCE_E: ' ..
                 macroTorch.POUNCE_E ..
@@ -80,7 +80,7 @@ function macroTorch.Druid:new()
                 ', RAKE_DURATION: ' ..
                 macroTorch.RAKE_DURATION ..
                 ', RIP_DURATION: ' ..
-                macroTorch.RIP_DURATION
+                macroTorch.RIP_BASE_DURATION
         )
     end
 
@@ -118,6 +118,7 @@ function macroTorch.Druid:new()
 
         clickContext.rough = macroTorch.toBoolean(rough)
 
+        -- energy costs of certain skills
         clickContext.POUNCE_E = 50
         clickContext.CLAW_E = macroTorch.computeClaw_E()
         clickContext.SHRED_E = macroTorch.computeShred_E()
@@ -126,23 +127,28 @@ function macroTorch.Druid:new()
         clickContext.RIP_E = 30
         clickContext.TIGER_E = macroTorch.computeTiger_E()
 
+        -- durations of certain time lasting spell effects
         clickContext.TIGER_DURATION = macroTorch.computeTiger_Duration()
-        macroTorch.RIP_DURATION = 10
+        macroTorch.RIP_BASE_DURATION = 10
         macroTorch.RAKE_DURATION = 9
         clickContext.FF_DURATION = 40
         clickContext.POUNCE_DURATION = 18
 
-        -- TODO 有些回能手段需要靠天赋或装备计算出来，并非固定
+        -- erps is short for energy restoration per second
         clickContext.AUTO_TICK_ERPS = 20 / 2
         clickContext.TIGER_ERPS = 10 / 3
-        clickContext.RAKE_ERPS = 5 / 3
-        clickContext.RIP_ERPS = 5 / 2
-        clickContext.POUNCE_ERPS = 5 / 3
+        clickContext.RAKE_ERPS = macroTorch.computeRake_Erps()
+        clickContext.RIP_ERPS = macroTorch.computeRip_Erps()
+        clickContext.POUNCE_ERPS = macroTorch.computePounce_Erps()
         clickContext.BERSERK_ERPS = 20 / 2
 
+        -- the threat/aggro threshold to use cower
         macroTorch.COWER_THREAT_THRESHOLD = 75
+        -- the energy resetting value after reshift
+        -- TODO reshift energy restore should consider the head enchant: whether the wolfheart enchant exists
         clickContext.RESHIFT_ENERGY = 60
         clickContext.RESHIFT_E_DIFF_THRESHOLD = 0
+        -- the health line of urgent, whether to use some life saving items/spells
         clickContext.PLAYER_URGENT_HP_THRESHOLD = 15
 
         local player = macroTorch.player
@@ -354,6 +360,52 @@ function macroTorch.computeTiger_Duration()
     local tiger_duration = 6
     tiger_duration = tiger_duration + macroTorch.player.talentRank('Blood Frenzy') * 6
     return tiger_duration
+end
+
+function macroTorch.computeRake_Erps()
+    local ancientBrutalityRank = macroTorch.player.talentRank('Ancient Brutality')
+    if ancientBrutalityRank == 0 then
+        return 0  -- No energy regeneration without talent
+    end
+
+    local energyPerTick = (ancientBrutalityRank == 1) and 3 or 5
+    local tickInterval = 3  -- Base 3 seconds
+
+    -- Check if Savagery idol was equipped when Rake was cast (snapshot mechanic)
+    if macroTorch.context and macroTorch.context.lastRakeEquippedSavagery then
+        tickInterval = tickInterval * 0.9  -- 10% shorter tick interval
+    end
+
+    return energyPerTick / tickInterval
+end
+
+function macroTorch.computeRip_Erps()
+    local ancientBrutalityRank = macroTorch.player.talentRank('Ancient Brutality')
+    if ancientBrutalityRank == 0 then
+        return 0  -- No energy regeneration without talent
+    end
+
+    local energyPerTick = (ancientBrutalityRank == 1) and 3 or 5
+    local tickInterval = 2  -- Base 2 seconds
+
+    -- Check if Savagery idol was equipped when Rip was cast (snapshot mechanic)
+    if macroTorch.context and macroTorch.context.lastRipEquippedSavagery then
+        tickInterval = tickInterval * 0.9  -- 10% shorter tick interval
+    end
+
+    return energyPerTick / tickInterval
+end
+
+function macroTorch.computePounce_Erps()
+    local ancientBrutalityRank = macroTorch.player.talentRank('Ancient Brutality')
+    if ancientBrutalityRank == 0 then
+        return 0  -- No energy regeneration without talent
+    end
+
+    local energyPerTick = (ancientBrutalityRank == 1) and 3 or 5
+    local tickInterval = 3  -- Pounce tick interval is always 3 seconds, not affected by equipment
+
+    return energyPerTick / tickInterval
 end
 
 -- tracing certain spells and maintain the landTable
@@ -858,7 +910,7 @@ function macroTorch.ripLeft(clickContext)
             clickContext.ripLeft = 0
         else
             -- rip的连击点数每增一点，持续时间加2s
-            local ripDur = macroTorch.RIP_DURATION
+            local ripDur = macroTorch.RIP_BASE_DURATION
             if macroTorch.context.lastRipAtCp then
                 ripDur = ripDur + (macroTorch.context.lastRipAtCp - 1) * 2
             end
