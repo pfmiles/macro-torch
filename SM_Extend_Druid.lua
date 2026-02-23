@@ -763,6 +763,42 @@ function macroTorch.canDoReshift(clickContext)
     return (macroTorch.player.mana + energyDuringGcd) < minAbilityCost
 end
 
+-- 检查是否可以在等待窗口期间释放FF
+-- 返回true当:
+-- 1. 基础条件满足（非ooc、目标不免疫FF、不需要reshift）
+-- 2. 能量将在1.5秒内自然恢复到足够水平（无需reshift）
+-- 3. 当前能量不足以立即释放下一个技能
+-- 4. 等待时间 >= 1.0秒（FF的GCD是1秒）
+function macroTorch.shouldCastFFDuringWaitWindow(clickContext)
+    -- 基础排除条件
+    if clickContext.ooc
+            or macroTorch.target.isImmune('Faerie Fire (Feral)')
+            or macroTorch.canDoReshift(clickContext) then
+        return false
+    end
+
+    -- 计算1.5秒GCD期间的预期能量恢复
+    local energyDuringGcd = macroTorch.computeErps(clickContext) * 1.5
+    local minAbilityCost = macroTorch.getMinimumAffordableAbilityCost(clickContext)
+
+    local currentEnergy = macroTorch.player.mana
+    local projectedEnergy = currentEnergy + energyDuringGcd
+
+    -- 条件1: 1.5秒后能量将足够(无需reshift)
+    -- 条件2: 当前能量不足(需要等待)
+    if projectedEnergy >= minAbilityCost and currentEnergy < minAbilityCost then
+        -- 计算需要等待的时间
+        local energyNeeded = minAbilityCost - currentEnergy
+        local erps = macroTorch.computeErps(clickContext)
+        local waitSeconds = energyNeeded / erps
+
+        -- 条件3: 等待时间足够释放FF (FF的GCD是1秒)
+        return waitSeconds >= 1.0
+    end
+
+    return false
+end
+
 -- 计算当前如果做reshift能“赚”多少能量 (DEPRECATED: 保留用于调试)
 function macroTorch.computeReshiftEarning(clickContext)
     if clickContext.computeReshiftEarning == nil then
@@ -954,24 +990,10 @@ end
 -- no FF in: 1) melee range if other techs can use, 2) when ooc 3) immune 4) killshot 5) eager to reshift 6) cp5 7) player not in combat 8) prowling 9) target not in combat
 -- all in all: if in combat and there's nothing to do, then FF, no matter if FF debuff present, we wish to trigger more ooc through instant FFs
 function macroTorch.keepFF(clickContext)
-    local player = macroTorch.player
-    if clickContext.ooc
-            or macroTorch.target.isImmune('Faerie Fire (Feral)')
-            or macroTorch.canDoReshift(clickContext)
-            or not macroTorch.isFightStarted(clickContext)
-            or not macroTorch.target.isInCombat
-            or macroTorch.isNearBy(clickContext) and (
-            player.mana >= clickContext.CLAW_E and clickContext.comboPoints < 5
-                    or player.mana >= clickContext.BITE_E and clickContext.comboPoints == 5
-                    or player.mana >= clickContext.RAKE_E and not macroTorch.isRakePresent(clickContext) and not clickContext.isImmuneRake and clickContext.comboPoints < 5
-                    or player.mana >= clickContext.RIP_E and not macroTorch.isRipPresent(clickContext) and not clickContext.isImmuneRip and clickContext.comboPoints == 5
-                    or player.mana >= clickContext.RIP_E and not macroTorch.isRipPresent(clickContext) and not clickContext.isImmuneRip and clickContext.comboPoints > 0 and macroTorch.isTrivialBattleOrPvp(clickContext)
-                    or macroTorch.isTrivialBattleOrPvp(clickContext) and macroTorch.isFFPresent(clickContext) and (player.mana + macroTorch.computeErps(clickContext)) >= clickContext.TIGER_E
-                    or clickContext.comboPoints == 5
-                    or macroTorch.isKillShotOrLastChance(clickContext)) then
-        return
+    -- Check if we should cast FF during reshift waiting window
+    if macroTorch.shouldCastFFDuringWaitWindow(clickContext) then
+        macroTorch.safeFF(clickContext)
     end
-    macroTorch.safeFF(clickContext)
 end
 
 -- tiger fury效果是否还在，通过自身身上是否存在buff图标 + buff效果持续剩余时间是否到0来双重判断
