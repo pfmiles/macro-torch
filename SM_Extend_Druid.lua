@@ -233,7 +233,9 @@ function macroTorch.Druid:new()
             if macroTorch.isFightStarted(clickContext) and clickContext.comboPoints < 5 and (macroTorch.isRakePresent(clickContext) or clickContext.isImmuneRake) then
                 macroTorch.regularAttack(clickContext)
             end
-            -- 12.reshift模块，意思是从cat形态变身到cat形态(即形态不实际改变的“变身”，这是乌龟服特有的技能)，其作用是将自身能量固定重置为60；此模块需要判断当前释放reshift是否“划算”从而决定是否释放
+            -- 12.reshift模块，从cat形态变身到cat形态(形态不实际改变的“变身”，乌龟服特有技能)
+            -- 将能量固定重置为60。判断逻辑：当“无事可做”时释放，即当前能量不足以支持任何合理技能时
+            -- TODO reshift energy restore should consider wolfheart head enchant
             macroTorch.reshiftMod(clickContext)
         end
     end
@@ -461,8 +463,7 @@ end
 macroTorch.registerPeriodicTask('consumeDruidBattleEvents',
         { interval = 0.1, task = macroTorch.consumeDruidBattleEvents })
 
-function macroTorch.regularAttack(clickContext)
-    -- Count active bleeding effects
+function macroTorch.shouldUseShred(clickContext)
     local bleedCount = 0
     if macroTorch.isRakePresent(clickContext) then
         bleedCount = bleedCount + 1
@@ -474,31 +475,25 @@ function macroTorch.regularAttack(clickContext)
         bleedCount = bleedCount + 1
     end
 
+    -- Decision tree matching regularAttack logic
+    if bleedCount <= 1 then
+        return clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed
+    elseif bleedCount == 2 then
+        return clickContext.ooc and clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed
+    else
+        return false  -- 3+ bleeding always uses Claw
+    end
+end
+
+function macroTorch.regularAttack(clickContext)
     -- Determine which methods to use based on ooc
     -- ooc doesn't consume energy, so use ready methods instead of safe methods
     local shredMethod = clickContext.ooc and macroTorch.readyShred or macroTorch.safeShred
     local clawMethod = clickContext.ooc and macroTorch.readyClaw or macroTorch.safeClaw
 
-    -- New logic based on bleeding count:
-    -- 0-1 bleeding: prioritize shred (if behind and not failed)
-    -- 2 bleeding: prioritize claw (even with ooc, because both readyShred and readyClaw don't consume energy)
-    -- 3+ bleeding: always use claw, even with ooc
-    if bleedCount <= 1 then
-        -- 0 or 1 bleeding: use shred if conditions met
-        if clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed then
-            shredMethod(clickContext)
-        else
-            clawMethod(clickContext)
-        end
-    elseif bleedCount == 2 then
-        -- 2 bleeding: prioritize claw, but if ooc and behind then still use shred
-        if clickContext.ooc and clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed then
-            shredMethod(clickContext)
-        else
-            clawMethod(clickContext)
-        end
+    if macroTorch.shouldUseShred(clickContext) then
+        shredMethod(clickContext)
     else
-        -- 3+ bleeding: always use claw
         clawMethod(clickContext)
     end
 end
@@ -751,15 +746,24 @@ function macroTorch.computeErps(clickContext)
     return erps
 end
 
--- 判断当前做reshift是否划算，结合当前能量余量、当前的总ERPS值、以及当前身上是否有tiger fury buff来综合判断
+-- 判断当前能量是否不足以支持任何合理技能，若是则做reshift
 function macroTorch.canDoReshift(clickContext)
-    if not macroTorch.player.isInCombat or clickContext.prowling or clickContext.ooc then
+    -- 不在战斗、潜行中、ooc时、或killshot/lastChance时，不做reshift
+    if not macroTorch.player.isInCombat or clickContext.prowling or clickContext.ooc or macroTorch.isKillShotOrLastChance(clickContext) then
         return false
     end
-    return macroTorch.computeReshiftEarning(clickContext) > clickContext.RESHIFT_E_DIFF_THRESHOLD
+
+    -- 计算1.5秒GCD期间的预期能量恢复
+    local energyDuringGcd = macroTorch.computeErps(clickContext) * 1.5
+
+    -- 获取可释放的最低技能能量消耗
+    local minAbilityCost = macroTorch.getMinimumAffordableAbilityCost(clickContext)
+
+    -- 当前能量 + GCD期间恢复 < 最低技能消耗，则重变形
+    return (macroTorch.player.mana + energyDuringGcd) < minAbilityCost
 end
 
--- 计算当前如果做reshift能“赚”多少能量
+-- 计算当前如果做reshift能“赚”多少能量 (DEPRECATED: 保留用于调试)
 function macroTorch.computeReshiftEarning(clickContext)
     if clickContext.computeReshiftEarning == nil then
         -- 由于每时每刻身上都保持tiger fury是默认硬性要求，而reshift释放后会清掉身上的tiger fury效果，因此reshift后真正“赚”的能量需要扣除reshift后一定会再补放tiger fury的消耗
@@ -768,6 +772,37 @@ function macroTorch.computeReshiftEarning(clickContext)
                 (macroTorch.computeErps(clickContext) * 1.5)
     end
     return clickContext.computeReshiftEarning
+end
+
+function macroTorch.getMinimumAffordableAbilityCost(clickContext)
+    -- 0. Tiger's Fury check (if not present)
+    -- Note: Tiger GCD lasts 1s, but we conservatively check if it's not present
+    if not macroTorch.isTigerPresent(clickContext) then
+        return clickContext.TIGER_E
+    end
+
+    -- 1. Shred check (using shared logic from regularAttack)
+    if macroTorch.shouldUseShred(clickContext) then
+        return clickContext.SHRED_E
+    end
+
+    -- 2. Rake check (if not present and target not immune)
+    if not macroTorch.isRakePresent(clickContext) and not clickContext.isImmuneRake then
+        return clickContext.RAKE_E
+    end
+
+    -- 3. Rip check (using shared logic that handles normal vs quick battles)
+    if macroTorch.shouldCastRip(clickContext) then
+        return clickContext.RIP_E
+    end
+
+    -- 4. Ferocious Bite check (using shared logic)
+    if macroTorch.shouldUseBite(clickContext) then
+        return clickContext.BITE_E
+    end
+
+    -- 5. Default to Claw (most common builder)
+    return clickContext.CLAW_E
 end
 
 -- tiger fury when near
@@ -779,15 +814,55 @@ function macroTorch.keepTigerFury(clickContext)
     macroTorch.safeTigerFury(clickContext)
 end
 
--- 普通版的rip逻辑，与快战版不同，普通版rip逻辑力求rip持续伤害最大化，因此只会打5星rip
-function macroTorch.keepRip(clickContext)
-    -- Check preconditions for applying Rip
-    if not macroTorch.isFightStarted(clickContext)
-            or macroTorch.isRipPresent(clickContext)
-            or clickContext.comboPoints < 5
+-- Helper function to determine if Rip should be cast based on combo points and battle type
+function macroTorch.shouldCastRip(clickContext)
+    -- Common preconditions that apply to both normal and quick battles
+    if macroTorch.isRipPresent(clickContext)
             or clickContext.isImmuneRip
+            or not macroTorch.isFightStarted(clickContext)
             or macroTorch.isKillShotOrLastChance(clickContext)
             or not macroTorch.isNearBy(clickContext) then
+        return false
+    end
+
+    -- Determine CP requirements based on battle type
+    if macroTorch.isTrivialBattleOrPvp(clickContext) or clickContext.rough then
+        -- Quick battle: use 1-2 combo points
+        return clickContext.comboPoints >= 1 and clickContext.comboPoints <= 2
+    else
+        -- Normal battle: use exactly 5 combo points
+        return clickContext.comboPoints >= 5
+    end
+end
+
+-- Helper function to determine if Ferocious Bite should be used
+function macroTorch.shouldUseBite(clickContext)
+    -- Kill shot phase: use bite with any combo points
+    if macroTorch.isKillShotOrLastChance(clickContext) then
+        return clickContext.comboPoints > 0
+    end
+
+    -- Quick battle without Rip and not immune: CP >= 3 should bite
+    -- (to quickly consume CP and get to 1-2 CP for low-star Rip)
+    if (macroTorch.isTrivialBattleOrPvp(clickContext) or clickContext.rough)
+            and not clickContext.isImmuneRip
+            and not macroTorch.isRipPresent(clickContext)
+            and clickContext.comboPoints >= 3 then
+        return true
+    end
+
+    -- Normal battle or quick battle with Rip immunity: CP5 should bite (Rip present OR target immune)
+    if clickContext.comboPoints == 5 and (macroTorch.isRipPresent(clickContext) or clickContext.isImmuneRip) then
+        return true
+    end
+
+    return false
+end
+
+-- 普通版的rip逻辑，与快战版不同，普通版rip逻辑力求rip持续伤害最大化，因此只会打5星rip
+function macroTorch.keepRip(clickContext)
+    -- Use shared logic to check if Rip should be cast
+    if not macroTorch.shouldCastRip(clickContext) then
         return
     end
 
@@ -841,15 +916,8 @@ function macroTorch.quickKeepRip(clickContext)
         return
     end
 
-    -- For cp < 3: quick apply Rip
-    -- 这里先排除一些不应该rip的情况
-    if not macroTorch.isFightStarted(clickContext)
-            or macroTorch.isRipPresent(clickContext)
-            or clickContext.comboPoints == 0
-            or clickContext.comboPoints >= 3
-            or clickContext.isImmuneRip
-            or macroTorch.isKillShotOrLastChance(clickContext)
-            or not macroTorch.isNearBy(clickContext) then
+    -- For cp < 3: quick apply Rip using shared logic
+    if not macroTorch.shouldCastRip(clickContext) then
         return
     end
 
