@@ -111,9 +111,11 @@ function macroTorch.Druid:new()
         end
     end
 
+    -- 这是猫德一键输出宏逻辑，目标是dps最大化，利用好当前猫德伤害机制，利用好每一点能量，尽可能使能量不溢出、也不因为能量不足而卡技能
     --- The 'E' key regular dps function for feral cat druid
     --- if rough, all combats are considered short
     function obj.catAtk(rough)
+        -- clickContext是单次点击范围内的context，用作取值cache优化
         local clickContext = {}
 
         clickContext.rough = macroTorch.toBoolean(rough)
@@ -134,7 +136,7 @@ function macroTorch.Druid:new()
         clickContext.FF_DURATION = 40
         clickContext.POUNCE_DURATION = 18
 
-        -- erps is short for energy restoration per second
+        -- erps is short for energy restoration per second, 这里给出了当前游戏阶段猫德拥有的所有回能机制的每秒回能期望
         clickContext.AUTO_TICK_ERPS = 20 / 2
         clickContext.TIGER_ERPS = 10 / 3
         clickContext.RAKE_ERPS = macroTorch.computeRake_Erps()
@@ -165,21 +167,22 @@ function macroTorch.Druid:new()
         clickContext.isImmuneRake = target.isImmune('Rake')
         clickContext.isImmuneRip = target.isImmune('Rip')
 
+        -- normal relic指接下来的战斗默认穿戴的relic，若目标免疫流血效果则使用Ferocity, 否则使用Savagery
         if clickContext.isImmuneRip then
             clickContext.normalRelic = 'Idol of Ferocity'
         else
             clickContext.normalRelic = 'Idol of Savagery'
         end
 
-        -- 0.idol recover
+        -- 0.idol recover, equip the current normal relic if not equipped
         macroTorch.recoverNormalRelic(clickContext, clickContext.normalRelic)
 
         -- 1.health & mana saver in combat *
         if macroTorch.isFightStarted(clickContext) then
             macroTorch.combatUrgentHPRestore(clickContext)
-            -- macroTorch.useItemIfManaPercentLessThan(p, 20, 'Mana Potion') TODO 由于cat形态下无法读取真正的mana，因此这里暂时作废
+            -- macroTorch.useItemIfManaPercentLessThan(p, 20, 'Mana Potion') TODO 由于cat形态读到的是energy不是真正的mana，这个逻辑后续再写
         end
-        -- 2.targetEnemy *
+        -- 2.targetEnemy，自动切换目标，如果当前目标不满足存在且是可攻击目标的条件
         if not target.isCanAttack then
             player.targetEnemy()
         else
@@ -187,14 +190,14 @@ function macroTorch.Druid:new()
             if macroTorch.isFightStarted(clickContext) then
                 player.startAutoAtk()
             end
-            -- 4.rushMod, incuding trinckets, berserk and potions *
+            -- 4.rushMod, including trinkets, berserk and potions, normally triggered by holding shift while fighting
             macroTorch.burstMod(clickContext)
-            -- roughly bear form logic branch
+            -- roughly bear form logic branch, TODO 其实bear形态逻辑应该完全从catAtck逻辑中剥离出来，在最上层的宏里面通过当前形态来路由
             if clickContext.isInBearForm then
                 macroTorch.bearAtk(clickContext)
                 return
             end
-            -- 5.starterMod
+            -- 5.opener mod, 因为Ravage差不多可以秒掉1500血以内的目标，除此之外均使用Pounce以增加后续claw的伤害
             if clickContext.prowling then
                 if not target.isImmune('Pounce') and target.health >= 1500 then
                     macroTorch.safePounce(clickContext)
@@ -205,28 +208,32 @@ function macroTorch.Druid:new()
 
             -- 7.oocMod: 没有潜行且ooc 或 前行但目标正在攻击我
             if not clickContext.prowling or target.isAttackingMe then
+                -- ooc = Omen of Clarity, 为施法节能状态, 这里实现该状态的技能逻辑，目的为尽可能dps最大化
                 macroTorch.oocMod(clickContext)
             end
-            -- 6.termMod: term on rip or killshot
+            -- 6.termMod: 终结技模块，实际上这里就只是bite模块，因为rip在单独自己的模块里处理了
             macroTorch.termMod(clickContext)
-            -- 8.OT mod
+            -- 8.OT mod, 处理快要OT时的情况，比如使用Cower降低威胁值，或直接无敌药水暂时避免boss攻击我
             macroTorch.otMod(clickContext)
-            -- 9.combatBuffMod - tiger's fury *
+            -- 9.tiger fury模块，战斗中时刻保持tiger fury buff
             macroTorch.keepTigerFury(clickContext)
             -- 10.debuffMod, including rip, rake and FF
             if clickContext.rough or macroTorch.isTrivialBattleOrPvp(clickContext) then
-                -- no need to do deep rip when pvp
+                -- 如果是pvp或者预判出本次战斗持续时间很短，则无须做5星rip，直接低星rip让claw受益即可，因为rip是持续流血效果，回报周期长，目标坚持不了那么久
                 macroTorch.quickKeepRip(clickContext)
             else
+                -- 非pvp，且战斗时间相对较长，做5星rip最大化其流血伤害
                 macroTorch.keepRip(clickContext)
             end
+            -- 保持rake流血效果，如果目标不免疫流血的话
             macroTorch.keepRake(clickContext)
+            -- 保持FF(野性精灵之火)效果，如果目标不免疫FF的话; 且由于精灵之火的释放成本很低，无须消耗能量，成本仅仅是1s的GCD，且跟其它攻击技能或普通攻击一样有概率触发ooc，因此我会在“没有别的事情可干”的时候释放一发精灵之火，即使目标身上已有该效果
             macroTorch.keepFF(clickContext)
-            -- 11.regular attack tech mod
+            -- 11.普通攻击技能模块，攒星的主要技能，主要是claw和shred, 根据实测结果，依据目标身上的流血效果数量和当前自己的站位而灵活选择claw或shred释放
             if macroTorch.isFightStarted(clickContext) and clickContext.comboPoints < 5 and (macroTorch.isRakePresent(clickContext) or clickContext.isImmuneRake) then
                 macroTorch.regularAttack(clickContext)
             end
-            -- 12.energy res mod
+            -- 12.reshift模块，意思是从cat形态变身到cat形态(即形态不实际改变的“变身”，这是乌龟服特有的技能)，其作用是将自身能量固定重置为60；此模块需要判断当前释放reshift是否“划算”从而决定是否释放
             macroTorch.reshiftMod(clickContext)
         end
     end
@@ -501,6 +508,7 @@ function macroTorch.isTrivialBattleOrPvp(clickContext)
             macroTorch.isTrivialBattle(clickContext)
 end
 
+-- determine whether this would be a short battle(the target will die very soon)
 function macroTorch.isTrivialBattle(clickContext)
     if clickContext.isTrivialBattle == nil then
         local trivialDieTime = 25
@@ -536,6 +544,7 @@ function macroTorch.isFightStarted(clickContext)
 end
 
 function macroTorch.otMod(clickContext)
+    -- 排除掉训练木桩的情况
     if string.find(macroTorch.target.name, 'Training Dummy') then
         return
     end
@@ -551,8 +560,11 @@ function macroTorch.otMod(clickContext)
         return
     end
     if target.isAttackingMe and not player.isSpellReady('Cower') and target.classification == 'worldboss' then
+        -- boss正在攻击我且Cower没好，直接使用无敌药水
         player.use('Invulnerability Potion', true)
     end
+
+    -- 当目前威胁值大于一定阈值，使用cower降低威胁值; TODO 这里需要使用safeCower，且应考虑利用reshift回能，若能量不足的话;回能逻辑或许不必专门写在这里，而是交给通用的回能模块
     if macroTorch.canDoReshift(clickContext) then
         return
     end
@@ -562,16 +574,22 @@ function macroTorch.otMod(clickContext)
 end
 
 function macroTorch.termMod(clickContext)
+    -- 若目标已经可斩杀，优先斩杀，否则做常规的5星撕咬
     macroTorch.tryBiteKillShot(clickContext)
     macroTorch.cp5Bite(clickContext)
 end
 
 function macroTorch.cp5Bite(clickContext)
+    -- 若目标身上还不存在rip效果，一般5星时是优先rip而非bite的，除非目标本来就免疫流血
     if clickContext.comboPoints == 5 and (clickContext.isImmuneRip or macroTorch.isRipPresent(clickContext)) then
-        -- only discharge energy when rip time left is greater then 1.8s
+        -- bite有个机制：会将当前能量扣除使用bite的能量后剩余的能量转化为额外的伤害，若ooc则更是能将当前所有energy都转化为伤害打出
+        -- 但经过实测，让bite转换多余能量还不如将多余能量打成其它技能收益来得大；ooc时bite也不如先用其它技能用掉ooc效果再bite，因此这里设置一个“bite之前泄能逻辑”来最大化dps
+        -- 需要注意的是，泄能逻辑需要考虑一个特殊情况：bite是会刷新目标身上的流血效果的，因此为了不让rip效果断掉，我仅在目标身上流血效果还剩足够时间时泄能，若rip效果快没了，则需要马上bite刷新rip时间，否则若让rip断掉的话得不偿失；
+        -- 这里定义一个“rip效果快结束了”概念的时间，来决定当前是否该泄能；目前只考虑rip，暂不考虑rake效果，因为rake持续时间本来就很短(默认9s)，在当前游戏阶段的装备条件下，很难连续暴击在9s内攒齐5星来打bite刷新双流血效果(技能暴击将一次性攒2颗星)，因此目前暂不强求rake效果一定被bite续上；only discharge energy when rip time left is greater then 1.8s
         if not ((macroTorch.isRipPresent(clickContext) and macroTorch.ripLeft(clickContext) <= 1.8)) then
             macroTorch.energyDischargeBeforeBite(clickContext)
         end
+        -- 以是否ooc判断当前该使用ready版本或是safe版本逻辑
         if clickContext.ooc then
             macroTorch.readyBite(clickContext)
         else
@@ -600,12 +618,13 @@ function macroTorch.oocMod(clickContext)
     if not clickContext.ooc then
         return
     end
+    -- 如果目标已经可斩杀，直接斩杀，不用考虑其它逻辑了
     macroTorch.tryBiteKillShot(clickContext)
     if clickContext.comboPoints < 5 then
-        -- regular attack to discharge ooc
+        -- 使用普通攒星逻辑来用掉本次ooc的机会
         macroTorch.regularAttack(clickContext)
     else
-        -- cp5 bite when ooc
+        -- 已经5星，则调用5星bite模块，让bite模块去处理各种情况
         macroTorch.cp5Bite(clickContext)
     end
 end
@@ -628,6 +647,7 @@ macroTorch.KS_CP3_Health_raid_pps = macroTorch.KS_CP3_Health_group / 5
 macroTorch.KS_CP4_Health_raid_pps = macroTorch.KS_CP4_Health_group / 5
 macroTorch.KS_CP5_Health_raid_pps = macroTorch.KS_CP5_Health_group / 5
 
+-- 预测判断当前是否只有最后一次机会攻击目标了，目标可能快死了
 function macroTorch.isKillShotOrLastChance(clickContext)
     if macroTorch.target.willDieInSeconds(2) then
         return true
@@ -692,17 +712,20 @@ function macroTorch.isKillShotOrLastChance(clickContext)
     end
 end
 
+-- 判断目标是否快死了，我只有最后一次攻击机会了，那么此时应该尽量用bite把当前剩余的星都用掉从而最大化dps,不浪费星
 function macroTorch.tryBiteKillShot(clickContext)
     if macroTorch.isKillShotOrLastChance(clickContext) then
         if clickContext.comboPoints > 0 then
             macroTorch.player.cast('Ferocious Bite')
         else
+            -- 如果当前没星的话也只能做普通攻击
             macroTorch.regularAttack(clickContext)
         end
     end
 end
 
 function macroTorch.reshiftMod(clickContext)
+    -- 如果当前做reshift“划算”，则做reshift
     if macroTorch.canDoReshift(clickContext) then
         macroTorch.readyReshift(clickContext)
     end
@@ -728,7 +751,7 @@ function macroTorch.computeErps(clickContext)
     return erps
 end
 
--- reshift at anytime in battle & not prowling & not ooc when: the current 'enerty restoration per-second' is lesser than '30 - currentEnergyBeforeReshift'
+-- 判断当前做reshift是否划算，结合当前能量余量、当前的总ERPS值、以及当前身上是否有tiger fury buff来综合判断
 function macroTorch.canDoReshift(clickContext)
     if not macroTorch.player.isInCombat or clickContext.prowling or clickContext.ooc then
         return false
@@ -736,8 +759,11 @@ function macroTorch.canDoReshift(clickContext)
     return macroTorch.computeReshiftEarning(clickContext) > clickContext.RESHIFT_E_DIFF_THRESHOLD
 end
 
+-- 计算当前如果做reshift能“赚”多少能量
 function macroTorch.computeReshiftEarning(clickContext)
     if clickContext.computeReshiftEarning == nil then
+        -- 由于每时每刻身上都保持tiger fury是默认硬性要求，而reshift释放后会清掉身上的tiger fury效果，因此reshift后真正“赚”的能量需要扣除reshift后一定会再补放tiger fury的消耗
+        -- 当前的“赚取”能量计算方法逻辑为：reshift重置到的能量(60) 减去固定补tiger的能量，再减去reshift前身上剩余的能量，再减去当前ERPS值在1.5s GCD(这是reshift释放后的GCD)后的预期恢复能量值，若是正数就代表有得赚,即此时reshift值得做
         clickContext.computeReshiftEarning = clickContext.RESHIFT_ENERGY - clickContext.TIGER_E - macroTorch.player.mana -
                 (macroTorch.computeErps(clickContext) * 1.5)
     end
@@ -746,12 +772,14 @@ end
 
 -- tiger fury when near
 function macroTorch.keepTigerFury(clickContext)
+    -- 在距离目标20码以内才使用tiger fury，避免过早使用浪费buff时间
     if macroTorch.isTigerPresent(clickContext) or macroTorch.target.distance > 20 then
         return
     end
     macroTorch.safeTigerFury(clickContext)
 end
 
+-- 普通版的rip逻辑，与快战版不同，普通版rip逻辑力求rip持续伤害最大化，因此只会打5星rip
 function macroTorch.keepRip(clickContext)
     -- Check preconditions for applying Rip
     if not macroTorch.isFightStarted(clickContext)
@@ -768,6 +796,7 @@ function macroTorch.keepRip(clickContext)
         macroTorch.atkPowerBurst(clickContext)
     end
 
+    -- 普通版rip逻辑会要求尽量在rip时穿戴流血idol(Idol of Savagery)
     -- Switch relic if needed and apply Rip
     local shouldEquipSavagery = not clickContext.rough and not macroTorch.isTrivialBattleOrPvp(clickContext)
     macroTorch.dischargeEnergyChangeRelicAndRip(clickContext, shouldEquipSavagery)
@@ -801,7 +830,10 @@ function macroTorch.dischargeEnergyChangeRelicAndRip(clickContext, equipSavagery
     macroTorch.safeRip(clickContext)
 end
 
+-- 快战版的keep rip, 由于预估战斗会很快结束，因此上rip的目的是为了增强claw，而不是为了rip那点流血效果伤害，因此这里只打低星rip以求速度挂上流血
 function macroTorch.quickKeepRip(clickContext)
+    -- 经过实测，如果此时星数已经大于等于3星，则此时挂rip的收益还不如直接打一发bite,之后再攒到1-2星再打rip，因为目标预计会很快死亡，rip流血效果的回报周期太长，目标活不了那么久，因此不如直接打bite造成直接伤害
+    -- 当然了，打bite之前也要考虑先泄能，为了dps最大化,利用好每一点能量
     -- For cp >= 3: discharge and bite
     if clickContext.comboPoints >= 3 and not macroTorch.isRipPresent(clickContext) and not clickContext.isImmuneRip then
         macroTorch.energyDischargeBeforeBite(clickContext)
@@ -810,6 +842,7 @@ function macroTorch.quickKeepRip(clickContext)
     end
 
     -- For cp < 3: quick apply Rip
+    -- 这里先排除一些不应该rip的情况
     if not macroTorch.isFightStarted(clickContext)
             or macroTorch.isRipPresent(clickContext)
             or clickContext.comboPoints == 0
@@ -820,11 +853,13 @@ function macroTorch.quickKeepRip(clickContext)
         return
     end
 
+    -- 如果是重要目标，则rip也要伴随攻强饰品的使用，因为rip的流血伤害随ap加成
     -- Boost attack power for important targets
     if macroTorch.target.classification == 'worldboss' or macroTorch.target.isPlayerControlled then
         macroTorch.atkPowerBurst(clickContext)
     end
 
+    -- 在快战版的rip逻辑中，无须要求更换流血idol，因为战斗速度很快，更换idol会带来1.5s GCD，可能得不偿失
     -- Apply Rip without switching relic (rough or pvp mode)
     macroTorch.dischargeEnergyChangeRelicAndRip(clickContext, false)
 end
@@ -871,6 +906,7 @@ function macroTorch.keepFF(clickContext)
     macroTorch.safeFF(clickContext)
 end
 
+-- tiger fury效果是否还在，通过自身身上是否存在buff图标 + buff效果持续剩余时间是否到0来双重判断
 function macroTorch.isTigerPresent(clickContext)
     if clickContext.isTigerPresent == nil then
         clickContext.isTigerPresent = macroTorch.toBoolean(macroTorch.player.hasBuff('Ability_Mount_JungleTiger') and
@@ -879,6 +915,7 @@ function macroTorch.isTigerPresent(clickContext)
     return clickContext.isTigerPresent
 end
 
+-- 由于游戏官方api获取debuff剩余时间不准，这里的debuff剩余时间由我自己实现倒计时计数，以记录准确的debuff剩余时间
 function macroTorch.tigerLeft(clickContext)
     if clickContext.tigerLeft == nil then
         local tigerLeft = 0
@@ -903,6 +940,7 @@ function macroTorch.isRipPresent(clickContext)
     return clickContext.isRipPresent
 end
 
+-- 由于官方api获取buff/debuff剩余时间不准确，因此这里的ripLeft时间只能自己记录和计算
 function macroTorch.ripLeft(clickContext)
     if clickContext.ripLeft == nil then
         local lastLandedRipTime = macroTorch.peekLandEvent('Rip')
@@ -936,6 +974,7 @@ function macroTorch.isRakePresent(clickContext)
     return clickContext.isRakePresent
 end
 
+-- 由于官方api获取buff/debuff剩余时间不准确，因此这里的rakeLeft时间只能自己记录和计算
 function macroTorch.rakeLeft(clickContext)
     if clickContext.rakeLeft == nil then
         local lastLandedRakeTime = macroTorch.peekLandEvent('Rake')
