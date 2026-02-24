@@ -811,33 +811,33 @@ function macroTorch.computeReshiftEarning(clickContext)
 end
 
 function macroTorch.getMinimumAffordableAbilityCost(clickContext)
-    -- 0. Tiger's Fury check (if not present)
-    -- Note: Tiger GCD lasts 1s, but we conservatively check if it's not present
-    if not macroTorch.isTigerPresent(clickContext) then
-        return clickContext.TIGER_E
-    end
-
-    -- 1. Shred check (using shared logic from regularAttack)
-    if macroTorch.shouldUseShred(clickContext) then
-        return clickContext.SHRED_E
-    end
-
-    -- 2. Rake check (if not present and target not immune)
-    if not macroTorch.isRakePresent(clickContext) and not clickContext.isImmuneRake then
-        return clickContext.RAKE_E
-    end
-
-    -- 3. Rip check (using shared logic that handles normal vs quick battles)
-    if macroTorch.shouldCastRip(clickContext) then
-        return clickContext.RIP_E
-    end
-
-    -- 4. Ferocious Bite check (using shared logic)
+    -- 1. Ferocious Bite check (highest priority in Term Mod)
+    -- Note: Bite has priority over Tiger during kill shot or 5cp with rip
     if macroTorch.shouldUseBite(clickContext) then
         return clickContext.BITE_E
     end
 
-    -- 5. Default to Claw (most common builder)
+    -- 2. Tiger's Fury check (maintain buff if not active)
+    if not macroTorch.isTigerPresent(clickContext) then
+        return clickContext.TIGER_E
+    end
+
+    -- 3. Rip check (debuff maintenance)
+    if macroTorch.shouldCastRip(clickContext) then
+        return clickContext.RIP_E
+    end
+
+    -- 4. Rake check (debuff maintenance)
+    if not macroTorch.isRakePresent(clickContext) and not clickContext.isImmuneRake then
+        return clickContext.RAKE_E
+    end
+
+    -- 5. Shred check (using shred vs claw decision logic)
+    if macroTorch.shouldUseShred(clickContext) then
+        return clickContext.SHRED_E
+    end
+
+    -- 6. Default to Claw (standard builder)
     return clickContext.CLAW_E
 end
 
