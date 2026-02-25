@@ -1168,7 +1168,7 @@ function macroTorch.readyReshift(clickContext, nextMove, minAbilityCost)
         macroTorch.show('Reshift!!! energy = ' ..
                 macroTorch.player.mana ..
                 ', nextMove: ' .. tostring(nextMove) ..
-                ', curErps1.5: ' .. tostring(macroTorch.computeErps(clickContext) * 1.5) ', nextMoveCost: ' .. tostring(minAbilityCost) .. ', tigerLeft = ' .. macroTorch.tigerLeft(clickContext))
+                ', curErps1.5: ' .. tostring(macroTorch.computeErps(clickContext) * 1.5) .. ', nextMoveCost: ' .. tostring(minAbilityCost) .. ', tigerLeft = ' .. macroTorch.tigerLeft(clickContext))
         macroTorch.player.cast('Reshift')
         return true
     end
