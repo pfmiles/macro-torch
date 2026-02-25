@@ -167,12 +167,8 @@ function macroTorch.Druid:new()
         clickContext.isImmuneRake = target.isImmune('Rake')
         clickContext.isImmuneRip = target.isImmune('Rip')
 
-        -- normal relic指接下来的战斗默认穿戴的relic，若目标免疫流血效果则使用Ferocity, 否则使用Savagery
-        if clickContext.isImmuneRip then
-            clickContext.normalRelic = 'Idol of Ferocity'
-        else
-            clickContext.normalRelic = 'Idol of Savagery'
-        end
+        -- 计算normal relic（接下来的战斗默认穿戴的relic）
+        clickContext.normalRelic = macroTorch.computeNormalRelic(clickContext)
 
         -- 0.idol recover, equip the current normal relic if not equipped
         macroTorch.recoverNormalRelic(clickContext, clickContext.normalRelic)
@@ -304,6 +300,40 @@ function macroTorch.burstMod(clickContext)
         -- reset flags if all set
         if flags.berserk and flags.jujuFlurry and flags.atkPowerBurst then
             macroTorch.context.burstFlags = nil
+        end
+    end
+end
+
+-- 计算normal relic（接下来的战斗默认穿戴的relic）
+-- 逻辑：
+-- 1. 不在战斗时：免疫rip用fero，不免疫用savagery
+-- 2. 在战斗时：
+--    - 快速战斗/PvP：保持原逻辑不变
+--    - 普通战斗：如果rip已存在且目标不免疫rip，则使用fero以便快速打出claw；否则用savagery
+function macroTorch.computeNormalRelic(clickContext)
+    if not macroTorch.player.isInCombat then
+        -- 未进入战斗，按原逻辑
+        if clickContext.isImmuneRip then
+            return 'Idol of Ferocity'
+        else
+            return 'Idol of Savagery'
+        end
+    else
+        -- 已进入战斗
+        if macroTorch.isTrivialBattleOrPvp(clickContext) or clickContext.rough then
+            -- 快速战斗/PvP，保持原逻辑
+            if clickContext.isImmuneRip then
+                return 'Idol of Ferocity'
+            else
+                return 'Idol of Savagery'
+            end
+        else
+            -- 普通战斗，如果rip已存在且目标不免疫rip，则使用fero
+            if not clickContext.isImmuneRip and macroTorch.isRipPresent(clickContext) then
+                return 'Idol of Ferocity'
+            else
+                return 'Idol of Savagery'
+            end
         end
     end
 end
@@ -560,7 +590,7 @@ function macroTorch.otMod(clickContext)
     end
 
     -- 当目前威胁值大于一定阈值，使用cower降低威胁值; TODO 这里需要使用safeCower，且应考虑利用reshift回能，若能量不足的话;回能逻辑或许不必专门写在这里，而是交给通用的回能模块
-    if macroTorch.canDoReshift(clickContext) then
+    if macroTorch.shouldDoReshift(clickContext) then
         return
     end
     if target.isAttackingMe or (target.classification == 'worldboss' and player.threatPercent >= macroTorch.COWER_THREAT_THRESHOLD) then
@@ -721,12 +751,18 @@ end
 
 function macroTorch.reshiftMod(clickContext)
     -- 如果当前做reshift“划算”，则做reshift
-    if macroTorch.canDoReshift(clickContext) then
-        macroTorch.readyReshift(clickContext)
+    local shouldDoReshift, nextMove, minAbilityCost = macroTorch.shouldDoReshift(clickContext)
+    if shouldDoReshift then
+        macroTorch.readyReshift(clickContext, nextMove, minAbilityCost)
     end
 end
 
 function macroTorch.computeErps(clickContext)
+    -- Cache result to avoid redundant calculations per click
+    if clickContext.computeErps ~= nil then
+        return clickContext.computeErps
+    end
+
     local erps = clickContext.AUTO_TICK_ERPS
     if macroTorch.isTigerPresent(clickContext) then
         erps = erps + clickContext.TIGER_ERPS
@@ -743,24 +779,29 @@ function macroTorch.computeErps(clickContext)
     if clickContext.berserk then
         erps = erps + clickContext.BERSERK_ERPS
     end
+
+    clickContext.computeErps = erps
     return erps
 end
 
--- 判断当前能量是否不足以支持任何合理技能，若是则做reshift
-function macroTorch.canDoReshift(clickContext)
+-- 判断是否应该在等待期间做reshift
+-- 逻辑：如果自然恢复1.5s后能量足够，则等待；否则，reshift（利用这1.5s的等待时间）
+function macroTorch.shouldDoReshift(clickContext)
     -- 不在战斗、潜行中、ooc时、或killshot/lastChance时，不做reshift
     if not macroTorch.player.isInCombat or clickContext.prowling or clickContext.ooc or macroTorch.isKillShotOrLastChance(clickContext) then
         return false
     end
 
-    -- 计算1.5秒GCD期间的预期能量恢复
+    -- 计算1.5秒自然恢复后的预期能量
     local energyDuringGcd = macroTorch.computeErps(clickContext) * 1.5
+    local projectedEnergy = macroTorch.player.mana + energyDuringGcd
 
     -- 获取可释放的最低技能能量消耗
-    local minAbilityCost = macroTorch.getMinimumAffordableAbilityCost(clickContext)
+    local minAbilityCost, nextMove = macroTorch.getMinimumAffordableAbilityCost(clickContext)
 
-    -- 当前能量 + GCD期间恢复 < 最低技能消耗，则重变形
-    return (macroTorch.player.mana + energyDuringGcd) < minAbilityCost
+    -- 如果1.5秒自然恢复后能量足够 → 不reshift（避免1.5s GCD卡住技能）
+    -- 如果1.5秒自然恢复后能量不够 → reshift（反正都要等，利用1.5s GCD）
+    return projectedEnergy < minAbilityCost, nextMove, minAbilityCost
 end
 
 -- 检查是否可以在等待窗口期间释放FF
@@ -773,7 +814,7 @@ function macroTorch.shouldCastFFDuringWaitWindow(clickContext)
     -- 基础排除条件
     if clickContext.ooc
             or macroTorch.target.isImmune('Faerie Fire (Feral)')
-            or macroTorch.canDoReshift(clickContext) then
+            or macroTorch.shouldDoReshift(clickContext) then
         return false
     end
 
@@ -799,46 +840,35 @@ function macroTorch.shouldCastFFDuringWaitWindow(clickContext)
     return false
 end
 
--- 计算当前如果做reshift能“赚”多少能量 (DEPRECATED: 保留用于调试)
-function macroTorch.computeReshiftEarning(clickContext)
-    if clickContext.computeReshiftEarning == nil then
-        -- 由于每时每刻身上都保持tiger fury是默认硬性要求，而reshift释放后会清掉身上的tiger fury效果，因此reshift后真正“赚”的能量需要扣除reshift后一定会再补放tiger fury的消耗
-        -- 当前的“赚取”能量计算方法逻辑为：reshift重置到的能量(60) 减去固定补tiger的能量，再减去reshift前身上剩余的能量，再减去当前ERPS值在1.5s GCD(这是reshift释放后的GCD)后的预期恢复能量值，若是正数就代表有得赚,即此时reshift值得做
-        clickContext.computeReshiftEarning = clickContext.RESHIFT_ENERGY - clickContext.TIGER_E - macroTorch.player.mana -
-                (macroTorch.computeErps(clickContext) * 1.5)
-    end
-    return clickContext.computeReshiftEarning
-end
-
 function macroTorch.getMinimumAffordableAbilityCost(clickContext)
     -- 1. Ferocious Bite check (highest priority in Term Mod)
     -- Note: Bite has priority over Tiger during kill shot or 5cp with rip
     if macroTorch.shouldUseBite(clickContext) then
-        return clickContext.BITE_E
+        return clickContext.BITE_E, 'Bite'
     end
 
     -- 2. Tiger's Fury check (maintain buff if not active)
     if not macroTorch.isTigerPresent(clickContext) then
-        return clickContext.TIGER_E
+        return clickContext.TIGER_E, 'Tiger'
     end
 
     -- 3. Rip check (debuff maintenance)
     if macroTorch.shouldCastRip(clickContext) then
-        return clickContext.RIP_E
+        return clickContext.RIP_E, 'Rip'
     end
 
     -- 4. Rake check (debuff maintenance)
     if not macroTorch.isRakePresent(clickContext) and not clickContext.isImmuneRake then
-        return clickContext.RAKE_E
+        return clickContext.RAKE_E, 'Rake'
     end
 
     -- 5. Shred check (using shred vs claw decision logic)
     if macroTorch.shouldUseShred(clickContext) then
-        return clickContext.SHRED_E
+        return clickContext.SHRED_E, 'Shred'
     end
 
     -- 6. Default to Claw (standard builder)
-    return clickContext.CLAW_E
+    return clickContext.CLAW_E, 'Claw'
 end
 
 -- tiger fury when near
@@ -1133,12 +1163,12 @@ function macroTorch.pounceLeft(clickContext)
     return clickContext.pounceLeft
 end
 
-function macroTorch.readyReshift(clickContext)
+function macroTorch.readyReshift(clickContext, nextMove, minAbilityCost)
     if macroTorch.player.isSpellReady('Reshift') then
         macroTorch.show('Reshift!!! energy = ' ..
                 macroTorch.player.mana ..
-                ', earning: ' ..
-                macroTorch.computeReshiftEarning(clickContext) .. ', tigerLeft = ' .. macroTorch.tigerLeft(clickContext))
+                ', nextMove: ' .. tostring(nextMove) ..
+                ', curErps1.5: ' .. tostring(macroTorch.computeErps(clickContext) * 1.5) ', nextMoveCost: ' .. tostring(minAbilityCost) .. ', tigerLeft = ' .. macroTorch.tigerLeft(clickContext))
         macroTorch.player.cast('Reshift')
         return true
     end
