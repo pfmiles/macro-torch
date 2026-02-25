@@ -617,7 +617,7 @@ function macroTorch.cp5Bite(clickContext)
         -- 但经过实测，让bite转换多余能量还不如将多余能量打成其它技能收益来得大；ooc时bite也不如先用其它技能用掉ooc效果再bite，因此这里设置一个“bite之前泄能逻辑”来最大化dps
         -- 需要注意的是，泄能逻辑需要考虑一个特殊情况：bite是会刷新目标身上的流血效果的，因此为了不让rip效果断掉，我仅在目标身上流血效果还剩足够时间时泄能，若rip效果快没了，则需要马上bite刷新rip时间，否则若让rip断掉的话得不偿失；
         -- 这里定义一个“rip效果快结束了”概念的时间，来决定当前是否该泄能；目前只考虑rip，暂不考虑rake效果，因为rake持续时间本来就很短(默认9s)，在当前游戏阶段的装备条件下，很难连续暴击在9s内攒齐5星来打bite刷新双流血效果(技能暴击将一次性攒2颗星)，因此目前暂不强求rake效果一定被bite续上；only discharge energy when rip time left is greater then 1.8s
-        if not ((macroTorch.isRipPresent(clickContext) and macroTorch.ripLeft(clickContext) <= 1.8)) then
+        if not ((macroTorch.isRipPresent(clickContext) and macroTorch.ripLeft(clickContext) <= 2.3)) then
             macroTorch.energyDischargeBeforeBite(clickContext)
         end
         -- 以是否ooc判断当前该使用ready版本或是safe版本逻辑
