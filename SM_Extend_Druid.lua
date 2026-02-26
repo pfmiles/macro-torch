@@ -128,6 +128,7 @@ function macroTorch.Druid:new()
         clickContext.BITE_E = 35
         clickContext.RIP_E = 30
         clickContext.TIGER_E = macroTorch.computeTiger_E()
+        clickContext.COWER_E = 20
 
         -- durations of certain time lasting spell effects
         clickContext.TIGER_DURATION = macroTorch.computeTiger_Duration()
@@ -1315,7 +1316,7 @@ function macroTorch.readyCower(clickContext)
 end
 
 function macroTorch.safeCower(clickContext)
-    if macroTorch.isGcdOk(clickContext) and macroTorch.player.mana >= clickContext.COWER_E then
+    if macroTorch.isGcdOk(clickContext) and macroTorch.player.mana >= clickContext.COWER_E and macroTorch.isNearBy(clickContext) then
         return macroTorch.readyCower(clickContext)
     end
     return false
