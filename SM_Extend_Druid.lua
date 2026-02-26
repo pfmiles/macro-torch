@@ -595,12 +595,12 @@ function macroTorch.otMod(clickContext)
         player.use('Invulnerability Potion', true)
     end
 
-    -- 当目前威胁值大于一定阈值，使用cower降低威胁值; TODO 这里需要使用safeCower，且应考虑利用reshift回能，若能量不足的话;回能逻辑或许不必专门写在这里，而是交给通用的回能模块
+    -- 当目前威胁值大于一定阈值，使用cower降低威胁值
     if macroTorch.shouldDoReshift(clickContext) then
         return
     end
     if target.isAttackingMe or (target.classification == 'worldboss' and player.threatPercent >= macroTorch.COWER_THREAT_THRESHOLD) then
-        macroTorch.readyCower(clickContext)
+        macroTorch.safeCower(clickContext)
     end
 end
 
@@ -1310,6 +1310,13 @@ function macroTorch.readyCower(clickContext)
         macroTorch.show('current threat: ' .. macroTorch.player.threatPercent .. ' doing ready cower!!!')
         macroTorch.player.cast('Cower')
         return true
+    end
+    return false
+end
+
+function macroTorch.safeCower(clickContext)
+    if macroTorch.isGcdOk(clickContext) and macroTorch.player.mana >= clickContext.COWER_E then
+        return macroTorch.readyCower(clickContext)
     end
     return false
 end
