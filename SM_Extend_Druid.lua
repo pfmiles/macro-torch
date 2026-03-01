@@ -1459,20 +1459,20 @@ function macroTorch.pokemonLoad()
     local battleChickenSaying = 'Go, Battle Chicken! I choose you!'
     local arcaniteDragonlingSaying = 'Come on out, Arcanite Dragonling!'
     local trackingHoundSaying = 'Go, Tracking Hound! I choose you!'
-    local glowingCatFigurineSaying = 'Go, Glowing Cat! I choose you!'
+    local barovServantsSaying = 'Go, Barov Servants! I choose you!'
 
     local orderedTable = {
         keys = {
             battleChickenSaying,
             arcaniteDragonlingSaying,
             trackingHoundSaying,
-            glowingCatFigurineSaying
+            barovServantsSaying
         },
         values = {
             [battleChickenSaying] = 'Gnomish Battle Chicken',
             [arcaniteDragonlingSaying] = 'Arcanite Dragonling',
             [trackingHoundSaying] = 'Dog Whistle',
-            [glowingCatFigurineSaying] = 'Glowing Cat Figurine'
+            [barovServantsSaying] = 'Barov Peasant Caller'
         }
     }
     macroTorch.player.loadUseableItem(orderedTable, 'Blackhand\'s Breadth')

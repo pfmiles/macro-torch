@@ -283,11 +283,12 @@ function macroTorch.Player:new()
                         end
                         obj.equipItem(useableItem, swappingSlot)
                         macroTorch.show("Useable item loaded: " .. useableItem)
-                        return
+                        return true
                     end
                 end
             end
         end
+        return false
     end
 
     -- use loaded useable item and swap it back to the original one
