@@ -808,7 +808,7 @@ function macroTorch.shouldDoReshift(clickContext)
 
     -- 如果1.5秒自然恢复后能量足够 → 不reshift（避免1.5s GCD卡住技能）
     -- 如果1.5秒自然恢复后能量不够 → reshift（反正都要等，利用1.5s GCD）
-    return projectedEnergy < minAbilityCost, nextMove, minAbilityCost
+    return math.ceil(projectedEnergy) < minAbilityCost, nextMove, minAbilityCost
 end
 
 -- 检查是否可以在等待窗口期间释放FF
