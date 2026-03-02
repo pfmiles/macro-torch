@@ -502,10 +502,11 @@ macroTorch.registerPeriodicTask('consumeDruidBattleEvents',
 
 function macroTorch.shouldUseShred(clickContext)
     -- For normal battles when we need to quickly build combo points for Rip:
-    -- If not trivial/PvP, target not immune to Rip, and Rip not present, use Claw for faster CP generation
+    -- If not trivial/PvP, target not immune to Rip, no ooc now and Rip not present, use Claw for faster CP generation
     if not macroTorch.isTrivialBattleOrPvp(clickContext) and
             not clickContext.isImmuneRip and
-            not macroTorch.isRipPresent(clickContext) then
+            not macroTorch.isRipPresent(clickContext) and
+            not clickContext.ooc then
         return false
     end
 
