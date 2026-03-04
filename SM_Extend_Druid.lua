@@ -514,14 +514,25 @@ function macroTorch.shouldUseShred(clickContext)
 
     -- Decision tree matching regularAttack logic
     if bleedCount <= 1 then
+        -- ooc priority: use Shred if behind (no energy cost anyway)
+        if clickContext.ooc then
+            return clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed
+        end
+
+        -- If energy will recover enough for Claw in 1s, use Shred for better damage, and preventing from energy overflow
+        local energyIn1s = macroTorch.computeErps(clickContext) * 1
+        if energyIn1s >= clickContext.CLAW_E then
+            return clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed
+        end
+
         -- For normal battles when we need to quickly build combo points for Rip:
-        -- If not trivial/PvP, target not immune to Rip, no ooc now and Rip not present, use Claw for faster CP generation
+        -- If not trivial/PvP, target not immune to Rip, and Rip not present, use Claw for faster CP generation
         if not macroTorch.isTrivialBattleOrPvp(clickContext) and
                 not clickContext.isImmuneRip and
-                not macroTorch.isRipPresent(clickContext) and
-                not clickContext.ooc then
+                not macroTorch.isRipPresent(clickContext) then
             return false
         end
+
         return clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed
     elseif bleedCount == 2 then
         return clickContext.ooc and clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed
