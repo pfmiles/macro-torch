@@ -1518,7 +1518,8 @@ end
 
 function macroTorch.bearReshiftMod(clickContext)
     -- Threshold-based trigger (cast when below threshold)
-    if clickContext.rage < clickContext.RESHIFT_RAGE_THRESHOLD then
+    if clickContext.rage < clickContext.RESHIFT_RAGE_THRESHOLD and not clickContext.ooc then
+        macroTorch.show('Reshift!!! Rage = ' .. macroTorch.player.mana)
         macroTorch.player.cast('Reshift')
     end
 end
@@ -1556,15 +1557,14 @@ function macroTorch.bearAtk()
     local target = macroTorch.target
 
     -- rage costs of abilities
-    clickContext.MAUL_E = 15
+    clickContext.MAUL_E = 10
     clickContext.SAVAGE_BITE_E = 25
     clickContext.DEMORALIZING_ROAR_E = 10
-    clickContext.GROWL_E = 0
 
     -- rage thresholds
     clickContext.FF_RAGE_THRESHOLD = 10
     clickContext.RAGE_DUMP_THRESHOLD = 80
-    clickContext.RESHIFT_RAGE_THRESHOLD = 5
+    clickContext.RESHIFT_RAGE_THRESHOLD = 1
 
     -- Cache player/target state
     clickContext.isInBearForm = player.isFormActive('Dire Bear Form')
@@ -1575,6 +1575,9 @@ function macroTorch.bearAtk()
     clickContext.ooc = player.isOoc
     clickContext.isInGroup = player.isInGroup
     clickContext.rage = player.mana
+
+    -- the health line of urgent, whether to use some life saving items/spells
+    clickContext.PLAYER_URGENT_HP_THRESHOLD = 15
 
     -- 1. Health Saver
     if macroTorch.isFightStarted(clickContext) then
