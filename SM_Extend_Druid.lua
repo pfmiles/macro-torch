@@ -1165,6 +1165,14 @@ function macroTorch.ffLeft(clickContext)
     return clickContext.ffLeft
 end
 
+-- Demoralizing Roar debuff tracking (bear form) - only check presence, no duration needed
+function macroTorch.isDemoralizingRoarPresent(clickContext)
+    if clickContext.isDemoralizingRoarPresent == nil then
+        clickContext.isDemoralizingRoarPresent = macroTorch.target.hasBuff('Ability_Druid_DemoralizingRoar')
+    end
+    return clickContext.isDemoralizingRoarPresent
+end
+
 function macroTorch.isPouncePresent(clickContext)
     if clickContext.isPouncePresent == nil then
         clickContext.isPouncePresent = macroTorch.toBoolean(macroTorch.target.hasBuff('Ability_Druid_SupriseAttack') and
@@ -1341,6 +1349,51 @@ function macroTorch.safeCower(clickContext)
     return false
 end
 
+-- Bear helper functions (safe/ready variants)
+function macroTorch.safeMaul(clickContext)
+    return macroTorch.player.mana >= clickContext.MAUL_E and macroTorch.readyMaul(clickContext)
+end
+
+function macroTorch.readyMaul(clickContext)
+    if macroTorch.player.isSpellReady('Maul') then
+        macroTorch.player.cast('Maul')
+        return true
+    end
+    return false
+end
+
+function macroTorch.safeSavageBite(clickContext)
+    return macroTorch.player.mana >= clickContext.SAVAGE_BITE_E and macroTorch.readySavageBite(clickContext)
+end
+
+function macroTorch.readySavageBite(clickContext)
+    if macroTorch.player.isSpellReady('Savage Bite') then
+        macroTorch.player.cast('Savage Bite')
+        return true
+    end
+    return false
+end
+
+function macroTorch.readyGrowl(clickContext)
+    if macroTorch.player.isSpellReady('Growl') then
+        macroTorch.player.cast('Growl')
+        return true
+    end
+    return false
+end
+
+function macroTorch.safeDemoralizingRoar(clickContext)
+    return macroTorch.player.mana >= clickContext.DEMORALIZING_ROAR_E and macroTorch.readyDemoralizingRoar(clickContext)
+end
+
+function macroTorch.readyDemoralizingRoar(clickContext)
+    if macroTorch.player.isSpellReady('Demoralizing Roar') then
+        macroTorch.player.cast('Demoralizing Roar')
+        return true
+    end
+    return false
+end
+
 -- burst through boosting attack power
 function macroTorch.atkPowerBurst(clickContext)
     local player = macroTorch.player
@@ -1408,6 +1461,68 @@ function macroTorch.druidDefend()
     end
 end
 
+-- Bear module functions
+function macroTorch.bearOocMod(clickContext)
+    if not clickContext.ooc then
+        return
+    end
+    -- Use Savage Bite when OOC is active (no rage cost)
+    macroTorch.readySavageBite(clickContext)
+end
+
+function macroTorch.bearOtMod(clickContext)
+    -- Only when grouped and target not controlled by player
+    if not clickContext.isInGroup or macroTorch.target.isPlayerControlled then
+        return
+    end
+
+    -- If target not attacking me
+    if not macroTorch.target.isAttackingMe then
+        -- Try Growl first (costs no rage, only checks CD)
+        if macroTorch.readyGrowl(clickContext) then
+            return
+        end
+        -- If Growl on CD, use Savage Bite as high threat alternative
+        macroTorch.safeSavageBite(clickContext)
+    end
+end
+
+function macroTorch.bearDebuffMod(clickContext)
+    -- Track Demoralizing Roar - works in both solo and group
+    if not macroTorch.isDemoralizingRoarPresent(clickContext) then
+        macroTorch.safeDemoralizingRoar(clickContext)
+    end
+end
+
+function macroTorch.bearFFMod(clickContext)
+    -- Cast FF during free GCDs to trigger ooc procs (cast when rage < threshold)
+    if clickContext.rage >= clickContext.FF_RAGE_THRESHOLD then
+        return
+    end
+
+    -- Reuse existing FF logic
+    macroTorch.safeFF(clickContext)
+end
+
+function macroTorch.bearRegularAttack(clickContext)
+    -- High rage: Savage Bite (rage dump when above threshold)
+    if clickContext.rage > clickContext.RAGE_DUMP_THRESHOLD and macroTorch.safeSavageBite(clickContext) then
+        return
+    end
+
+    -- Primary: Maul
+    if macroTorch.safeMaul(clickContext) then
+        return
+    end
+end
+
+function macroTorch.bearReshiftMod(clickContext)
+    -- Threshold-based trigger (cast when below threshold)
+    if clickContext.rage < clickContext.RESHIFT_RAGE_THRESHOLD then
+        macroTorch.player.cast('Reshift')
+    end
+end
+
 function macroTorch.druidControl()
     local clickContext = {}
     -- if target is of type beast or dragonkin, use Hibernate, else use [Entangling Roots]
@@ -1433,45 +1548,66 @@ function macroTorch.bearAoe()
 end
 
 function macroTorch.bearAtk()
+    -- clickContext is single-click context, used for value caching optimization
     local clickContext = {}
     clickContext.FF_DURATION = 40
 
-    if not macroTorch.player.isFormActive('Dire Bear Form') then
+    local player = macroTorch.player
+    local target = macroTorch.target
+
+    -- rage costs of abilities
+    clickContext.MAUL_E = 15
+    clickContext.SAVAGE_BITE_E = 25
+    clickContext.DEMORALIZING_ROAR_E = 10
+    clickContext.GROWL_E = 0
+
+    -- rage thresholds
+    clickContext.FF_RAGE_THRESHOLD = 10
+    clickContext.RAGE_DUMP_THRESHOLD = 80
+    clickContext.RESHIFT_RAGE_THRESHOLD = 5
+
+    -- Cache player/target state
+    clickContext.isInBearForm = player.isFormActive('Dire Bear Form')
+    if not clickContext.isInBearForm then
         return
     end
-    -- if macroTorch.player.mana == 0 and macroTorch.player.isSpellReady('Enrage') then
-    --     macroTorch.player.cast('Enrage')
-    -- end
-    local target = macroTorch.target
-    local player = macroTorch.player
-    -- if target is not attacking me and it's not a player controlled target and Growl ready, use Growl
-    -- if target.isCanAttack and not target.isPlayerControlled and not target.isAttackingMe and SpellReady('Growl') then
-    --     macroTorch.player.cast('Growl')
-    -- end
-    -- [Savage Bite] as soon as I can, then [Maul] blindly
-    if player.isOoc and player.isSpellReady('Savage Bite') then
-        player.cast('Savage Bite')
+
+    clickContext.ooc = player.isOoc
+    clickContext.isInGroup = player.isInGroup
+    clickContext.rage = player.mana
+
+    -- 1. Health Saver
+    if macroTorch.isFightStarted(clickContext) then
+        macroTorch.combatUrgentHPRestore(clickContext)
     end
-    -- if solo, auto demo roar when could
-    if not player.isInGroup and not target.buffed('Demoralizing Roar', 'Ability_Druid_DemoralizingRoar') then
-        player.cast('Demoralizing Roar')
-    end
-    -- normal attack
-    if macroTorch.player.isSpellReady('Maul') then
-        macroTorch.player.cast('Maul')
-    end
-    -- if in group, tanking
-    if player.isInGroup and not target.isAttackingMe and not target.isPlayerControlled then
-        if player.isSpellReady('Growl') then
-            player.cast('Growl')
-        elseif player.mana >= 25 and player.isSpellReady('Savage Bite') then
-            player.cast('Savage Bite')
-        elseif player.isSpellReady('Challenging Roar') then
-            player.cast('Challenging Roar')
+
+    -- 2. Target Enemy
+    if not target.isCanAttack then
+        player.targetEnemy()
+    else
+        -- 3. Keep AutoAttack
+        if macroTorch.isFightStarted(clickContext) then
+            player.startAutoAtk()
         end
+
+        -- 5. ooc Mod
+        macroTorch.bearOocMod(clickContext)
+
+        -- 6. OT Mod (Tank version)
+        macroTorch.bearOtMod(clickContext)
+
+        -- 8. Debuff Mod
+        macroTorch.bearDebuffMod(clickContext)
+
+        -- 9.FF Mod - Cast FF during free GCDs to trigger ooc procs
+        macroTorch.bearFFMod(clickContext)
+
+        -- 10.Regular Attack - Primary: Maul, High rage: Savage Bite
+        macroTorch.bearRegularAttack(clickContext)
+
+        -- 11.Reshift Mod - Threshold-based trigger
+        macroTorch.bearReshiftMod(clickContext)
     end
-    -- ff when nothing to do
-    macroTorch.safeFF(clickContext)
 end
 
 function macroTorch.pokemonLoad()
