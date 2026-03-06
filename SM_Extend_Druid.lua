@@ -1394,6 +1394,18 @@ function macroTorch.readyDemoralizingRoar(clickContext)
     return false
 end
 
+function macroTorch.safeSwipe(clickContext)
+    return macroTorch.player.mana >= clickContext.SWIPE_E and macroTorch.readySwipe(clickContext)
+end
+
+function macroTorch.readySwipe(clickContext)
+    if macroTorch.player.isSpellReady('Swipe') then
+        macroTorch.player.cast('Swipe')
+        return true
+    end
+    return false
+end
+
 -- burst through boosting attack power
 function macroTorch.atkPowerBurst(clickContext)
     local player = macroTorch.player
@@ -1431,8 +1443,9 @@ function macroTorch.druidStun()
     if not inBearForm then
         macroTorch.player.cast('Dire Bear Form')
     end
-    if inBearForm and macroTorch.player.mana == 0 and macroTorch.player.isSpellReady('Enrage') then
-        macroTorch.player.cast('Enrage')
+    -- reshift to restore when rage is 0
+    if inBearForm and macroTorch.player.mana == 0 and macroTorch.player.isSpellReady('Reshift') then
+        macroTorch.player.cast('Reshift')
     end
     if macroTorch.isNearBy(clickContext) then
         macroTorch.player.cast('Bash')
@@ -1539,12 +1552,15 @@ function macroTorch.bearAoe()
     if not macroTorch.player.isFormActive('Dire Bear Form') then
         return
     end
-    -- if no [Demoralizing Roar] buff on target, use [Demoralizing Roar]
-    if macroTorch.target.isCanAttack and not macroTorch.target.buffed('Demoralizing Roar', 'Ability_Druid_DemoralizingRoar') then
-        macroTorch.player.cast('Demoralizing Roar')
-    end
-    if macroTorch.player.isSpellReady('Swipe') then
-        macroTorch.player.cast('Swipe')
+
+    -- Define rage cost for Swipe
+    clickContext.SWIPE_E = 20
+
+    macroTorch.bearDebuffMod(clickContext)
+
+    -- Use Swipe if we have enough rage
+    if macroTorch.safeSwipe(clickContext) then
+        return
     end
 end
 
@@ -1560,6 +1576,7 @@ function macroTorch.bearAtk()
     clickContext.MAUL_E = 10
     clickContext.SAVAGE_BITE_E = 25
     clickContext.DEMORALIZING_ROAR_E = 10
+    clickContext.SWIPE_E = 20
 
     -- rage thresholds
     clickContext.FF_RAGE_THRESHOLD = 10
