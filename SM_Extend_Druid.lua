@@ -193,7 +193,7 @@ function macroTorch.Druid:new()
             macroTorch.burstMod(clickContext)
             -- roughly bear form logic branch, TODO 其实bear形态逻辑应该完全从catAtck逻辑中剥离出来，在最上层的宏里面通过当前形态来路由
             if clickContext.isInBearForm then
-                macroTorch.bearAtk(clickContext)
+                macroTorch.bearAtk(clickContext.rough)
                 return
             end
             -- 5.opener mod, 因为Ravage差不多可以秒掉1500血以内的目标，除此之外均使用Pounce以增加后续claw的伤害
@@ -1489,6 +1489,11 @@ function macroTorch.bearOtMod(clickContext)
         return
     end
 
+    -- If in rough mode, avoid using high threat skills to let others overtake our threat
+    if clickContext.rough then
+        return
+    end
+
     -- If target not attacking me
     if not macroTorch.target.isAttackingMe then
         -- Try Growl first (costs no rage, only checks CD)
@@ -1519,7 +1524,8 @@ end
 
 function macroTorch.bearRegularAttack(clickContext)
     -- High rage: Savage Bite (rage dump when above threshold)
-    if clickContext.rage > clickContext.RAGE_DUMP_THRESHOLD and macroTorch.safeSavageBite(clickContext) then
+    -- But avoid using Savage Bite in rough mode to reduce threat generation
+    if not clickContext.rough and clickContext.rage > clickContext.RAGE_DUMP_THRESHOLD and macroTorch.safeSavageBite(clickContext) then
         return
     end
 
@@ -1564,10 +1570,11 @@ function macroTorch.bearAoe()
     end
 end
 
-function macroTorch.bearAtk()
+function macroTorch.bearAtk(rough)
     -- clickContext is single-click context, used for value caching optimization
     local clickContext = {}
     clickContext.FF_DURATION = 40
+    clickContext.rough = macroTorch.toBoolean(rough)
 
     local player = macroTorch.player
     local target = macroTorch.target
