@@ -1560,7 +1560,8 @@ function macroTorch.bearAoe()
     end
 
     -- Define rage cost for Swipe
-    clickContext.SWIPE_E = 20
+    clickContext.SWIPE_E = 15
+    clickContext.DEMORALIZING_ROAR_E = 10
 
     macroTorch.bearDebuffMod(clickContext)
 
@@ -1583,7 +1584,7 @@ function macroTorch.bearAtk(rough)
     clickContext.MAUL_E = 10
     clickContext.SAVAGE_BITE_E = 25
     clickContext.DEMORALIZING_ROAR_E = 10
-    clickContext.SWIPE_E = 20
+    clickContext.SWIPE_E = 15
 
     -- rage thresholds
     clickContext.FF_RAGE_THRESHOLD = 10
