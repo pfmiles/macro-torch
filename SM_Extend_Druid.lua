@@ -1658,5 +1658,5 @@ function macroTorch.pokemonLoad()
             [barovServantsSaying] = 'Barov Peasant Caller'
         }
     }
-    macroTorch.player.loadUseableItem(orderedTable, 'Blackhand\'s Breadth')
+    macroTorch.player.loadUseableItem(orderedTable, 'Vial of Potent Venoms')
 end
