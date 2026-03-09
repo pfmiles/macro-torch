@@ -112,3 +112,15 @@ end
 function macroTorch.isNumber(value)
     return type(value) == "number" or tonumber(value) ~= nil
 end
+
+-- 从物品链接中提取物品名称
+-- @param itemLink string 物品链接字符串
+-- @return string 物品名称或nil
+function macroTorch.getItemNameFromLink(itemLink)
+    if not itemLink or type(itemLink) ~= "string" then
+        return nil
+    end
+    -- WoW item link format: |cffff8000|Hitem:12345:0:0:0|h[Item Name]|h|r
+    local name = string.gsub(itemLink, ".*%[(.-)%].*", "%1")
+    return name ~= itemLink and name or nil
+end
