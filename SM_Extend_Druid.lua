@@ -1645,20 +1645,24 @@ function macroTorch.pokemonLoad()
     local arcaniteDragonlingSaying = 'Come on out, Arcanite Dragonling!'
     local trackingHoundSaying = 'Go, Tracking Hound! I choose you!'
     local barovServantsSaying = 'Go, Barov Servants! I choose you!'
+    local skeletonSaying = 'Come on out, Skeleton!'
 
     local orderedTable = {
         keys = {
             battleChickenSaying,
             arcaniteDragonlingSaying,
             trackingHoundSaying,
-            barovServantsSaying
+            barovServantsSaying,
+            skeletonSaying
         },
         values = {
             [battleChickenSaying] = 'Gnomish Battle Chicken',
             [arcaniteDragonlingSaying] = 'Arcanite Dragonling',
             [trackingHoundSaying] = 'Dog Whistle',
-            [barovServantsSaying] = 'Barov Peasant Caller'
-        }
+            [barovServantsSaying] = 'Barov Peasant Caller',
+            [skeletonSaying] = 'Ancient Cornerstone Grimoire'
+        },
+        backupItem = { [skeletonSaying] = { item = "Jadestone Skewer", slot = 16 } }
     }
     macroTorch.player.loadUseableItemToSlot(orderedTable, 13)
 end
