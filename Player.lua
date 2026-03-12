@@ -291,69 +291,75 @@ function macroTorch.Player:new()
         return false
     end
 
-    -- load useable item to a specific slot
-    -- @param useableItemsTable table with keys, values, and optional backupItem
-    -- @param targetSlot number the equipment slot to load into (1-18)
+    -- Load the next useable item from the table
+    -- Only one item can be loaded at a time - must cast and unload before loading another
+    -- @param useableItemsTable table with keys, values, toSlots (maps key->slot), and optional backupItem
     --
     -- Examples of useableItemsTable structure:
     --
-    -- Example 1: Slot with existing item (backupItem will be ignored)
-    -- local combatTable = {
-    --     keys = {"Use Combat Trinket"},
+    -- Example 1: Multiple items for different slots
+    -- local combatItems = {
+    --     keys = {"Use Trinket 1", "Use Trinket 2", "Use Weapon"},
     --     values = {
-    --         ["Use Combat Trinket"] = "Talisman of Ephemeral Power"
+    --         ["Use Trinket 1"] = "Talisman of Ephemeral Power",
+    --         ["Use Trinket 2"] = "Zandalarian Hero Charm",
+    --         ["Use Weapon"] = "Crul'shorukh, Edge of Chaos"
     --     },
-    --     backupItem = {
-    --         ["Use Combat Trinket"] = "Some Other Trinket"  -- This will be IGNORED!
+    --     toSlots = {  -- NEW: maps each key to its target slot
+    --         ["Use Trinket 1"] = 13,  -- Trinket slot 1
+    --         ["Use Trinket 2"] = 14,  -- Trinket slot 2
+    --         ["Use Weapon"] = 16      -- Main hand
     --     }
     -- }
-    -- macroTorch.player.loadUseableItemToSlot(combatTable, 13)
+    -- macroTorch.player.loadUseableItemToSlot(combatItems)
     --
-    -- Example 2: Empty slot with backup (backup equipped after use)
-    -- local backupTable = {
-    --     keys = {"Load Combat Item"},
+    -- Example 2: Items with backup configuration
+    -- local itemsWithBackup = {
+    --     keys = {"Use Trinket", "Use Temporary Weapon"},
     --     values = {
-    --         ["Load Combat Item"] = "Defender of the Timbermaw"
+    --         ["Use Trinket"] = "Defender of the Timbermaw",
+    --         ["Use Temporary Weapon"] = "Broken Wine Bottle"
+    --     },
+    --     toSlots = {
+    --         ["Use Trinket"] = 13,
+    --         ["Use Temporary Weapon"] = 16
     --     },
     --     backupItem = {
-    --         ["Load Combat Item"] = "Bladefist's Breadth"  -- Restore to same slot
-    --     }
-    -- }
-    -- macroTorch.player.loadUseableItemToSlot(backupTable, 13)
-    --
-    -- Example 3: Empty slot with different slot backup
-    -- local multiSlotTable = {
-    --     keys = {"Load Temporary Weapon"},
-    --     values = {
-    --         ["Load Temporary Weapon"] = "Crul'shorukh, Edge of Chaos"
-    --     },
-    --     backupItem = {
-    --         ["Load Temporary Weapon"] = {
-    --             item = "Broken Wine Bottle",    -- Backup item for empty slot
-    --             slot = 16                        -- Put it in main hand instead
+    --         ["Use Trinket"] = "Bladefist's Breadth",
+    --         ["Use Temporary Weapon"] = {
+    --             item = "Shard of the Fallen Star",
+    --             slot = 17  -- Restore to off-hand
     --         }
     --     }
     -- }
-    -- macroTorch.player.loadUseableItemToSlot(multiSlotTable, 17)
-    --
-    -- Example 4: Empty slot no backup (cleared after use)
-    -- local tempTable = {
-    --     keys = {"Load Temporary Item"},
-    --     values = {
-    --         ["Load Temporary Item"] = "Minor Healthstone"
-    --     }
-    --     -- No backupItem, slot was empty initially
-    -- }
-    -- macroTorch.player.loadUseableItemToSlot(tempTable, 13)
-    function obj.loadUseableItemToSlot(useableItemsTable, targetSlot)
-        -- Validate targetSlot is between 1-18
-        if not targetSlot or targetSlot < 1 or targetSlot > 18 then
-            macroTorch.show("Invalid target slot: " .. tostring(targetSlot))
+    function obj.loadUseableItemToSlot(useableItemsTable)
+        -- Ensure useableItemsTable has required fields
+        if not useableItemsTable or not useableItemsTable.keys or not useableItemsTable.toSlots then
+            macroTorch.show("Invalid useableItemsTable: missing required fields")
             return false
+        end
+
+        -- Check if there's already a usable item loaded (global lock - only one at a time)
+        if macroTorch.itemLoadingTable then
+            for _, loadingTable in pairs(macroTorch.itemLoadingTable) do
+                -- If any slot has a usable item that hasn't been used yet, block new loading
+                if loadingTable.useableItem and loadingTable.useableItemUsed == false then
+                    macroTorch.show("A usable item is already loaded: " .. loadingTable.useableItem)
+                    return false
+                end
+            end
         end
 
         for _, saying in ipairs(useableItemsTable.keys) do
             local useableItem = useableItemsTable.values[saying]
+            local targetSlot = useableItemsTable.toSlots[saying]
+
+            -- Validate targetSlot
+            if not targetSlot or targetSlot < 1 or targetSlot > 18 then
+                macroTorch.show("Invalid target slot for " .. saying .. ": " .. tostring(targetSlot))
+                return false
+            end
+
             if obj.hasItem(useableItem) and obj.getItemInBagCoolDown(useableItem) <= 30 then
                 -- Check what item is currently equipped in targetSlot
                 local currentItemLink = GetInventoryItemLink("player", targetSlot)
@@ -364,40 +370,44 @@ function macroTorch.Player:new()
                 if not macroTorch.itemLoadingTable[targetSlot] then
                     macroTorch.itemLoadingTable[targetSlot] = {}
                 end
-                if macroTorch.itemLoadingTable[targetSlot].useableItem == nil then
 
-                    -- Check if slot has an equipped item
-                    if currentItemLink then
-                        -- Extract item name from the link
-                        local currentItemName = macroTorch.getItemNameFromLink(currentItemLink)
-                        -- Set swappingItem to currently equipped item name
-                        macroTorch.itemLoadingTable[targetSlot].swappingItem = currentItemName
-                        -- (ignore useableItemsTable.backupItem configuration when slot has item)
-                    elseif useableItemsTable.backupItem and useableItemsTable.backupItem[saying] then
-                        -- Slot is empty, check backupItem configuration
-                        local backupItemConfig = useableItemsTable.backupItem[saying]
-                        if type(backupItemConfig) == "string" then
-                            -- Backup item as string: restore to same slot
-                            macroTorch.itemLoadingTable[targetSlot].backupItemName = backupItemConfig
-                        elseif type(backupItemConfig) == "table" and backupItemConfig.item then
-                            -- Backup item as table: restore to specified slot
-                            macroTorch.itemLoadingTable[targetSlot].backupItemName = backupItemConfig.item
-                            macroTorch.itemLoadingTable[targetSlot].backupItemSlot = backupItemConfig.slot
-                        end
-                    end
-
-                    -- Set useable item details
-                    macroTorch.itemLoadingTable[targetSlot].useableItem = useableItem
-                    macroTorch.itemLoadingTable[targetSlot].useableItemUsed = false
-                    if saying and not macroTorch.isNumber(saying) then
-                        macroTorch.itemLoadingTable[targetSlot].saying = saying
-                    end
-
-                    -- Equip useableItem to targetSlot
-                    obj.equipItem(useableItem, targetSlot)
-                    macroTorch.show("Useable item loaded to slot " .. targetSlot .. ": " .. useableItem)
-                    return true
+                -- Additional safety check: ensure no item is already in this slot
+                if macroTorch.itemLoadingTable[targetSlot].useableItem ~= nil then
+                    macroTorch.show("Slot " .. targetSlot .. " already has a loaded item")
+                    return false
                 end
+
+                -- Check if slot has an equipped item
+                if currentItemLink then
+                    -- Extract item name from the link
+                    local currentItemName = macroTorch.getItemNameFromLink(currentItemLink)
+                    -- Set swappingItem to currently equipped item name
+                    macroTorch.itemLoadingTable[targetSlot].swappingItem = currentItemName
+                    -- (ignore useableItemsTable.backupItem configuration when slot has item)
+                elseif useableItemsTable.backupItem and useableItemsTable.backupItem[saying] then
+                    -- Slot is empty, check backupItem configuration
+                    local backupItemConfig = useableItemsTable.backupItem[saying]
+                    if type(backupItemConfig) == "string" then
+                        -- Backup item as string: restore to same slot
+                        macroTorch.itemLoadingTable[targetSlot].backupItemName = backupItemConfig
+                    elseif type(backupItemConfig) == "table" and backupItemConfig.item then
+                        -- Backup item as table: restore to specified slot
+                        macroTorch.itemLoadingTable[targetSlot].backupItemName = backupItemConfig.item
+                        macroTorch.itemLoadingTable[targetSlot].backupItemSlot = backupItemConfig.slot
+                    end
+                end
+
+                -- Set useable item details
+                macroTorch.itemLoadingTable[targetSlot].useableItem = useableItem
+                macroTorch.itemLoadingTable[targetSlot].useableItemUsed = false
+                if saying and not macroTorch.isNumber(saying) then
+                    macroTorch.itemLoadingTable[targetSlot].saying = saying
+                end
+
+                -- Equip useableItem to targetSlot
+                obj.equipItem(useableItem, targetSlot)
+                macroTorch.show("Useable item loaded to slot " .. targetSlot .. ": " .. useableItem)
+                return true
             end
         end
         return false
@@ -480,17 +490,19 @@ macroTorch.PLAYER_FIELD_FUNC_MAP = {
     ['threatPercent'] = function(self)
         local TWT = macroTorch.TWT
         local p = 0
-        if TWT and TWT.threats and TWT.threats[TWT.name] then p = TWT.threats[TWT.name].perc or 0 end
+        if TWT and TWT.threats and TWT.threats[TWT.name] then
+            p = TWT.threats[TWT.name].perc or 0
+        end
         return p
     end,
     -- conditinal props
     ['isBehindAttackJustFailed'] = function(self)
         return macroTorch.context and macroTorch.context.behindAttackFailedTime and
-            (GetTime() - macroTorch.context.behindAttackFailedTime) <= 0.5
+                (GetTime() - macroTorch.context.behindAttackFailedTime) <= 0.5
     end,
     ['isBehindTarget'] = function(self)
         return macroTorch.target.isExist and macroTorch.isFunctionExist('UnitXP') and
-            UnitXP('behind', 'player', 'target')
+                UnitXP('behind', 'player', 'target')
     end,
     ['isInGroup'] = function(self)
         return (GetNumPartyMembers() or 0) > 0
