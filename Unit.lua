@@ -242,4 +242,10 @@ macroTorch.UNIT_FIELD_FUNC_MAP = {
     ['isInRaid'] = function(self)
         return macroTorch.toBoolean(UnitInRaid(self.ref))
     end,
+    -- special buff detection
+    ['hasEssenceOfTheRed'] = function(self)
+        -- Essence of the Red buff grants +50 energy per second
+        -- TODO Update the texture path if different in your game client
+        return self.buffed('Essence of the Red')
+    end,
 }

@@ -160,6 +160,7 @@ function macroTorch.Druid:new()
         clickContext.berserk = player.isBerserk
         clickContext.comboPoints = player.comboPoints
         clickContext.ooc = player.isOoc
+        clickContext.hasEssenceOfTheRed = player.hasEssenceOfTheRed
         clickContext.isBehind = target.isCanAttack and player.isBehindTarget
 
         clickContext.isInBearForm = player.isFormActive('Dire Bear Form')
@@ -549,15 +550,20 @@ function macroTorch.shouldUseShred(clickContext)
         bleedCount = bleedCount + 1
     end
 
+    -- Check if we have infinite energy situation (Essence of the Red or similar buffs)
+    -- When ERPS covers Shred cost, treat it like infinite ooc - Shred becomes free
+    local erps = macroTorch.computeErps(clickContext)
+    local infiniteEnergy = erps >= clickContext.SHRED_E
+
     -- Decision tree matching regularAttack logic
     if bleedCount <= 1 then
-        -- ooc priority: use Shred if behind (no energy cost anyway)
-        if clickContext.ooc then
+        -- ooc OR infinite energy: use Shred if behind (no effective energy cost)
+        if clickContext.ooc or infiniteEnergy then
             return clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed
         end
 
         -- If energy will recover enough for Claw in 1s, use Shred for better damage, and preventing from energy overflow
-        local energyIn1s = macroTorch.computeErps(clickContext) * 1
+        local energyIn1s = erps * 1
         if energyIn1s >= clickContext.CLAW_E then
             return clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed
         end
@@ -572,7 +578,8 @@ function macroTorch.shouldUseShred(clickContext)
 
         return clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed
     elseif bleedCount == 2 then
-        return clickContext.ooc and clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed
+        -- With infinite energy (Essence of the Red), treat like ooc - always use Shred when behind
+        return (clickContext.ooc or infiniteEnergy) and clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed
     else
         return false -- 3+ bleeding always uses Claw
     end
@@ -673,10 +680,23 @@ function macroTorch.cp5Bite(clickContext)
         -- bite有个机制：会将当前能量扣除使用bite的能量后剩余的能量转化为额外的伤害，若ooc则更是能将当前所有energy都转化为伤害打出
         -- 但经过实测，让bite转换多余能量还不如将多余能量打成其它技能收益来得大；ooc时bite也不如先用其它技能用掉ooc效果再bite，因此这里设置一个“bite之前泄能逻辑”来最大化dps
         -- 需要注意的是，泄能逻辑需要考虑一个特殊情况：bite是会刷新目标身上的流血效果的，因此为了不让rip效果断掉，我仅在目标身上流血效果还剩足够时间时泄能，若rip效果快没了，则需要马上bite刷新rip时间，否则若让rip断掉的话得不偿失；
-        -- 这里定义一个“rip效果快结束了”概念的时间，来决定当前是否该泄能；目前只考虑rip，暂不考虑rake效果，因为rake持续时间本来就很短(默认9s)，在当前游戏阶段的装备条件下，很难连续暴击在9s内攒齐5星来打bite刷新双流血效果(技能暴击将一次性攒2颗星)，因此目前暂不强求rake效果一定被bite续上；only discharge energy when rip time left is greater then 1.8s
-        if not ((macroTorch.isRipPresent(clickContext) and macroTorch.ripLeft(clickContext) <= 2.3)) then
+        -- 当Essence of the Red存在时，能量恢复极快，需要同时考虑rake的持续时间
+        local shouldDischarge = true
+
+        -- Skip discharge if Essence of the Red is present
+        if clickContext.hasEssenceOfTheRed then
+            shouldDischarge = false
+        end
+
+        -- Check Rip duration
+        if shouldDischarge and macroTorch.isRipPresent(clickContext) and macroTorch.ripLeft(clickContext) <= 2.3 then
+            shouldDischarge = false
+        end
+
+        if shouldDischarge then
             macroTorch.energyDischargeBeforeBite(clickContext)
         end
+
         -- 以是否ooc判断当前该使用ready版本或是safe版本逻辑
         if clickContext.ooc then
             macroTorch.readyBite(clickContext)
@@ -841,6 +861,10 @@ function macroTorch.computeErps(clickContext)
     end
     if clickContext.berserk then
         erps = erps + clickContext.BERSERK_ERPS
+    end
+    -- Essence of the Red grants +50 energy per second
+    if clickContext.hasEssenceOfTheRed then
+        erps = erps + 50
     end
 
     clickContext.computeErps = erps
@@ -1009,10 +1033,17 @@ function macroTorch.dischargeEnergyChangeRelicAndRip(clickContext, equipSavagery
         return
     end
 
+    -- With Essence of the Red, energy regenerates so fast that discharge becomes meaningless
+    -- Skip discharge logic and proceed directly to relic swap + rip
+    local erps = macroTorch.computeErps(clickContext)
+    local skipDischarge = clickContext.hasEssenceOfTheRed
+
     -- need to switch relic and have it
     if equipSavagery and macroTorch.player.hasItem('Idol of Savagery') and not macroTorch.player.isRelicEquipped('Idol of Savagery') then
         -- 2.5s = 1.5s for relic change + 1s for possible ooc
-        if macroTorch.player.mana + macroTorch.computeErps(clickContext) * 2.5 > 100 then
+        -- With Essence of the Red, erps is so high that we never get the "waiting gap"
+        -- where swapping would be "free". We swap anyway because Savagery is required for Rip.
+        if not skipDischarge and macroTorch.player.mana + erps * 2.5 > 100 then
             macroTorch.regularAttack(clickContext)
             return
         end
@@ -1021,7 +1052,8 @@ function macroTorch.dischargeEnergyChangeRelicAndRip(clickContext, equipSavagery
     end
 
     -- about to rip: check if energy would overflow during 2s (1s rip gcd + 1s possible ooc)
-    if macroTorch.player.mana + macroTorch.computeErps(clickContext) * 2 - clickContext.RIP_E > 100 then
+    -- With Essence of the Red, always skip discharge as energy will always "overflow"
+    if not skipDischarge and macroTorch.player.mana + erps * 2 - clickContext.RIP_E > 100 then
         macroTorch.regularAttack(clickContext)
         return
     end
