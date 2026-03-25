@@ -683,7 +683,7 @@ function macroTorch.cp5Bite(clickContext)
         -- 当Essence of the Red存在时，能量恢复极快，需要同时考虑rake的持续时间
         local shouldDischarge = true
 
-        -- Skip discharge if Essence of the Red is present
+        -- Skip discharge if Essence of the Red is present TODO 以后可以考虑利用技能预测和erps来判断是否泄能，而不是指定buff效果
         if clickContext.hasEssenceOfTheRed then
             shouldDischarge = false
         end
@@ -724,6 +724,11 @@ end
 
 function macroTorch.oocMod(clickContext)
     if not clickContext.ooc then
+        return
+    end
+    -- With Essence of the Red, energy is essentially infinite, skip ooc special handling
+    -- and go through normal rotation to reach cp5 bite faster
+    if clickContext.hasEssenceOfTheRed then
         return
     end
     -- 如果目标已经可斩杀，直接斩杀，不用考虑其它逻辑了
