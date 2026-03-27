@@ -684,7 +684,7 @@ function macroTorch.cp5Bite(clickContext)
         local shouldDischarge = true
 
         -- Skip discharge if energy regeneration exceeds Shred cost (infinite energy scenario)
-        if macroTorch.computeErps(clickContext) > clickContext.SHRED_E then
+        if macroTorch.computeErps(clickContext) >= clickContext.SHRED_E then
             shouldDischarge = false
         end
 
@@ -708,6 +708,11 @@ end
 
 -- 撕咬前的泄能逻辑: 当前多余能量用作撕咬加成不划算，将其拆成2个技能使用
 function macroTorch.energyDischargeBeforeBite(clickContext)
+    -- Skip discharge when energy regeneration exceeds Shred cost (infinite energy scenario)
+    if macroTorch.computeErps(clickContext) >= clickContext.SHRED_E then
+        return
+    end
+
     -- Try to discharge energy with regular attack first
     if clickContext.ooc
             or (macroTorch.player.mana >= clickContext.BITE_E + clickContext.SHRED_E and clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed)
@@ -728,7 +733,7 @@ function macroTorch.oocMod(clickContext)
     end
     -- When energy regeneration exceeds Shred cost, skip ooc special handling
     -- and go through normal rotation to reach cp5 bite faster
-    if macroTorch.computeErps(clickContext) > clickContext.SHRED_E then
+    if macroTorch.computeErps(clickContext) >= clickContext.SHRED_E then
         return
     end
     -- 如果目标已经可斩杀，直接斩杀，不用考虑其它逻辑了
@@ -1041,7 +1046,7 @@ function macroTorch.dischargeEnergyChangeRelicAndRip(clickContext, equipSavagery
     -- When energy regeneration exceeds Shred cost, discharge becomes meaningless
     -- Skip discharge logic and proceed directly to relic swap + rip
     local erps = macroTorch.computeErps(clickContext)
-    local skipDischarge = erps > clickContext.SHRED_E
+    local skipDischarge = erps >= clickContext.SHRED_E
 
     -- need to switch relic and have it
     if equipSavagery and macroTorch.player.hasItem('Idol of Savagery') and not macroTorch.player.isRelicEquipped('Idol of Savagery') then
