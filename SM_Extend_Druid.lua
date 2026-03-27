@@ -680,11 +680,11 @@ function macroTorch.cp5Bite(clickContext)
         -- bite有个机制：会将当前能量扣除使用bite的能量后剩余的能量转化为额外的伤害，若ooc则更是能将当前所有energy都转化为伤害打出
         -- 但经过实测，让bite转换多余能量还不如将多余能量打成其它技能收益来得大；ooc时bite也不如先用其它技能用掉ooc效果再bite，因此这里设置一个“bite之前泄能逻辑”来最大化dps
         -- 需要注意的是，泄能逻辑需要考虑一个特殊情况：bite是会刷新目标身上的流血效果的，因此为了不让rip效果断掉，我仅在目标身上流血效果还剩足够时间时泄能，若rip效果快没了，则需要马上bite刷新rip时间，否则若让rip断掉的话得不偿失；
-        -- 当Essence of the Red存在时，能量恢复极快，需要同时考虑rake的持续时间
+        -- 当能量恢复速度超过最高耗能技能时，泄能变得无意义（能量必然溢出）
         local shouldDischarge = true
 
-        -- Skip discharge if Essence of the Red is present TODO 以后可以考虑利用技能预测和erps来判断是否泄能，而不是指定buff效果
-        if clickContext.hasEssenceOfTheRed then
+        -- Skip discharge if energy regeneration exceeds Shred cost (infinite energy scenario)
+        if macroTorch.computeErps(clickContext) > clickContext.SHRED_E then
             shouldDischarge = false
         end
 
@@ -726,9 +726,9 @@ function macroTorch.oocMod(clickContext)
     if not clickContext.ooc then
         return
     end
-    -- With Essence of the Red, energy is essentially infinite, skip ooc special handling
+    -- When energy regeneration exceeds Shred cost, skip ooc special handling
     -- and go through normal rotation to reach cp5 bite faster
-    if clickContext.hasEssenceOfTheRed then
+    if macroTorch.computeErps(clickContext) > clickContext.SHRED_E then
         return
     end
     -- 如果目标已经可斩杀，直接斩杀，不用考虑其它逻辑了
@@ -1038,10 +1038,10 @@ function macroTorch.dischargeEnergyChangeRelicAndRip(clickContext, equipSavagery
         return
     end
 
-    -- With Essence of the Red, energy regenerates so fast that discharge becomes meaningless
+    -- When energy regeneration exceeds Shred cost, discharge becomes meaningless
     -- Skip discharge logic and proceed directly to relic swap + rip
     local erps = macroTorch.computeErps(clickContext)
-    local skipDischarge = clickContext.hasEssenceOfTheRed
+    local skipDischarge = erps > clickContext.SHRED_E
 
     -- need to switch relic and have it
     if equipSavagery and macroTorch.player.hasItem('Idol of Savagery') and not macroTorch.player.isRelicEquipped('Idol of Savagery') then
