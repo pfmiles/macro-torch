@@ -25,6 +25,6 @@ replay_pid*
 
 SM_Extend.lua
 .idea
-CLAUDE.md
 .claude-reference/
-.planning
+CLAUDE.md
+.codegraph
