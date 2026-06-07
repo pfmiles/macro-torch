@@ -269,6 +269,7 @@ macroTorch.DRUID_FIELD_FUNC_MAP = {
 }
 
 macroTorch.druid = macroTorch.Druid:new()
+macroTorch.registerPlayerClass("DRUID", macroTorch.Druid)
 
 function macroTorch.burstMod(clickContext)
     local player = macroTorch.player
