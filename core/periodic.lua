@@ -79,3 +79,57 @@ macroTorch.ES_FIELD_FUNC_MAP = {
         return macroTorch.tableLen(self.elements) == 0
     end,
 }
+
+-- periodic task scheduling system
+-- migrated from battle_event_queue.lua per D-14/D-15
+-- uses independent OnUpdate Frame (not shared with battle_event_queue.lua)
+
+local frame = CreateFrame("Frame")
+
+-- sets the fixed periodic logic
+frame.lastUpdate = 0
+frame.leastUpdateInterval = 0.1
+if not macroTorch.periodicTasks then
+    macroTorch.periodicTasks = {}
+end
+
+function macroTorch.onPeriodicUpdate()
+    -- on periodic update
+    for name, task in pairs(macroTorch.periodicTasks) do
+        if GetTime() - frame.lastUpdate >= task.interval then
+            if not task.times or task.times > 0 then
+                if task.times then
+                    task.times = task.times - 1
+                end
+                task.task()
+            else
+                macroTorch.removePeriodicTask(name)
+            end
+        end
+    end
+end
+
+function macroTorch.registerPeriodicTask(name, task)
+    macroTorch.periodicTasks[name] = task
+end
+
+function macroTorch.removePeriodicTask(name)
+    macroTorch.periodicTasks[name] = nil
+end
+
+-- sets a function to run specified times with specified interval
+function macroTorch.setRepeat(name, interval, times, func)
+    macroTorch.registerPeriodicTask(name, { interval = interval, times = times, task = func })
+end
+
+frame:SetScript("OnUpdate", function()
+    if GetTime() - frame.lastUpdate >= frame.leastUpdateInterval then
+        -- 使用pcall安全执行onPeriodicUpdate，确保后续代码一定执行
+        local success, errorMsg = pcall(macroTorch.onPeriodicUpdate)
+        if not success then
+            -- 记录错误但不中断执行
+            macroTorch.show("onPeriodicUpdate执行错误: " .. tostring(errorMsg), "red")
+        end
+        frame.lastUpdate = GetTime()
+    end
+end)
