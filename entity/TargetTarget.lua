@@ -18,8 +18,7 @@ macroTorch.TargetTarget = macroTorch.Unit:new("targettarget")
 
 function macroTorch.TargetTarget:new()
     local obj = {}
-    self.__index = self
-    setmetatable(obj, self)
+    setmetatable(obj, macroTorch.classMetatable(self, nil))
     return obj
 end
 
