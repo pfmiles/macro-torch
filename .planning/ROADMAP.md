@@ -19,7 +19,7 @@ Phase 1 ──→ Phase 2 ──→ Phase 3 ──→ Phase 4
 
 **目标**: 建立 core/ 基础设施，将所有实体类统一到 classMetatable 工厂，消除多态 hack，同步建立声明式构建系统。
 
-**Plans:** 1/6 plans executed
+**Plans:** 2/6 plans executed
 Plans:
 **Wave 1**
 
@@ -29,7 +29,7 @@ Plans:
 
 - [ ] 01-02-PLAN.md — 删除多态 hack + Druid 注册 + initPlayer 接入 (Wave 2)
 - [ ] 01-03-PLAN.md — LRUStack 迁移 + periodic task 系统 + 独立 OnUpdate Frame + 清理 (Wave 2)
-- [ ] 01-04-PLAN.md — Unit/Player/Target → entity/ 迁移 + metatable 替换 (Wave 2)
+- [x] 01-04-PLAN.md — Unit/Player/Target → entity/ 迁移 + metatable 替换 (Wave 2)
 - [ ] 01-05-PLAN.md — Pet/TargetTarget/TargetPet/PetTarget/Group/Raid → entity/ 迁移 (Wave 2)
 
 **Wave 3** *(blocked on Wave 2 completion)*
@@ -89,7 +89,7 @@ Plans:
 
 ### 1.3 Entity 层 metatable 替换 + 文件移动
 
-#### T1.3.1 — 改造 `Unit.lua` → `entity/Unit.lua`
+#### T1.3.1 — 改造 `Unit.lua` → `entity/Unit.lua` ✅
 
 - 文件移动到 `entity/Unit.lua`
 - `new()` 中手写 metatable 替换为 `macroTorch.classMetatable(self, "UNIT_FIELD_FUNC_MAP")`
@@ -97,7 +97,7 @@ Plans:
 
 **验证**: `grep "macroTorch.classMetatable" entity/Unit.lua` 有结果；`grep "setmetatable(obj, {" entity/Unit.lua` 无结果
 
-#### T1.3.2 — 改造 `Player.lua` → `entity/Player.lua`
+#### T1.3.2 — 改造 `Player.lua` → `entity/Player.lua` ✅
 
 - 文件移动到 `entity/Player.lua`
 - `new()` 中手写 metatable 替换为 `macroTorch.classMetatable(self, "PLAYER_FIELD_FUNC_MAP")`
@@ -105,7 +105,7 @@ Plans:
 
 **验证**: `grep "macroTorch.classMetatable" entity/Player.lua` 有结果；`grep "setmetatable(obj, {" entity/Player.lua` 无结果
 
-#### T1.3.3 — 改造 `Target.lua` → `entity/Target.lua`
+#### T1.3.3 — 改造 `Target.lua` → `entity/Target.lua` ✅
 
 - 文件移动到 `entity/Target.lua`
 - `new()` 中手写 metatable 替换为 `macroTorch.classMetatable(self, "TARGET_FIELD_FUNC_MAP")`

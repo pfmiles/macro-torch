@@ -93,20 +93,7 @@ function macroTorch.Unit:new(ref)
         end
     end
 
-    setmetatable(obj, {
-        -- k is the key of searching field, and t is the table itself
-        __index = function(t, k)
-            -- missing instance field search
-            if macroTorch.UNIT_FIELD_FUNC_MAP[k] ~= nil then
-                return macroTorch.UNIT_FIELD_FUNC_MAP[k](t)
-            end
-            -- class field & method search
-            local class_val = self[k]
-            if class_val ~= nil then
-                return class_val
-            end
-        end
-    })
+    setmetatable(obj, macroTorch.classMetatable(self, "UNIT_FIELD_FUNC_MAP"))
     return obj
 end
 

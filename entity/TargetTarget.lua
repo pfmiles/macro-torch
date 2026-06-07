@@ -14,4 +14,12 @@
    limitations under the License.
 ]] --
 
-macroTorch.raid = {}
+macroTorch.TargetTarget = macroTorch.Unit:new("targettarget")
+
+function macroTorch.TargetTarget:new()
+    local obj = {}
+    setmetatable(obj, macroTorch.classMetatable(self, nil))
+    return obj
+end
+
+macroTorch.targettarget = macroTorch.TargetTarget:new()
