@@ -1,0 +1,45 @@
+macro_torch.lua
+impl_util.lua
+biz_util.lua
+# core/ infrastructure (Phase 1)
+core/class.lua
+core/periodic.lua
+# entity/ layer (Phase 1 migrated)
+entity/Unit.lua
+entity/Player.lua
+entity/Target.lua
+entity/Pet.lua
+entity/TargetTarget.lua
+entity/TargetPet.lua
+entity/PetTarget.lua
+entity/Group.lua
+entity/Raid.lua
+# combat events (Phase 2 will split this)
+battle_event_queue.lua
+texture_map.lua
+interface_debug.lua
+# core/ Phase 2 future files
+core/events.lua
+core/combat_context.lua
+core/spell_trace.lua
+# core/ Phase 3 future file
+core/selftest.lua
+# current class files (Phase 4 will move to classes/)
+SM_Extend_Druid.lua
+SM_Extend_Hunter.lua
+SM_Extend_Mage.lua
+SM_Extend_Priest.lua
+SM_Extend_Rogue.lua
+SM_Extend_Warlock.lua
+SM_Extend_Warrior.lua
+# classes/ Phase 4 future files
+classes/Druid.lua
+classes/Druid/cat.lua
+classes/Druid/bear.lua
+classes/Druid/utility.lua
+classes/Hunter.lua
+classes/Mage.lua
+classes/Priest.lua
+classes/Rogue.lua
+classes/Warlock.lua
+classes/Warrior.lua
