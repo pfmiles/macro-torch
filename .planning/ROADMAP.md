@@ -19,7 +19,7 @@ Phase 1 ──→ Phase 2 ──→ Phase 3 ──→ Phase 4
 
 **目标**: 建立 core/ 基础设施，将所有实体类统一到 classMetatable 工厂，消除多态 hack，同步建立声明式构建系统。
 
-**Plans:** 5/6 plans executed
+**Plans:** 6/6 plans complete
 Plans:
 **Wave 1**
 
@@ -34,7 +34,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 01-06-PLAN.md — build_order.txt + build.sh 声明式构建系统 (Wave 3)
+- [x] 01-06-PLAN.md — build_order.txt + build.sh 声明式构建系统 (Wave 3)
 
 ### 1.1 core/class.lua
 
