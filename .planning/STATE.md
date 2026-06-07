@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-06-07T17:13:50.222Z"
+last_updated: "2026-06-07T18:04:24Z"
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 6
-  completed_plans: 0
-  percent: 0
+  completed_plans: 3
+  percent: 50
 ---
 
 # Project State
@@ -18,7 +18,7 @@ progress:
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 1 context 已就绪，等待 planning
+- **Current Phase**: Phase 1 in progress (3/6 plans complete: 01-01, 01-04)
 - **Active Branch**: main
 
 ## Phase Progress
@@ -46,6 +46,7 @@ progress:
 | 2026-06-07 | build_order.txt 一次性全量 | Phase 1 写出所有 Phase 2-4 文件路径，容错模式跳过未创建文件 |
 | 2026-06-07 | LRUStack 改用 classMetatable(nil) | 验证工厂设计，统一 metatable 模式，无父类情况显式传 nil |
 | 2026-06-07 | periodic.lua Phase 1 独立 Frame | OnUpdate 代码块与 OnEvent handler 零耦合，立即分离无过渡状态 |
+| 2026-06-07 | entity/ 核心类迁移完成 (Plan 01-04) | Unit/Player/Target 移至 entity/ 目录，手写 setmetatable 模板统一替换为 classMetatable 一行调用 |
 
 ## Open Questions
 
