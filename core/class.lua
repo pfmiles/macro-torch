@@ -32,3 +32,28 @@ function macroTorch.classMetatable(cls, fieldMapName)
         end
     }
 end
+
+-- lazy registry for polymorphic player initialization
+-- per D-04: empty table initialized in core/class.lua
+macroTorch.PLAYER_CLASS_REGISTRY = {}
+
+-- per D-04/D-05: registers a class entry in the polymorphic player registry
+-- @param className  string — the UnitClass name (e.g. "DRUID", "HUNTER")
+-- @param classTable table  — the class prototype table (e.g. macroTorch.Druid)
+function macroTorch.registerPlayerClass(className, classTable)
+    macroTorch.PLAYER_CLASS_REGISTRY[className] = classTable
+end
+
+-- per D-06/D-08: polymorphic player factory
+-- looks up PLAYER_CLASS_REGISTRY by UnitClass('player'), calls :new() if found,
+-- otherwise falls back to macroTorch.Player:new()
+-- note: does NOT assign to macroTorch.player — assignment stays at each call site
+--       (per D-08, Player.lua retains the default initialization)
+function macroTorch.initPlayer()
+    local className = UnitClass('player')
+    local entry = macroTorch.PLAYER_CLASS_REGISTRY[className]
+    if entry then
+        return entry:new()
+    end
+    return macroTorch.Player:new()
+end
