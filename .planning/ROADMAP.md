@@ -20,14 +20,22 @@ Phase 1 ──→ Phase 2 ──→ Phase 3 ──→ Phase 4
 **目标**: 建立 core/ 基础设施，将所有实体类统一到 classMetatable 工厂，消除多态 hack，同步建立声明式构建系统。
 
 **Plans:** 6 plans across 3 waves
-
 Plans:
+**Wave 1**
+
 - [ ] 01-01-PLAN.md — classMetatable 工厂 + initPlayer/registerPlayerClass (Wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 01-02-PLAN.md — 删除多态 hack + Druid 注册 + initPlayer 接入 (Wave 2)
 - [ ] 01-03-PLAN.md — LRUStack 迁移 + periodic task 系统 + 独立 OnUpdate Frame + 清理 (Wave 2)
 - [ ] 01-04-PLAN.md — Unit/Player/Target → entity/ 迁移 + metatable 替换 (Wave 2)
 - [ ] 01-05-PLAN.md — Pet/TargetTarget/TargetPet/PetTarget/Group/Raid → entity/ 迁移 (Wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 01-06-PLAN.md — build_order.txt + build.sh 声明式构建系统 (Wave 3)
+
 ### 1.1 core/class.lua
 
 #### T1.1.1 — 创建 `core/class.lua`，实现 `classMetatable` 工厂
@@ -164,25 +172,33 @@ Plans:
 ### Phase 1 汇总验证
 
 ```bash
+
 # metatable 模板不再出现在 entity/ 中
+
 grep -c "setmetatable(obj, {" entity/*.lua  # 期望: 0
 
 # classMetatable 使用次数 ≥ 6（含 LRUStack）
+
 grep -c "macroTorch.classMetatable" entity/*.lua core/periodic.lua  # 期望: ≥6
 
 # initPlayer + registerPlayerClass 存在
+
 grep "function macroTorch.initPlayer\|function macroTorch.registerPlayerClass" core/class.lua
 
 # 旧的替换逻辑已删除
+
 grep "macroTorch.player = macroTorch.druid" battle_event_queue.lua  # 期望: 无结果
 
 # event_stack.lua 已删除
+
 test ! -f event_stack.lua
 
 # 构建成功
+
 ./build.sh && echo "Build OK"
 
 # 产物中关键符号存在
+
 grep "function macroTorch.classMetatable\|function macroTorch.initPlayer\|function macroTorch.registerPeriodicTask" SM_Extend.lua
 ```
 
@@ -278,19 +294,25 @@ grep "function macroTorch.classMetatable\|function macroTorch.initPlayer\|functi
 ### Phase 2 汇总验证
 
 ```bash
+
 # 旧文件已不存在或为空
+
 test ! -f battle_event_queue.lua || test $(wc -l < battle_event_queue.lua) -le 10
 
 # 新模块非空且合理大小
+
 wc -l core/events.lua core/combat_context.lua core/spell_trace.lua
+
 # 期望: 每个 ≤250 行
 
 # 关键函数分布正确
+
 grep -c "function macroTorch.eventHandle" core/events.lua         # 期望: 1
 grep -c "function macroTorch.loadImmuneTable" core/combat_context.lua  # 期望: 1
 grep -c "function macroTorch.CheckDodgeParryBlockResist" core/spell_trace.lua  # 期望: 1
 
 # 构建成功
+
 ./build.sh && echo "Build OK"
 ```
 
@@ -389,16 +411,21 @@ grep -c "function macroTorch.CheckDodgeParryBlockResist" core/spell_trace.lua  #
 ### Phase 3 汇总验证
 
 ```bash
+
 # 自检注册总数 ≥ 70
+
 grep -c "SelfTest:register" core/selftest.lua SM_Extend_Druid.lua  # 期望: ≥70
 
 # SpellTrace 声明式注册 ≥ 5
+
 grep -c "SpellTrace:register" SM_Extend_Druid.lua  # 期望: ≥5
 
 # 聊天框输出格式正确
+
 grep "Self-test:" core/selftest.lua
 
 # 构建成功
+
 ./build.sh && echo "Build OK"
 ```
 
@@ -415,6 +442,7 @@ grep "Self-test:" core/selftest.lua
 #### T4.1.1 — 拆分 `classes/Druid.lua`（类定义 + 常量 + 字段函数映射）
 
 从 `SM_Extend_Druid.lua` 提取：
+
 - `macroTorch.Druid:new()` 构造器
 - `DRUID_FIELD_FUNC_MAP` 全部字段
 - 能量常量：`CLAW_E`, `SHRED_E`, `RAKE_E`, `RIP_E`, `BITE_E`, `FF_E`, `COWER_E`, `TIGER_E` 等
@@ -430,6 +458,7 @@ grep "Self-test:" core/selftest.lua
 #### T4.1.2 — 拆分 `classes/Druid/cat.lua`（catAtk 主函数 + 所有模块）
 
 从 `SM_Extend_Druid.lua` 提取 cat 形态全部逻辑：
+
 - `catAtk()` 主入口函数
 - 13 个模块（按执行顺序）：`idolRecover`, `healthManaSaver`, `targetEnemy`, `keepAutoAttack`, `rushMod`/`burstMod`, `openerMod`, `oocMod`, `termMod`, `otMod`, `tigerFury`/`keepTigerFury`, `debuffMod`（`keepRip`/`keepRake`/`keepFF`/`safeFF`）, `regularAttack`, `reshiftMod`
 - 辅助函数：`cp5Bite`, `energyDischargeBeforeBite`, `tryBiteKillShot`, `dischargeEnergyChangeRelicAndRip`, `quickKeepRip`, `shouldDoReshift`, `canDoReshift`
@@ -440,6 +469,7 @@ grep "Self-test:" core/selftest.lua
 #### T4.1.3 — 拆分 `classes/Druid/bear.lua`（熊形态函数）
 
 从 `SM_Extend_Druid.lua` 提取：
+
 - `bearAtk()`, `bearOocMod`, `bearOtMod`, `bearDebuffMod`, `bearFFMod`
 - `bearRegularAttack`, `bearReshiftMod`, `bearAoe`
 
@@ -448,6 +478,7 @@ grep "Self-test:" core/selftest.lua
 #### T4.1.4 — 拆分 `classes/Druid/utility.lua`（buff + 控制 + 物品）
 
 从 `SM_Extend_Druid.lua` 提取：
+
 - `druidBuffs()`, `druidStun()`, `druidDefend()`, `druidControl()`
 - `pokemonLoad()` 物品装载系统
 
@@ -515,35 +546,46 @@ fi
 ### Phase 4 汇总验证
 
 ```bash
+
 # 构建成功
+
 ./build.sh && echo "Build OK"
 
 # 目录结构正确
+
 ls entity/Unit.lua entity/Player.lua entity/Target.lua entity/Pet.lua
 ls core/class.lua core/periodic.lua core/events.lua core/combat_context.lua core/spell_trace.lua core/selftest.lua
 ls classes/Druid.lua classes/Druid/cat.lua classes/Druid/bear.lua classes/Druid/utility.lua
 ls classes/Hunter.lua classes/Mage.lua classes/Priest.lua classes/Rogue.lua classes/Warlock.lua classes/Warrior.lua
 
 # 旧文件已全部清理
+
 ls SM_Extend_*.lua 2>/dev/null  # 期望: No such file or directory
 
 # Druid 关键函数完整（所有 macroTorch.* 全局符号在产物中可用）
+
 grep -c "function macroTorch.\(catAtk\|regularAttack\|keepRip\|keepRake\|keepFF\|shouldUseShred\|shouldCastRip\|shouldUseBite\|canDoReshift\|bearAtk\|bearAoe\|druidBuffs\|pokemonLoad\)" SM_Extend.lua
+
 # 期望: 13
 
 # 自检注册完整
+
 grep -c "SelfTest:register" SM_Extend.lua  # 期望: ≥70
 
 # initPlayer 多态工厂存在
+
 grep "function macroTorch.initPlayer" SM_Extend.lua
 
 # 旧 hack 不在产物中
+
 grep "macroTorch.player = macroTorch.druid" SM_Extend.lua  # 期望: 无结果
 
 # classMetatable 在产物中仅定义一次
+
 grep -c "function macroTorch.classMetatable" SM_Extend.lua  # 期望: 1
 
 # 模块执行顺序验证（cat.lua 中 13 个模块按优先级排列）
+
 grep "idolRecover\|healthManaSaver\|targetEnemy\|keepAutoAttack\|rushMod\|openerMod\|oocMod\|termMod\|otMod\|tigerFury\|debuffMod\|regularAttack\|reshift" classes/Druid/cat.lua
 ```
 
