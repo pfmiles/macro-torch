@@ -95,6 +95,7 @@ end
 
 function macroTorch.onPeriodicUpdate()
     -- on periodic update
+    local expired = {}
     for name, task in pairs(macroTorch.periodicTasks) do
         if GetTime() - frame.lastUpdate >= task.interval then
             if not task.times or task.times > 0 then
@@ -103,9 +104,12 @@ function macroTorch.onPeriodicUpdate()
                 end
                 task.task()
             else
-                macroTorch.removePeriodicTask(name)
+                expired[#expired + 1] = name
             end
         end
+    end
+    for _, name in ipairs(expired) do
+        macroTorch.removePeriodicTask(name)
     end
 end
 
