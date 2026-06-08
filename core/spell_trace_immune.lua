@@ -19,6 +19,14 @@
 -- provides spellsImmuneTracing, loadImmuneTable, loadDefiniteBleedingTable
 
 -- set up the automatic immune tracing
+-- KNOWN RACE WINDOW: The callback closures passed to consumeFailEvent and
+-- consumeLandEvent reference macroTorch.target.isPlayerControlled. Between
+-- when a spell event is recorded and when the periodic task (every 0.1s)
+-- processes it, the player may have tab-targeted a different unit, causing
+-- macroTorch.target to point to a different entity than the original event
+-- target. This is acceptable for PvE content where targeting changes are
+-- rare mid-combat. If stricter accuracy is needed in the future, store the
+-- mob name inside the consume callback and perform an explicit API lookup.
 function macroTorch.spellsImmuneTracing()
     if not macroTorch.traceSpellImmunes or macroTorch.tableLen(macroTorch.traceSpellImmunes) == 0 or not macroTorch.inCombat then
         return
