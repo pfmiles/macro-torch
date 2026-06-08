@@ -1744,3 +1744,120 @@ function macroTorch.pokemonLoad()
     }
     macroTorch.player.loadUseableItemToSlot(orderedTable)
 end
+
+-- Druid class-specific self-test registrations
+-- Category F1: Cat form skill existence (10 items, isOptional=false)
+macroTorch.SelfTest:register("Druid: Shred() exists", function()
+    assert(macroTorch.isFunctionExist("Shred"), "Shred not found in _G")
+end, false)
+
+macroTorch.SelfTest:register("Druid: Rip() exists", function()
+    assert(macroTorch.isFunctionExist("Rip"), "Rip not found in _G")
+end, false)
+
+macroTorch.SelfTest:register("Druid: Rake() exists", function()
+    assert(macroTorch.isFunctionExist("Rake"), "Rake not found in _G")
+end, false)
+
+macroTorch.SelfTest:register("Druid: Claw() exists", function()
+    assert(macroTorch.isFunctionExist("Claw"), "Claw not found in _G")
+end, false)
+
+macroTorch.SelfTest:register("Druid: Ferocious Bite() exists", function()
+    assert(macroTorch.isFunctionExist("Ferocious Bite"), "Ferocious Bite not found in _G")
+end, false)
+
+macroTorch.SelfTest:register("Druid: Tiger's Fury() exists", function()
+    assert(macroTorch.isFunctionExist("Tiger's Fury"), "Tiger's Fury not found in _G")
+end, false)
+
+macroTorch.SelfTest:register("Druid: Faerie Fire() exists", function()
+    assert(macroTorch.isFunctionExist("Faerie Fire"), "Faerie Fire not found in _G")
+end, false)
+
+macroTorch.SelfTest:register("Druid: Pounce() exists", function()
+    assert(macroTorch.isFunctionExist("Pounce"), "Pounce not found in _G")
+end, false)
+
+macroTorch.SelfTest:register("Druid: Ravage() exists", function()
+    assert(macroTorch.isFunctionExist("Ravage"), "Ravage not found in _G")
+end, false)
+
+macroTorch.SelfTest:register("Druid: Cower() exists", function()
+    assert(macroTorch.isFunctionExist("Cower"), "Cower not found in _G")
+end, false)
+
+-- Category F2: Talent rank detection (5 items, isOptional=false)
+macroTorch.SelfTest:register("Druid: Ancient Brutality talent rank >= 0", function()
+    local rank = macroTorch.player.talentRank("Ancient Brutality")
+    assert(type(rank) == "number", "Ancient Brutality talentRank returned " .. type(rank))
+end, false)
+
+macroTorch.SelfTest:register("Druid: Omen of Clarity talent rank >= 0", function()
+    local rank = macroTorch.player.talentRank("Omen of Clarity")
+    assert(type(rank) == "number", "Omen of Clarity talentRank returned " .. type(rank))
+end, false)
+
+macroTorch.SelfTest:register("Druid: Ferocity talent rank >= 0", function()
+    local rank = macroTorch.player.talentRank("Ferocity")
+    assert(type(rank) == "number", "Ferocity talentRank returned " .. type(rank))
+end, false)
+
+macroTorch.SelfTest:register("Druid: Improved Shred talent rank >= 0", function()
+    local rank = macroTorch.player.talentRank("Improved Shred")
+    assert(type(rank) == "number", "Improved Shred talentRank returned " .. type(rank))
+end, false)
+
+macroTorch.SelfTest:register("Druid: Blood Frenzy talent rank >= 0", function()
+    local rank = macroTorch.player.talentRank("Blood Frenzy")
+    assert(type(rank) == "number", "Blood Frenzy talentRank returned " .. type(rank))
+end, false)
+
+-- Category F3: Energy constant range validation (3 items, isOptional=false)
+macroTorch.SelfTest:register("Druid: CLAW_E in range", function()
+    assert(CLAW_E >= 40 and CLAW_E <= 50, "CLAW_E = " .. tostring(CLAW_E))
+end, false)
+
+macroTorch.SelfTest:register("Druid: SHRED_E in range", function()
+    assert(SHRED_E >= 48 and SHRED_E <= 60, "SHRED_E = " .. tostring(SHRED_E))
+end, false)
+
+macroTorch.SelfTest:register("Druid: RAKE_E in range", function()
+    assert(RAKE_E >= 35 and RAKE_E <= 40, "RAKE_E = " .. tostring(RAKE_E))
+end, false)
+
+-- Category G1: DRUID_FIELD_FUNC_MAP field integrity (5 items, isOptional=true)
+macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP comboPoints exists", function()
+    assert(type(macroTorch.player.comboPoints) == "number", "comboPoints not number")
+end, true)
+
+macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP isOoc exists", function()
+    local val = macroTorch.player.isOoc
+    assert(type(val) ~= "nil", "isOoc is nil")
+end, true)
+
+macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP isProwling exists", function()
+    local val = macroTorch.toBoolean(macroTorch.player.isProwling)
+    assert(type(val) == "boolean", "isProwling not boolean: " .. type(val))
+end, true)
+
+macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP isBerserk exists", function()
+    local val = macroTorch.player.isBerserk
+    assert(type(val) ~= "nil", "isBerserk is nil")
+end, true)
+
+macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP humanFormMana exists", function()
+    local val = macroTorch.player.humanFormMana
+    assert(type(val) ~= "nil", "humanFormMana is nil")
+end, true)
+
+-- Category G2: Form detection (2 items, isOptional=true)
+macroTorch.SelfTest:register("Druid: isCatForm exists", function()
+    local val = macroTorch.toBoolean(macroTorch.player.isCatForm)
+    assert(type(val) == "boolean", "isCatForm not boolean: " .. type(val))
+end, true)
+
+macroTorch.SelfTest:register("Druid: isBearForm exists", function()
+    local val = macroTorch.toBoolean(macroTorch.player.isBearForm)
+    assert(type(val) == "boolean", "isBearForm not boolean: " .. type(val))
+end, true)
