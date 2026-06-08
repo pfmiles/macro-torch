@@ -19,7 +19,8 @@
     "code_review": true,
     "code_review_depth": "standard",
     "auto_advance": false,
-    "use_worktrees": true
+    "use_worktrees": true,
+    "_auto_chain_active": false
   },
   "context": {
     "ideaDocument": "docs/REFACTOR_PLAN.md",
