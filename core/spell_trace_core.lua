@@ -119,7 +119,7 @@ function macroTorch.computeLandTable(spell)
     local lastCast = macroTorch.peekCastEvent(spell) or 0
     -- blip: there must be a short delay to wait the possible fail event to come
     local blip = GetTime() - lastCast
-    if not lastCast or lastCast == 0 or blip <= 0.02 or blip > 0.9 then
+    if lastCast == 0 or blip <= 0.02 or blip > 0.9 then
         return
     end
     local lastLanded = macroTorch.peekLandEvent(spell) or 0
