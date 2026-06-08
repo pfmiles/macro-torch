@@ -14,14 +14,13 @@ entity/TargetPet.lua
 entity/PetTarget.lua
 entity/Group.lua
 entity/Raid.lua
-# combat events (Phase 2 will split this)
-battle_event_queue.lua
 texture_map.lua
 interface_debug.lua
 # core/ Phase 2 future files
-core/events.lua
 core/combat_context.lua
-core/spell_trace.lua
+core/spell_trace_core.lua
+core/spell_trace_immune.lua
+core/events.lua
 # core/ Phase 3 future file
 core/selftest.lua
 # current class files (Phase 4 will move to classes/)
