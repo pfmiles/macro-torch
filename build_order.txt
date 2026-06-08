@@ -20,9 +20,9 @@ interface_debug.lua
 core/combat_context.lua
 core/spell_trace_core.lua
 core/spell_trace_immune.lua
-core/events.lua
 # core/ Phase 3 future file
 core/selftest.lua
+core/events.lua
 # current class files (Phase 4 will move to classes/)
 SM_Extend_Druid.lua
 SM_Extend_Hunter.lua
