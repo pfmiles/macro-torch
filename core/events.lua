@@ -49,7 +49,7 @@ function macroTorch.eventHandle()
         -- on player login
     elseif event == 'PLAYER_ENTERING_WORLD' then
         macroTorch.onPlayerEnteringWorld()
-        -- Phase 3: macroTorch.SelfTest:run()
+        macroTorch.SelfTest:run()
     elseif event == 'PLAYER_TARGET_CHANGED' then
         -- target changed
         if macroTorch.player.isInCombat and macroTorch.target.isCanAttack then
