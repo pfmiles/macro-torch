@@ -26,24 +26,7 @@ function macroTorch.Druid:new()
     --     macroTorch.castSpellByName(spellName, 'spell')
     -- end
 
-    -- impl hint: original '__index' & metatable setting:
-    -- self.__index = self
-    -- setmetatable(obj, self)
-
-    setmetatable(obj, {
-        -- k is the key of searching field, and t is the table itself
-        __index = function(t, k)
-            -- missing instance field search
-            if macroTorch.DRUID_FIELD_FUNC_MAP[k] ~= nil then
-                return macroTorch.DRUID_FIELD_FUNC_MAP[k](t)
-            end
-            -- class field & method search
-            local class_val = self[k]
-            if class_val ~= nil then
-                return class_val
-            end
-        end
-    })
+    setmetatable(obj, macroTorch.classMetatable(self, "DRUID_FIELD_FUNC_MAP"))
 
     function obj.showEnergyUsageSet()
         macroTorch.POUNCE_E = 50
