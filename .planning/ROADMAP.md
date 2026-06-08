@@ -332,7 +332,7 @@ grep -c "core/spell_trace_immune.lua" build_order.txt                           
 
 **目标**: 实现登录自检框架并填充内置测试，将 spell trace 改为声明式注册。
 
-**Plans:** 2/4 plans executed
+**Plans:** 4/4 plans complete
 Plans:
 **Wave 1**
 
@@ -341,8 +341,8 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 03-03-PLAN.md — events.lua 挂载 SelfTest:run() + build_order.txt 顺序修正 (Wave 2)
-- [ ] 03-04-PLAN.md — Druid 改用 SpellTrace:register() + 职业自检注册 (Wave 2)
+- [x] 03-03-PLAN.md — events.lua 挂载 SelfTest:run() + build_order.txt 顺序修正 (Wave 2)
+- [x] 03-04-PLAN.md — Druid 改用 SpellTrace:register() + 职业自检注册 (Wave 2)
 
 ### 3.1 自检框架
 
