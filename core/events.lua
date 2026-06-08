@@ -106,7 +106,9 @@ function macroTorch.eventHandle()
         -- arg1 is a global var be set automatically, see https://wow.gamepedia.com/UI_ERROR_MESSAGE
         -- SPELL_FAILED_NOT_BEHIND is a global constant, see https://wow.gamepedia.com/Constants/SPELL_FAILED_NOT_BEHIND
         if (tostring(arg1) == 'You must be behind your target') then
-            macroTorch.context.behindAttackFailedTime = GetTime()
+            if macroTorch.context then
+                macroTorch.context.behindAttackFailedTime = GetTime()
+            end
         end
     elseif event == "CHAT_MSG_COMBAT_CREATURE_VS_SELF_MISSES" or event == "CHAT_MSG_SPELL_CREATURE_VS_SELF_DAMAGE" then
         -- player dodged mob's attack
