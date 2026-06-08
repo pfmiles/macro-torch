@@ -3,14 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: ready_to_plan
-last_updated: 2026-06-08T07:45:04.188Z
+last_updated: "2026-06-08T12:45:00.000Z"
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 9
   completed_plans: 9
-  percent: 25
-stopped_at: Phase 02 complete (3/3) — ready to discuss Phase 3
+  percent: 62.5
 ---
 
 # Project State
@@ -19,16 +18,16 @@ stopped_at: Phase 02 complete (3/3) — ready to discuss Phase 3
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 1 context 已就绪，等待 planning
+- **Current Phase**: Phase 3 context 已就绪，等待 planning
 - **Active Branch**: main
 
 ## Phase Progress
 
 | Phase | 状态 | 开始 | 完成 | 提交 |
 |-------|------|------|------|------|
-| Phase 1: 基础设施 + Entity 迁移 | 🔵 context-ready | 2026-06-07 | — | — |
-| Phase 2: 事件系统拆分 | ⬜ pending | — | — | — |
-| Phase 3: 自检 + Spell Trace 配置化 | ⬜ pending | — | — | — |
+| Phase 1: 基础设施 + Entity 迁移 | ✅ complete | 2026-06-07 | 2026-06-08 | 6 plans |
+| Phase 2: 事件系统拆分 | ✅ complete | 2026-06-08 | 2026-06-08 | 3 plans |
+| Phase 3: 自检 + Spell Trace 配置化 | 🔵 context-ready | — | — | — |
 | Phase 4: 职业重组 + 构建系统 | ⬜ pending | — | — | — |
 
 ## Key Decisions
