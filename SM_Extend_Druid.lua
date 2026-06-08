@@ -476,17 +476,28 @@ function macroTorch.computePounce_Erps()
     return energyPerTick / tickInterval
 end
 
--- tracing certain spells and maintain the landTable
-macroTorch.setSpellTracing(9827, 'Pounce')
-macroTorch.setSpellTracing(9904, 'Rake')
-macroTorch.setSpellTracing(9896, 'Rip')
-macroTorch.setSpellTracing(31018, 'Ferocious Bite')
-
--- register druid spells immune tracing
-macroTorch.setTraceSpellImmune('Pounce', 'Ability_Druid_SupriseAttack')
-macroTorch.setTraceSpellImmune('Rake', 'Ability_Druid_Disembowel')
-macroTorch.setTraceSpellImmune('Rip', 'Ability_GhoulFrenzy')
-macroTorch.setTraceSpellImmune('Faerie Fire (Feral)', 'Spell_Nature_FaerieFire')
+-- tracing certain spells and maintain the landTable (declarative style)
+-- spell trace + immune registration via SpellTrace:register() API
+macroTorch.SpellTrace:register('Pounce', {
+    spellId = 9827, land = true,
+    immune = true, debuffTexture = 'Ability_Druid_SupriseAttack'
+})
+macroTorch.SpellTrace:register('Rake', {
+    spellId = 9904, land = true,
+    immune = true, debuffTexture = 'Ability_Druid_Disembowel'
+})
+macroTorch.SpellTrace:register('Rip', {
+    spellId = 9896, land = true,
+    immune = true, debuffTexture = 'Ability_GhoulFrenzy'
+})
+macroTorch.SpellTrace:register('Ferocious Bite', {
+    spellId = 31018, land = true,
+    immune = false  -- FB has consumeLandEvent but NO immune tracing in original code
+})
+macroTorch.SpellTrace:register('Faerie Fire (Feral)', {
+    land = false,  -- FF is not spell-traced (no setSpellTracing call in original code)
+    immune = true, debuffTexture = 'Spell_Nature_FaerieFire'
+})
 
 -- 职业特定的天赋行为需要自己追踪
 function macroTorch.consumeDruidBattleEvents()
