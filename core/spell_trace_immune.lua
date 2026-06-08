@@ -67,6 +67,7 @@ macroTorch.registerPeriodicTask('spellsImmuneTracing',
 
 -- load the immuneTable from SM_EXTEND.immuneTable persistent var
 function macroTorch.loadImmuneTable()
+    if not macroTorch.context then return end
     -- init immuneTable and bind it to the SM_EXTEND.immuneTable persistent var
     if not SM_EXTEND then
         SM_EXTEND = {}
@@ -85,6 +86,7 @@ end
 
 -- load the definiteBleedingTable from SM_EXTEND.definiteBleedingTable persistent var
 function macroTorch.loadDefiniteBleedingTable()
+    if not macroTorch.context then return end
     -- init definiteBleedingTable and bind it to the SM_EXTEND.definiteBleedingTable persistent var
     if not SM_EXTEND then
         SM_EXTEND = {}
