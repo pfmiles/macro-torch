@@ -8,6 +8,10 @@ fi
 
 # Read build_order.txt line by line, concatenate existing files
 # Fault-tolerant mode: silently skip files that don't exist yet (Phase 2-4)
+if [ ! -f build_order.txt ]; then
+    echo "build_order.txt not found" >&2
+    exit 1
+fi
 while IFS= read -r line; do
     # Skip empty lines
     [ -z "$line" ] && continue
