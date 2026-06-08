@@ -433,7 +433,7 @@ core/spell_trace_immune.lua
 | A2 | `consumeDruidBattleEvents` 函数定义不在 battle_event_queue.lua 中 | External Callers | 低 -- 已验证：grep 确认该函数仅在 SM_Extend_Druid.lua:492 定义。Phase 2 不需要迁移此函数。 |
 | A3 | build.sh 容错模式会正确跳过尚未创建的文件 | build_order.txt Changes | 低 -- Phase 1 已通过此模式工作。D-10 确认容错模式在 Phase 2 仍然有效。 |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **ROADMAP T2.2.2 vs CONTEXT D-02 contradiction (RESOLVED)**
    - What we know: ROADMAP.md says loadImmuneTable/loadDefiniteBleedingTable go to combat_context.lua. CONTEXT.md D-02 says they go to spell_trace_immune.lua.
@@ -441,10 +441,10 @@ core/spell_trace_immune.lua
    - Resolution: D-02 is the authoritative decision document. CONTEXT.md Decisions section overrides ROADMAP.md task descriptions.
    - Implementation: loadImmuneTable + loadDefiniteBleedingTable go to `core/spell_trace_immune.lua`.
 
-2. **spell_trace_core.lua 250-line budget tightness**
+2. **spell_trace_core.lua 250-line budget tightness (RESOLVED)**
    - What we know: Raw code = 235 lines, + license header (~16) = ~251 lines. This is 1 line over the requirement budget.
    - What's unclear: Whether the 250-line limit in R3 is strict or approximate (R3 says "各不超过 250 行").
-   - Recommendation: Reduce blank lines between function groups (currently 1-2 blank lines between each function) to fit within 250. The actual code logic is 235 lines -- the rest is formatting whitespace. Alternatively, move `landTableAnyMatch` and `landTableAllMatch` (20 lines total) to `spell_trace_immune.lua` since they are query predicates used alongside consume functions.
+   - Resolution: Reduce blank lines between function groups (compress double blank lines to single). Keep all 17 functions in spell_trace_core.lua. Per 02-01-PLAN.md Task 2: the 250-line limit is treated as a hard constraint and the plan explicitly addresses it via whitespace compression.
 
 ## Environment Availability
 
