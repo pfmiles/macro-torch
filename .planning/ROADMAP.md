@@ -212,7 +212,7 @@ grep "function macroTorch.classMetatable\|function macroTorch.initPlayer\|functi
 
 > **Frame 分离说明**: 原 `battle_event_queue.lua` 中一个 frame 同时承载 OnUpdate 和 OnEvent。Phase 1 已将 OnUpdate 迁入 `periodic.lua`，Phase 2 为 events 创建独立的 OnEvent frame，两者无共享状态。
 
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 Plans:
 **Wave 1**
 
@@ -221,7 +221,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 02-03-PLAN.md — 更新 build_order.txt + 删除 battle_event_queue.lua（收尾清理）
+- [x] 02-03-PLAN.md — 更新 build_order.txt + 删除 battle_event_queue.lua（收尾清理）
 
 ### 2.1 core/events.lua
 
