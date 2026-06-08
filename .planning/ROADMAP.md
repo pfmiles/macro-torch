@@ -208,16 +208,27 @@ grep "function macroTorch.classMetatable\|function macroTorch.initPlayer\|functi
 
 **覆盖需求**: R3 (战斗事件系统模块化), R6 (core/ 目录)
 
-**目标**: 将 `battle_event_queue.lua` 剩余内容按职责拆分到 `core/events.lua`、`core/combat_context.lua`、`core/spell_trace.lua`。
+**目标**: 将 `battle_event_queue.lua` 剩余内容按职责拆分到 `core/combat_context.lua`、`core/spell_trace_core.lua`、`core/spell_trace_immune.lua`、`core/events.lua`。
 
 > **Frame 分离说明**: 原 `battle_event_queue.lua` 中一个 frame 同时承载 OnUpdate 和 OnEvent。Phase 1 已将 OnUpdate 迁入 `periodic.lua`，Phase 2 为 events 创建独立的 OnEvent frame，两者无共享状态。
+
+**Plans:** 0/3 plans complete
+Plans:
+**Wave 1**
+
+- [ ] 02-01-PLAN.md — 创建 core/combat_context.lua + core/spell_trace_core.lua（基础层）
+- [ ] 02-02-PLAN.md — 创建 core/spell_trace_immune.lua + core/events.lua（免疫追踪 + 事件层）
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 02-03-PLAN.md — 更新 build_order.txt + 删除 battle_event_queue.lua（收尾清理）
 
 ### 2.1 core/events.lua
 
 #### T2.1.1 — 创建 `core/events.lua`，建立独立 OnEvent Frame
 
 - 创建 `local frame = CreateFrame("Frame")`（独立于 periodic.lua）
-- 注册 14 个事件：`PLAYER_ENTERING_WORLD`, `PLAYER_TARGET_CHANGED`, `SPELLCAST_START`, `SPELLCAST_STOP`, `SPELLCAST_FAILED`, `SPELLCAST_SUCCESS`, `PLAYER_REGEN_ENABLED`, `PLAYER_REGEN_DISABLED`, `UNIT_CASTEVENT`, `CHAT_MSG_COMBAT_SELF_MISSES`, `CHAT_MSG_SPELL_SELF_DAMAGE`, `UNIT_HEALTH`, `UNIT_MANA`, `UNIT_RAGE`
+- 注册 14 个事件：`PLAYER_ENTERING_WORLD`, `PLAYER_TARGET_CHANGED`, `SPELLCAST_START`, `SPELLCAST_STOP`, `SPELLCAST_FAILED`, `SPELLCAST_INTERRUPTED`, `PLAYER_REGEN_ENABLED`, `PLAYER_REGEN_DISABLED`, `CHAT_MSG_COMBAT_SELF_MISSES`, `CHAT_MSG_SPELL_SELF_DAMAGE`, `CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE`, `CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE`, `UI_ERROR_MESSAGE`, `UNIT_CASTEVENT` (SUPERWOW_STRING 条件)
 - 设置 `frame:SetScript("OnEvent", macroTorch.eventHandle)`
 
 **验证**: `grep "CreateFrame.*Frame\|RegisterEvent\|SetScript.*OnEvent" core/events.lua` 均有结果
@@ -240,76 +251,73 @@ grep "function macroTorch.classMetatable\|function macroTorch.initPlayer\|functi
 
 #### T2.2.1 — 创建 `core/combat_context.lua`，迁移战斗进出逻辑
 
-- 迁移 `PLAYER_REGEN_ENABLED` 处理：`macroTorch.inCombat = false; macroTorch.context = {}`
-- 迁移 `PLAYER_REGEN_DISABLED` 处理：`macroTorch.context = {}; macroTorch.inCombat = true`
+- 创建三个独立函数供 eventHandle 调用：`onCombatExit()`, `onCombatEnter()`, `onPlayerEnteringWorld()`
+- 不直接访问 WoW event 全局变量
 
 **验证**: `grep "macroTorch.inCombat\|macroTorch.context" core/combat_context.lua` 有结果
 
-#### T2.2.2 — 迁移 `loadImmuneTable` / `loadDefiniteBleedingTable`
+#### T2.2.2 — 迁移 `loadImmuneTable` / `loadDefiniteBleedingTable`（注：移至 spell_trace_immune.lua 而非此处）
 
-- 从 `battle_event_queue.lua` 迁移两个初始化函数
-- 保持函数签名不变
+> **CONTEXT D-02 权威决策**: loadImmuneTable/loadDefiniteBleedingTable 放入 `core/spell_trace_immune.lua`，非 combat_context.lua。
 
-**验证**: `grep "function macroTorch.loadImmuneTable\|function macroTorch.loadDefiniteBleedingTable" core/combat_context.lua` 均有结果
+**验证**: `grep "function macroTorch.loadImmuneTable\|function macroTorch.loadDefiniteBleedingTable" core/spell_trace_immune.lua` 均有结果；`grep "loadImmuneTable" core/combat_context.lua` 无结果
 
-### 2.3 core/spell_trace.lua
+### 2.3 core/spell_trace_core.lua + core/spell_trace_immune.lua
 
-#### T2.3.1 — 创建 `core/spell_trace.lua`，迁移 trace 基础设施
+#### T2.3.1 — 创建 `core/spell_trace_core.lua`，迁移 trace 基础设施 + cast/fail/land 表管理
 
 - 迁移 `macroTorch.DEBUFF_LAND_LAG` 常量
 - 迁移 `macroTorch.tracingSpells` / `macroTorch.traceSpellImmunes` 初始化
-- 迁移 `setSpellTracing` / `setSpellTracingByName`
-- 迁移 `setTraceSpellImmune` / `setTraceSpellImmuneByName`
-
-**验证**: `grep "function macroTorch.setSpellTracing\|function macroTorch.setTraceSpellImmune\|DEBUFF_LAND_LAG" core/spell_trace.lua` 均有结果
-
-#### T2.3.2 — 迁移 cast / fail / land table 管理函数
-
+- 迁移 `setSpellTracing` / `setSpellTracingByName` / `setTraceSpellImmune` / `setTraceSpellImmuneByName`
+- 迁移 `maintainLandTables` + `registerPeriodicTask`
 - 迁移 `recordCastTable` / `recordFailTable` / `computeLandTable`
-- 迁移 `maintainLandTables` 及其 `registerPeriodicTask` 调用
-- 迁移 `consumeLandEvent` / `consumeFailEvent`
-- 迁移 `peekCastEvent` / `peekFailEvent` / `peekLandEvent`
-- 迁移 `landTableAnyMatch` / `landTableAllMatch`
+- 迁移 `consumeLandEvent` / `consumeFailEvent` / `peekCastEvent` / `peekFailEvent` / `peekLandEvent`
+- 迁移 `landTableAnyMatch` / `landTableAllMatch` / `CheckDodgeParryBlockResist`
 
-**验证**: `grep "function macroTorch.recordCastTable\|function macroTorch.maintainLandTables\|function macroTorch.landTableAnyMatch" core/spell_trace.lua` 均有结果
+**验证**: 全部 17 个函数在 core/spell_trace_core.lua 中定义
 
-#### T2.3.3 — 迁移 immune tracing + dodge/parry 检测
+#### T2.3.2 — 创建 `core/spell_trace_immune.lua`，迁移 immune tracing + 免疫/流血确定性表
 
-- 迁移 `spellsImmuneTracing` 及其 `registerPeriodicTask` 调用
-- 迁移 `CheckDodgeParryBlockResist`
+- 迁移 `spellsImmuneTracing` + `registerPeriodicTask`
+- 迁移 `loadImmuneTable` / `loadDefiniteBleedingTable`
 
-**验证**: `grep "function macroTorch.spellsImmuneTracing\|function macroTorch.CheckDodgeParryBlockResist" core/spell_trace.lua` 均有结果
+**验证**: 全部 3 个函数在 core/spell_trace_immune.lua 中定义
 
 ### 2.4 清理
 
-#### T2.4.1 — 删除 `battle_event_queue.lua` 中已迁移代码
+#### T2.4.1 — 删除 `battle_event_queue.lua` + 更新 build_order.txt
 
-- 删除所有已迁入 `core/events.lua` 的内容
-- 删除所有已迁入 `core/combat_context.lua` 的内容
-- 删除所有已迁入 `core/spell_trace.lua` 的内容
-- `battle_event_queue.lua` 本身可删除或缩减为 ≤10 行的兼容占位
+- 从 build_order.txt 移除 `battle_event_queue.lua` 条目
+- 将 `core/spell_trace.lua` 条目替换为 `core/spell_trace_core.lua` + `core/spell_trace_immune.lua`
+- 删除 `battle_event_queue.lua` 文件
 
-**验证**: `test ! -f battle_event_queue.lua || test $(wc -l < battle_event_queue.lua) -le 10`
+**验证**: `test ! -f battle_event_queue.lua`；build_order.txt 不包含 battle_event_queue.lua 或 core/spell_trace.lua（单数）
 
 ### Phase 2 汇总验证
 
 ```bash
 
-# 旧文件已不存在或为空
+# 旧文件已不存在
 
-test ! -f battle_event_queue.lua || test $(wc -l < battle_event_queue.lua) -le 10
+test ! -f battle_event_queue.lua
 
 # 新模块非空且合理大小
 
-wc -l core/events.lua core/combat_context.lua core/spell_trace.lua
+wc -l core/events.lua core/combat_context.lua core/spell_trace_core.lua core/spell_trace_immune.lua
 
 # 期望: 每个 ≤250 行
 
 # 关键函数分布正确
 
-grep -c "function macroTorch.eventHandle" core/events.lua         # 期望: 1
-grep -c "function macroTorch.loadImmuneTable" core/combat_context.lua  # 期望: 1
-grep -c "function macroTorch.CheckDodgeParryBlockResist" core/spell_trace.lua  # 期望: 1
+grep -c "function macroTorch.eventHandle" core/events.lua                           # 期望: 1
+grep -c "function macroTorch.loadImmuneTable" core/spell_trace_immune.lua            # 期望: 1
+grep -c "function macroTorch.CheckDodgeParryBlockResist" core/spell_trace_core.lua   # 期望: 1
+
+# build_order.txt 正确
+
+grep -c "battle_event_queue.lua" build_order.txt                                    # 期望: 0
+grep -c "core/spell_trace_core.lua" build_order.txt                                 # 期望: 1
+grep -c "core/spell_trace_immune.lua" build_order.txt                               # 期望: 1
 
 # 构建成功
 
@@ -384,13 +392,13 @@ grep -c "function macroTorch.CheckDodgeParryBlockResist" core/spell_trace.lua  #
 
 #### T3.3.1 — 实现 `SpellTrace:register()` 声明式 API
 
-- 在 `core/spell_trace.lua` 中添加 `macroTorch.SpellTrace:register(name, config)`
+- 在 `core/spell_trace_core.lua` 中添加 `macroTorch.SpellTrace:register(name, config)`
   - `config.immune` — 是否追踪免疫 (bool)
   - `config.land` — 是否追踪 land 事件 (bool)
   - `config.debuffTexture` — debuff 贴图纹理（可选）
 - 内部自动调用 `setSpellTracing` + `setTraceSpellImmune`
 
-**验证**: `grep "function macroTorch.SpellTrace:register" core/spell_trace.lua` 有结果
+**验证**: `grep "function macroTorch.SpellTrace:register" core/spell_trace_core.lua` 有结果
 
 ### 3.4 Druid 职业集成
 
@@ -554,7 +562,7 @@ fi
 # 目录结构正确
 
 ls entity/Unit.lua entity/Player.lua entity/Target.lua entity/Pet.lua
-ls core/class.lua core/periodic.lua core/events.lua core/combat_context.lua core/spell_trace.lua core/selftest.lua
+ls core/class.lua core/periodic.lua core/events.lua core/combat_context.lua core/spell_trace_core.lua core/spell_trace_immune.lua core/selftest.lua
 ls classes/Druid.lua classes/Druid/cat.lua classes/Druid/bear.lua classes/Druid/utility.lua
 ls classes/Hunter.lua classes/Mage.lua classes/Priest.lua classes/Rogue.lua classes/Warlock.lua classes/Warrior.lua
 
@@ -596,10 +604,10 @@ grep "idolRecover\|healthManaSaver\|targetEnemy\|keepAutoAttack\|rushMod\|opener
 | Phase | Task 数 | 关键产出 |
 |-------|---------|---------|
 | Phase 1 | 15 | classMetatable 工厂, initPlayer 多态, periodic.lua, 5 个 entity metatable 替换, build_order.txt + build.sh |
-| Phase 2 | 9 | events.lua, combat_context.lua, spell_trace.lua（按函数组拆 3 task），battle_event_queue.lua 删除 |
+| Phase 2 | 5 | events.lua, combat_context.lua, spell_trace_core.lua, spell_trace_immune.lua, battle_event_queue.lua 删除 |
 | Phase 3 | 10 | SelfTest 框架 (1) + 4 类测试 (4) + 挂载 (1) + SpellTrace:register (1) + Druid 集成 (2) |
 | Phase 4 | 14 | Druid 拆 4 文件 + 删除旧文件 (5)，6 个职业文件迁移 (6)，build_order 检查 (1)，build.sh 严格模式 (1) |
-| **合计** | **48** | |
+| **合计** | **44** | |
 
 ## 依赖关系
 
@@ -612,7 +620,7 @@ T1.4.1 ──→ T1.4.2
 T1.4.2 依赖 T1.1.2 (initPlayer 存在)
 
 Phase 1 ──→ Phase 2 (battle_event_queue 剩余内容拆分)
-Phase 2 ──→ Phase 3 (SelfTest 挂载到 events.lua; spell_trace.lua 添加 register API)
+Phase 2 ──→ Phase 3 (SelfTest 挂载到 events.lua; spell_trace_core.lua 添加 register API)
 Phase 3 ──→ Phase 4 (Druid 拆分时包含 Phase 3 的 SpellTrace:register + SelfTest 注册)
 ```
 
@@ -631,6 +639,6 @@ Phase 3 ──→ Phase 4 (Druid 拆分时包含 Phase 3 的 SpellTrace:register
 | Phase | Task 数 | 预估工作量 | 关键复杂度 |
 |-------|---------|----------|-----------|
 | Phase 1 | 15 | 中-高 | classMetatable 设计、entity 文件逐个改造、initPlayer 惰性注册表 |
-| Phase 2 | 9 | 高 | 518 行事件文件按函数组精确拆分、跨模块调用关系保持 |
+| Phase 2 | 5 | 高 | 468 行事件文件按函数组精确拆分、跨模块调用关系保持 |
 | Phase 3 | 10 | 中 | 60+ 项自检测试编写、SpellTrace API 设计 |
 | Phase 4 | 14 | 中-高 | 1751 行 Druid 精确拆分到 4 文件、6 职业迁移、严格模式切换 |
