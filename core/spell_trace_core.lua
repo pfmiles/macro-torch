@@ -45,6 +45,25 @@ function macroTorch.setTraceSpellImmuneByName(spellName, bookType)
     end
     macroTorch.setTraceSpellImmune(spellName, spellDebuffTexture)
 end
+-- SpellTrace 声明式 API 命名空间
+-- [CITED: CONTEXT.md D-06, D-07, D-08; RESEARCH A3/Pitfall 1]
+macroTorch.SpellTrace = {}
+
+-- 声明式 spell trace 注册 API
+-- config 字段: {spellId, immune, land, debuffTexture}
+-- spellId: 可选，仅当 land=true 时需要（用于 setSpellTracing 的数值 ID）
+-- immune (boolean): 为 true 时调用 setTraceSpellImmune
+-- land (boolean): 为 true 时调用 setSpellTracing(spellId, name)
+-- debuffTexture (string): immune tracing 所需的 debuff 贴图纹理
+function macroTorch.SpellTrace:register(name, config)
+    -- [CITED: PLAN 03-02 must_haves]
+    if config.land then
+        macroTorch.setSpellTracing(config.spellId, name)
+    end
+    if config.immune then
+        macroTorch.setTraceSpellImmune(name, config.debuffTexture)
+    end
+end
 -- set up the land event generation for spells set tracing
 function macroTorch.maintainLandTables()
     if not macroTorch.tracingSpells or macroTorch.tableLen(macroTorch.tracingSpells) == 0 or not macroTorch.inCombat then
