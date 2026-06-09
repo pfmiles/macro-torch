@@ -354,17 +354,13 @@ Categories verified:
 | A4 | `isGcdOk` and `tigerSelfGCD` belong in Druid.lua because both cat and bear safe functions use them | Druid Line Range Audit | LOW -- `grep` confirms `isGcdOk` called by `readyClaw` (cat) and `readyMaul` (bear); `tigerSelfGCD` used by `safeTigerFury` (cat) and `bearAtk` (bear) |
 | A5 | The current build_order.txt lines 35-38 use PascalCase paths (`classes/Druid/...`) that need correction to snake_case (`classes/druid/...`) | Architecture Patterns #3 | LOW -- visually confirmed in file read |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Exact line range boundaries for Druid split**
-   - What we know: Function start lines from `grep`, D-01 function-to-file assignments
-   - What's unclear: Precise end lines for each function (where matching `end` is)
-   - Recommendation: Planner performs precise boundary audit using editor line-range tools before generating PLAN files. This is a mechanical verification, not a design question.
+1. **Exact line range boundaries for Druid split** — RESOLVED
+   - Resolution: Planner performed boundary audit against source; plans 04-01 include exact line ranges in read_first/action fields. The Druid split uses a subtractive approach (Task 1 removes cat/bear/utility functions from Druid.lua; Tasks 2-3 extract into target files from original source).
 
-2. **Hunter TODO Phase-N placeholder**
-   - What we know: D-04 specifies TODO as a signpost for future Hunter classMetatable migration
-   - What's unclear: Whether to use a specific phase number or keep it generic
-   - Recommendation: Use `-- TODO(Phase-N): migrate to macroTorch.classMetatable` as stated in D-04. The "N" placeholder is fine since the precise phase isn't scheduled.
+2. **Hunter TODO Phase-N placeholder** — RESOLVED
+   - Resolution: Plan 04-02 uses `-- TODO(Phase-N): migrate to macroTorch.classMetatable` as specified in D-04, placed above the hand-written setmetatable block per PATTERNS.md.
 
 ## Sources
 
