@@ -30,6 +30,7 @@ function macroTorch.Hunter:new()
     -- self.__index = self
     -- setmetatable(obj, self)
 
+    -- TODO(Phase-N): migrate to macroTorch.classMetatable
     setmetatable(obj, {
         -- k is the key of searching field, and t is the table itself
         __index = function(t, k)
