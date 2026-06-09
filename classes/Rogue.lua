@@ -31,15 +31,16 @@ end
 ---@param sp string 偷东西后要释放的技能
 function macroTorch.pickPocketBeforeCast(spell)
     local t = 'target'
+    local n = macroTorch.pickPocketState or 0
     if UnitIsPlayer(t) or not string.find(UnitCreatureType(t), '人型生物') then
         CastSpellByName(spell)
     else
         if n ~= 1 then
             CastSpellByName("偷窃")
-            n = 1
+            macroTorch.pickPocketState = 1
         else
             CastSpellByName(spell)
-            n = 0
+            macroTorch.pickPocketState = 0
         end
     end
 end
