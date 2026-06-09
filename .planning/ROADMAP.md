@@ -453,7 +453,7 @@ grep "Self-test:" core/selftest.lua
 
 ## Phase 4: 职业文件重组 + 构建系统收尾
 
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 Plans:
 **Wave 1**
 
@@ -462,7 +462,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 04-03-PLAN.md -- Build system finalization: build_order.txt + build.sh strict mode + cleanup (Wave 2)
+- [x] 04-03-PLAN.md -- Build system finalization: build_order.txt + build.sh strict mode + cleanup (Wave 2)
 
 **覆盖需求**: R6 (classes/ 目录), R8 (Druid 逻辑保持)
 
