@@ -1,6 +1,6 @@
 # macro-torch 重构完成后代码架构
 
-> 最后更新: 2026-06-08 | Phase 1-4 全部完成后的最终架构
+> 最后更新: 2026-06-09 | Phase 1-4 全部完成后的最终架构
 
 ## 总览
 
@@ -37,7 +37,7 @@ macro_torch.lua → impl_util.lua → biz_util.lua
   → core/combat_context.lua → core/spell_trace_core.lua
   → core/spell_trace_immune.lua → core/events.lua
   → core/selftest.lua
-  → classes/Druid.lua → classes/Druid/cat.lua → classes/Druid/bear.lua → classes/Druid/utility.lua
+  → classes/druid/Druid.lua → classes/druid/cat.lua → classes/druid/bear.lua → classes/druid/utility.lua
   → classes/Hunter.lua → classes/Mage.lua → classes/Priest.lua
   → classes/Rogue.lua → classes/Warlock.lua → classes/Warrior.lua
 ```
@@ -57,18 +57,12 @@ macro_torch.lua → impl_util.lua → biz_util.lua
 │              │ │string/table  │ │业务工具       │ │              │ │              │
 │全局命名空间   │ │工具函数       │ │距离/背包      │ │贴图映射       │ │调试接口       │
 │macroTorch={} │ │              │ │              │ │              │ │              │
-│              │ │              │ │              │ │              │ │              │
-│initPlayer()  │ │              │ │              │ │              │ │              │
-│多态工厂       │ │              │ │              │ │              │ │              │
-│              │ │              │ │              │ │              │ │              │
-│registerPlayer│ │              │ │              │ │              │ │              │
-│Class() 注册表 │ │              │ │              │ │              │ │              │
 └──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘
 ```
 
 | 文件 | 职责 |
 |------|------|
-| `macro_torch.lua` | 全局命名空间 `macroTorch={}`，定义 `initPlayer()` 多态工厂和 `registerPlayerClass()` 惰性注册表 |
+| `macro_torch.lua` | 全局命名空间 `macroTorch={}` |
 | `impl_util.lua` | string/table 工具函数 |
 | `biz_util.lua` | 业务工具函数（距离计算、背包操作等） |
 | `texture_map.lua` | 贴图纹理映射表 |
@@ -124,7 +118,7 @@ macro_torch.lua → impl_util.lua → biz_util.lua
 
 | 文件 | Phase | 职责 |
 |------|-------|------|
-| `class.lua` | P1 | `classMetatable` 工厂（统一 metatable 构建）、`initPlayer` 多态初始化、`registerPlayerClass` 惰性注册表 |
+| `class.lua` | P1 | `classMetatable` 工厂（统一 metatable 构建）、`initPlayer()` 多态工厂、`registerPlayerClass()` 惰性注册表 |
 | `periodic.lua` | P1 | `LRUStack` 数据结构、周期任务管理（`registerPeriodicTask`/`removePeriodicTask`/`setRepeat`）、独立 OnUpdate Frame |
 | `events.lua` | P2 | 独立 OnEvent Frame、14 个事件注册、`eventHandle` 集中式 dispatch、挂载 SelfTest + initPlayer |
 | `combat_context.lua` | P2 | `onCombatExit`/`onCombatEnter`/`onPlayerEnteringWorld` 战斗状态管理、`context` 生命周期、`inCombat` 标志 |
@@ -176,9 +170,9 @@ macro_torch.lua → impl_util.lua → biz_util.lua
 | `Player.lua` | Unit | `PLAYER_FIELD_FUNC_MAP`，技能施放、物品使用、姿态/形态检查 |
 | `Target.lua` | Unit | `TARGET_FIELD_FUNC_MAP`，免疫追踪、伤害预测、特殊目标处理 |
 | `Pet.lua` | Unit | `PET_FIELD_FUNC_MAP` |
-| `TargetTarget.lua` | Target | `TARGETTARGET_FIELD_FUNC_MAP` |
-| `TargetPet.lua` | Unit | 目标的宠物 |
-| `PetTarget.lua` | Unit | 宠物的目标 |
+| `TargetTarget.lua` | Target | 目标的目标，无独立 FIELD_FUNC_MAP |
+| `TargetPet.lua` | Unit | 目标的宠物，无独立 FIELD_FUNC_MAP |
+| `PetTarget.lua` | Unit | 宠物的目标，无独立 FIELD_FUNC_MAP |
 | `Group.lua` | — | 空壳，预留给队伍逻辑 |
 | `Raid.lua` | — | 空壳，预留给团队逻辑 |
 
@@ -190,14 +184,14 @@ macro_torch.lua → impl_util.lua → biz_util.lua
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│               🐾 Druid (1751 行 → 4 文件拆分)                 │
+│               🐾 Druid (1842 行 → 4 文件拆分)                 │
 │                                                              │
 │  ┌─────────────────────┐  ┌─────────────────────────────┐   │
 │  │ Druid.lua           │  │ cat.lua                     │   │
 │  │                     │  │                             │   │
-│  │ 类定义 + new()      │  │ catAtk() 主入口             │   │
-│  │ 能量常量 (CLAW_E..) │  │                             │   │
-│  │ DRUID_FIELD_FUNC    │  │ 13 个模块 (按优先级):       │   │
+│  │ 类定义 + new()      │  │ catAtk 辅助函数            │   │
+│  │ catAtk() 主入口     │  │                             │   │
+│  │ 能量常量 (CLAW_E..) │  │ 13 个模块 (按优先级):       │   │
 │  │ _MAP                │  │  0. idolRecover            │   │
 │  │                     │  │  1. healthManaSaver        │   │
 │  │ 全局共享辅助函数:    │  │  2. targetEnemy            │   │
@@ -248,10 +242,10 @@ macro_torch.lua → impl_util.lua → biz_util.lua
 
 | 文件 | 职责 |
 |------|------|
-| `classes/Druid.lua` | 类定义 + 能量常量 + `DRUID_FIELD_FUNC_MAP` + 全局共享辅助函数 + SpellTrace/SelfTest 注册 |
-| `classes/Druid/cat.lua` | `catAtk` 主入口 + 13 个模块 + 辅助函数 (~900-1100 行) |
-| `classes/Druid/bear.lua` | 熊形态全部逻辑 (~100-200 行) |
-| `classes/Druid/utility.lua` | buffs/stun/defend/control + pokemonLoad 物品装载 (~300-400 行) |
+| `classes/Druid.lua` | 类定义 + `catAtk()` 主入口 + 能量常量 + `DRUID_FIELD_FUNC_MAP` + 全局共享辅助函数 + SpellTrace/SelfTest 注册 |
+| `classes/Druid/cat.lua` | 13 个模块 + cat 辅助函数 (~400 行) |
+| `classes/Druid/bear.lua` | 熊形态全部逻辑 (~190 行) |
+| `classes/Druid/utility.lua` | buffs/stun/defend/control + pokemonLoad 物品装载 (~90 行) |
 | `classes/{Hunter,Mage,Priest,Rogue,Warlock,Warrior}.lua` | 原 `SM_Extend_*.lua` 直接迁移 |
 
 ---
