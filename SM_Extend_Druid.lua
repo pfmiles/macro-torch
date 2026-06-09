@@ -1163,11 +1163,12 @@ function macroTorch.ripLeft(clickContext)
         else
             -- rip的连击点数每增一点，持续时间加2s
             local ripDur = macroTorch.RIP_BASE_DURATION
-            if macroTorch.context.lastRipAtCp then
-                ripDur = ripDur + (macroTorch.context.lastRipAtCp - 1) * 2
+            local cp = macroTorch.context.lastRipAtCp
+            if cp then
+                ripDur = ripDur + (cp - 1) * 2
             end
             -- if Savagery idol equipped, reduce rip duration by 10%
-            if macroTorch.context.lastRipEquippedSavagery then
+            if macroTorch.loginContext and macroTorch.loginContext.lastRipEquippedSavagery then
                 ripDur = ripDur * 0.9
             end
             local ripLeft = ripDur - (GetTime() - lastLandedRipTime)
@@ -1196,7 +1197,7 @@ function macroTorch.rakeLeft(clickContext)
             clickContext.rakeLeft = 0
         else
             local rakeDuration = macroTorch.RAKE_DURATION
-            if macroTorch.context.lastRakeEquippedSavagery then
+            if macroTorch.loginContext and macroTorch.loginContext.lastRakeEquippedSavagery then
                 rakeDuration = rakeDuration * 0.9
             end
             local rakeLeft = rakeDuration - (GetTime() - lastLandedRakeTime)
