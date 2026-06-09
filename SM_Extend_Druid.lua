@@ -440,7 +440,7 @@ function macroTorch.computeRake_Erps()
     local tickInterval = 3 -- Base 3 seconds
 
     -- Check if Savagery idol was equipped when Rake was cast (snapshot mechanic)
-    if macroTorch.context and macroTorch.context.lastRakeEquippedSavagery then
+    if macroTorch.loginContext and macroTorch.loginContext.lastRakeEquippedSavagery then
         tickInterval = tickInterval * 0.9 -- 10% shorter tick interval
     end
 
@@ -457,7 +457,7 @@ function macroTorch.computeRip_Erps()
     local tickInterval = 2 -- Base 2 seconds
 
     -- Check if Savagery idol was equipped when Rip was cast (snapshot mechanic)
-    if macroTorch.context and macroTorch.context.lastRipEquippedSavagery then
+    if macroTorch.loginContext and macroTorch.loginContext.lastRipEquippedSavagery then
         tickInterval = tickInterval * 0.9 -- 10% shorter tick interval
     end
 
@@ -1309,7 +1309,7 @@ function macroTorch.safeRake(clickContext)
                 tostring(macroTorch.isRakePresent(clickContext)) ..
                 ', bleed idol equipped: ' ..
                 tostring(macroTorch.player.isRelicEquipped('Idol of Savagery')))
-        macroTorch.context.lastRakeEquippedSavagery = macroTorch.player.isRelicEquipped('Idol of Savagery')
+        macroTorch.loginContext.lastRakeEquippedSavagery = macroTorch.player.isRelicEquipped('Idol of Savagery')
         macroTorch.player.cast('Rake')
         return true
     end
@@ -1324,7 +1324,7 @@ function macroTorch.safeRip(clickContext)
                 tostring(macroTorch.isRipPresent(clickContext)) ..
                 ', bleed idol equipped: ' ..
                 tostring(macroTorch.player.isRelicEquipped('Idol of Savagery')))
-        macroTorch.context.lastRipEquippedSavagery = macroTorch.player.isRelicEquipped('Idol of Savagery')
+        macroTorch.loginContext.lastRipEquippedSavagery = macroTorch.player.isRelicEquipped('Idol of Savagery')
         macroTorch.player.cast('Rip')
         macroTorch.context.lastRipAtCp = clickContext.comboPoints
         return true
