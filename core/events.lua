@@ -39,7 +39,7 @@ frame:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE")
 frame:RegisterEvent("UI_ERROR_MESSAGE")
 
 -- super wow specific
-if SUPERWOW_STRING then
+if SUPERWOW_STRING ~= nil then
     frame:RegisterEvent("UNIT_CASTEVENT")
     -- frame:RegisterEvent("RAW_COMBATLOG")
 end
