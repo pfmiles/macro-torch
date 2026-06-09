@@ -15,7 +15,7 @@
 ]] --
 ---法师专用---
 ---远程逻辑
-function macroTorch.mageRangedAtk(reapLine)
+function macroTorch.mageRangedAtk(_reapLine)
     macroTorch.startAutoAtk()
     if HasPetUI() and not UnitIsDead('pet') then
         PetDefensiveMode()
@@ -26,7 +26,7 @@ function macroTorch.mageRangedAtk(reapLine)
 end
 
 ---近战逻辑
-function macroTorch.mageMeleeAtk(reapLine)
+function macroTorch.mageMeleeAtk(_reapLine)
     macroTorch.startAutoAtk()
     if HasPetUI() and not UnitIsDead('pet') then
         PetDefensiveMode()
