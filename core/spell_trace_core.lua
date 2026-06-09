@@ -58,6 +58,10 @@ macroTorch.SpellTrace = {}
 function macroTorch.SpellTrace:register(name, config)
     -- [CITED: PLAN 03-02 must_haves]
     if config.land then
+        if not config.spellId then
+            macroTorch.show("[macro-torch] SpellTrace:register(" .. name .. "): land=true but no spellId", 'red')
+            return
+        end
         macroTorch.setSpellTracing(config.spellId, name)
     end
     if config.immune then
