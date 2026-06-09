@@ -30,21 +30,7 @@ function macroTorch.Hunter:new()
     -- self.__index = self
     -- setmetatable(obj, self)
 
-    -- TODO(Phase-N): migrate to macroTorch.classMetatable
-    setmetatable(obj, {
-        -- k is the key of searching field, and t is the table itself
-        __index = function(t, k)
-            -- missing instance field search
-            if macroTorch.HUNTER_FIELD_FUNC_MAP[k] ~= nil then
-                return macroTorch.HUNTER_FIELD_FUNC_MAP[k](t)
-            end
-            -- class field & method search
-            local class_val = self[k]
-            if class_val ~= nil then
-                return class_val
-            end
-        end
-    })
+    setmetatable(obj, macroTorch.classMetatable(self, "HUNTER_FIELD_FUNC_MAP"))
 
     function obj.callPet()
         if macroTorch.pet.isExist then
