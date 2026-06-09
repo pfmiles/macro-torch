@@ -262,9 +262,6 @@ macroTorch.registerPlayerClass("DRUID", macroTorch.Druid)
 --    - 快速战斗/PvP：保持原逻辑不变
 --    - 普通战斗：如果rip已存在且目标不免疫rip，则使用fero/emerald_rot以便快速打出claw或造成更多伤害；否则用savagery
 function macroTorch.computeNormalRelic(clickContext)
-    if not macroTorch.player then
-        return 'Idol of Savagery'
-    end
     if not macroTorch.player.isInCombat then
         -- 未进入战斗，按原逻辑
         if clickContext.isImmuneRip then
