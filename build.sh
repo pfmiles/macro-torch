@@ -28,7 +28,7 @@ while IFS= read -r line; do
 done < build_order.txt
 
 # Copy to game directory only on Windows/Cygwin
-if [[ "$OSTYPE" == "cygwin" ]]; then
+if [ "$OSTYPE" = "cygwin" ]; then
     cp $target /cygdrive/d/games/TurtleWoW/Interface/AddOns/SuperMacro/
     ## cp $target /cygdrive/d/games/twmoa_1172_cn/Interface/AddOns/SuperMacro/
 fi
