@@ -453,12 +453,12 @@ grep "Self-test:" core/selftest.lua
 
 ## Phase 4: 职业文件重组 + 构建系统收尾
 
-**Plans:** 3/3 plans ready
+**Plans:** 2/3 plans executed
 Plans:
 **Wave 1**
 
-- [ ] 04-01-PLAN.md -- Druid split: SM_Extend_Druid.lua into 4 files under classes/druid/ (Wave 1)
-- [ ] 04-02-PLAN.md -- Non-Druid migration: 6 SM_Extend_*.lua to classes/ via git mv + Hunter TODO (Wave 1)
+- [x] 04-01-PLAN.md -- Druid split: SM_Extend_Druid.lua into 4 files under classes/druid/ (Wave 1)
+- [x] 04-02-PLAN.md -- Non-Druid migration: 6 SM_Extend_*.lua to classes/ via git mv + Hunter TODO (Wave 1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
