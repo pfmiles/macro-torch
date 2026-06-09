@@ -1815,15 +1815,18 @@ end, false)
 
 -- Category F3: Energy constant range validation (3 items, isOptional=false)
 macroTorch.SelfTest:register("Druid: CLAW_E in range", function()
-    assert(CLAW_E >= 40 and CLAW_E <= 50, "CLAW_E = " .. tostring(CLAW_E))
+    local e = macroTorch.computeClaw_E()
+    assert(e >= 40 and e <= 50, "CLAW_E = " .. tostring(e))
 end, false)
 
 macroTorch.SelfTest:register("Druid: SHRED_E in range", function()
-    assert(SHRED_E >= 48 and SHRED_E <= 60, "SHRED_E = " .. tostring(SHRED_E))
+    local e = macroTorch.computeShred_E()
+    assert(e >= 48 and e <= 60, "SHRED_E = " .. tostring(e))
 end, false)
 
 macroTorch.SelfTest:register("Druid: RAKE_E in range", function()
-    assert(RAKE_E >= 35 and RAKE_E <= 40, "RAKE_E = " .. tostring(RAKE_E))
+    local e = macroTorch.computeRake_E()
+    assert(e >= 35 and e <= 40, "RAKE_E = " .. tostring(e))
 end, false)
 
 -- Category G1: DRUID_FIELD_FUNC_MAP field integrity (5 items, isOptional=true)
