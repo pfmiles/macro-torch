@@ -17,10 +17,13 @@ while IFS= read -r line; do
     [ -z "$line" ] && continue
     # Skip comment lines
     [ "${line#\#}" != "$line" ] && continue
-    # Fault-tolerant: only concat files that actually exist
+    # Strict mode: exit with error if any file in build_order.txt doesn't exist
     if [ -f "$line" ]; then
         printf '\n' >> "$target"
         cat "$line" >> "$target"
+    else
+        echo "ERROR: File not found in build_order.txt: $line" >&2
+        exit 1
     fi
 done < build_order.txt
 

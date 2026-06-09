@@ -23,19 +23,11 @@ core/spell_trace_immune.lua
 # core/ Phase 3 future file
 core/selftest.lua
 core/events.lua
-# current class files (Phase 4 will move to classes/)
-SM_Extend_Druid.lua
-SM_Extend_Hunter.lua
-SM_Extend_Mage.lua
-SM_Extend_Priest.lua
-SM_Extend_Rogue.lua
-SM_Extend_Warlock.lua
-SM_Extend_Warrior.lua
-# classes/ Phase 4 future files
-classes/Druid.lua
-classes/Druid/cat.lua
-classes/Druid/bear.lua
-classes/Druid/utility.lua
+# classes/ (Phase 4: migrated from SM_Extend_*.lua)
+classes/druid/Druid.lua
+classes/druid/cat.lua
+classes/druid/bear.lua
+classes/druid/utility.lua
 classes/Hunter.lua
 classes/Mage.lua
 classes/Priest.lua
