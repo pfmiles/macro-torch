@@ -453,11 +453,22 @@ grep "Self-test:" core/selftest.lua
 
 ## Phase 4: 职业文件重组 + 构建系统收尾
 
+**Plans:** 3/3 plans ready
+Plans:
+**Wave 1**
+
+- [ ] 04-01-PLAN.md -- Druid split: SM_Extend_Druid.lua into 4 files under classes/druid/ (Wave 1)
+- [ ] 04-02-PLAN.md -- Non-Druid migration: 6 SM_Extend_*.lua to classes/ via git mv + Hunter TODO (Wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 04-03-PLAN.md -- Build system finalization: build_order.txt + build.sh strict mode + cleanup (Wave 2)
+
 **覆盖需求**: R6 (classes/ 目录), R8 (Druid 逻辑保持)
 
 **目标**: 拆分 Druid 大类，归类所有职业文件，完成最终目录结构。构建系统切换为严格模式。
 
-### 4.1 Druid 文件拆分（1751 行 → 4 文件）
+### 4.1 Druid 文件拆分（1870 行 → 4 文件）
 
 #### T4.1.1 — 拆分 `classes/Druid.lua`（类定义 + 常量 + 字段函数映射）
 
