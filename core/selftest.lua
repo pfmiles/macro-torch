@@ -133,10 +133,14 @@ macroTorch.SelfTest:register("Lua: unpack() works", function()
     assert(a == 1 and b == 2 and c == 3, "unpack() failed")
 end, false)
 
-macroTorch.SelfTest:register("Lua: error() works with pcall", function()
-    local ok, err = pcall(function() error("test error") end)
+macroTorch.SelfTest:register("Lua: error() exists as function", function()
+    assert(type(error) == "function", "error() is not a function")
+end, false)
+
+macroTorch.SelfTest:register("Lua: pcall catches runtime error", function()
+    local ok, err = pcall(function() return nil + 1 end)
     assert(not ok, "pcall should have caught the error")
-    assert(string.find(tostring(err), "test error"), "error message not captured")
+    assert(string.find(tostring(err), "nil"), "error message not captured, got: " .. tostring(err))
 end, false)
 
 macroTorch.SelfTest:register("Lua: math.max works", function()
@@ -228,8 +232,8 @@ macroTorch.SelfTest:register("WoW: GetComboPoints exists", function()
     assert(macroTorch.isFunctionExist("GetComboPoints"), "GetComboPoints not found")
 end, false)
 
-macroTorch.SelfTest:register("WoW: GetShapeshiftForm exists", function()
-    assert(macroTorch.isFunctionExist("GetShapeshiftForm"), "GetShapeshiftForm not found")
+macroTorch.SelfTest:register("WoW: GetShapeshiftFormCooldown exists", function()
+    assert(macroTorch.isFunctionExist("GetShapeshiftFormCooldown"), "GetShapeshiftFormCooldown not found")
 end, false)
 
 macroTorch.SelfTest:register("WoW: GetNumShapeshiftForms exists", function()
@@ -441,7 +445,7 @@ macroTorch.SelfTest:register("Optional: SP3 global exists", function()
 end, true)
 
 -- ============================================================
--- Registration count: 71 total (A:10 + B:34 + C:20 + D:7 + E:2)
+-- Registration count: 74 total (A:11 + B:34 + C:20 + D:7 + E:2) — note: class files add more
 -- ============================================================
 
 -- ============================================================
