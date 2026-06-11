@@ -234,7 +234,8 @@ function macroTorch.getTalentRank(talentName)
             end
         end
     end
-    error("talent not found: " .. tostring(talentName))
+    macroTorch.show("[macro-torch] getTalentRank: talent not found in any tab: " .. tostring(talentName), "yellow")
+    return 0
 end
 
 -- 检查身上装备格子的装备名称
