@@ -236,3 +236,6 @@ macroTorch.UNIT_FIELD_FUNC_MAP = {
         return self.buffed('Essence of the Red')
     end,
 }
+
+-- DEBUG: init trace step 6 — Unit class initialized
+DEFAULT_CHAT_FRAME:AddMessage("[macro-torch] init step 6: Unit class ready", 0, 1, 0)

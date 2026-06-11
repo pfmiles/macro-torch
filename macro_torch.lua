@@ -19,3 +19,6 @@ if not macroTorch then
     macroTorch = {}
 end
 
+-- DEBUG: init trace step 1 — macroTorch table created
+DEFAULT_CHAT_FRAME:AddMessage("[macro-torch] init step 1: macroTorch table created", 0, 1, 0)
+

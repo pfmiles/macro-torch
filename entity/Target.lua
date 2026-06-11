@@ -91,7 +91,11 @@ function macroTorch.Target:new()
     return obj
 end
 
+-- DEBUG: init trace step 9a — creating macroTorch.target
+DEFAULT_CHAT_FRAME:AddMessage("[macro-torch] init step 9a: creating macroTorch.target", 0, 1, 0)
 macroTorch.target = macroTorch.Target:new()
+-- DEBUG: init trace step 9b — macroTorch.target created
+DEFAULT_CHAT_FRAME:AddMessage("[macro-torch] init step 9b: macroTorch.target created", 0, 1, 0)
 
 -- target fields to function mapping
 macroTorch.TARGET_FIELD_FUNC_MAP = {
