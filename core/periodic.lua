@@ -108,7 +108,7 @@ function macroTorch.onPeriodicUpdate()
                 end
                 task.task()
             else
-                expired[#expired + 1] = name
+                table.insert(expired, name)
             end
         end
     end
