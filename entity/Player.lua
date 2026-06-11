@@ -14,7 +14,11 @@
    limitations under the License.
 ]] --
 
+-- DEBUG: init trace step 7a — before Player prototype creation
+DEFAULT_CHAT_FRAME:AddMessage("[macro-torch] init step 7a: creating Player prototype", 0, 1, 0)
 macroTorch.Player = macroTorch.Unit:new("player")
+-- DEBUG: init trace step 7b — Player prototype created
+DEFAULT_CHAT_FRAME:AddMessage("[macro-torch] init step 7b: Player prototype created", 0, 1, 0)
 
 function macroTorch.Player:new()
     local obj = {}
@@ -515,7 +519,11 @@ macroTorch.PLAYER_FIELD_FUNC_MAP = {
     end,
 }
 
+-- DEBUG: init trace step 8a — before macroTorch.player creation
+DEFAULT_CHAT_FRAME:AddMessage("[macro-torch] init step 8a: creating macroTorch.player", 0, 1, 0)
 macroTorch.player = macroTorch.Player:new()
+-- DEBUG: init trace step 8b — macroTorch.player created, name = ...
+DEFAULT_CHAT_FRAME:AddMessage("[macro-torch] init step 8b: macroTorch.player created, name=" .. tostring(macroTorch.player.name), 0, 1, 0)
 
 --- 如果指定的buff在指定的目标身上不存在，则释放指定的技能
 ---@param t string 指定的目标

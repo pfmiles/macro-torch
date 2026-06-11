@@ -90,3 +90,6 @@ function macroTorch.show(a, color)
     end
     DEFAULT_CHAT_FRAME:AddMessage(tostring(a), c.r, c.g, c.b, c.id)
 end
+
+-- DEBUG: init trace step 10 — interface_debug loaded (macroTorch.show defined)
+DEFAULT_CHAT_FRAME:AddMessage("[macro-torch] init step 10: interface_debug loaded, entity layer complete", 0, 1, 0)

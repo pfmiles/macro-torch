@@ -84,7 +84,11 @@ macroTorch.ES_FIELD_FUNC_MAP = {
 -- migrated from battle_event_queue.lua per D-14/D-15
 -- uses independent OnUpdate Frame (not shared with battle_event_queue.lua)
 
+-- DEBUG: init trace step 5a — before CreateFrame
+DEFAULT_CHAT_FRAME:AddMessage("[macro-torch] init step 5a: before CreateFrame", 0, 1, 0)
 local frame = CreateFrame("Frame")
+-- DEBUG: init trace step 5b — after CreateFrame
+DEFAULT_CHAT_FRAME:AddMessage("[macro-torch] init step 5b: after CreateFrame ok", 0, 1, 0)
 
 -- sets the fixed periodic logic
 frame.lastUpdate = 0
@@ -126,6 +130,8 @@ function macroTorch.setRepeat(name, interval, times, func)
     macroTorch.registerPeriodicTask(name, { interval = interval, times = times, task = func })
 end
 
+-- DEBUG: init trace step 5c — before SetScript(OnUpdate)
+DEFAULT_CHAT_FRAME:AddMessage("[macro-torch] init step 5c: before SetScript(OnUpdate)", 0, 1, 0)
 frame:SetScript("OnUpdate", function()
     if GetTime() - frame.lastUpdate >= frame.leastUpdateInterval then
         -- 使用pcall安全执行onPeriodicUpdate，确保后续代码一定执行
@@ -137,3 +143,5 @@ frame:SetScript("OnUpdate", function()
         frame.lastUpdate = GetTime()
     end
 end)
+-- DEBUG: init trace step 5d — after SetScript(OnUpdate)
+DEFAULT_CHAT_FRAME:AddMessage("[macro-torch] init step 5d: after SetScript(OnUpdate) ok", 0, 1, 0)
