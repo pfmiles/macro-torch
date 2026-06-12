@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: milestone_complete
-last_updated: "2026-06-11T18:43:33.362Z"
+status: in_progress
+last_updated: "2026-06-12T17:43:22.184Z"
 progress:
-  total_phases: 4
+  total_phases: 5
   completed_phases: 4
   total_plans: 16
   completed_plans: 16
-  percent: 100
-stopped_at: Milestone complete (Phase 04 was final phase)
+  percent: 80
+stopped_at: null
 ---
 
 # Project State
@@ -19,7 +19,7 @@ stopped_at: Milestone complete (Phase 04 was final phase)
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 3 context 已就绪，等待 planning
+- **Current Phase**: Phase 5 新阶段已添加，等待 planning
 - **Active Branch**: main
 
 ## Phase Progress
@@ -29,7 +29,14 @@ stopped_at: Milestone complete (Phase 04 was final phase)
 | Phase 1: 基础设施 + Entity 迁移 | ✅ complete | 2026-06-07 | 2026-06-08 | 6 plans |
 | Phase 2: 事件系统拆分 | ✅ complete | 2026-06-08 | 2026-06-08 | 3 plans |
 | Phase 3: 自检 + Spell Trace 配置化 | 🔵 context-ready | — | — | — |
-| Phase 4: 职业重组 + 构建系统 | ⬜ pending | — | — | — |
+| Phase 4: 职业重组 + 构建系统 | ✅ complete | 2026-06-08 | 2026-06-08 | 4 plans |
+| Phase 5: Druid技能方法封装改造 | ⬜ pending | — | — | — |
+
+## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 5 added: Druid技能方法封装改造 - 将player.cast()字符串调用重构为技能对象方法，支持多语言客户端，从Druid试点 (2026-06-13)
 
 ## Key Decisions
 
