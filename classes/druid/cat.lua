@@ -166,7 +166,7 @@ end
 function macroTorch.tryBiteKillShot(clickContext)
     if macroTorch.isKillShotOrLastChance(clickContext) then
         if clickContext.comboPoints > 0 then
-            macroTorch.player.cast('Ferocious Bite')
+            macroTorch.player.ferocious_bite('raw')
         else
             -- 如果当前没星的话也只能做普通攻击
             macroTorch.regularAttack(clickContext)
@@ -298,7 +298,7 @@ function macroTorch.readyReshift(clickContext, nextMove, minAbilityCost)
                 ', curErps1.5: ' ..
                 tostring(macroTorch.computeErps(clickContext) * 1.5) ..
                 ', nextMoveCost: ' .. tostring(minAbilityCost) .. ', tigerLeft = ' .. macroTorch.tigerLeft(clickContext))
-        macroTorch.player.cast('Reshift')
+        macroTorch.player.reshift('ready')
         return true
     end
     return false
@@ -335,7 +335,7 @@ function macroTorch.safeBite(clickContext)
 end
 function macroTorch.readyBite(clickContext)
     if macroTorch.player.isSpellReady('Ferocious Bite') and macroTorch.isGcdOk(clickContext) and macroTorch.isNearBy(clickContext) then
-        macroTorch.player.cast('Ferocious Bite')
+        macroTorch.player.ferocious_bite('ready')
         macroTorch.show('Bite at energy: ' .. macroTorch.player.mana .. ', ooc: ' .. tostring(clickContext.ooc))
         return true
     end
@@ -346,15 +346,8 @@ function macroTorch.safeTigerFury(clickContext)
         -- macroTorch.show('Tiger!!! Tiger present: ' ..
         --     tostring(macroTorch.isTigerPresent(clickContext)) ..
         --     ', tiger left: ' .. macroTorch.tigerLeft(clickContext))
-        macroTorch.player.cast('Tiger\'s Fury')
+        macroTorch.player.tiger_fury('ready')
         macroTorch.loginContext.tigerTimer = GetTime()
-        return true
-    end
-    return false
-end
-function macroTorch.safePounce(clickContext)
-    if macroTorch.player.isSpellReady('Pounce') and macroTorch.isGcdOk(clickContext) and macroTorch.player.mana >= clickContext.POUNCE_E and macroTorch.isNearBy(clickContext) then
-        macroTorch.player.cast('Pounce')
         return true
     end
     return false
@@ -362,7 +355,7 @@ end
 function macroTorch.readyCower(clickContext)
     if macroTorch.player.isSpellReady('Cower') then
         macroTorch.show('current threat: ' .. macroTorch.player.threatPercent .. ' doing ready cower!!!')
-        macroTorch.player.cast('Cower')
+        macroTorch.player.cower('ready')
         return true
     end
     return false
