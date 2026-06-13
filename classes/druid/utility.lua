@@ -1,14 +1,13 @@
 -- Druid utility functions (extracted from SM_Extend_Druid.lua)
 function macroTorch.druidBuffs()
-    local clickContext = {}
     if not macroTorch.player.buffed('Mark of the Wild') then
-        macroTorch.player.cast('Mark of the Wild', true)
+        macroTorch.player.mark_of_the_wild(nil, true)
     end
     if not macroTorch.player.buffed('Thorns') then
-        macroTorch.player.cast('Thorns', true)
+        macroTorch.player.thorns(nil, true)
     end
     if not macroTorch.player.buffed('Nature\'s Grasp') then
-        macroTorch.player.cast('Nature\'s Grasp', true)
+        macroTorch.player.natures_grasp()
     end
 end
 function macroTorch.druidStun()
