@@ -38,7 +38,7 @@ end
 macroTorch.PLAYER_CLASS_REGISTRY = {}
 
 -- per D-04/D-05: registers a class entry in the polymorphic player registry
--- @param className  string — the UnitClass name (e.g. "DRUID", "HUNTER")
+-- @param className  string — the UnitClass name (e.g. "Druid", "Hunter")
 -- @param classTable table  — the class prototype table (e.g. macroTorch.Druid)
 function macroTorch.registerPlayerClass(className, classTable)
     macroTorch.PLAYER_CLASS_REGISTRY[className] = classTable

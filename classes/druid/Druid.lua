@@ -452,7 +452,7 @@ macroTorch.DRUID_FIELD_FUNC_MAP = {
 }
 
 macroTorch.druid = macroTorch.Druid:new()
-macroTorch.registerPlayerClass("DRUID", macroTorch.Druid)
+macroTorch.registerPlayerClass("Druid", macroTorch.Druid)
 
 
 -- 计算normal relic（接下来的战斗默认穿戴的relic）
@@ -1235,43 +1235,43 @@ end
 -- Category G1: DRUID_FIELD_FUNC_MAP field integrity (5 items, isOptional=true)
 -- These tests only apply when the player character is a Druid
 macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP comboPoints exists", function()
-    if UnitClass('player') ~= 'DRUID' then return end
+    if UnitClass('player') ~= 'Druid' then return end
     assert(type(macroTorch.player.comboPoints) == "number", "comboPoints not number")
 end, true)
 
 macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP isOoc exists", function()
-    if UnitClass('player') ~= 'DRUID' then return end
+    if UnitClass('player') ~= 'Druid' then return end
     local val = macroTorch.player.isOoc
     assert(type(val) ~= "nil", "isOoc is nil")
 end, true)
 
 macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP isProwling exists", function()
-    if UnitClass('player') ~= 'DRUID' then return end
+    if UnitClass('player') ~= 'Druid' then return end
     local val = macroTorch.toBoolean(macroTorch.player.isProwling)
     assert(type(val) == "boolean", "isProwling not boolean: " .. type(val))
 end, true)
 
 macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP isBerserk exists", function()
-    if UnitClass('player') ~= 'DRUID' then return end
+    if UnitClass('player') ~= 'Druid' then return end
     local val = macroTorch.player.isBerserk
     assert(type(val) ~= "nil", "isBerserk is nil")
 end, true)
 
 macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP humanFormMana exists", function()
-    if UnitClass('player') ~= 'DRUID' then return end
+    if UnitClass('player') ~= 'Druid' then return end
     local val = macroTorch.player.humanFormMana
     assert(type(val) ~= "nil", "humanFormMana is nil")
 end, true)
 
 -- Category G2: Form detection (2 items, isOptional=true)
 macroTorch.SelfTest:register("Druid: isCatForm exists", function()
-    if UnitClass('player') ~= 'DRUID' then return end
+    if UnitClass('player') ~= 'Druid' then return end
     local val = macroTorch.toBoolean(macroTorch.player.isCatForm)
     assert(type(val) == "boolean", "isCatForm not boolean: " .. type(val))
 end, true)
 
 macroTorch.SelfTest:register("Druid: isBearForm exists", function()
-    if UnitClass('player') ~= 'DRUID' then return end
+    if UnitClass('player') ~= 'Druid' then return end
     local val = macroTorch.toBoolean(macroTorch.player.isBearForm)
     assert(type(val) == "boolean", "isBearForm not boolean: " .. type(val))
 end, true)
