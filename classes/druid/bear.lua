@@ -4,7 +4,7 @@ function macroTorch.bearOocMod(clickContext)
         return
     end
     -- Use Savage Bite when OOC is active (no rage cost)
-    macroTorch.readySavageBite(clickContext)
+    macroTorch.player.ferocious_bite('ready')
 end
 function macroTorch.bearOtMod(clickContext)
     -- Only when grouped and target not controlled by player
@@ -20,17 +20,17 @@ function macroTorch.bearOtMod(clickContext)
     -- If target not attacking me
     if not macroTorch.target.isAttackingMe then
         -- Try Growl first (costs no rage, only checks CD)
-        if macroTorch.readyGrowl(clickContext) then
+        if macroTorch.player.growl('ready') then
             return
         end
         -- If Growl on CD, use Savage Bite as high threat alternative
-        macroTorch.safeSavageBite(clickContext)
+        macroTorch.player.ferocious_bite('safe')
     end
 end
 function macroTorch.bearDebuffMod(clickContext)
     -- Track Demoralizing Roar - works in both solo and group
     if not macroTorch.isDemoralizingRoarPresent(clickContext) then
-        macroTorch.safeDemoralizingRoar(clickContext)
+        macroTorch.player.demoralizing_roar('safe')
     end
 end
 function macroTorch.bearFFMod(clickContext)
@@ -45,12 +45,12 @@ end
 function macroTorch.bearRegularAttack(clickContext)
     -- High rage: Savage Bite (rage dump when above threshold)
     -- But avoid using Savage Bite in rough mode to reduce threat generation
-    if not clickContext.rough and clickContext.rage > clickContext.RAGE_DUMP_THRESHOLD and macroTorch.safeSavageBite(clickContext) then
+    if not clickContext.rough and clickContext.rage > clickContext.RAGE_DUMP_THRESHOLD and macroTorch.player.ferocious_bite('safe') then
         return
     end
 
     -- Primary: Maul
-    if macroTorch.safeMaul(clickContext) then
+    if macroTorch.player.maul('safe') then
         return
     end
 end
@@ -58,7 +58,7 @@ function macroTorch.bearReshiftMod(clickContext)
     -- Threshold-based trigger (cast when below threshold)
     if clickContext.rage < clickContext.RESHIFT_RAGE_THRESHOLD and not clickContext.ooc then
         macroTorch.show('Reshift!!! Rage = ' .. macroTorch.player.mana)
-        macroTorch.player.cast('Reshift')
+        macroTorch.player.reshift('ready')
     end
 end
 function macroTorch.bearAoe()
@@ -74,7 +74,7 @@ function macroTorch.bearAoe()
     macroTorch.bearDebuffMod(clickContext)
 
     -- Use Swipe if we have enough rage
-    if macroTorch.safeSwipe(clickContext) then
+    if macroTorch.player.swipe('safe') then
         return
     end
 end
