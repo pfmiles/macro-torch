@@ -19,13 +19,6 @@ macroTorch.Druid = macroTorch.Player:new()
 function macroTorch.Druid:new()
     local obj = {}
 
-    -- cast spell by name
-    -- @param spellName string spell name
-    -- @param onSelf boolean true if cast on self, current target otherwise
-    -- function obj.cast(spellName, onSelf)
-    --     macroTorch.castSpellByName(spellName, 'spell')
-    -- end
-
     setmetatable(obj, macroTorch.classMetatable(self, "DRUID_FIELD_FUNC_MAP"))
 
     function obj.showEnergyUsageSet()
@@ -80,18 +73,6 @@ function macroTorch.Druid:new()
 
     function obj.equipRelic(relicName)
         macroTorch.equipItem(relicName, 18)
-    end
-
-    function obj.prowl()
-        if not obj.buffed('Prowl') then
-            obj.cast('Prowl')
-        end
-    end
-
-    function obj.trackHumanoids()
-        if not obj.buffed('Track Humanoids') then
-            obj.cast('Track Humanoids')
-        end
     end
 
     -- 这是猫德一键输出宏逻辑，目标是dps最大化，利用好当前猫德伤害机制，利用好每一点能量，尽可能使能量不溢出、也不因为能量不足而卡技能
