@@ -629,11 +629,17 @@ grep "idolRecover\|healthManaSaver\|targetEnemy\|keepAutoAttack\|rushMod\|opener
 **Requirements**: R8, D-01 through D-08
 **Depends on:** Phase 4
 **Plans:** 5 plans
-
 Plans:
+**Wave 1**
 
 - [ ] 05-01-PLAN.md — Add _castSpell, _isInRange, _hasResource to entity/Player.lua (Wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 05-02-PLAN.md — Add ~43 Druid skill methods to classes/druid/Druid.lua, remove old wrappers (Wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 05-03-PLAN.md — Replace ~13 player.cast() calls in cat.lua + Druid.lua (Berserk + safeFF), delete 12 safe/ready functions (Wave 3)
 - [ ] 05-04-PLAN.md — Replace ~6 player.cast() calls in bear.lua, delete 9 safe/ready functions (Wave 3)
 - [ ] 05-05-PLAN.md — Replace ~13 player.cast() calls in utility.lua (Wave 3)
