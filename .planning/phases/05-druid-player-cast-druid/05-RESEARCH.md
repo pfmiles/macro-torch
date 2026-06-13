@@ -491,19 +491,19 @@ end
 | A4 | `Range` parameter for melee skills is `nil` (meaning no distance check at nil) | _isInRange implementation | LOW — per spec, melee skills always in range if target exists |
 | A5 | `self:cast(spellName, onSelf)` current implementation ignores onSelf | Architecture Patterns | NONE — verified by reading Player.lua line 29-31 |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Bear form rage cost fixed values**
+1. **Bear form rage cost fixed values** — RESOLVED
    - What we know: The current bear code uses fixed values (`MAUL_E = 10`, `SWIPE_E = 15`, etc.) with a todo comment about rage cost being dynamic
    - What's unclear: Whether these fixed values are accurate enough for Phase 5, or if the spec's "dynamic(function)" notation means we should create compute functions now
    - Recommendation: Use fixed numbers from existing bear code (`clickContext.MAUL_E = 10` etc.) as the resourceCost parameter. Move dynamic function creation to a future Phase per the Deferred Ideas.
 
-2. **`player.cast('Ravage')` in Druid.lua opener mod**
+2. **`player.cast('Ravage')` in Druid.lua opener mod** — RESOLVED
    - What we know: Line 191 of Druid.lua uses `player.cast('Ravage')` but Ravage is not in the spec's skill method list (Section 4 does not list Ravage as a standalone skill — it's only mentioned as an opener alternative to Pounce in Section 5 "Key Strategic Decisions")
    - What's unclear: Should Ravage get a skill method wrapper like `player.ravage()` or is this intentionally excluded?
    - Recommendation: Add `player.ravage()` as a Type A method (melee range, onSelf=false, enemy target). Even though the spec doesn't list it explicitly, consistency demands all `player.cast()` calls be replaced per D-01.
 
-3. **`safeFF` uses `isGcdOk` pattern not matched by `_castSpell`**
+3. **`safeFF` uses `isGcdOk` pattern not matched by `_castSpell`** — RESOLVED
    - What we know: `macroTorch.safeFF()` (Druid.lua line 990-1002) checks `isGcdOk(clickContext)` in addition to spell readiness. The `_castSpell` spec does not include GCD checking.
    - What's unclear: Should GCD checking be added to `_castSpell` as an optional parameter, or should FF continue to use its custom wrapper?
    - Recommendation: Keep GCD checking outside `_castSpell` for now. The `safeFF` function can be rewritten to call `player.faerie_fire_feral('raw')` after its own external readiness/GCD checks. This avoids overcomplicating the `_castSpell` interface.
