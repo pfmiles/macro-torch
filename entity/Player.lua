@@ -73,7 +73,11 @@ function macroTorch.Player:new()
         end
 
         -- 4. Execute the cast
-        self:cast(spellName, onSelf or false)
+        if onSelf then
+            CastSpellByName(spellName, true)
+        else
+            self:cast(spellName, false)
+        end
         return true
     end
 
@@ -95,7 +99,7 @@ function macroTorch.Player:new()
     -- @param cost number resource cost (energy/rage/mana)
     -- @return boolean
     function obj._hasResource(cost)
-        return self.mana >= cost
+        return self.mana and self.mana >= cost
     end
 
     -- use item in bag by name
