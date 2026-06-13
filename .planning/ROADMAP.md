@@ -628,11 +628,11 @@ grep "idolRecover\|healthManaSaver\|targetEnemy\|keepAutoAttack\|rushMod\|opener
 
 **Requirements**: R8, D-01 through D-08
 **Depends on:** Phase 4
-**Plans:** 5 plans
+**Plans:** 1/5 plans executed
 Plans:
 **Wave 1**
 
-- [ ] 05-01-PLAN.md — Add _castSpell, _isInRange, _hasResource to entity/Player.lua (Wave 1)
+- [x] 05-01-PLAN.md — Add _castSpell, _isInRange, _hasResource to entity/Player.lua (Wave 1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
