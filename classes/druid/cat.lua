@@ -44,15 +44,20 @@ function macroTorch.burstMod(clickContext)
     end
 end
 function macroTorch.regularAttack(clickContext)
-    -- Determine which methods to use based on ooc
-    -- ooc doesn't consume energy, so use ready methods instead of safe methods
-    local shredMethod = clickContext.ooc and macroTorch.readyShred or macroTorch.safeShred
-    local clawMethod = clickContext.ooc and macroTorch.readyClaw or macroTorch.safeClaw
-
+    -- Direct skill method calls with mode parameter
+    -- ooc doesn't consume energy, so use ready mode (nil) instead of safe mode
     if macroTorch.shouldUseShred(clickContext) then
-        shredMethod(clickContext)
+        if clickContext.ooc then
+            macroTorch.player.shred()
+        else
+            macroTorch.player.shred('safe')
+        end
     else
-        clawMethod(clickContext)
+        if clickContext.ooc then
+            macroTorch.player.claw()
+        else
+            macroTorch.player.claw('safe')
+        end
     end
 end
 function macroTorch.otMod(clickContext)
@@ -294,26 +299,6 @@ function macroTorch.readyReshift(clickContext, nextMove, minAbilityCost)
                 tostring(macroTorch.computeErps(clickContext) * 1.5) ..
                 ', nextMoveCost: ' .. tostring(minAbilityCost) .. ', tigerLeft = ' .. macroTorch.tigerLeft(clickContext))
         macroTorch.player.cast('Reshift')
-        return true
-    end
-    return false
-end
-function macroTorch.safeShred(clickContext)
-    return macroTorch.player.mana >= clickContext.SHRED_E and macroTorch.readyShred(clickContext)
-end
-function macroTorch.readyShred(clickContext)
-    if macroTorch.player.isSpellReady('Shred') then
-        macroTorch.player.cast('Shred')
-        return true
-    end
-    return false
-end
-function macroTorch.safeClaw(clickContext)
-    return macroTorch.player.mana >= clickContext.CLAW_E and macroTorch.readyClaw(clickContext)
-end
-function macroTorch.readyClaw(clickContext)
-    if macroTorch.player.isSpellReady('Claw') then
-        macroTorch.player.cast('Claw')
         return true
     end
     return false
