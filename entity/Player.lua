@@ -77,6 +77,19 @@ function macroTorch.Player:new()
         return true
     end
 
+    -- Internal: check if current target is within casting range
+    -- @param range number distance in yards, nil/0 = melee (always in range if target exists)
+    -- @return boolean
+    function obj._isInRange(range)
+        if not macroTorch.target or not macroTorch.target.isExist then
+            return false
+        end
+        if type(range) ~= 'number' or range <= 0 then
+            return true  -- nil/0 range = melee, always considered in range if target exists
+        end
+        return macroTorch.target.distance <= range
+    end
+
     -- use item in bag by name
     -- @param itemName string item name
     -- @param onSelf boolean true if use on self, current target otherwise
