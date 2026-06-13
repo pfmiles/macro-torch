@@ -628,7 +628,7 @@ grep "idolRecover\|healthManaSaver\|targetEnemy\|keepAutoAttack\|rushMod\|opener
 
 **Requirements**: R8, D-01 through D-08
 **Depends on:** Phase 4
-**Plans:** 3/5 plans executed
+**Plans:** 4/5 plans executed
 Plans:
 **Wave 1**
 
@@ -641,7 +641,7 @@ Plans:
 **Wave 3** *(blocked on Wave 2 completion)*
 
 - [x] 05-03-PLAN.md — Replace ~13 player.cast() calls in cat.lua + Druid.lua (Berserk + safeFF), delete 12 safe/ready functions (Wave 3)
-- [ ] 05-04-PLAN.md — Replace ~6 player.cast() calls in bear.lua, delete 9 safe/ready functions (Wave 3)
+- [x] 05-04-PLAN.md — Replace ~6 player.cast() calls in bear.lua, delete 9 safe/ready functions (Wave 3)
 - [ ] 05-05-PLAN.md — Replace ~13 player.cast() calls in utility.lua (Wave 3)
 
 ---
