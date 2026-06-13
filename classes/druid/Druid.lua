@@ -1195,7 +1195,7 @@ function macroTorch.safeFF(clickContext)
                 ', FF left: ' ..
                 tostring(macroTorch.ffLeft(clickContext)) ..
                 ', at energy: ' .. macroTorch.player.mana .. ', cp: ' .. tostring(clickContext.comboPoints))
-        macroTorch.player.cast('Faerie Fire (Feral)')
+        macroTorch.player.faerie_fire_feral('raw')
         macroTorch.context.ffTimer = GetTime()
         return true
     end

@@ -15,7 +15,7 @@ function macroTorch.burstMod(clickContext)
         -- berserk
         if not flags.berserk then
             if not clickContext.berserk then
-                player.cast('Berserk')
+                player.berserk()
             end
             flags.berserk = true
             return
