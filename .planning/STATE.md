@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Executing Phase 05
-last_updated: "2026-06-13T04:21:42.365Z"
+last_updated: "2026-06-13T04:33:30.905Z"
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 21
-  completed_plans: 18
+  completed_plans: 19
   percent: 80
 stopped_at: null
 ---
@@ -85,3 +85,13 @@ stopped_at: null
 
 /gsd:validate-phase
 ```
+
+## Performance Metrics
+
+| Phase | Plan | Duration | Notes |
+|-------|------|----------|-------|
+| Phase 05 P03 | 380 | 4 tasks | 2 files |
+
+## Decisions
+
+- [Phase 05]: Deleted 5 wrapper functions: safeShred, readyShred, safeClaw, readyClaw, safePounce -- replaced with direct mode-based skill method calls (nil='ready', 'safe'='energy+distance checks', 'raw'='no checks')
