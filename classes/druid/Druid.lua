@@ -434,7 +434,7 @@ end
 macroTorch.DRUID_FIELD_FUNC_MAP = {
     -- basic props
     ['comboPoints'] = function(self)
-        return GetComboPoints()
+        return GetComboPoints() or 0
     end,
     -- conditinal props
     ['isOoc'] = function(self)
@@ -447,8 +447,7 @@ macroTorch.DRUID_FIELD_FUNC_MAP = {
         return self.buffed('Berserk', 'Ability_Druid_Berserk')
     end,
     ['humanFormMana'] = function(self)
-        local _, b = UnitMana(self.ref)
-        return b or 0
+        return UnitMana(self.ref) or 0
     end,
 }
 
@@ -1234,37 +1233,45 @@ end
 -- Category F2/F3: removed (talent/energy tests not suitable for boot self-test)
 
 -- Category G1: DRUID_FIELD_FUNC_MAP field integrity (5 items, isOptional=true)
+-- These tests only apply when the player character is a Druid
 macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP comboPoints exists", function()
+    if UnitClass('player') ~= 'DRUID' then return end
     assert(type(macroTorch.player.comboPoints) == "number", "comboPoints not number")
 end, true)
 
 macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP isOoc exists", function()
+    if UnitClass('player') ~= 'DRUID' then return end
     local val = macroTorch.player.isOoc
     assert(type(val) ~= "nil", "isOoc is nil")
 end, true)
 
 macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP isProwling exists", function()
+    if UnitClass('player') ~= 'DRUID' then return end
     local val = macroTorch.toBoolean(macroTorch.player.isProwling)
     assert(type(val) == "boolean", "isProwling not boolean: " .. type(val))
 end, true)
 
 macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP isBerserk exists", function()
+    if UnitClass('player') ~= 'DRUID' then return end
     local val = macroTorch.player.isBerserk
     assert(type(val) ~= "nil", "isBerserk is nil")
 end, true)
 
 macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP humanFormMana exists", function()
+    if UnitClass('player') ~= 'DRUID' then return end
     local val = macroTorch.player.humanFormMana
     assert(type(val) ~= "nil", "humanFormMana is nil")
 end, true)
 
 -- Category G2: Form detection (2 items, isOptional=true)
 macroTorch.SelfTest:register("Druid: isCatForm exists", function()
+    if UnitClass('player') ~= 'DRUID' then return end
     local val = macroTorch.toBoolean(macroTorch.player.isCatForm)
     assert(type(val) == "boolean", "isCatForm not boolean: " .. type(val))
 end, true)
 
 macroTorch.SelfTest:register("Druid: isBearForm exists", function()
+    if UnitClass('player') ~= 'DRUID' then return end
     local val = macroTorch.toBoolean(macroTorch.player.isBearForm)
     assert(type(val) == "boolean", "isBearForm not boolean: " .. type(val))
 end, true)

@@ -419,15 +419,17 @@ macroTorch.SelfTest:register("Target: isCanAttack property exists", function()
 end, false)
 
 macroTorch.SelfTest:register("Target: name property exists", function()
-    assert(macroTorch.target.name ~= nil, "target.name is nil")
+    -- UnitName("target") returns nil when no target selected, which is correct
+    local _ = macroTorch.target.name
 end, false)
 
 macroTorch.SelfTest:register("Pet: table exists", function()
     assert(type(macroTorch.pet) == "table", "macroTorch.pet is not a table")
 end, false)
 
-macroTorch.SelfTest:register("Pet: exists property exists", function()
-    assert(macroTorch.pet.exists ~= nil, "pet.exists is nil")
+macroTorch.SelfTest:register("Pet: isExist property exists", function()
+    -- isExist returns boolean via toBoolean(), always non-nil even when no pet
+    assert(macroTorch.pet.isExist ~= nil, "pet.isExist is nil")
 end, false)
 
 -- ============================================================
@@ -438,6 +440,10 @@ end, false)
 
 macroTorch.SelfTest:register("Optional: UnitXP available", function()
     assert(macroTorch.isFunctionExist("UnitXP"), "UnitXP not available")
+end, true)
+
+macroTorch.SelfTest:register("Optional: SuperWoW available", function()
+    assert(type(_G.SUPERWOW_STRING) ~= "nil", "SUPERWOW_STRING not found")
 end, true)
 
 macroTorch.SelfTest:register("Optional: SP3 global exists", function()
