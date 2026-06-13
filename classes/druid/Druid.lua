@@ -155,7 +155,7 @@ function macroTorch.Druid:new()
     end
 
     function obj.barkskin(mode)
-        return self:_castSpell({ en = 'Barkskin', zh = '树皮术' }, mode, nil, 0, true)
+        return self:_castSpell({ en = 'Barkskin (Feral)', zh = '树皮术' }, mode, nil, 0, true)
     end
 
     function obj.track_humanoids(mode)

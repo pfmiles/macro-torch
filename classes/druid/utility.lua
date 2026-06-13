@@ -31,7 +31,6 @@ function macroTorch.druidStun()
     end
 end
 function macroTorch.druidDefend()
-    local clickContext = {}
     -- [Barkskin (Feral)][Frenzied Regeneration]
     if macroTorch.player.isSpellReady('Barkskin (Feral)') then
         macroTorch.player.barkskin('raw')
@@ -51,9 +50,9 @@ function macroTorch.druidControl()
     local clickContext = {}
     -- if target is of type beast or dragonkin, use Hibernate, else use [Entangling Roots]
     if macroTorch.target.type == 'Beast' or macroTorch.target.type == 'Dragonkin' then
-        macroTorch.player.hibernate()
+        macroTorch.player.hibernate('safe')
     else
-        macroTorch.player.entangling_roots()
+        macroTorch.player.entangling_roots('safe')
     end
 end
 function macroTorch.pokemonLoad()
