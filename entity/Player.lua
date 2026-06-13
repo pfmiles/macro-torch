@@ -30,6 +30,74 @@ function macroTorch.Player:new()
         macroTorch.castSpellByName(spellName, 'spell')
     end
 
+    -- Internal: shared spell casting helper with locale support, readiness, and resource checks
+    -- @param localeNames table { en = 'EnglishName', zh = '中文名' }
+    -- @param mode string|nil nil='ready', 'raw'=no checks, 'safe'=all checks
+    -- @param range number|nil distance in yards, nil = melee (no check)
+    -- @param resourceCost number|function|nil cost or function returning cost, nil = skip check
+    -- @param onSelf boolean true if cast on self
+    -- @return boolean true if spell was cast
+    function obj._castSpell(localeNames, mode, range, resourceCost, onSelf)
+        -- 1. Locale-based spell name selection
+        local locale = GetLocale()
+        local spellName
+        if locale == 'zhCN' and localeNames.zh then
+            spellName = localeNames.zh
+        else
+            spellName = localeNames.en
+        end
+
+        -- 2. Readiness check (skip if mode is 'raw')
+        if mode ~= 'raw' then
+            if not self:isSpellReady(spellName) then
+                return false
+            end
+        end
+
+        -- 3. Safe mode: distance + resource checks
+        if mode == 'safe' then
+            if range and not self:_isInRange(range) then
+                return false
+            end
+            if resourceCost then
+                local cost
+                if type(resourceCost) == 'function' then
+                    cost = resourceCost()
+                else
+                    cost = resourceCost
+                end
+                if not self:_hasResource(cost) then
+                    return false
+                end
+            end
+        end
+
+        -- 4. Execute the cast
+        self:cast(spellName, onSelf or false)
+        return true
+    end
+
+    -- Internal: check if current target is within casting range
+    -- @param range number distance in yards, nil/0 = melee (always in range if target exists)
+    -- @return boolean
+    function obj._isInRange(range)
+        if not macroTorch.target or not macroTorch.target.isExist then
+            return false
+        end
+        if type(range) ~= 'number' or range <= 0 then
+            return true  -- nil/0 range = melee, always considered in range if target exists
+        end
+        return macroTorch.target.distance <= range
+    end
+
+    -- Internal: check if player has sufficient resource for spell
+    -- WoW 1.12.1: UnitMana('player') auto-returns energy in cat, rage in bear, mana in caster
+    -- @param cost number resource cost (energy/rage/mana)
+    -- @return boolean
+    function obj._hasResource(cost)
+        return self.mana >= cost
+    end
+
     -- use item in bag by name
     -- @param itemName string item name
     -- @param onSelf boolean true if use on self, current target otherwise
