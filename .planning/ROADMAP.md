@@ -620,6 +620,157 @@ grep -c "function macroTorch.classMetatable" SM_Extend.lua  # 期望: 1
 grep "idolRecover\|healthManaSaver\|targetEnemy\|keepAutoAttack\|rushMod\|openerMod\|oocMod\|termMod\|otMod\|tigerFury\|debuffMod\|regularAttack\|reshift" classes/Druid/cat.lua
 ```
 
+### Phase 5: Druid技能方法封装改造 - 将player.cast()字符串调用重构为技能对象方法，支持多语言客户端，从Druid试点
+
+**Goal:** Refactor `player.cast(XXXX)'SkillNameXXXX'` string-based spell casting into typed skill object methods (`player.claw()`, `player.wrath(XXXX)'safeXXXX'`) with multi-locale support (en/zh). Druid pilot phase covering ~53 skill methods and ~32 call sites across 5 files.
+
+**Requirements**: R8, D-01 through D-08
+**Depends on:** Phase 4
+**Plans:** 5 plans
+
+Plans:
+
+- [ ] 05-01-PLAN.md — Add _castSpell, _isInRange, _hasResource to entity/Player.lua (Wave 1)
+- [ ] 05-02-PLAN.md — Add ~43 Druid skill methods to classes/druid/Druid.lua, remove old wrappers (Wave 2)
+- [ ] 05-03-PLAN.md — Replace ~11 player.cast() calls in cat.lua, delete 12 safe/ready functions (Wave 3)
+- [ ] 05-04-PLAN.md — Replace ~6 player.cast() calls in bear.lua, delete 9 safe/ready functions (Wave 3)
+- [ ] 05-05-PLAN.md — Replace ~13 player.cast() calls in utility.lua (Wave 3)
+### Phase 5: Druid技能方法封装改造 - 将player.cast()字符串调用重构为技能对象方法，支持多语言客户端，从Druid试点
+
+**Goal:** Refactor `player.cast(XXXX)'SkillNameXXXX'` string-based spell casting into typed skill object methods (`player.claw()`, `player.wrath(XXXX)'safeXXXX'`) with multi-locale support (en/zh). Druid pilot phase covering ~53 skill methods and ~32 call sites across 5 files.
+
+**Requirements**: R8, D-01 through D-08
+**Depends on:** Phase 4
+**Plans:** 5 plans
+
+Plans:
+
+- [ ] 05-01-PLAN.md — Add _castSpell, _isInRange, _hasResource to entity/Player.lua (Wave 1)
+- [ ] 05-02-PLAN.md — Add ~43 Druid skill methods to classes/druid/Druid.lua, remove old wrappers (Wave 2)
+- [ ] 05-03-PLAN.md — Replace ~11 player.cast() calls in cat.lua, delete 12 safe/ready functions (Wave 3)
+- [ ] 05-04-PLAN.md — Replace ~6 player.cast() calls in bear.lua, delete 9 safe/ready functions (Wave 3)
+- [ ] 05-05-PLAN.md — Replace ~13 player.cast() calls in utility.lua (Wave 3)
+### Phase 5: Druid技能方法封装改造 - 将player.cast()字符串调用重构为技能对象方法，支持多语言客户端，从Druid试点
+
+**Goal:** Refactor `player.cast(XXXX)'SkillNameXXXX'` string-based spell casting into typed skill object methods (`player.claw()`, `player.wrath(XXXX)'safeXXXX'`) with multi-locale support (en/zh). Druid pilot phase covering ~53 skill methods and ~32 call sites across 5 files.
+
+**Requirements**: R8, D-01 through D-08
+**Depends on:** Phase 4
+**Plans:** 5 plans
+
+Plans:
+
+- [ ] 05-01-PLAN.md — Add _castSpell, _isInRange, _hasResource to entity/Player.lua (Wave 1)
+- [ ] 05-02-PLAN.md — Add ~43 Druid skill methods to classes/druid/Druid.lua, remove old wrappers (Wave 2)
+- [ ] 05-03-PLAN.md — Replace ~11 player.cast() calls in cat.lua, delete 12 safe/ready functions (Wave 3)
+- [ ] 05-04-PLAN.md — Replace ~6 player.cast() calls in bear.lua, delete 9 safe/ready functions (Wave 3)
+- [ ] 05-05-PLAN.md — Replace ~13 player.cast() calls in utility.lua (Wave 3)
+### Phase 5: Druid技能方法封装改造 - 将player.cast()字符串调用重构为技能对象方法，支持多语言客户端，从Druid试点
+
+**Goal:** Refactor `player.cast(XXXX)'SkillNameXXXX'` string-based spell casting into typed skill object methods (`player.claw()`, `player.wrath(XXXX)'safeXXXX'`) with multi-locale support (en/zh). Druid pilot phase covering ~53 skill methods and ~32 call sites across 5 files.
+
+**Requirements**: R8, D-01 through D-08
+**Depends on:** Phase 4
+**Plans:** 5 plans
+
+Plans:
+
+- [ ] 05-01-PLAN.md — Add _castSpell, _isInRange, _hasResource to entity/Player.lua (Wave 1)
+- [ ] 05-02-PLAN.md — Add ~43 Druid skill methods to classes/druid/Druid.lua, remove old wrappers (Wave 2)
+- [ ] 05-03-PLAN.md — Replace ~11 player.cast() calls in cat.lua, delete 12 safe/ready functions (Wave 3)
+- [ ] 05-04-PLAN.md — Replace ~6 player.cast() calls in bear.lua, delete 9 safe/ready functions (Wave 3)
+- [ ] 05-05-PLAN.md — Replace ~13 player.cast() calls in utility.lua (Wave 3)
+### Phase 5: Druid技能方法封装改造 - 将player.cast()字符串调用重构为技能对象方法，支持多语言客户端，从Druid试点
+
+**Goal:** Refactor `player.cast(XXXX)'SkillNameXXXX'` string-based spell casting into typed skill object methods (`player.claw()`, `player.wrath(XXXX)'safeXXXX'`) with multi-locale support (en/zh). Druid pilot phase covering ~53 skill methods and ~32 call sites across 5 files.
+
+**Requirements**: R8, D-01 through D-08
+**Depends on:** Phase 4
+**Plans:** 5 plans
+
+Plans:
+
+- [ ] 05-01-PLAN.md — Add _castSpell, _isInRange, _hasResource to entity/Player.lua (Wave 1)
+- [ ] 05-02-PLAN.md — Add ~43 Druid skill methods to classes/druid/Druid.lua, remove old wrappers (Wave 2)
+- [ ] 05-03-PLAN.md — Replace ~11 player.cast() calls in cat.lua, delete 12 safe/ready functions (Wave 3)
+- [ ] 05-04-PLAN.md — Replace ~6 player.cast() calls in bear.lua, delete 9 safe/ready functions (Wave 3)
+- [ ] 05-05-PLAN.md — Replace ~13 player.cast() calls in utility.lua (Wave 3)
+### Phase 5: Druid技能方法封装改造 - 将player.cast()字符串调用重构为技能对象方法，支持多语言客户端，从Druid试点
+
+**Goal:** Refactor `player.cast(XXXX)'SkillNameXXXX'` string-based spell casting into typed skill object methods (`player.claw()`, `player.wrath(XXXX)'safeXXXX'`) with multi-locale support (en/zh). Druid pilot phase covering ~53 skill methods and ~32 call sites across 5 files.
+
+**Requirements**: R8, D-01 through D-08
+**Depends on:** Phase 4
+**Plans:** 5 plans
+
+Plans:
+
+- [ ] 05-01-PLAN.md — Add _castSpell, _isInRange, _hasResource to entity/Player.lua (Wave 1)
+- [ ] 05-02-PLAN.md — Add ~43 Druid skill methods to classes/druid/Druid.lua, remove old wrappers (Wave 2)
+- [ ] 05-03-PLAN.md — Replace ~11 player.cast() calls in cat.lua, delete 12 safe/ready functions (Wave 3)
+- [ ] 05-04-PLAN.md — Replace ~6 player.cast() calls in bear.lua, delete 9 safe/ready functions (Wave 3)
+- [ ] 05-05-PLAN.md — Replace ~13 player.cast() calls in utility.lua (Wave 3)
+### Phase 5: Druid技能方法封装改造 - 将player.cast()字符串调用重构为技能对象方法，支持多语言客户端，从Druid试点
+
+**Goal:** Refactor `player.cast(XXXX)'SkillNameXXXX'` string-based spell casting into typed skill object methods (`player.claw()`, `player.wrath(XXXX)'safeXXXX'`) with multi-locale support (en/zh). Druid pilot phase covering ~53 skill methods and ~32 call sites across 5 files.
+
+**Requirements**: R8, D-01 through D-08
+**Depends on:** Phase 4
+**Plans:** 5 plans
+
+Plans:
+
+- [ ] 05-01-PLAN.md — Add _castSpell, _isInRange, _hasResource to entity/Player.lua (Wave 1)
+- [ ] 05-02-PLAN.md — Add ~43 Druid skill methods to classes/druid/Druid.lua, remove old wrappers (Wave 2)
+- [ ] 05-03-PLAN.md — Replace ~11 player.cast() calls in cat.lua, delete 12 safe/ready functions (Wave 3)
+- [ ] 05-04-PLAN.md — Replace ~6 player.cast() calls in bear.lua, delete 9 safe/ready functions (Wave 3)
+- [ ] 05-05-PLAN.md — Replace ~13 player.cast() calls in utility.lua (Wave 3)
+### Phase 5: Druid技能方法封装改造 - 将player.cast()字符串调用重构为技能对象方法，支持多语言客户端，从Druid试点
+
+**Goal:** Refactor `player.cast(XXXX)'SkillNameXXXX'` string-based spell casting into typed skill object methods (`player.claw()`, `player.wrath(XXXX)'safeXXXX'`) with multi-locale support (en/zh). Druid pilot phase covering ~53 skill methods and ~32 call sites across 5 files.
+
+**Requirements**: R8, D-01 through D-08
+**Depends on:** Phase 4
+**Plans:** 5 plans
+
+Plans:
+
+- [ ] 05-01-PLAN.md — Add _castSpell, _isInRange, _hasResource to entity/Player.lua (Wave 1)
+- [ ] 05-02-PLAN.md — Add ~43 Druid skill methods to classes/druid/Druid.lua, remove old wrappers (Wave 2)
+- [ ] 05-03-PLAN.md — Replace ~11 player.cast() calls in cat.lua, delete 12 safe/ready functions (Wave 3)
+- [ ] 05-04-PLAN.md — Replace ~6 player.cast() calls in bear.lua, delete 9 safe/ready functions (Wave 3)
+- [ ] 05-05-PLAN.md — Replace ~13 player.cast() calls in utility.lua (Wave 3)
+### Phase 5: Druid技能方法封装改造 - 将player.cast()字符串调用重构为技能对象方法，支持多语言客户端，从Druid试点
+
+**Goal:** Refactor `player.cast(XXXX)'SkillNameXXXX'` string-based spell casting into typed skill object methods (`player.claw()`, `player.wrath(XXXX)'safeXXXX'`) with multi-locale support (en/zh). Druid pilot phase covering ~53 skill methods and ~32 call sites across 5 files.
+
+**Requirements**: R8, D-01 through D-08
+**Depends on:** Phase 4
+**Plans:** 5 plans
+
+Plans:
+
+- [ ] 05-01-PLAN.md — Add _castSpell, _isInRange, _hasResource to entity/Player.lua (Wave 1)
+- [ ] 05-02-PLAN.md — Add ~43 Druid skill methods to classes/druid/Druid.lua, remove old wrappers (Wave 2)
+- [ ] 05-03-PLAN.md — Replace ~11 player.cast() calls in cat.lua, delete 12 safe/ready functions (Wave 3)
+- [ ] 05-04-PLAN.md — Replace ~6 player.cast() calls in bear.lua, delete 9 safe/ready functions (Wave 3)
+- [ ] 05-05-PLAN.md — Replace ~13 player.cast() calls in utility.lua (Wave 3)
+### Phase 5: Druid技能方法封装改造 - 将player.cast()字符串调用重构为技能对象方法，支持多语言客户端，从Druid试点
+
+**Goal:** Refactor `player.cast(XXXX)'SkillNameXXXX'` string-based spell casting into typed skill object methods (`player.claw()`, `player.wrath(XXXX)'safeXXXX'`) with multi-locale support (en/zh). Druid pilot phase covering ~53 skill methods and ~32 call sites across 5 files.
+
+**Requirements**: R8, D-01 through D-08
+**Depends on:** Phase 4
+**Plans:** 5 plans
+
+Plans:
+
+- [ ] 05-01-PLAN.md — Add _castSpell, _isInRange, _hasResource to entity/Player.lua (Wave 1)
+- [ ] 05-02-PLAN.md — Add ~43 Druid skill methods to classes/druid/Druid.lua, remove old wrappers (Wave 2)
+- [ ] 05-03-PLAN.md — Replace ~11 player.cast() calls in cat.lua, delete 12 safe/ready functions (Wave 3)
+- [ ] 05-04-PLAN.md — Replace ~6 player.cast() calls in bear.lua, delete 9 safe/ready functions (Wave 3)
+- [ ] 05-05-PLAN.md — Replace ~13 player.cast() calls in utility.lua (Wave 3)
+
 ---
 
 ## Task 统计
