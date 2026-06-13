@@ -90,6 +90,14 @@ function macroTorch.Player:new()
         return macroTorch.target.distance <= range
     end
 
+    -- Internal: check if player has sufficient resource for spell
+    -- WoW 1.12.1: UnitMana('player') auto-returns energy in cat, rage in bear, mana in caster
+    -- @param cost number resource cost (energy/rage/mana)
+    -- @return boolean
+    function obj._hasResource(cost)
+        return self.mana >= cost
+    end
+
     -- use item in bag by name
     -- @param itemName string item name
     -- @param onSelf boolean true if use on self, current target otherwise
