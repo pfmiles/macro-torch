@@ -47,7 +47,6 @@ function macroTorch.druidDefend()
     end
 end
 function macroTorch.druidControl()
-    local clickContext = {}
     -- if target is of type beast or dragonkin, use Hibernate, else use [Entangling Roots]
     if macroTorch.target.type == 'Beast' or macroTorch.target.type == 'Dragonkin' then
         macroTorch.player.hibernate('safe')
