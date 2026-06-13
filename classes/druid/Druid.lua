@@ -385,9 +385,11 @@ function macroTorch.Druid:new()
             -- 5.opener mod, 因为Ravage差不多可以秒掉1500血以内的目标，除此之外均使用Pounce以增加后续claw的伤害
             if clickContext.prowling then
                 if not target.isImmune('Pounce') and target.health >= 1500 then
-                    macroTorch.safePounce(clickContext)
+                    if macroTorch.isGcdOk(clickContext) and macroTorch.isNearBy(clickContext) then
+                        macroTorch.player.pounce('safe')
+                    end
                 else
-                    player.cast('Ravage')
+                    player.ravage()
                 end
             end
 

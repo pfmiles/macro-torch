@@ -310,7 +310,7 @@ function macroTorch.safeRake(clickContext)
                 ', bleed idol equipped: ' ..
                 tostring(macroTorch.player.isRelicEquipped('Idol of Savagery')))
         macroTorch.loginContext.lastRakeEquippedSavagery = macroTorch.player.isRelicEquipped('Idol of Savagery')
-        macroTorch.player.cast('Rake')
+        macroTorch.player.rake('ready')
         return true
     end
     return false
@@ -324,7 +324,7 @@ function macroTorch.safeRip(clickContext)
                 ', bleed idol equipped: ' ..
                 tostring(macroTorch.player.isRelicEquipped('Idol of Savagery')))
         macroTorch.loginContext.lastRipEquippedSavagery = macroTorch.player.isRelicEquipped('Idol of Savagery')
-        macroTorch.player.cast('Rip')
+        macroTorch.player.rip('ready')
         macroTorch.context.lastRipAtCp = clickContext.comboPoints
         return true
     end
