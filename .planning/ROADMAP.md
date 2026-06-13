@@ -628,7 +628,7 @@ grep "idolRecover\|healthManaSaver\|targetEnemy\|keepAutoAttack\|rushMod\|opener
 
 **Requirements**: R8, D-01 through D-08
 **Depends on:** Phase 4
-**Plans:** 1/5 plans executed
+**Plans:** 2/5 plans executed
 Plans:
 **Wave 1**
 
@@ -636,7 +636,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 05-02-PLAN.md — Add ~43 Druid skill methods to classes/druid/Druid.lua, remove old wrappers (Wave 2)
+- [x] 05-02-PLAN.md — Add ~43 Druid skill methods to classes/druid/Druid.lua, remove old wrappers (Wave 2)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
