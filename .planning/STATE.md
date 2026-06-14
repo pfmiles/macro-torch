@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Milestone complete
-last_updated: "2026-06-13T05:08:35.506Z"
+last_updated: "2026-06-14T09:16:03.959Z"
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 21
-  completed_plans: 21
-  percent: 100
+  total_phases: 6
+  completed_phases: 4
+  total_plans: 16
+  completed_plans: 16
+  percent: 67
 stopped_at: null
 ---
 
@@ -19,7 +19,7 @@ stopped_at: null
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 5 新阶段已添加，等待 planning
+- **Current Phase**: Phase 6 新阶段已添加，等待 planning
 - **Active Branch**: main
 
 ## Phase Progress
@@ -31,12 +31,14 @@ stopped_at: null
 | Phase 3: 自检 + Spell Trace 配置化 | 🔵 context-ready | — | — | — |
 | Phase 4: 职业重组 + 构建系统 | ✅ complete | 2026-06-08 | 2026-06-08 | 4 plans |
 | Phase 5: Druid技能方法封装改造 | ⬜ pending | — | — | — |
+| Phase 6: Fix Druid _castSpell isSpellReady nil bug | ⬜ pending | — | — | — |
 
 ## Accumulated Context
 
 ### Roadmap Evolution
 
 - Phase 5 added: Druid技能方法封装改造 - 将player.cast()字符串调用重构为技能对象方法，支持多语言客户端，从Druid试点 (2026-06-13)
+- Phase 6 added: Fix Druid _castSpell isSpellReady nil bug - Player.lua 中 _castSpell/_isInRange/_hasResource 点号定义与 Druid.lua 冒号调用不匹配，导致闭包 self 错误 (2026-06-14)
 
 ## Key Decisions
 
