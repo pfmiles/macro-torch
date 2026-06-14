@@ -21,8 +21,8 @@
 function macroTorch.getSpellIdByName(spellName, bookType)
     local i = 1;
     while true do
-        local sName, spellRank = GetSpellName(i, bookType);
-        if not sName then
+        local ok, sName, spellRank = pcall(GetSpellName, i, bookType);
+        if not ok or not sName then
             break;
         end;
         if macroTorch.equalsIgnoreCase(sName, spellName) then
@@ -38,7 +38,10 @@ function macroTorch.getSpellUniqIdByName(spellName, bookType)
     if not spellId then
         return nil
     end
-    local _, _, c = GetSpellName(spellId, bookType)
+    local ok, _, c = pcall(GetSpellName, spellId, bookType)
+    if not ok then
+        return nil
+    end
     return c
 end
 
@@ -57,8 +60,8 @@ end
 function macroTorch.listAllSpells(bookType)
     local i = 1;
     while true do
-        local spellName, spellRank = GetSpellName(i, bookType);
-        if not spellName then
+        local ok, spellName, spellRank = pcall(GetSpellName, i, bookType);
+        if not ok or not spellName then
             break;
         end;
         macroTorch.show(i .. ": " .. spellName .. '(' .. spellRank .. ')');
