@@ -649,16 +649,17 @@ Plans:
 **Goal:** Fix colon/dot syntax mismatch in _castSpell that causes all Druid skill methods to silently fail. Replace 4 self:xxx() internal calls in entity/Player.lua with obj.xxx(), and replace 53 self:_castSpell(...) calls in classes/druid/Druid.lua with obj._castSpell(...). Add ~15 Category F selftest tests and HUMAN-UAT.md manual checklist.
 **Requirements**: R8, D-01 through D-07
 **Depends on:** Phase 5
-**Plans:** 2/2 plans ready
+**Plans:** 1/2 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 06-01-PLAN.md — Fix _castSpell internal calls (4 lines in entity/Player.lua) + Druid skill methods (53 lines in classes/druid/Druid.lua) + Category F selftest (15 tests in core/selftest.lua) (Wave 1)
+- [x] 06-01-PLAN.md — Fix _castSpell internal calls (4 lines in entity/Player.lua) + Druid skill methods (53 lines in classes/druid/Druid.lua) + Category F selftest (15 tests in core/selftest.lua) (Wave 1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
 - [ ] 06-02-PLAN.md — Create HUMAN-UAT.md manual test checklist (Wave 2)
+
 ---
 
 ## Task 统计
