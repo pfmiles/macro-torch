@@ -23,220 +23,220 @@ function macroTorch.Druid:new()
 
     -- Cat form skills (Type A: enemy target only)
     function obj.claw(mode)
-        return self:_castSpell({ en = 'Claw', zh = '爪击' }, mode, nil, macroTorch.computeClaw_E, false)
+        return obj._castSpell({ en = 'Claw', zh = '爪击' }, mode, nil, macroTorch.computeClaw_E, false)
     end
 
     function obj.shred(mode)
-        return self:_castSpell({ en = 'Shred', zh = '撕碎' }, mode, nil, macroTorch.computeShred_E, false)
+        return obj._castSpell({ en = 'Shred', zh = '撕碎' }, mode, nil, macroTorch.computeShred_E, false)
     end
 
     function obj.rake(mode)
-        return self:_castSpell({ en = 'Rake', zh = '斜掠' }, mode, nil, macroTorch.computeRake_E, false)
+        return obj._castSpell({ en = 'Rake', zh = '斜掠' }, mode, nil, macroTorch.computeRake_E, false)
     end
 
     function obj.rip(mode)
-        return self:_castSpell({ en = 'Rip', zh = '撕扯' }, mode, nil, 30, false)
+        return obj._castSpell({ en = 'Rip', zh = '撕扯' }, mode, nil, 30, false)
     end
 
     function obj.ferocious_bite(mode)
-        return self:_castSpell({ en = 'Ferocious Bite', zh = '凶猛撕咬' }, mode, nil, 35, false)
+        return obj._castSpell({ en = 'Ferocious Bite', zh = '凶猛撕咬' }, mode, nil, 35, false)
     end
 
     function obj.pounce(mode)
-        return self:_castSpell({ en = 'Pounce', zh = '突袭' }, mode, nil, 50, false)
+        return obj._castSpell({ en = 'Pounce', zh = '突袭' }, mode, nil, 50, false)
     end
 
     function obj.cower(mode)
-        return self:_castSpell({ en = 'Cower', zh = '畏缩' }, mode, nil, 20, false)
+        return obj._castSpell({ en = 'Cower', zh = '畏缩' }, mode, nil, 20, false)
     end
 
     function obj.faerie_fire_feral(mode)
-        return self:_castSpell({ en = 'Faerie Fire (Feral)', zh = '精灵之火（野性）' }, mode, nil, 0, false)
+        return obj._castSpell({ en = 'Faerie Fire (Feral)', zh = '精灵之火（野性）' }, mode, nil, 0, false)
     end
 
     function obj.ravage(mode)
-        return self:_castSpell({ en = 'Ravage', zh = '毁灭' }, mode, nil, 50, false)
+        return obj._castSpell({ en = 'Ravage', zh = '毁灭' }, mode, nil, 50, false)
     end
 
     -- Bear form skills (Type A: enemy target only, using fixed rage costs)
     function obj.growl(mode)
-        return self:_castSpell({ en = 'Growl', zh = '低吼' }, mode, nil, 10, false)
+        return obj._castSpell({ en = 'Growl', zh = '低吼' }, mode, nil, 10, false)
     end
 
     function obj.bash(mode)
-        return self:_castSpell({ en = 'Bash', zh = '猛击' }, mode, nil, 10, false)
+        return obj._castSpell({ en = 'Bash', zh = '猛击' }, mode, nil, 10, false)
     end
 
     function obj.swipe(mode)
-        return self:_castSpell({ en = 'Swipe', zh = '横扫' }, mode, nil, 15, false)
+        return obj._castSpell({ en = 'Swipe', zh = '横扫' }, mode, nil, 15, false)
     end
 
     function obj.maul(mode)
-        return self:_castSpell({ en = 'Maul', zh = '重击' }, mode, nil, 10, false)
+        return obj._castSpell({ en = 'Maul', zh = '重击' }, mode, nil, 10, false)
     end
 
     function obj.demoralizing_roar(mode)
-        return self:_castSpell({ en = 'Demoralizing Roar', zh = '挫志咆哮' }, mode, nil, 10, false)
+        return obj._castSpell({ en = 'Demoralizing Roar', zh = '挫志咆哮' }, mode, nil, 10, false)
     end
 
     function obj.feral_charge(mode)
-        return self:_castSpell({ en = 'Feral Charge', zh = '野性冲锋' }, mode, 25, nil, false)
+        return obj._castSpell({ en = 'Feral Charge', zh = '野性冲锋' }, mode, 25, nil, false)
     end
 
     function obj.challenging_roar(mode)
-        return self:_castSpell({ en = 'Challenging Roar', zh = '挑战咆哮' }, mode, nil, 15, false)
+        return obj._castSpell({ en = 'Challenging Roar', zh = '挑战咆哮' }, mode, nil, 15, false)
     end
 
     -- Caster form skills (Type A: enemy target only)
     function obj.wrath(mode)
-        return self:_castSpell({ en = 'Wrath', zh = '愤怒' }, mode, 30, nil, false)
+        return obj._castSpell({ en = 'Wrath', zh = '愤怒' }, mode, 30, nil, false)
     end
 
     function obj.moonfire(mode)
-        return self:_castSpell({ en = 'Moonfire', zh = '月火术' }, mode, 30, nil, false)
+        return obj._castSpell({ en = 'Moonfire', zh = '月火术' }, mode, 30, nil, false)
     end
 
     function obj.starfire(mode)
-        return self:_castSpell({ en = 'Starfire', zh = '星火术' }, mode, 30, nil, false)
+        return obj._castSpell({ en = 'Starfire', zh = '星火术' }, mode, 30, nil, false)
     end
 
     function obj.entangling_roots(mode)
-        return self:_castSpell({ en = 'Entangling Roots', zh = '纠缠根须' }, mode, 30, nil, false)
+        return obj._castSpell({ en = 'Entangling Roots', zh = '纠缠根须' }, mode, 30, nil, false)
     end
 
     function obj.hibernate(mode)
-        return self:_castSpell({ en = 'Hibernate', zh = '休眠' }, mode, 30, nil, false)
+        return obj._castSpell({ en = 'Hibernate', zh = '休眠' }, mode, 30, nil, false)
     end
 
     function obj.faerie_fire(mode)
-        return self:_castSpell({ en = 'Faerie Fire', zh = '精灵之火' }, mode, 30, nil, false)
+        return obj._castSpell({ en = 'Faerie Fire', zh = '精灵之火' }, mode, 30, nil, false)
     end
 
     function obj.insect_swarm(mode)
-        return self:_castSpell({ en = 'Insect Swarm', zh = '虫群' }, mode, 30, nil, false)
+        return obj._castSpell({ en = 'Insect Swarm', zh = '虫群' }, mode, 30, nil, false)
     end
 
     function obj.soothe_animal(mode)
-        return self:_castSpell({ en = 'Soothe Animal', zh = '安抚动物' }, mode, 30, nil, false)
+        return obj._castSpell({ en = 'Soothe Animal', zh = '安抚动物' }, mode, 30, nil, false)
     end
 
     -- Form skills (Type B: self target only)
     function obj.bear_form(mode)
-        return self:_castSpell({ en = 'Bear Form', zh = '熊形态' }, mode, nil, nil, true)
+        return obj._castSpell({ en = 'Bear Form', zh = '熊形态' }, mode, nil, nil, true)
     end
 
     function obj.dire_bear_form(mode)
-        return self:_castSpell({ en = 'Dire Bear Form', zh = '巨熊形态' }, mode, nil, nil, true)
+        return obj._castSpell({ en = 'Dire Bear Form', zh = '巨熊形态' }, mode, nil, nil, true)
     end
 
     function obj.cat_form(mode)
-        return self:_castSpell({ en = 'Cat Form', zh = '猫形态' }, mode, nil, nil, true)
+        return obj._castSpell({ en = 'Cat Form', zh = '猫形态' }, mode, nil, nil, true)
     end
 
     function obj.travel_form(mode)
-        return self:_castSpell({ en = 'Travel Form', zh = '旅行形态' }, mode, nil, nil, true)
+        return obj._castSpell({ en = 'Travel Form', zh = '旅行形态' }, mode, nil, nil, true)
     end
 
     function obj.aquatic_form(mode)
-        return self:_castSpell({ en = 'Aquatic Form', zh = '水栖形态' }, mode, nil, nil, true)
+        return obj._castSpell({ en = 'Aquatic Form', zh = '水栖形态' }, mode, nil, nil, true)
     end
 
     -- Self buff skills (Type B: self target only)
     function obj.prowl(mode)
-        return self:_castSpell({ en = 'Prowl', zh = '潜行' }, mode, nil, 0, true)
+        return obj._castSpell({ en = 'Prowl', zh = '潜行' }, mode, nil, 0, true)
     end
 
     function obj.dash(mode)
-        return self:_castSpell({ en = 'Dash', zh = '急奔' }, mode, nil, 0, true)
+        return obj._castSpell({ en = 'Dash', zh = '急奔' }, mode, nil, 0, true)
     end
 
     function obj.tiger_fury(mode)
-        return self:_castSpell({ en = "Tiger's Fury", zh = '猛虎之怒' }, mode, nil, macroTorch.computeTiger_E, true)
+        return obj._castSpell({ en = "Tiger's Fury", zh = '猛虎之怒' }, mode, nil, macroTorch.computeTiger_E, true)
     end
 
     function obj.barkskin(mode)
-        return self:_castSpell({ en = 'Barkskin (Feral)', zh = '树皮术' }, mode, nil, 0, true)
+        return obj._castSpell({ en = 'Barkskin (Feral)', zh = '树皮术' }, mode, nil, 0, true)
     end
 
     function obj.track_humanoids(mode)
-        return self:_castSpell({ en = 'Track Humanoids', zh = '追踪人型' }, mode, nil, 0, true)
+        return obj._castSpell({ en = 'Track Humanoids', zh = '追踪人型' }, mode, nil, 0, true)
     end
 
     function obj.natures_swiftness(mode)
-        return self:_castSpell({ en = "Nature's Swiftness", zh = '自然迅捷' }, mode, nil, 0, true)
+        return obj._castSpell({ en = "Nature's Swiftness", zh = '自然迅捷' }, mode, nil, 0, true)
     end
 
     function obj.tranquility(mode)
-        return self:_castSpell({ en = 'Tranquility', zh = '宁静' }, mode, nil, nil, true)
+        return obj._castSpell({ en = 'Tranquility', zh = '宁静' }, mode, nil, nil, true)
     end
 
     function obj.hurricane(mode)
-        return self:_castSpell({ en = 'Hurricane', zh = '飓风' }, mode, nil, nil, true)
+        return obj._castSpell({ en = 'Hurricane', zh = '飓风' }, mode, nil, nil, true)
     end
 
     function obj.innervate(mode)
-        return self:_castSpell({ en = 'Innervate', zh = '激活' }, mode, nil, 0, true)
+        return obj._castSpell({ en = 'Innervate', zh = '激活' }, mode, nil, 0, true)
     end
 
     function obj.rebirth(mode)
-        return self:_castSpell({ en = 'Rebirth', zh = '复生' }, mode, nil, nil, true)
+        return obj._castSpell({ en = 'Rebirth', zh = '复生' }, mode, nil, nil, true)
     end
 
     function obj.frenzied_regeneration(mode)
-        return self:_castSpell({ en = 'Frenzied Regeneration', zh = '狂暴回复' }, mode, nil, 10, true)
+        return obj._castSpell({ en = 'Frenzied Regeneration', zh = '狂暴回复' }, mode, nil, 10, true)
     end
 
     function obj.enrage(mode)
-        return self:_castSpell({ en = 'Enrage', zh = '激怒' }, mode, nil, 0, true)
+        return obj._castSpell({ en = 'Enrage', zh = '激怒' }, mode, nil, 0, true)
     end
 
     function obj.reshift(mode)
-        return self:_castSpell({ en = 'Reshift', zh = '变身' }, mode, nil, 0, true)
+        return obj._castSpell({ en = 'Reshift', zh = '变身' }, mode, nil, 0, true)
     end
 
     function obj.berserk(mode)
-        return self:_castSpell({ en = 'Berserk', zh = '狂暴' }, mode, nil, 0, true)
+        return obj._castSpell({ en = 'Berserk', zh = '狂暴' }, mode, nil, 0, true)
     end
 
     function obj.natures_grasp(mode)
-        return self:_castSpell({ en = "Nature's Grasp", zh = '自然之握' }, mode, nil, nil, true)
+        return obj._castSpell({ en = "Nature's Grasp", zh = '自然之握' }, mode, nil, nil, true)
     end
 
     -- Flexible target skills (Type C: onSelf parameter exposed)
     function obj.healing_touch(mode, onSelf)
-        return self:_castSpell({ en = 'Healing Touch', zh = '治疗之触' }, mode, 40, nil, onSelf)
+        return obj._castSpell({ en = 'Healing Touch', zh = '治疗之触' }, mode, 40, nil, onSelf)
     end
 
     function obj.regrowth(mode, onSelf)
-        return self:_castSpell({ en = 'Regrowth', zh = '愈合' }, mode, 40, nil, onSelf)
+        return obj._castSpell({ en = 'Regrowth', zh = '愈合' }, mode, 40, nil, onSelf)
     end
 
     function obj.rejuvenation(mode, onSelf)
-        return self:_castSpell({ en = 'Rejuvenation', zh = '回春术' }, mode, 40, nil, onSelf)
+        return obj._castSpell({ en = 'Rejuvenation', zh = '回春术' }, mode, 40, nil, onSelf)
     end
 
     function obj.remove_curse(mode, onSelf)
-        return self:_castSpell({ en = 'Remove Curse', zh = '驱除诅咒' }, mode, 40, nil, onSelf)
+        return obj._castSpell({ en = 'Remove Curse', zh = '驱除诅咒' }, mode, 40, nil, onSelf)
     end
 
     function obj.abolish_poison(mode, onSelf)
-        return self:_castSpell({ en = 'Abolish Poison', zh = '驱毒术' }, mode, 40, nil, onSelf)
+        return obj._castSpell({ en = 'Abolish Poison', zh = '驱毒术' }, mode, 40, nil, onSelf)
     end
 
     function obj.cure_poison(mode, onSelf)
-        return self:_castSpell({ en = 'Cure Poison', zh = '消毒术' }, mode, 40, nil, onSelf)
+        return obj._castSpell({ en = 'Cure Poison', zh = '消毒术' }, mode, 40, nil, onSelf)
     end
 
     function obj.mark_of_the_wild(mode, onSelf)
-        return self:_castSpell({ en = 'Mark of the Wild', zh = '野性印记' }, mode, 30, nil, onSelf)
+        return obj._castSpell({ en = 'Mark of the Wild', zh = '野性印记' }, mode, 30, nil, onSelf)
     end
 
     function obj.gift_of_the_wild(mode, onSelf)
-        return self:_castSpell({ en = 'Gift of the Wild', zh = '野性赐福' }, mode, 30, nil, onSelf)
+        return obj._castSpell({ en = 'Gift of the Wild', zh = '野性赐福' }, mode, 30, nil, onSelf)
     end
 
     function obj.thorns(mode, onSelf)
-        return self:_castSpell({ en = 'Thorns', zh = '荆棘术' }, mode, 30, nil, onSelf)
+        return obj._castSpell({ en = 'Thorns', zh = '荆棘术' }, mode, 30, nil, onSelf)
     end
 
     function obj.showEnergyUsageSet()
