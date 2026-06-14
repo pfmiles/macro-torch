@@ -49,14 +49,14 @@ function macroTorch.Player:new()
 
         -- 2. Readiness check (skip if mode is 'raw')
         if mode ~= 'raw' then
-            if not self:isSpellReady(spellName) then
+            if not obj.isSpellReady(spellName) then
                 return false
             end
         end
 
         -- 3. Safe mode: distance + resource checks
         if mode == 'safe' then
-            if range and not self:_isInRange(range) then
+            if range and not obj._isInRange(range) then
                 return false
             end
             if resourceCost then
@@ -66,7 +66,7 @@ function macroTorch.Player:new()
                 else
                     cost = resourceCost
                 end
-                if not self:_hasResource(cost) then
+                if not obj._hasResource(cost) then
                     return false
                 end
             end
@@ -76,7 +76,7 @@ function macroTorch.Player:new()
         if onSelf then
             CastSpellByName(spellName, true)
         else
-            self:cast(spellName, false)
+            obj.cast(spellName, false)
         end
         return true
     end
