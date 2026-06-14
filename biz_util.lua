@@ -53,7 +53,11 @@ end
 -- @param spellName string spell name
 -- @param bookType string book type, 'spell' or 'pet' for example
 function macroTorch.castSpellByName(spellName, bookType)
-    CastSpell(macroTorch.getSpellIdByName(spellName, bookType), bookType)
+    local spellId = macroTorch.getSpellIdByName(spellName, bookType)
+    if not spellId then
+        return
+    end
+    CastSpell(spellId, bookType)
 end
 
 -- print all spells, for debug usages
