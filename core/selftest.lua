@@ -455,6 +455,119 @@ end, true)
 -- ============================================================
 
 -- ============================================================
+-- Category F: _castSpell / isSpellReady metatable chain integrity (~15 tests, all isOptional=false)
+-- ============================================================
+-- [CITED: 06-CONTEXT.md D-06; 06-RESEARCH.md]
+-- Verifies that Druid instance -> _castSpell -> isSpellReady resolves correctly through the metatable chain.
+-- All tests skip silently when the player is not a Druid.
+
+macroTorch.SelfTest:register("F: Druid _castSpell resolves via metatable", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    assert(type(macroTorch.player._castSpell) == "function", "_castSpell not a function on Druid instance")
+end, false)
+
+macroTorch.SelfTest:register("F: Druid isSpellReady resolves via metatable", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    assert(type(macroTorch.player.isSpellReady) == "function", "isSpellReady not a function on Druid instance")
+end, false)
+
+macroTorch.SelfTest:register("F: Druid cast resolves via metatable", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    assert(type(macroTorch.player.cast) == "function", "cast not a function on Druid instance")
+end, false)
+
+macroTorch.SelfTest:register("F: Druid _isInRange resolves via metatable", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    assert(type(macroTorch.player._isInRange) == "function", "_isInRange not a function on Druid instance")
+end, false)
+
+macroTorch.SelfTest:register("F: Druid _hasResource resolves via metatable", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    assert(type(macroTorch.player._hasResource) == "function", "_hasResource not a function on Druid instance")
+end, false)
+
+macroTorch.SelfTest:register("F: _castSpell with raw mode does not error", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local ok, err = pcall(function()
+        macroTorch.player._castSpell({en='TestSpell', zh='测试技能'}, 'raw', nil, nil, false)
+    end)
+    assert(ok, "_castSpell('raw') pcall failed: " .. tostring(err))
+end, false)
+
+macroTorch.SelfTest:register("F: _castSpell with safe mode does not error", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local ok, err = pcall(function()
+        macroTorch.player._castSpell({en='TestSpell', zh='测试技能'}, 'safe', nil, nil, false)
+    end)
+    assert(ok, "_castSpell('safe') pcall failed: " .. tostring(err))
+end, false)
+
+macroTorch.SelfTest:register("F: claw('raw') does not error", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local ok, err = pcall(function()
+        macroTorch.player.claw('raw')
+    end)
+    assert(ok, "claw('raw') pcall failed: " .. tostring(err))
+end, false)
+
+macroTorch.SelfTest:register("F: shred('raw') does not error", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local ok, err = pcall(function()
+        macroTorch.player.shred('raw')
+    end)
+    assert(ok, "shred('raw') pcall failed: " .. tostring(err))
+end, false)
+
+macroTorch.SelfTest:register("F: healing_touch('raw', true) does not error", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local ok, err = pcall(function()
+        macroTorch.player.healing_touch('raw', true)
+    end)
+    assert(ok, "healing_touch('raw', true) pcall failed: " .. tostring(err))
+end, false)
+
+macroTorch.SelfTest:register("F: cat_form('raw') does not error", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local ok, err = pcall(function()
+        macroTorch.player.cat_form('raw')
+    end)
+    assert(ok, "cat_form('raw') pcall failed: " .. tostring(err))
+end, false)
+
+macroTorch.SelfTest:register("F: bear_form('raw') does not error", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local ok, err = pcall(function()
+        macroTorch.player.bear_form('raw')
+    end)
+    assert(ok, "bear_form('raw') pcall failed: " .. tostring(err))
+end, false)
+
+macroTorch.SelfTest:register("F: tiger_fury('raw') does not error", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local ok, err = pcall(function()
+        macroTorch.player.tiger_fury('raw')
+    end)
+    assert(ok, "tiger_fury('raw') pcall failed: " .. tostring(err))
+end, false)
+
+macroTorch.SelfTest:register("F: mark_of_the_wild('raw', false) does not error", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local ok, err = pcall(function()
+        macroTorch.player.mark_of_the_wild('raw', false)
+    end)
+    assert(ok, "mark_of_the_wild('raw', false) pcall failed: " .. tostring(err))
+end, false)
+
+macroTorch.SelfTest:register("F: Externally-called isSpellReady resolves correctly from Druid instance", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local ok, err = pcall(function()
+        local result = macroTorch.player.isSpellReady('Claw')
+        assert(type(result) ~= "nil", "isSpellReady('Claw') returned nil -- check colon/dot fix")
+    end)
+    assert(ok, "isSpellReady call failed: " .. tostring(err))
+end, false)
+
+-- ============================================================
 -- Module 4: /mt SLASH command
 -- ============================================================
 -- [CITED: CONTEXT.md D-02, D-10]
