@@ -19,7 +19,7 @@ stopped_at: null
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 6 新阶段已添加，等待 planning
+- **Current Phase**: Phase 6 planning 完成，2 plans ready
 - **Active Branch**: main
 
 ## Phase Progress
