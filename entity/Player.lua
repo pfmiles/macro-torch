@@ -172,7 +172,9 @@ function macroTorch.Player:new()
     -- @param spellName string spell name
     -- @return boolean true if ready, false otherwise
     function obj.isSpellReady(spellName)
-        return macroTorch.toBoolean(SpellReady(spellName) and macroTorch.isSpellCooledDown(spellName, 'spell'))
+        local ok, ready = pcall(SpellReady, spellName)
+        if not ok then return false end
+        return macroTorch.toBoolean(ready and macroTorch.isSpellCooledDown(spellName, 'spell'))
     end
 
     -- tell if the specified action is ready, such that GCD is ok
