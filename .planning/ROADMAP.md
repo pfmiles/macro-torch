@@ -676,12 +676,15 @@ Plans:
 **Requirements**: REQ-08-CLASS-DEF, REQ-08-SKILL-METHODS, REQ-08-SPELLTRACE, REQ-08-SELFTEST, REQ-08-BUILD, REQ-08-NO-FLAT, REQ-08-INITPLAYER
 **Depends on:** Phase 7
 **Plans:** 4 plans
-
 Plans:
+**Wave 1**
 
 - [ ] 08-01-PLAN.md — Hunter (3 files) + Warrior (3 files) 类定义、技能方法、战斗/工具文件创建 (Wave 1)
 - [ ] 08-02-PLAN.md — Rogue (2 files) + Mage (2 files) 类定义、技能方法、战斗文件创建 + Rogue 英文技能名确认检查点 (Wave 1)
 - [ ] 08-03-PLAN.md — Priest (3 files) + Warlock (2 files) 类定义、技能方法、战斗/工具文件创建 (Wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 08-04-PLAN.md — build_order.txt 更新 + 6 个旧扁平文件删除 + build.sh 构建验证 (Wave 2)
 
 ---

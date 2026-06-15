@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Milestone complete
-last_updated: "2026-06-15T05:03:08.506Z"
+last_updated: "2026-06-15T10:28:50.781Z"
 progress:
-  total_phases: 7
+  total_phases: 8
   completed_phases: 6
   total_plans: 19
   completed_plans: 19
-  percent: 86
+  percent: 75
 stopped_at: null
 ---
 
@@ -33,6 +33,7 @@ stopped_at: null
 | Phase 5: Druid技能方法封装改造 | ⬜ pending | — | — | — |
 | Phase 6: Fix Druid _castSpell isSpellReady nil bug | ⬜ pending | — | — | — |
 | Phase 7: Druid 形态判断语义化方法 | ✅ complete | 2026-06-15 | 2026-06-15 | 1 plan |
+| Phase 8: 非Druid职业代码结构重构（对齐Druid架构） | ⬜ pending | — | — | — |
 
 ## Accumulated Context
 
@@ -41,6 +42,7 @@ stopped_at: null
 - Phase 5 added: Druid技能方法封装改造 - 将player.cast()字符串调用重构为技能对象方法，支持多语言客户端，从Druid试点 (2026-06-13)
 - Phase 6 added: Fix Druid _castSpell isSpellReady nil bug - Player.lua 中 _castSpell/_isInRange/_hasResource 点号定义与 Druid.lua 冒号调用不匹配，导致闭包 self 错误 (2026-06-14)
 - Phase 7 added: Druid 形态判断语义化方法 — 新增 isInCatForm/isInBearForm 等 5 个语义方法替换 isFormActive 硬编码调用 (2026-06-15)
+- Phase 8 added: 非Druid职业代码结构重构（对齐Druid架构） — 将 Hunter/Mage/Priest/Rogue/Warlock/Warrior 的 classes/ 下代码拆分为多文件目录结构，与 Druid 的 classes/druid/ 架构一致 (2026-06-15)
 
 ## Key Decisions
 
