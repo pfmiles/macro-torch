@@ -345,8 +345,8 @@ function macroTorch.Druid:new()
         clickContext.hasEssenceOfTheRed = player.hasEssenceOfTheRed
         clickContext.isBehind = target.isCanAttack and player.isBehindTarget
 
-        clickContext.isInBearForm = player.isFormActive('Dire Bear Form')
-        clickContext.isInCatForm = player.isFormActive('Cat Form')
+        clickContext.isInBearForm = player.isInBearForm
+        clickContext.isInCatForm = player.isInCatForm
 
         clickContext.isImmuneRake = target.isImmune('Rake')
         clickContext.isImmuneRip = target.isImmune('Rip')
@@ -543,7 +543,7 @@ function macroTorch.recoverNormalRelic(clickContext, relicName)
         return
     end
     local player = macroTorch.player
-    if not player.isFormActive('Cat Form') then
+    if not player.isInCatForm then
         return
     end
     if not player.hasItem(relicName) or player.isRelicEquipped(relicName) then

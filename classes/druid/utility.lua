@@ -12,7 +12,7 @@ function macroTorch.druidBuffs()
 end
 function macroTorch.druidStun()
     local clickContext = {}
-    local inBearForm = macroTorch.player.isFormActive('Dire Bear Form')
+    local inBearForm = macroTorch.player.isInBearForm
     -- if in melee range then use bear bash else bear charge
     -- if not in bear form, be bear first
     if not inBearForm then
@@ -36,7 +36,7 @@ function macroTorch.druidDefend()
         macroTorch.player.barkskin('raw')
     end
     if macroTorch.player.isSpellReady('Frenzied Regeneration') then
-        local inBearForm = macroTorch.player.isFormActive('Dire Bear Form')
+        local inBearForm = macroTorch.player.isInBearForm
         if not inBearForm then
             macroTorch.player.dire_bear_form()
         end
