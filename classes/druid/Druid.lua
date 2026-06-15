@@ -1278,15 +1278,33 @@ macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP humanFormMana exists",
     assert(type(val) ~= "nil", "humanFormMana is nil")
 end, true)
 
--- Category G2: Form detection (2 items, isOptional=true)
-macroTorch.SelfTest:register("Druid: isCatForm exists", function()
+-- Category G2: Form detection semantic methods (5 items, isOptional=true)
+macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP isInCatForm exists", function()
     if UnitClass('player') ~= 'Druid' then return end
-    local val = macroTorch.toBoolean(macroTorch.player.isCatForm)
-    assert(type(val) == "boolean", "isCatForm not boolean: " .. type(val))
+    local val = macroTorch.toBoolean(macroTorch.player.isInCatForm)
+    assert(type(val) == "boolean", "isInCatForm not boolean: " .. type(val))
 end, true)
 
-macroTorch.SelfTest:register("Druid: isBearForm exists", function()
+macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP isInBearForm exists", function()
     if UnitClass('player') ~= 'Druid' then return end
-    local val = macroTorch.toBoolean(macroTorch.player.isBearForm)
-    assert(type(val) == "boolean", "isBearForm not boolean: " .. type(val))
+    local val = macroTorch.toBoolean(macroTorch.player.isInBearForm)
+    assert(type(val) == "boolean", "isInBearForm not boolean: " .. type(val))
+end, true)
+
+macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP isInTravelForm exists", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local val = macroTorch.toBoolean(macroTorch.player.isInTravelForm)
+    assert(type(val) == "boolean", "isInTravelForm not boolean: " .. type(val))
+end, true)
+
+macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP isInAquaticForm exists", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local val = macroTorch.toBoolean(macroTorch.player.isInAquaticForm)
+    assert(type(val) == "boolean", "isInAquaticForm not boolean: " .. type(val))
+end, true)
+
+macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP isInCasterForm exists", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local val = macroTorch.toBoolean(macroTorch.player.isInCasterForm)
+    assert(type(val) == "boolean", "isInCasterForm not boolean: " .. type(val))
 end, true)
