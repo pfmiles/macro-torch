@@ -1,6 +1,6 @@
 ---
 phase: 07-druid
-reviewed: 2026-06-15T12:50:00Z
+reviewed: 2026-06-15T00:00:00Z
 depth: standard
 files_reviewed: 3
 files_reviewed_list:
@@ -8,120 +8,103 @@ files_reviewed_list:
   - classes/druid/bear.lua
   - classes/druid/utility.lua
 findings:
+  blocker: 0
   critical: 0
-  warning: 1
-  info: 2
+  warning: 2
+  info: 1
   total: 3
 status: issues_found
 ---
 
 # Phase 07: Code Review Report
 
-**Reviewed:** 2026-06-15T12:50:00Z
+**Reviewed:** 2026-06-15
 **Depth:** standard
 **Files Reviewed:** 3
 **Status:** issues_found
 
 ## Summary
 
-Reviewed 3 modified files for Phase 07-druid: semantic form-detection method refactoring in DRUID_FIELD_FUNC_MAP. The implementation correctly adds 5 FIELD_FUNC_MAP entries (`isInCatForm`, `isInBearForm`, `isInTravelForm`, `isInAquaticForm`, `isInCasterForm`), replaces all 7 hardcoded `isFormActive` call sites across Druid.lua (3), bear.lua (2), and utility.lua (2), and registers 5 Category G2 SelfTest registrations. Build succeeds. `entity/Player.lua` is correctly unchanged.
+Reviewed 3 Druid class files where Phase 07 added 5 semantic form-check methods (`isInCatForm`, `isInBearForm`, `isInTravelForm`, `isInAquaticForm`, `isInCasterForm`) to `DRUID_FIELD_FUNC_MAP` and replaced 7 hardcoded `isFormActive` calls across Druid.lua (3 sites), bear.lua (2 sites), and utility.lua (2 sites). This is described as a pure refactoring with zero behavior change.
 
-Verification results confirm:
-- 5 FIELD_FUNC_MAP entries present, inserted between `isBerserk` and `humanFormMana` per plan
-- `isInBearForm` correctly uses OR logic: `self.isFormActive('Bear Form') or self.isFormActive('Dire Bear Form')`
-- 3 `-- reserved for future expansion` annotations present
-- 0 `isFormActive` calls remain in bear.lua and utility.lua; only the 5 FIELD_FUNC_MAP internal delegations remain in Druid.lua
-- 5 SelfTest registrations present with correct `isIn` prefix naming
-- All symbols reachable in build output (`SM_Extend.lua`)
+The FIELD_FUNC_MAP additions are structurally correct and the call-site replacements are properly wired. However, one replacement at `bear.lua:66` introduces a behavior change contrary to the claim of "pure refactoring," and the `hasBuff`/`buffed` calls in `isBerserk` and `isProwling` use an inconsistent calling convention compared to `isOoc`. No blockers, critical security issues, or crash risks were found.
 
-Three findings identified: 1 Warning (comment format inconsistency with RESEARCH.md target pattern) and 2 Info items (pre-existing G1 self-test style inconsistency, comment typo). No critical issues found.
+## Warnings
 
-## Narrative Findings (AI reviewer)
+### WR-01: `bearAoe()` bear form check broadens from Dire Bear Form only to Bear Form OR Dire Bear Form (behavior change)
 
-### WR-01: `-- reserved for future expansion` comment placed after `end,` instead of inside function body
+**File:** `classes/druid/bear.lua:66`
 
-**File:** `classes/druid/Druid.lua:457,460,463`
-
-**Issue:** The RESEARCH.md target pattern (lines 144-156) shows the `-- reserved for future expansion` comment placed *inside* the function body, before the `return` statement:
-
+**Issue:** The original code at `bearAoe:66` read:
 ```lua
--- Target pattern from RESEARCH.md:
-['isInTravelForm'] = function(self)
-    -- reserved for future expansion
-    return self.isFormActive('Travel Form')
+if not macroTorch.player.isFormActive('Dire Bear Form') then
+```
+The replacement reads:
+```lua
+if not macroTorch.player.isInBearForm then
+```
+
+The `isInBearForm` FIELD_FUNC_MAP entry (Druid.lua:452-453) is defined as:
+```lua
+['isInBearForm'] = function(self)
+    return self.isFormActive('Bear Form') or self.isFormActive('Dire Bear Form')
 end,
 ```
 
-The actual implementation places the comment after `end,`:
+This means the `bearAoe` guard now passes for both Bear Form and Dire Bear Form, whereas the original code only guarded on Dire Bear Form. The `bearAtk` function (line 102) had the same original pattern (`isFormActive('Dire Bear Form')`).
 
+This is a behavior change. The original code intentionally checked only Dire Bear Form. A player in Bear Form (not Dire Bear Form) who triggers `bearAoe()` or `bearAtk()` would previously have been silently exited; now they enter the bear combat logic.
+
+**Fix:** If the broadening is intentional, document it. If not, either:
+(a) Add `isInDireBearForm` to the FIELD_FUNC_MAP and use it in bear.lua:
 ```lua
-['isInTravelForm'] = function(self)
-    return self.isFormActive('Travel Form')
-end, -- reserved for future expansion
-['isInAquaticForm'] = function(self)
-    return self.isFormActive('Aquatic Form')
-end, -- reserved for future expansion
-['isInCasterForm'] = function(self)
-    return self.isFormActive('Moonkin Form')
-end, -- reserved for future expansion
-```
-
-**Impact:** The comment is syntactically valid either way and does not affect runtime behavior. However, trailing commas in Lua can be problematic in some environments (though not in WoW 1.12.1's embedded Lua). The comment-after-comma placement makes the comma less visible, which could cause issues if the FIELD_FUNC_MAP table were reordered. Additionally, the comment placement deviates from the documented target pattern in RESEARCH.md, which may confuse future maintainers who reference the research document.
-
-**Fix:** Move comments inside the function body to match the documented pattern:
-```lua
-['isInTravelForm'] = function(self)
-    -- reserved for future expansion
-    return self.isFormActive('Travel Form')
-end,
-['isInAquaticForm'] = function(self)
-    -- reserved for future expansion
-    return self.isFormActive('Aquatic Form')
-end,
-['isInCasterForm'] = function(self)
-    -- reserved for future expansion
-    return self.isFormActive('Moonkin Form')
+['isInDireBearForm'] = function(self)
+    return self.isFormActive('Dire Bear Form')
 end,
 ```
+(b) Or add a separate field function that covers only Dire Bear Form and use it where the original code required Dire Bear Form specifically.
+
+### WR-02: `isBerserk` and `isProwling` FIELD_FUNC_MAP entries call `buffed()` with inconsistent argument patterns
+
+**File:** `classes/druid/Druid.lua:440-447`
+
+**Issue:** The FIELD_FUNC_MAP contains three `buffed()` calls with two different argument patterns:
+
+```lua
+-- Line 440-442: two-argument call
+['isOoc'] = function(self)
+    return self.buffed('Clearcasting', 'Spell_Shadow_ManaBurn')
+end,
+-- Line 443-445: two-argument call (name + texture)
+['isProwling'] = function(self)
+    return self.buffed('Prowl', 'Ability_Ambush')
+end,
+-- Line 446-448: two-argument call (name + texture)
+['isBerserk'] = function(self)
+    return self.buffed('Berserk', 'Ability_Druid_Berserk')
+end,
+```
+
+The `buffed()` method in `entity/Unit.lua:36-46` accepts both `buffName` (string) and `buffTexture` (string). When `buffName` is provided, it calls the global WoW API function `buffed(buffName)`. The `buffed()` WoW API function is hardcoded to check the `'player'` unit -- it does not accept a unit argument.
+
+This is correct for the global singleton `macroTorch.player` (whose `self.ref` is `'player'` via the metatable chain). However, it is fragile: if `DRUID_FIELD_FUNC_MAP` were ever inherited by a non-player class instance, `buffed('Berserk')` would still check the player unit, not the unit represented by `self.ref`. The new form-check methods (`isInCatForm`, etc.) use `isFormActive` which similarly iterates `GetShapeshiftFormInfo()` -- also implicitly player-only.
+
+This is not a regression from Phase 07 -- the inconsistency predates this phase. It is flagged because the Phase 07 change ships in close proximity.
+
+**Fix:** No fix required for Phase 07 scope. Document the latent fragility that FIELD_FUNC_MAP entries are player-only by design due to WoW API limitations.
+
+## Info
+
+### IN-01: SelfTest registrations for `isInTravelForm`, `isInAquaticForm`, `isInCasterForm` are present but have zero current call sites
+
+**File:** `classes/druid/Druid.lua:1294-1310`
+
+**Issue:** Per the Phase 07 plan, `isInTravelForm`, `isInAquaticForm`, and `isInCasterForm` are "reserved for future expansion with zero current call sites" (lines 455-463). The Category G2 SelfTest registrations for these methods (lines 1294-1310) verify they return booleans, which is correct. However, with zero callers in the codebase, these tests verify that the FIELD_FUNC_MAP entries exist and return values but do not verify that any production code depends on correct behavior of these fields.
+
+When the reserved methods eventually gain callers, ensure those callers are tested for the specific expected behavior (e.g., checking that `isInCasterForm` returns true when Moonkin Form is active, not just any boolean).
 
 ---
 
-### IN-01: Category G1 SelfTest entry `isOoc` does not use `toBoolean` wrapping (pre-existing, not introduced by this phase)
-
-**File:** `classes/druid/Druid.lua:1257-1261`
-
-**Issue:** The `isOoc` SelfTest at line 1259 accesses `macroTorch.player.isOoc` without wrapping in `macroTorch.toBoolean()`, and asserts `type(val) ~= "nil"` rather than `type(val) == "boolean"`. This differs from the Category G2 entries (which all use `macroTorch.toBoolean()` + `type(val) == "boolean"`) and even from its sibling `isProwling` test (line 1263-1267, which does use `toBoolean()`).
-
-The `isBerserk` test at line 1269-1273 has the same pattern: no `toBoolean()` wrapping, `type(val) ~= "nil"` assertion.
-
-**Impact:** If `isOoc` or `isBerserk` ever returns `nil` (edge case: `self.buffed` returns nil), these tests would still pass (`nil ~= "nil"` is false, which would fail the assert -- actually it would correctly catch nil. But the error message would be misleading since the variable is `val` not a descriptive name). The real concern is inconsistency within the same category -- G2 entries are more rigorous in verifying boolean return type.
-
-Note: This is a pre-existing issue, not introduced by Phase 07. The new Category G2 entries correctly use `toBoolean()` + boolean type check. Listed here for awareness.
-
-**Fix:** (Optional) Align G1 entries with G2 pattern:
-```lua
-macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP isOoc exists", function()
-    if UnitClass('player') ~= 'Druid' then return end
-    local val = macroTorch.toBoolean(macroTorch.player.isOoc)
-    assert(type(val) == "boolean", "isOoc not boolean: " .. type(val))
-end, true)
-```
-
----
-
-### IN-02: Typo in DRUID_FIELD_FUNC_MAP comment: "conditinal" should be "conditional"
-
-**File:** `classes/druid/Druid.lua:439`
-
-**Issue:** Line 439 reads `-- conditinal props` but should be `-- conditional props`. This is a pre-existing comment typo (visible in the RESEARCH.md source extract at line 439 of the original), not introduced by Phase 07. Noted for completeness.
-
-**Fix:** Correct the spelling in a separate cleanup pass:
-```lua
--- conditional props
-```
-
----
-
-_Reviewed: 2026-06-15T12:50:00Z_
+_Reviewed: 2026-06-15T00:00:00Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
