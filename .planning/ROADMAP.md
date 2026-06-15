@@ -675,7 +675,7 @@ Plans:
 **Goal:** 将 Hunter/Warrior/Rogue/Mage/Priest/Warlock 共 6 个非 Druid 职业文件重构为与 Druid 一致的 classes/<class>/ 子目录架构，包含完整类定义（classMetatable + FIELD_FUNC_MAP + registerPlayerClass）、_castSpell 技能方法（多语言支持）、SpellTrace:register 声明式注册、SelfTest:register 自检注册
 **Requirements**: REQ-08-CLASS-DEF, REQ-08-SKILL-METHODS, REQ-08-SPELLTRACE, REQ-08-SELFTEST, REQ-08-BUILD, REQ-08-NO-FLAT, REQ-08-INITPLAYER
 **Depends on:** Phase 7
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 Plans:
 **Wave 1**
 
@@ -685,7 +685,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 08-04-PLAN.md — build_order.txt 更新 + 6 个旧扁平文件删除 + build.sh 构建验证 (Wave 2)
+- [x] 08-04-PLAN.md — build_order.txt 更新 + 6 个旧扁平文件删除 + build.sh 构建验证 (Wave 2)
 
 ---
 

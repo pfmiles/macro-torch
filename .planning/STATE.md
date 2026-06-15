@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Executing Phase 08
-last_updated: "2026-06-15T12:00:00Z"
+status: Complete
+last_updated: "2026-06-15T14:00:00Z"
 progress:
   total_phases: 8
-  completed_phases: 6
+  completed_phases: 8
   total_plans: 23
   completed_plans: 23
-  percent: 88
+  percent: 100
 stopped_at: null
 ---
 
@@ -19,8 +19,8 @@ stopped_at: null
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 6 planning 完成，2 plans ready
-- **Active Branch**: main (plan 08-03 complete)
+- **Current Phase**: Phase 8 complete -- 所有 8 个 Phase 全部完成
+- **Active Branch**: main (plan 08-04 complete)
 
 ## Phase Progress
 
@@ -33,7 +33,7 @@ stopped_at: null
 | Phase 5: Druid技能方法封装改造 | ✅ complete | 2026-06-14 | 2026-06-14 | 3 plans |
 | Phase 6: Fix Druid _castSpell isSpellReady nil bug | ✅ complete | 2026-06-14 | 2026-06-14 | 1 plan |
 | Phase 7: Druid 形态判断语义化方法 | ✅ complete | 2026-06-15 | 2026-06-15 | 1 plan |
-| Phase 8: 非Druid职业代码结构重构（对齐Druid架构） | 🔄 in-progress | 2026-06-15 | — | 3/4 plans |
+| Phase 8: 非Druid职业代码结构重构（对齐Druid架构） | ✅ complete | 2026-06-15 | 2026-06-15 | 4 plans |
 
 ## Accumulated Context
 
