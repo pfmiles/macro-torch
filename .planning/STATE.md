@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Milestone complete
-last_updated: "2026-06-15T04:39:44.106Z"
+status: Phase 07 Complete
+last_updated: "2026-06-15T04:53:40.993Z"
 progress:
   total_phases: 7
-  completed_phases: 5
-  total_plans: 18
-  completed_plans: 18
-  percent: 71
+  completed_phases: 7
+  total_plans: 19
+  completed_plans: 19
+  percent: 100
 stopped_at: null
 ---
 
@@ -32,7 +32,7 @@ stopped_at: null
 | Phase 4: 职业重组 + 构建系统 | ✅ complete | 2026-06-08 | 2026-06-08 | 4 plans |
 | Phase 5: Druid技能方法封装改造 | ⬜ pending | — | — | — |
 | Phase 6: Fix Druid _castSpell isSpellReady nil bug | ⬜ pending | — | — | — |
-| Phase 7: Druid 形态判断语义化方法 | ⬜ pending | — | — | — |
+| Phase 7: Druid 形态判断语义化方法 | ✅ complete | 2026-06-15 | 2026-06-15 | 1 plan |
 
 ## Accumulated Context
 
@@ -95,7 +95,9 @@ stopped_at: null
 | Phase | Plan | Duration | Notes |
 |-------|------|----------|-------|
 | Phase 05 P03 | 380 | 4 tasks | 2 files |
+| Phase 07 P01 | 132 | 3 tasks | 3 files |
 
 ## Decisions
 
 - [Phase 05]: Deleted 5 wrapper functions: safeShred, readyShred, safeClaw, readyClaw, safePounce -- replaced with direct mode-based skill method calls (nil='ready', 'safe'='energy+distance checks', 'raw'='no checks')
+- [Phase 07 P01]: Added 5 semantic form-check methods (isInCatForm/isInBearForm/isInTravelForm/isInAquaticForm/isInCasterForm) in DRUID_FIELD_FUNC_MAP delegating to isFormActive; isInBearForm uses OR logic for Bear Form + Dire Bear Form; isInTravelForm/isInAquaticForm/isInCasterForm reserved for future expansion; replaced 7 hardcoded isFormActive calls across Druid.lua/bear.lua/utility.lua
