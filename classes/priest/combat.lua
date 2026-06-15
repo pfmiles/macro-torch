@@ -44,11 +44,7 @@ function macroTorch.priestAtk(pvp)
         if UnitAffectingCombat(t) then
             macroTorch.priestDebuffs()
         end
-        if CheckInteractDistance(t, 3) then
-            macroTorch.priestRangedAtk()
-        else
-            macroTorch.priestRangedAtk()
-        end
+        macroTorch.priestRangedAtk()
     else
         local pt = 'pettarget'
         if HasPetUI() and not UnitIsDead('pet') and macroTorch.isTargetValidCanAttack(pt) and
@@ -61,11 +57,7 @@ function macroTorch.priestAtk(pvp)
             if UnitAffectingCombat(t) then
                 macroTorch.priestDebuffs()
             end
-            if CheckInteractDistance(t, 3) then
-                macroTorch.priestRangedAtk()
-            else
-                macroTorch.priestRangedAtk()
-            end
+            macroTorch.priestRangedAtk()
         end
     end
 end

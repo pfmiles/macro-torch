@@ -32,8 +32,8 @@ function macroTorch.Mage:new()
     end
 
     -- Type C: flexible target (used by castIfBuffAbsent on friendly or self)
-    function obj.arcane_intellect(mode)
-        return obj._castSpell({ en = 'Arcane Intellect', zh = '奥术智慧' }, mode, nil, nil, false)
+    function obj.arcane_intellect(mode, onSelf)
+        return obj._castSpell({ en = 'Arcane Intellect', zh = '奥术智慧' }, mode, nil, nil, onSelf)
     end
 
     return obj
