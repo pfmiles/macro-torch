@@ -46,13 +46,15 @@ function macroTorch.priestHeal()
     local p = 'player'
     local t = 'target'
     local player = macroTorch.player
+    local onSelf = false
     if not macroTorch.isTargetValidFriendly(t) then
         t = p
+        onSelf = true
     end
     if macroTorch.getUnitHealthLost(t) > 440 then
-        player.heal()
+        player.heal(nil, onSelf)
     elseif macroTorch.getUnitHealthLost(t) > 140 then
-        player.lesser_heal()
+        player.lesser_heal(nil, onSelf)
     else
         macroTorch.castIfBuffAbsent(t, 'Renew', 'Spell_Holy_Renew')
     end

@@ -61,7 +61,7 @@ function macroTorch.Hunter:new()
 
     -- Type B with conditional logic: Call Pet or Dismiss Pet based on pet existence
     function obj.call_pet(mode)
-        if macroTorch.pet.isExist then
+        if macroTorch.pet and macroTorch.pet.isExist then
             return obj._castSpell({ en = 'Dismiss Pet', zh = '解散宠物' }, mode, nil, nil, true)
         else
             return obj._castSpell({ en = 'Call Pet', zh = '召唤宠物' }, mode, nil, nil, true)
