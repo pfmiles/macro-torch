@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Milestone complete
-last_updated: "2026-06-14T14:22:49.623Z"
+last_updated: "2026-06-15T04:39:44.106Z"
 progress:
-  total_phases: 6
-  completed_phases: 4
-  total_plans: 16
-  completed_plans: 16
-  percent: 67
+  total_phases: 7
+  completed_phases: 5
+  total_plans: 18
+  completed_plans: 18
+  percent: 71
 stopped_at: null
 ---
 
@@ -32,6 +32,7 @@ stopped_at: null
 | Phase 4: 职业重组 + 构建系统 | ✅ complete | 2026-06-08 | 2026-06-08 | 4 plans |
 | Phase 5: Druid技能方法封装改造 | ⬜ pending | — | — | — |
 | Phase 6: Fix Druid _castSpell isSpellReady nil bug | ⬜ pending | — | — | — |
+| Phase 7: Druid 形态判断语义化方法 | ⬜ pending | — | — | — |
 
 ## Accumulated Context
 
@@ -39,6 +40,7 @@ stopped_at: null
 
 - Phase 5 added: Druid技能方法封装改造 - 将player.cast()字符串调用重构为技能对象方法，支持多语言客户端，从Druid试点 (2026-06-13)
 - Phase 6 added: Fix Druid _castSpell isSpellReady nil bug - Player.lua 中 _castSpell/_isInRange/_hasResource 点号定义与 Druid.lua 冒号调用不匹配，导致闭包 self 错误 (2026-06-14)
+- Phase 7 added: Druid 形态判断语义化方法 — 新增 isInCatForm/isInBearForm 等 5 个语义方法替换 isFormActive 硬编码调用 (2026-06-15)
 
 ## Key Decisions
 

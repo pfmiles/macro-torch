@@ -666,7 +666,6 @@ Plans:
 **Requirements**: REQ-07-SEMANTIC, REQ-07-REPLACE, REQ-07-BEAR-OR, REQ-07-RESERVED, REQ-07-SELFTEST
 **Depends on:** Phase 6
 **Plans:** 1 plan
-
 Plans:
 
 - [ ] 07-01-PLAN.md — 新增 5 个 DRUID_FIELD_FUNC_MAP 形态判断条目 + 替换 7 处 isFormActive 硬编码调用 + 更新 5 个 Category G2 SelfTest 注册
