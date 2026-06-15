@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Executing Phase 08
-last_updated: "2026-06-15T11:43:33Z"
+last_updated: "2026-06-15T12:00:00Z"
 progress:
   total_phases: 8
   completed_phases: 6
   total_plans: 23
-  completed_plans: 21
-  percent: 82
+  completed_plans: 22
+  percent: 85
 stopped_at: null
 ---
 
@@ -33,7 +33,7 @@ stopped_at: null
 | Phase 5: Druid技能方法封装改造 | ✅ complete | 2026-06-14 | 2026-06-14 | 3 plans |
 | Phase 6: Fix Druid _castSpell isSpellReady nil bug | ✅ complete | 2026-06-14 | 2026-06-14 | 1 plan |
 | Phase 7: Druid 形态判断语义化方法 | ✅ complete | 2026-06-15 | 2026-06-15 | 1 plan |
-| Phase 8: 非Druid职业代码结构重构（对齐Druid架构） | 🔄 in-progress | 2026-06-15 | — | 1/4 plans |
+| Phase 8: 非Druid职业代码结构重构（对齐Druid架构） | 🔄 in-progress | 2026-06-15 | — | 2/4 plans |
 
 ## Accumulated Context
 
@@ -99,9 +99,11 @@ stopped_at: null
 | Phase 05 P03 | 380 | 4 tasks | 2 files |
 | Phase 07 P01 | 132 | 3 tasks | 3 files |
 | Phase 08 P01 | 407 | 3 tasks | 6 files |
+| Phase 08 P02 | N/A | 3 tasks | 4 files |
 
 ## Decisions
 
 - [Phase 05]: Deleted 5 wrapper functions: safeShred, readyShred, safeClaw, readyClaw, safePounce -- replaced with direct mode-based skill method calls (nil='ready', 'safe'='energy+distance checks', 'raw'='no checks')
 - [Phase 07 P01]: Added 5 semantic form-check methods (isInCatForm/isInBearForm/isInTravelForm/isInAquaticForm/isInCasterForm) in DRUID_FIELD_FUNC_MAP delegating to isFormActive; isInBearForm uses OR logic for Bear Form + Dire Bear Form; isInTravelForm/isInAquaticForm/isInCasterForm reserved for future expansion; replaced 7 hardcoded isFormActive calls across Druid.lua/bear.lua/utility.lua
 - [Phase 08 P01]: Refactored Hunter (3 files) and Warrior (3 files) to Druid-aligned architecture — classMetatable + FIELD_FUNC_MAP + skill methods with _castSpell and locale tables + registerPlayerClass + SpellTrace:register + SelfTest:register; Hunter: 10 skill methods, Warrior: 17 skill methods; replaced CastSpellByName with skill method calls for all spells, preserved CastShapeshiftForm/castIfBuffAbsent/CastSpellByName for stance changes
+- [Phase 08 P02]: Refactored Rogue (2 files) and Mage (2 files) to Druid-aligned architecture; Rogue: 7 skill methods with English locale names verified by user, pickPocketBeforeCast state machine preserved, comboPoints in FIELD_FUNC_MAP, lockNearestEnemyThenCast deferred migration; Mage: 3 skill methods, castIfBuffAbsent preserved for Frost Armor/Arcane Intellect, Frostbolt CastSpellByName replaced
