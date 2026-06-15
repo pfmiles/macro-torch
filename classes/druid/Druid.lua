@@ -446,6 +446,21 @@ macroTorch.DRUID_FIELD_FUNC_MAP = {
     ['isBerserk'] = function(self)
         return self.buffed('Berserk', 'Ability_Druid_Berserk')
     end,
+    ['isInCatForm'] = function(self)
+        return self.isFormActive('Cat Form')
+    end,
+    ['isInBearForm'] = function(self)
+        return self.isFormActive('Bear Form') or self.isFormActive('Dire Bear Form')
+    end,
+    ['isInTravelForm'] = function(self)
+        return self.isFormActive('Travel Form')
+    end, -- reserved for future expansion
+    ['isInAquaticForm'] = function(self)
+        return self.isFormActive('Aquatic Form')
+    end, -- reserved for future expansion
+    ['isInCasterForm'] = function(self)
+        return self.isFormActive('Moonkin Form')
+    end, -- reserved for future expansion
     ['humanFormMana'] = function(self)
         return UnitMana(self.ref) or 0
     end,
