@@ -28,9 +28,24 @@ classes/druid/Druid.lua
 classes/druid/cat.lua
 classes/druid/bear.lua
 classes/druid/utility.lua
-classes/Hunter.lua
-classes/Mage.lua
-classes/Priest.lua
-classes/Rogue.lua
-classes/Warlock.lua
-classes/Warrior.lua
+# classes/ — Hunter (Phase 8)
+classes/hunter/Hunter.lua
+classes/hunter/combat.lua
+classes/hunter/utility.lua
+# classes/ — Warrior (Phase 8)
+classes/warrior/Warrior.lua
+classes/warrior/combat.lua
+classes/warrior/utility.lua
+# classes/ — Rogue (Phase 8)
+classes/rogue/Rogue.lua
+classes/rogue/combat.lua
+# classes/ — Mage (Phase 8)
+classes/mage/Mage.lua
+classes/mage/combat.lua
+# classes/ — Priest (Phase 8)
+classes/priest/Priest.lua
+classes/priest/combat.lua
+classes/priest/utility.lua
+# classes/ — Warlock (Phase 8)
+classes/warlock/Warlock.lua
+classes/warlock/combat.lua
