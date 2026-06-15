@@ -781,19 +781,19 @@ classes/warlock/utility.lua
 | A3 | The `isStanceActive(idx)` and `isStanceActiveByName(stanceName)` functions in Player.lua are sufficient for Warrior stance detection (no new FIELD_FUNC_MAP fields needed) | Per-Class Decomposition (Warrior) | If stances need lazy computation like Druid forms, planner will need to add WARRIOR_FIELD_FUNC_MAP entries |
 | A4 | Each class's combat logic functions can safely be moved to separate files without breaking closure references, since all functions are on the global `macroTorch` namespace | Architecture Patterns | If any function uses local/closure variables from the original file, those variables would be out of scope in the new file -- must verify each file independently |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Rogue 技能英文名准确性**
+1. **Rogue 技能英文名准确性** -- RESOLVED: Plan 08-02 Task 3 is a `checkpoint:human-verify` for Rogue locale table. User confirms/corrects during execution.
    - What we know: From CONTEXT.md, we have suggested English names for Rogue skills (Pick Pocket, Ghostly Strike, Hemorrhage, etc.)
    - What's unclear: Whether these exact spell names match what Turtle WoW 1.12.1 English client expects
    - Recommendation: Planner should add `checkpoint:human-verify` for Rogue locale table. User can confirm or correct English names.
 
-2. **Warrior Battle/Defensive Stance CastSpellByName calls**
+2. **Warrior Battle/Defensive Stance CastSpellByName calls** -- RESOLVED: Plan 08-01 Task 3 keeps `CastSpellByName('Battle Stance')` and `CastSpellByName('Defensive Stance')` as-is (stance changes, not spells). Deferred to future phase.
    - What we know: `wroCtrl()` and `wroInterrupt()` have `CastSpellByName('Battle Stance')` and `CastSpellByName('Defensive Stance')` calls -- these are stance changes, not regular spells.
    - What's unclear: Whether stance changes should become skill methods (like Druid's `bear_form`/`cat_form`) or kept as CastSpellByName
    - Recommendation: Keep as CastSpellByName for now -- stance changes are a deferred feature (Phase 8 scope: architecture alignment only).
 
-3. **Rogue Combo Points FIELD_FUNC_MAP**
+3. **Rogue Combo Points FIELD_FUNC_MAP** -- RESOLVED: Plan 08-02 Task 1 adds `['comboPoints'] = function(self) return GetComboPoints() or 0 end` to ROGUE_FIELD_FUNC_MAP for consistency with Druid pattern.
    - What we know: Rogue uses combo points like Druid. GetComboPoints() is a WoW API that works for both classes.
    - What's unclear: Whether `comboPoints` should go in ROGUE_FIELD_FUNC_MAP or relied on from PLAYER_FIELD_FUNC_MAP
    - Recommendation: Add to ROGUE_FIELD_FUNC_MAP for consistency with Druid pattern. Function is identical: `function(self) return GetComboPoints() or 0 end`.
