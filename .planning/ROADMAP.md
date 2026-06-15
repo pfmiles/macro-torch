@@ -665,10 +665,10 @@ Plans:
 **Goal:** 在保留 isFormActive 通用方法的同时，为 Druid 类新增 5 个语义化形态判断方法（isInCatForm/isInBearForm/isInTravelForm/isInAquaticForm/isInCasterForm），并替换 Druid.lua/bear.lua/utility.lua 中现有的 isFormActive 硬编码调用。
 **Requirements**: REQ-07-SEMANTIC, REQ-07-REPLACE, REQ-07-BEAR-OR, REQ-07-RESERVED, REQ-07-SELFTEST
 **Depends on:** Phase 6
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
 
-- [ ] 07-01-PLAN.md — 新增 5 个 DRUID_FIELD_FUNC_MAP 形态判断条目 + 替换 7 处 isFormActive 硬编码调用 + 更新 5 个 Category G2 SelfTest 注册
+- [x] 07-01-PLAN.md — 新增 5 个 DRUID_FIELD_FUNC_MAP 形态判断条目 + 替换 7 处 isFormActive 硬编码调用 + 更新 5 个 Category G2 SelfTest 注册
 
 ---
 
