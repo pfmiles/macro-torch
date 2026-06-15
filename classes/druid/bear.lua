@@ -63,7 +63,7 @@ function macroTorch.bearReshiftMod(clickContext)
 end
 function macroTorch.bearAoe()
     local clickContext = {}
-    if not macroTorch.player.isFormActive('Dire Bear Form') then
+    if not macroTorch.player.isInBearForm then
         return
     end
 
@@ -99,7 +99,7 @@ function macroTorch.bearAtk(rough)
     clickContext.RESHIFT_RAGE_THRESHOLD = 1
 
     -- Cache player/target state
-    clickContext.isInBearForm = player.isFormActive('Dire Bear Form')
+    clickContext.isInBearForm = player.isInBearForm
     if not clickContext.isInBearForm then
         return
     end
