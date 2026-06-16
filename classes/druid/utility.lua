@@ -54,36 +54,3 @@ function macroTorch.druidControl()
         macroTorch.player.entangling_roots('safe')
     end
 end
-function macroTorch.pokemonLoad()
-    local battleChickenSaying = 'Go, Battle Chicken! I choose you!'
-    local arcaniteDragonlingSaying = 'Come on out, Arcanite Dragonling!'
-    local trackingHoundSaying = 'Go, Tracking Hound! I choose you!'
-    local barovServantsSaying = 'Go, Barov Servants! I choose you!'
-    local skeletonSaying = 'Come on out, Skeleton!'
-
-    local orderedTable = {
-        keys = {
-            battleChickenSaying,
-            arcaniteDragonlingSaying,
-            trackingHoundSaying,
-            barovServantsSaying,
-            skeletonSaying
-        },
-        values = {
-            [battleChickenSaying] = 'Gnomish Battle Chicken',
-            [arcaniteDragonlingSaying] = 'Arcanite Dragonling',
-            [trackingHoundSaying] = 'Dog Whistle',
-            [barovServantsSaying] = 'Barov Peasant Caller',
-            [skeletonSaying] = 'Ancient Cornerstone Grimoire'
-        },
-        toSlots = {
-            [battleChickenSaying] = 13,
-            [arcaniteDragonlingSaying] = 13,
-            [trackingHoundSaying] = 13,
-            [barovServantsSaying] = 13,
-            [skeletonSaying] = 17
-        },
-        backupItem = { [skeletonSaying] = { item = "Jadestone Skewer", slot = 16 } }
-    }
-    macroTorch.player.loadUseableItemToSlot(orderedTable)
-end

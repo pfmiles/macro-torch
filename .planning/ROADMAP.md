@@ -687,6 +687,28 @@ Plans:
 
 - [x] 08-04-PLAN.md — build_order.txt 更新 + 6 个旧扁平文件删除 + build.sh 构建验证 (Wave 2)
 
+### Phase 9: 将pokemonLoad从druid/utility.lua移动到Player层作为通用方法
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 8
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 9 to break down)
+
+### Phase 10: 创建5个Druid综合一键宏方法: druidAtk/druidAoe/druidHeal/druidDefend/druidControl, 内部按形态路由到对应方法
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 9
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 10 to break down)
+
 ---
 
 ## Task 统计
