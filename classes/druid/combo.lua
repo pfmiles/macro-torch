@@ -5,6 +5,12 @@ function macroTorch.druidAtk(rough)
         macroTorch.player.catAtk(rough)
     elseif macroTorch.player.isInBearForm then
         macroTorch.bearAtk(rough)
+    elseif not macroTorch.target.isCanAttack then
+        return
+    elseif not macroTorch.target.hasBuff('Spell_Nature_StarFall') then
+        macroTorch.player.moonfire('safe')
+    else
+        macroTorch.player.wrath('safe')
     end
 end
 
@@ -60,7 +66,6 @@ function macroTorch.druidDefend()
 end
 
 function macroTorch.druidControl()
-    local clickContext = {}
     local target = macroTorch.target
 
     if not target.isCanAttack then
@@ -70,16 +75,10 @@ function macroTorch.druidControl()
         end
     end
 
-    if macroTorch.player.isInBearForm then
-        if macroTorch.isNearBy(clickContext) then
-            macroTorch.player.bash('ready')
-        elseif macroTorch.isSpellExist('Feral Charge', 'spell') then
-            macroTorch.player.feral_charge('ready')
-        end
-    elseif not macroTorch.player.isInCatForm and not macroTorch.player.isInBearForm then
-        macroTorch.player.entangling_roots('safe')
+    if target.distance < 8 then
+        macroTorch.player.bash('ready')
     else
-        macroTorch.player.dire_bear_form('ready')
+        macroTorch.player.entangling_roots('safe')
     end
 end
 
