@@ -345,7 +345,6 @@ function macroTorch.Druid:new()
         clickContext.hasEssenceOfTheRed = player.hasEssenceOfTheRed
         clickContext.isBehind = target.isCanAttack and player.isBehindTarget
 
-        clickContext.isInBearForm = player.isInBearForm
         clickContext.isInCatForm = player.isInCatForm
 
         clickContext.isImmuneRake = target.isImmune('Rake')
@@ -377,11 +376,6 @@ function macroTorch.Druid:new()
             end
             -- 4.rushMod, including trinkets, berserk and potions, normally triggered by holding shift while fighting
             macroTorch.burstMod(clickContext)
-            -- roughly bear form logic branch, TODO 其实bear形态逻辑应该完全从catAtck逻辑中剥离出来，在最上层的宏里面通过当前形态来路由
-            if clickContext.isInBearForm then
-                macroTorch.bearAtk(clickContext.rough)
-                return
-            end
             -- 5.opener mod, 因为Ravage差不多可以秒掉1500血以内的目标，除此之外均使用Pounce以增加后续claw的伤害
             if clickContext.prowling then
                 if not target.isImmune('Pounce') and target.health >= 1500 then
