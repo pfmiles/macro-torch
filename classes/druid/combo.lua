@@ -11,10 +11,10 @@ end
 function macroTorch.druidAoe()
     if macroTorch.player.isInBearForm then
         macroTorch.bearAoe()
-    elseif not macroTorch.player.isInCatForm and not macroTorch.player.isInBearForm then
-        if macroTorch.player.mana >= 880 then
-            macroTorch.player.hurricane('ready')
-        end
+    elseif macroTorch.player.isInCatForm then
+        return -- No cat form AoE in vanilla WoW
+    elseif macroTorch.player.humanFormMana >= 880 then
+        macroTorch.player.hurricane('ready')
     end
 end
 

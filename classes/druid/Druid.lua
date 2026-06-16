@@ -297,6 +297,10 @@ function macroTorch.Druid:new()
     --- The 'E' key regular dps function for feral cat druid
     --- if rough, all combats are considered short
     function obj.catAtk(rough)
+        if not macroTorch.player.isInCatForm then
+            return
+        end
+
         -- clickContext是单次点击范围内的context，用作取值cache优化
         local clickContext = {}
 
