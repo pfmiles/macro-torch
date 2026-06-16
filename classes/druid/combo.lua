@@ -7,7 +7,7 @@ function macroTorch.druidAtk(rough)
         macroTorch.bearAtk(rough)
     elseif not macroTorch.target.isCanAttack then
         return
-    elseif not macroTorch.target.hasBuff('Spell_Nature_StarFall') then
+    elseif not macroTorch.target.buffed('Moonfire', 'Spell_Nature_StarFall') then
         macroTorch.player.moonfire('safe')
     else
         macroTorch.player.wrath('safe')
