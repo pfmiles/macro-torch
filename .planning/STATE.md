@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Complete
-last_updated: "2026-06-15T14:00:00Z"
+status: in_progress
+last_updated: "2026-06-16T06:00:00Z"
 progress:
-  total_phases: 8
+  total_phases: 10
   completed_phases: 8
   total_plans: 23
   completed_plans: 23
-  percent: 100
+  percent: 80
 stopped_at: null
 ---
 
@@ -19,8 +19,8 @@ stopped_at: null
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 8 complete -- 所有 8 个 Phase 全部完成
-- **Active Branch**: main (plan 08-04 complete)
+- **Current Phase**: Phase 9 — pokemonLoad 移至 Player 层
+- **Active Branch**: main
 
 ## Phase Progress
 
@@ -34,6 +34,8 @@ stopped_at: null
 | Phase 6: Fix Druid _castSpell isSpellReady nil bug | ✅ complete | 2026-06-14 | 2026-06-14 | 1 plan |
 | Phase 7: Druid 形态判断语义化方法 | ✅ complete | 2026-06-15 | 2026-06-15 | 1 plan |
 | Phase 8: 非Druid职业代码结构重构（对齐Druid架构） | ✅ complete | 2026-06-15 | 2026-06-15 | 4 plans |
+| Phase 9: pokemonLoad 移至 Player 层 | 🔵 in_progress | 2026-06-16 | — | — |
+| Phase 10: Druid 综合一键宏方法（druidAtk/Aoe/Heal/Defend/Control） | ⚪ pending | — | — | — |
 
 ## Accumulated Context
 
@@ -42,7 +44,7 @@ stopped_at: null
 - Phase 5 added: Druid技能方法封装改造 - 将player.cast()字符串调用重构为技能对象方法，支持多语言客户端，从Druid试点 (2026-06-13)
 - Phase 6 added: Fix Druid _castSpell isSpellReady nil bug - Player.lua 中 _castSpell/_isInRange/_hasResource 点号定义与 Druid.lua 冒号调用不匹配，导致闭包 self 错误 (2026-06-14)
 - Phase 7 added: Druid 形态判断语义化方法 — 新增 isInCatForm/isInBearForm 等 5 个语义方法替换 isFormActive 硬编码调用 (2026-06-15)
-- Phase 8 added: 非Druid职业代码结构重构（对齐Druid架构） — 将 Hunter/Mage/Priest/Rogue/Warlock/Warrior 的 classes/ 下代码拆分为多文件目录结构，与 Druid 的 classes/druid/ 架构一致 (2026-06-15)
+- Phase 10 added: Druid 综合一键宏方法 — 创建 druidAtk/druidAoe/druidHeal/druidDefend/druidControl 5 个方法，内部按形态 if-else 路由到对应子方法 (2026-06-16)
 
 ## Key Decisions
 
