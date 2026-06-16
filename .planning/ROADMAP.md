@@ -707,8 +707,8 @@ Plans:
 
 Plans:
 
-- [ ] 10-01-PLAN.md — 创建 classes/druid/combo.lua (5 个 combo 方法 + 5 个 SelfTest 注册)
-- [ ] 10-02-PLAN.md — 修改 Druid.lua (删除 bear 路由) + utility.lua (删除 3 个旧函数) + build_order.txt (添加 combo.lua)
+- [x] 10-01-PLAN.md — 创建 classes/druid/combo.lua (5 个 combo 方法 + 5 个 SelfTest 注册)
+- [x] 10-02-PLAN.md — 修改 Druid.lua (删除 bear 路由) + utility.lua (删除 3 个旧函数) + build_order.txt (添加 combo.lua)
 
 ---
 

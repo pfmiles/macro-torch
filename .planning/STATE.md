@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-06-16T15:49:50.457Z"
+last_updated: "2026-06-17T00:00:00.000Z"
 progress:
   total_phases: 10
-  completed_phases: 7
-  total_plans: 23
-  completed_plans: 23
-  percent: 70
+  completed_phases: 8
+  total_plans: 25
+  completed_plans: 25
+  percent: 80
 stopped_at: null
 ---
 
@@ -19,7 +19,7 @@ stopped_at: null
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 9 — pokemonLoad 移至 Player 层
+- **Current Phase**: Phase 10 — Druid 综合一键宏方法（已完成）
 - **Active Branch**: main
 
 ## Phase Progress
@@ -35,7 +35,7 @@ stopped_at: null
 | Phase 7: Druid 形态判断语义化方法 | ✅ complete | 2026-06-15 | 2026-06-15 | 1 plan |
 | Phase 8: 非Druid职业代码结构重构（对齐Druid架构） | ✅ complete | 2026-06-15 | 2026-06-15 | 4 plans |
 | Phase 9: pokemonLoad 移至 Player 层 | 🔵 in_progress | 2026-06-16 | — | — |
-| Phase 10: Druid 综合一键宏方法（druidAtk/Aoe/Heal/Defend/Control） | ⚪ pending | — | — | — |
+| Phase 10: Druid 综合一键宏方法（druidAtk/Aoe/Heal/Defend/Control） | ✅ complete | 2026-06-16 | 2026-06-17 | 2 plans |
 
 ## Accumulated Context
 
