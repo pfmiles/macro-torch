@@ -19,8 +19,15 @@ function macroTorch.druidAoe()
 end
 
 function macroTorch.druidHeal()
-    if macroTorch.player.isInCatForm or macroTorch.player.isInBearForm then
-        CancelShapeshiftForm()
+    if macroTorch.player.isInCatForm then
+        macroTorch.player.cat_form('ready')
+        return
+    elseif macroTorch.player.isInBearForm then
+        if macroTorch.player.isFormActive('Dire Bear Form') then
+            macroTorch.player.dire_bear_form('ready')
+        else
+            macroTorch.player.bear_form('ready')
+        end
         return
     end
 
@@ -70,11 +77,7 @@ function macroTorch.druidControl()
             macroTorch.player.feral_charge('ready')
         end
     elseif not macroTorch.player.isInCatForm and not macroTorch.player.isInBearForm then
-        if target.type == 'Beast' or target.type == 'Dragonkin' then
-            macroTorch.player.hibernate('safe')
-        else
-            macroTorch.player.entangling_roots('safe')
-        end
+        macroTorch.player.entangling_roots('safe')
     else
         macroTorch.player.dire_bear_form('ready')
     end

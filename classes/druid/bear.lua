@@ -55,6 +55,9 @@ function macroTorch.bearRegularAttack(clickContext)
     end
 end
 function macroTorch.bearReshiftMod(clickContext)
+    if not macroTorch.isSpellExist('Reshift', 'spell') then
+        return
+    end
     -- Threshold-based trigger (cast when below threshold)
     if clickContext.rage < clickContext.RESHIFT_RAGE_THRESHOLD and not clickContext.ooc then
         macroTorch.show('Reshift!!! Rage = ' .. macroTorch.player.mana)

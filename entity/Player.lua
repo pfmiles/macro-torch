@@ -56,7 +56,7 @@ function macroTorch.Player:new()
 
         -- 3. Safe mode: distance + resource checks
         if mode == 'safe' then
-            if range and not obj._isInRange(range) then
+            if range and not onSelf and not obj._isInRange(range) then
                 return false
             end
             if resourceCost then
