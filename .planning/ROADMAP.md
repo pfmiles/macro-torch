@@ -700,14 +700,15 @@ Plans:
 
 ### Phase 10: 创建5个Druid综合一键宏方法: druidAtk/druidAoe/druidHeal/druidDefend/druidControl, 内部按形态路由到对应方法
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** 创建 classes/druid/combo.lua，提供 5 个全局顶层"一键宏"方法（druidAtk/druidAoe/druidHeal/druidDefend/druidControl），按形态 if-elseif 链路由到对应子方法；同时将 catAtk 中的 bear 路由逻辑提取到 druidAtk，删除 utility.lua 中的旧版 druidStun/druidDefend/druidControl。
+**Requirements**: D-01 through D-21 (from 10-CONTEXT.md)
 **Depends on:** Phase 9
-**Plans:** 0 plans
+**Plans:** 2 plans
 
 Plans:
 
-- [ ] TBD (run /gsd-plan-phase 10 to break down)
+- [ ] 10-01-PLAN.md — 创建 classes/druid/combo.lua (5 个 combo 方法 + 5 个 SelfTest 注册)
+- [ ] 10-02-PLAN.md — 修改 Druid.lua (删除 bear 路由) + utility.lua (删除 3 个旧函数) + build_order.txt (添加 combo.lua)
 
 ---
 
