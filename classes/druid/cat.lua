@@ -174,7 +174,10 @@ function macroTorch.tryBiteKillShot(clickContext)
     end
 end
 function macroTorch.reshiftMod(clickContext)
-    -- 如果当前做reshift“划算”，则做reshift
+    if not macroTorch.isSpellExist('Reshift', 'spell') then
+        return
+    end
+    -- 如果当前做reshift”划算”，则做reshift
     local shouldDoReshift, nextMove, minAbilityCost = macroTorch.shouldDoReshift(clickContext)
     if shouldDoReshift then
         macroTorch.readyReshift(clickContext, nextMove, minAbilityCost)
