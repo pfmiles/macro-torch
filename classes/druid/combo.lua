@@ -75,7 +75,7 @@ function macroTorch.druidHeal()
         return
     end
 
-    if macroTorch.player.isInGroup then
+    if macroTorch.player.isInGroup or macroTorch.player.isInRaid then
         local lowestUnit, lowestHp = macroTorch.findMostDamagedGroupMember()
         if lowestHp >= 90 then
             return
