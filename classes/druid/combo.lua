@@ -33,6 +33,35 @@ function macroTorch.druidAoe()
     end
 end
 
+function macroTorch.findMostDamagedGroupMember()
+    local lowestHpUnit = "player"
+    local mostMissingHp = UnitHealthMax("player") - UnitHealth("player")
+
+    local maxMembers, prefix
+    if macroTorch.player.isInRaid then
+        maxMembers = 40
+        prefix = "raid"
+    else
+        maxMembers = 4
+        prefix = "party"
+    end
+
+    for i = 1, maxMembers do
+        local unitId = prefix .. i
+        if UnitExists(unitId) and not UnitIsDead(unitId) and UnitHealth(unitId) > 1 then
+            if CheckInteractDistance(unitId, 4) then
+                local missingHp = UnitHealthMax(unitId) - UnitHealth(unitId)
+                if missingHp > mostMissingHp then
+                    mostMissingHp = missingHp
+                    lowestHpUnit = unitId
+                end
+            end
+        end
+    end
+
+    return lowestHpUnit, macroTorch.getUnitHealthPercent(lowestHpUnit)
+end
+
 function macroTorch.druidHeal()
     if macroTorch.player.isInCatForm then
         macroTorch.player.cat_form('ready')
@@ -46,12 +75,28 @@ function macroTorch.druidHeal()
         return
     end
 
-    if not macroTorch.player.buffed(nil, 'Spell_Nature_Rejuvenation') then
-        macroTorch.player.rejuvenation('safe', true)
-        return
-    end
-
-    if macroTorch.player.healthPercent < 70 then
+    if macroTorch.player.isInGroup then
+        local lowestUnit, lowestHp = macroTorch.findMostDamagedGroupMember()
+        if lowestHp >= 90 then
+            return
+        end
+        TargetUnit(lowestUnit)
+        if lowestHp < 50 then
+            macroTorch.player.healing_touch('safe', false)
+        elseif lowestHp < 70 then
+            macroTorch.player.regrowth('safe', false)
+        else
+            macroTorch.player.rejuvenation('safe', false)
+        end
+    else
+        if not macroTorch.player.buffed(nil, 'Spell_Nature_Rejuvenation') then
+            macroTorch.player.rejuvenation('safe', true)
+            return
+        end
+        if not macroTorch.player.buffed(nil, 'Spell_Nature_ResistNature') then
+            macroTorch.player.regrowth('safe', true)
+            return
+        end
         macroTorch.player.healing_touch('safe', true)
     end
 end
