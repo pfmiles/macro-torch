@@ -37,14 +37,12 @@ function macroTorch.druidHeal()
         return
     end
 
-    if macroTorch.player.isSpellReady('Rejuvenation') and
-        macroTorch.player.healthPercent < 50 and
-        not macroTorch.player.hasBuff('Spell_Nature_Rejuvenation') then
+    if not macroTorch.player.buffed(nil, 'Spell_Nature_Rejuvenation') then
         macroTorch.player.rejuvenation('safe', true)
         return
     end
 
-    if macroTorch.player.healthPercent < 40 then
+    if macroTorch.player.healthPercent < 70 then
         macroTorch.player.healing_touch('safe', true)
     end
 end
