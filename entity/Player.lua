@@ -23,10 +23,10 @@ DEFAULT_CHAT_FRAME:AddMessage("[macro-torch] init step 7b: Player prototype crea
 function macroTorch.Player:new()
     local obj = {}
 
-    -- cast spell by name
+    -- cast spell by name (precise spell targeting via macroTorch.castSpellByName)
+    -- for self-cast, use CastSpellByName directly (see _castSpell)
     -- @param spellName string spell name
-    -- @param onSelf boolean true if cast on self, current target otherwise
-    function obj.cast(spellName, onSelf)
+    function obj.cast(spellName)
         macroTorch.castSpellByName(spellName, 'spell')
     end
 
@@ -73,10 +73,11 @@ function macroTorch.Player:new()
         end
 
         -- 4. Execute the cast
+        -- self-cast must use WoW API directly; otherwise prefer obj.cast for precise spell targeting
         if onSelf then
             CastSpellByName(spellName, true)
         else
-            obj.cast(spellName, false)
+            obj.cast(spellName)
         end
         return true
     end
