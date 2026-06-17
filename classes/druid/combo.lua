@@ -1,18 +1,25 @@
 -- Druid one-button combo macro methods (routing layer)
 
-function macroTorch.druidAtk(rough)
-    if macroTorch.player.isInCatForm then
-        macroTorch.player.catAtk(rough)
-    elseif macroTorch.player.isInBearForm then
-        macroTorch.bearAtk(rough)
-    elseif not macroTorch.target.isCanAttack then
+function macroTorch.casterAtk()
+    if not macroTorch.target.isCanAttack then
         return
-    elseif not macroTorch.player.isInCombat then
+    end
+    if not macroTorch.player.isInCombat then
         macroTorch.player.wrath('safe')
     elseif not macroTorch.target.buffed('Moonfire', 'Spell_Nature_StarFall') then
         macroTorch.player.moonfire('safe')
     else
         macroTorch.player.wrath('safe')
+    end
+end
+
+function macroTorch.druidAtk(rough)
+    if macroTorch.player.isInCatForm then
+        macroTorch.player.catAtk(rough)
+    elseif macroTorch.player.isInBearForm then
+        macroTorch.bearAtk(rough)
+    else
+        macroTorch.casterAtk()
     end
 end
 
@@ -85,6 +92,11 @@ end
 macroTorch.SelfTest:register("Druid: combo methods -- druidAtk exists", function()
     if UnitClass('player') ~= 'Druid' then return end
     assert(type(macroTorch.druidAtk) == "function", "druidAtk not a function")
+end, true)
+
+macroTorch.SelfTest:register("Druid: combo methods -- casterAtk exists", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    assert(type(macroTorch.casterAtk) == "function", "casterAtk not a function")
 end, true)
 
 macroTorch.SelfTest:register("Druid: combo methods -- druidAoe exists", function()
