@@ -227,6 +227,38 @@ function macroTorch.filterGroupMates(predFunc)
     return result
 end
 
+-- 找到当前团队/raid中损血最多的成员（包含玩家自己的比较）
+-- @return unitId string 损血最多的unitId，默认返回"player"
+-- @return healthPercent number 该单位的血量百分比
+function macroTorch.findMostDamagedGroupMember()
+    local lowestHpUnit = "player"
+    local mostMissingHp = UnitHealthMax("player") - UnitHealth("player")
+
+    local maxMembers, prefix
+    if macroTorch.player.isInRaid then
+        maxMembers = 40
+        prefix = "raid"
+    else
+        maxMembers = 4
+        prefix = "party"
+    end
+
+    for i = 1, maxMembers do
+        local unitId = prefix .. i
+        if UnitExists(unitId) and not UnitIsDead(unitId) and UnitHealth(unitId) > 1 then
+            if CheckInteractDistance(unitId, 4) then
+                local missingHp = UnitHealthMax(unitId) - UnitHealth(unitId)
+                if missingHp > mostMissingHp then
+                    mostMissingHp = missingHp
+                    lowestHpUnit = unitId
+                end
+            end
+        end
+    end
+
+    return lowestHpUnit, macroTorch.getUnitHealthPercent(lowestHpUnit)
+end
+
 -- 获取天赋等级
 -- @param talentName string 天赋名称
 -- @return number 天赋等级
