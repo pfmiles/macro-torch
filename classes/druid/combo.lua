@@ -33,35 +33,6 @@ function macroTorch.druidAoe()
     end
 end
 
-function macroTorch.findMostDamagedGroupMember()
-    local lowestHpUnit = "player"
-    local mostMissingHp = UnitHealthMax("player") - UnitHealth("player")
-
-    local maxMembers, prefix
-    if macroTorch.player.isInRaid then
-        maxMembers = 40
-        prefix = "raid"
-    else
-        maxMembers = 4
-        prefix = "party"
-    end
-
-    for i = 1, maxMembers do
-        local unitId = prefix .. i
-        if UnitExists(unitId) and not UnitIsDead(unitId) and UnitHealth(unitId) > 1 then
-            if CheckInteractDistance(unitId, 4) then
-                local missingHp = UnitHealthMax(unitId) - UnitHealth(unitId)
-                if missingHp > mostMissingHp then
-                    mostMissingHp = missingHp
-                    lowestHpUnit = unitId
-                end
-            end
-        end
-    end
-
-    return lowestHpUnit, macroTorch.getUnitHealthPercent(lowestHpUnit)
-end
-
 function macroTorch.druidHeal()
     if macroTorch.player.isInCatForm then
         macroTorch.player.cat_form('ready')
