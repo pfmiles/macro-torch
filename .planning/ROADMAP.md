@@ -712,6 +712,20 @@ Plans:
 
 ---
 
+### Phase 11: druidHeal 智能治疗 — 单人补buff vs 团/队最低血量目标
+
+**Goal:** 改造 druidHeal 使其区分单人模式和团队模式。单人模式按"补buff"逻辑依次施放回春→愈合→治疗之触；团队/raid模式遍历成员找到血量最低者，根据其损血百分比选择技能（90%回春、70%愈合、50%治疗之触），目标限定40码范围内。
+
+**Requirements**: REQ-11-SOLO, REQ-11-GROUP, REQ-11-RANGE
+**Depends on:** Phase 10
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 11 to break down)
+
+---
+
 ## Task 统计
 
 | Phase | Task 数 | 关键产出 |
