@@ -22,73 +22,73 @@ function macroTorch.Warrior:new()
     setmetatable(obj, macroTorch.classMetatable(self, "WARRIOR_FIELD_FUNC_MAP"))
 
     -- Type A skills: enemy target only (onSelf=false)
-    function obj.throw(mode, rank)
-        return obj._castSpell({ en = 'Throw', zh = '投掷' }, mode, nil, nil, false, rank)
+    function obj.throw(mode)
+        return obj._castSpell({ en = 'Throw', zh = '投掷' }, mode, nil, nil, false)
     end
 
-    function obj.taunt(mode, rank)
-        return obj._castSpell({ en = 'Taunt', zh = '嘲讽' }, mode, nil, nil, false, rank)
+    function obj.taunt(mode)
+        return obj._castSpell({ en = 'Taunt', zh = '嘲讽' }, mode, nil, nil, false)
     end
 
-    function obj.revenge(mode, rank)
-        return obj._castSpell({ en = 'Revenge', zh = '复仇' }, mode, nil, nil, false, rank)
+    function obj.revenge(mode)
+        return obj._castSpell({ en = 'Revenge', zh = '复仇' }, mode, nil, nil, false)
     end
 
-    function obj.rend(mode, rank)
-        return obj._castSpell({ en = 'Rend', zh = '撕裂' }, mode, nil, nil, false, rank)
+    function obj.rend(mode)
+        return obj._castSpell({ en = 'Rend', zh = '撕裂' }, mode, nil, nil, false)
     end
 
-    function obj.sunder_armor(mode, rank)
-        return obj._castSpell({ en = 'Sunder Armor', zh = '破甲攻击' }, mode, nil, nil, false, rank)
+    function obj.sunder_armor(mode)
+        return obj._castSpell({ en = 'Sunder Armor', zh = '破甲攻击' }, mode, nil, nil, false)
     end
 
-    function obj.shield_slam(mode, rank)
-        return obj._castSpell({ en = 'Shield Slam', zh = '盾牌猛击' }, mode, nil, nil, false, rank)
+    function obj.shield_slam(mode)
+        return obj._castSpell({ en = 'Shield Slam', zh = '盾牌猛击' }, mode, nil, nil, false)
     end
 
-    function obj.demoralizing_shout(mode, rank)
-        return obj._castSpell({ en = 'Demoralizing Shout', zh = '挫志怒吼' }, mode, nil, nil, false, rank)
+    function obj.demoralizing_shout(mode)
+        return obj._castSpell({ en = 'Demoralizing Shout', zh = '挫志怒吼' }, mode, nil, nil, false)
     end
 
-    function obj.thunder_clap(mode, rank)
-        return obj._castSpell({ en = 'Thunder Clap', zh = '雷霆一击' }, mode, nil, nil, false, rank)
+    function obj.thunder_clap(mode)
+        return obj._castSpell({ en = 'Thunder Clap', zh = '雷霆一击' }, mode, nil, nil, false)
     end
 
-    function obj.cleave(mode, rank)
-        return obj._castSpell({ en = 'Cleave', zh = '顺劈斩' }, mode, nil, nil, false, rank)
+    function obj.cleave(mode)
+        return obj._castSpell({ en = 'Cleave', zh = '顺劈斩' }, mode, nil, nil, false)
     end
 
-    function obj.hamstring(mode, rank)
-        return obj._castSpell({ en = 'Hamstring', zh = '断筋' }, mode, nil, nil, false, rank)
+    function obj.hamstring(mode)
+        return obj._castSpell({ en = 'Hamstring', zh = '断筋' }, mode, nil, nil, false)
     end
 
-    function obj.shield_bash(mode, rank)
-        return obj._castSpell({ en = 'Shield Bash', zh = '盾击' }, mode, nil, nil, false, rank)
+    function obj.shield_bash(mode)
+        return obj._castSpell({ en = 'Shield Bash', zh = '盾击' }, mode, nil, nil, false)
     end
 
-    function obj.disarm(mode, rank)
-        return obj._castSpell({ en = 'Disarm', zh = '缴械' }, mode, nil, nil, false, rank)
+    function obj.disarm(mode)
+        return obj._castSpell({ en = 'Disarm', zh = '缴械' }, mode, nil, nil, false)
     end
 
-    function obj.charge(mode, rank)
-        return obj._castSpell({ en = 'Charge', zh = '冲锋' }, mode, 25, nil, false, rank)
+    function obj.charge(mode)
+        return obj._castSpell({ en = 'Charge', zh = '冲锋' }, mode, 25, nil, false)
     end
 
     -- Type B skills: self target only (onSelf=true)
-    function obj.shield_block(mode, rank)
-        return obj._castSpell({ en = 'Shield Block', zh = '盾牌格挡' }, mode, nil, nil, true, rank)
+    function obj.shield_block(mode)
+        return obj._castSpell({ en = 'Shield Block', zh = '盾牌格挡' }, mode, nil, nil, true)
     end
 
-    function obj.battle_shout(mode, rank)
-        return obj._castSpell({ en = 'Battle Shout', zh = '战斗怒吼' }, mode, nil, nil, true, rank)
+    function obj.battle_shout(mode)
+        return obj._castSpell({ en = 'Battle Shout', zh = '战斗怒吼' }, mode, nil, nil, true)
     end
 
-    function obj.bloodrage(mode, rank)
-        return obj._castSpell({ en = 'Bloodrage', zh = '血性狂暴' }, mode, nil, nil, true, rank)
+    function obj.bloodrage(mode)
+        return obj._castSpell({ en = 'Bloodrage', zh = '血性狂暴' }, mode, nil, nil, true)
     end
 
-    function obj.shield_wall(mode, rank)
-        return obj._castSpell({ en = 'Shield Wall', zh = '盾墙' }, mode, nil, nil, true, rank)
+    function obj.shield_wall(mode)
+        return obj._castSpell({ en = 'Shield Wall', zh = '盾墙' }, mode, nil, nil, true)
     end
 
     return obj

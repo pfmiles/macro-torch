@@ -22,33 +22,33 @@ function macroTorch.Rogue:new()
     setmetatable(obj, macroTorch.classMetatable(self, "ROGUE_FIELD_FUNC_MAP"))
 
     -- Type A skills: enemy target only (onSelf=false)
-    function obj.pick_pocket(mode, rank)
-        return obj._castSpell({ en = 'Pick Pocket', zh = '偷窃' }, mode, nil, nil, false, rank)
+    function obj.pick_pocket(mode)
+        return obj._castSpell({ en = 'Pick Pocket', zh = '偷窃' }, mode, nil, nil, false)
     end
 
-    function obj.ghostly_strike(mode, rank)
-        return obj._castSpell({ en = 'Ghostly Strike', zh = '鬼魅攻击' }, mode, nil, nil, false, rank)
+    function obj.ghostly_strike(mode)
+        return obj._castSpell({ en = 'Ghostly Strike', zh = '鬼魅攻击' }, mode, nil, nil, false)
     end
 
-    function obj.hemorrhage(mode, rank)
-        return obj._castSpell({ en = 'Hemorrhage', zh = '出血' }, mode, nil, nil, false, rank)
+    function obj.hemorrhage(mode)
+        return obj._castSpell({ en = 'Hemorrhage', zh = '出血' }, mode, nil, nil, false)
     end
 
-    function obj.sinister_strike(mode, rank)
-        return obj._castSpell({ en = 'Sinister Strike', zh = '邪恶攻击' }, mode, nil, nil, false, rank)
+    function obj.sinister_strike(mode)
+        return obj._castSpell({ en = 'Sinister Strike', zh = '邪恶攻击' }, mode, nil, nil, false)
     end
 
-    function obj.backstab(mode, rank)
-        return obj._castSpell({ en = 'Backstab', zh = '背刺' }, mode, nil, nil, false, rank)
+    function obj.backstab(mode)
+        return obj._castSpell({ en = 'Backstab', zh = '背刺' }, mode, nil, nil, false)
     end
 
     -- Type B skills: self target only (onSelf=true)
-    function obj.vanish(mode, rank)
-        return obj._castSpell({ en = 'Vanish', zh = '消失' }, mode, nil, nil, true, rank)
+    function obj.vanish(mode)
+        return obj._castSpell({ en = 'Vanish', zh = '消失' }, mode, nil, nil, true)
     end
 
-    function obj.preparation(mode, rank)
-        return obj._castSpell({ en = 'Preparation', zh = '伺机待发' }, mode, nil, nil, true, rank)
+    function obj.preparation(mode)
+        return obj._castSpell({ en = 'Preparation', zh = '伺机待发' }, mode, nil, nil, true)
     end
 
     return obj
