@@ -45,7 +45,7 @@ function macroTorch.burstMod(clickContext)
 end
 function macroTorch.regularAttack(clickContext)
     -- Direct skill method calls with mode parameter
-    -- ooc doesn't consume energy, so use ready mode (nil) instead of safe mode
+    -- ooc doesn't consume energy, so use ready mode ('ready') instead of safe mode
     if macroTorch.shouldUseShred(clickContext) then
         if clickContext.ooc then
             macroTorch.player.shred('ready')
