@@ -22,18 +22,18 @@ function macroTorch.Mage:new()
     setmetatable(obj, macroTorch.classMetatable(self, "MAGE_FIELD_FUNC_MAP"))
 
     -- Type A: enemy target only (onSelf=false)
-    function obj.frostbolt(mode)
-        return obj._castSpell({ en = 'Frostbolt', zh = '寒冰箭' }, mode, 30, nil, false)
+    function obj.frostbolt(mode, rank)
+        return obj._castSpell({ en = 'Frostbolt', zh = '寒冰箭' }, mode, 30, nil, false, rank)
     end
 
     -- Type B: self target only (onSelf=true)
-    function obj.frost_armor(mode)
-        return obj._castSpell({ en = 'Frost Armor', zh = '冰甲术' }, mode, nil, nil, true)
+    function obj.frost_armor(mode, rank)
+        return obj._castSpell({ en = 'Frost Armor', zh = '冰甲术' }, mode, nil, nil, true, rank)
     end
 
     -- Type C: flexible target (used by castIfBuffAbsent on friendly or self)
-    function obj.arcane_intellect(mode, onSelf)
-        return obj._castSpell({ en = 'Arcane Intellect', zh = '奥术智慧' }, mode, nil, nil, onSelf)
+    function obj.arcane_intellect(mode, onSelf, rank)
+        return obj._castSpell({ en = 'Arcane Intellect', zh = '奥术智慧' }, mode, nil, nil, onSelf, rank)
     end
 
     return obj

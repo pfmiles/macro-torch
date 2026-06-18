@@ -26,8 +26,9 @@ function macroTorch.Player:new()
     -- cast spell by name (precise spell targeting via macroTorch.castSpellByName)
     -- for self-cast, use CastSpellByName directly (see _castSpell)
     -- @param spellName string spell name
-    function obj.cast(spellName)
-        macroTorch.castSpellByName(spellName, 'spell')
+    -- @param rank number|nil optional rank (1-based), nil = highest rank
+    function obj.cast(spellName, rank)
+        macroTorch.castSpellByName(spellName, 'spell', rank)
     end
 
     -- Internal: shared spell casting helper with locale support, readiness, and resource checks
@@ -36,8 +37,9 @@ function macroTorch.Player:new()
     -- @param range number|nil distance in yards, nil = melee (no check)
     -- @param resourceCost number|function|nil cost or function returning cost, nil = skip check
     -- @param onSelf boolean true if cast on self
+    -- @param rank number|nil optional rank (1-based), nil = highest rank
     -- @return boolean true if spell was cast
-    function obj._castSpell(localeNames, mode, range, resourceCost, onSelf)
+    function obj._castSpell(localeNames, mode, range, resourceCost, onSelf, rank)
         -- 1. Locale-based spell name selection
         local locale = GetLocale()
         local spellName
@@ -73,11 +75,16 @@ function macroTorch.Player:new()
         end
 
         -- 4. Execute the cast
-        -- self-cast must use WoW API directly; otherwise prefer obj.cast for precise spell targeting
+        -- self-cast must use WoW API directly; apply rank suffix if specified
+        -- otherwise prefer obj.cast for precise spell targeting
         if onSelf then
-            CastSpellByName(spellName, true)
+            if rank and rank > 1 then
+                CastSpellByName(spellName .. "(Rank " .. rank .. ")", true)
+            else
+                CastSpellByName(spellName, true)
+            end
         else
-            obj.cast(spellName)
+            obj.cast(spellName, rank)
         end
         return true
     end
