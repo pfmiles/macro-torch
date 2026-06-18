@@ -4,7 +4,7 @@ milestone: v1.0
 milestone_name: milestone
 status: in_progress
 stopped_at: context exhaustion at 76% (2026-06-18)
-last_updated: "2026-06-18T15:14:15.358Z"
+last_updated: "2026-06-18T17:35:00.000Z"
 progress:
   total_phases: 11
   completed_phases: 8
@@ -113,6 +113,14 @@ progress:
 - [Phase 08 P03]: Refactored Priest (3 files) and Warlock (2 files) to Druid-aligned architecture; Priest: 7 skill methods (holy_fire/shadow_word_pain/inner_fire/power_word_fortitude/heal/lesser_heal/renew), CastSpellByName for Holy Fire/Heal/Lesser Heal replaced with skill methods, castIfBuffAbsent preserved for Power Word: Fortitude/Inner Fire/Shadow Word: Pain/Renew, healing threshold logic preserved; Warlock: 4 skill methods (immolate/corruption/curse_of_agony/demon_skin) for future migration, all castIfBuffAbsent calls preserved unchanged (no CastSpellByName in original code)
 - [Phase 10 P01]: Created classes/druid/combo.lua with 5 global combo methods (druidAtk/druidAoe/druidHeal/druidDefend/druidControl) — form-based if-elseif routing, one-action-per-press design, 5 optional SelfTest registrations. druidHeal uses CancelShapeshiftForm for form cancellation. druidControl merges old druidStun logic with target type detection for Hibernate vs Entangling Roots.
 - [Phase 10 P02]: Removed bear routing block from catAtk (lines 380-384) and isInBearForm cache (line 348) in Druid.lua — catAtk is now pure cat-form. Deleted 3 obsolete functions (druidStun/druidDefend/druidControl) from utility.lua — druidBuffs retained unchanged. Added combo.lua to build_order.txt after utility.lua.
+
+## Session
+
+## Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260619-1ry | 技能释放默认最高等级 + 可选rank参数 | 2026-06-18 | 33a9a92 | [260619-1ry-rank-1-based](./quick/260619-1ry-rank-1-based/) |
 
 ## Session
 
