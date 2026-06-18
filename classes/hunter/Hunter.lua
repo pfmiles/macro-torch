@@ -22,41 +22,41 @@ function macroTorch.Hunter:new()
     setmetatable(obj, macroTorch.classMetatable(self, "HUNTER_FIELD_FUNC_MAP"))
 
     -- Type A skills: enemy target only (onSelf=false)
-    function obj.raptor_strike(mode)
-        return obj._castSpell({ en = 'Raptor Strike', zh = '猛禽一击' }, mode, nil, nil, false)
+    function obj.raptor_strike(mode, rank)
+        return obj._castSpell({ en = 'Raptor Strike', zh = '猛禽一击' }, mode, nil, nil, false, rank)
     end
 
-    function obj.mongoose_bite(mode)
-        return obj._castSpell({ en = 'Mongoose Bite', zh = '猫鼬撕咬' }, mode, nil, nil, false)
+    function obj.mongoose_bite(mode, rank)
+        return obj._castSpell({ en = 'Mongoose Bite', zh = '猫鼬撕咬' }, mode, nil, nil, false, rank)
     end
 
-    function obj.arcane_shot(mode)
-        return obj._castSpell({ en = 'Arcane Shot', zh = '奥术射击' }, mode, nil, nil, false)
+    function obj.arcane_shot(mode, rank)
+        return obj._castSpell({ en = 'Arcane Shot', zh = '奥术射击' }, mode, nil, nil, false, rank)
     end
 
-    function obj.multi_shot(mode)
-        return obj._castSpell({ en = 'Multi-Shot', zh = '多重射击' }, mode, nil, nil, false)
+    function obj.multi_shot(mode, rank)
+        return obj._castSpell({ en = 'Multi-Shot', zh = '多重射击' }, mode, nil, nil, false, rank)
     end
 
-    function obj.hunters_mark(mode)
-        return obj._castSpell({ en = "Hunter's Mark", zh = '猎人印记' }, mode, nil, nil, false)
+    function obj.hunters_mark(mode, rank)
+        return obj._castSpell({ en = "Hunter's Mark", zh = '猎人印记' }, mode, nil, nil, false, rank)
     end
 
-    function obj.serpent_sting(mode)
-        return obj._castSpell({ en = 'Serpent Sting', zh = '毒蛇钉刺' }, mode, nil, nil, false)
+    function obj.serpent_sting(mode, rank)
+        return obj._castSpell({ en = 'Serpent Sting', zh = '毒蛇钉刺' }, mode, nil, nil, false, rank)
     end
 
-    function obj.wing_clip(mode)
-        return obj._castSpell({ en = 'Wing Clip', zh = '摔绊' }, mode, nil, nil, false)
+    function obj.wing_clip(mode, rank)
+        return obj._castSpell({ en = 'Wing Clip', zh = '摔绊' }, mode, nil, nil, false, rank)
     end
 
-    function obj.concussive_shot(mode)
-        return obj._castSpell({ en = 'Concussive Shot', zh = '震荡射击' }, mode, nil, nil, false)
+    function obj.concussive_shot(mode, rank)
+        return obj._castSpell({ en = 'Concussive Shot', zh = '震荡射击' }, mode, nil, nil, false, rank)
     end
 
     -- Type B skills: self target only (onSelf=true)
-    function obj.disengage(mode)
-        return obj._castSpell({ en = 'Disengage', zh = '逃脱' }, mode, nil, nil, true)
+    function obj.disengage(mode, rank)
+        return obj._castSpell({ en = 'Disengage', zh = '逃脱' }, mode, nil, nil, true, rank)
     end
 
     -- Type B with conditional logic: Call Pet or Dismiss Pet based on pet existence
