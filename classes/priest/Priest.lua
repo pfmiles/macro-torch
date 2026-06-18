@@ -22,34 +22,34 @@ function macroTorch.Priest:new()
     setmetatable(obj, macroTorch.classMetatable(self, "PRIEST_FIELD_FUNC_MAP"))
 
     -- Type A skills: enemy target only (onSelf=false)
-    function obj.holy_fire(mode, rank)
-        return obj._castSpell({ en = 'Holy Fire', zh = '神圣之火' }, mode, 30, nil, false, rank)
+    function obj.holy_fire(mode)
+        return obj._castSpell({ en = 'Holy Fire', zh = '神圣之火' }, mode, 30, nil, false)
     end
 
-    function obj.shadow_word_pain(mode, rank)
-        return obj._castSpell({ en = 'Shadow Word: Pain', zh = '暗言术：痛' }, mode, 30, nil, false, rank)
+    function obj.shadow_word_pain(mode)
+        return obj._castSpell({ en = 'Shadow Word: Pain', zh = '暗言术：痛' }, mode, 30, nil, false)
     end
 
     -- Type B skills: self target only (onSelf=true)
-    function obj.inner_fire(mode, rank)
-        return obj._castSpell({ en = 'Inner Fire', zh = '心灵之火' }, mode, nil, nil, true, rank)
+    function obj.inner_fire(mode)
+        return obj._castSpell({ en = 'Inner Fire', zh = '心灵之火' }, mode, nil, nil, true)
     end
 
     -- Type C skills: flexible target (onSelf parameter exposed)
-    function obj.power_word_fortitude(mode, onSelf, rank)
-        return obj._castSpell({ en = 'Power Word: Fortitude', zh = '真言术：韧' }, mode, nil, nil, onSelf, rank)
+    function obj.power_word_fortitude(mode, onSelf)
+        return obj._castSpell({ en = 'Power Word: Fortitude', zh = '真言术：韧' }, mode, nil, nil, onSelf)
     end
 
-    function obj.heal(mode, onSelf, rank)
-        return obj._castSpell({ en = 'Heal', zh = '治疗术' }, mode, nil, nil, onSelf, rank)
+    function obj.heal(mode, onSelf)
+        return obj._castSpell({ en = 'Heal', zh = '治疗术' }, mode, nil, nil, onSelf)
     end
 
-    function obj.lesser_heal(mode, onSelf, rank)
-        return obj._castSpell({ en = 'Lesser Heal', zh = '次级治疗术' }, mode, nil, nil, onSelf, rank)
+    function obj.lesser_heal(mode, onSelf)
+        return obj._castSpell({ en = 'Lesser Heal', zh = '次级治疗术' }, mode, nil, nil, onSelf)
     end
 
-    function obj.renew(mode, onSelf, rank)
-        return obj._castSpell({ en = 'Renew', zh = '恢复' }, mode, nil, nil, onSelf, rank)
+    function obj.renew(mode, onSelf)
+        return obj._castSpell({ en = 'Renew', zh = '恢复' }, mode, nil, nil, onSelf)
     end
 
     return obj
