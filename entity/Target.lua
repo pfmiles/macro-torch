@@ -73,6 +73,15 @@ function macroTorch.Target:new()
             macroTorch.context.definiteBleedingTable[spellName][obj.name])
     end
 
+    -- check if the target is a Beast or Dragonkin (eligible for Hibernate)
+    function obj.isBeastOrDragonkin()
+        local creatureType = UnitCreatureType(obj.ref)
+        if not creatureType then
+            return false
+        end
+        return macroTorch.containsAnyKeyword(creatureType, {"Beast", "Dragonkin", "野兽", "龙类"})
+    end
+
     -- tell if the current target will die in s seconds, according to its health reducing speed computation
     function obj.willDieInSeconds(s)
         if not s or s < 1 then

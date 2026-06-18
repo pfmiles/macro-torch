@@ -100,6 +100,8 @@ function macroTorch.druidControl()
 
     if target.distance < 8 then
         macroTorch.player.bash('ready')
+    elseif target.isBeastOrDragonkin() then
+        macroTorch.player.hibernate()
     else
         macroTorch.player.entangling_roots()
     end
