@@ -22,21 +22,21 @@ function macroTorch.Warlock:new()
     setmetatable(obj, macroTorch.classMetatable(self, "WARLOCK_FIELD_FUNC_MAP"))
 
     -- Type A skills: enemy target only (onSelf=false)
-    function obj.immolate(mode)
-        return obj._castSpell({ en = 'Immolate', zh = '献祭' }, mode, 30, nil, false)
+    function obj.immolate(mode, rank)
+        return obj._castSpell({ en = 'Immolate', zh = '献祭' }, mode, 30, nil, false, rank)
     end
 
-    function obj.corruption(mode)
-        return obj._castSpell({ en = 'Corruption', zh = '腐蚀术' }, mode, 30, nil, false)
+    function obj.corruption(mode, rank)
+        return obj._castSpell({ en = 'Corruption', zh = '腐蚀术' }, mode, 30, nil, false, rank)
     end
 
-    function obj.curse_of_agony(mode)
-        return obj._castSpell({ en = 'Curse of Agony', zh = '痛苦诅咒' }, mode, 30, nil, false)
+    function obj.curse_of_agony(mode, rank)
+        return obj._castSpell({ en = 'Curse of Agony', zh = '痛苦诅咒' }, mode, 30, nil, false, rank)
     end
 
     -- Type B skills: self target only (onSelf=true)
-    function obj.demon_skin(mode)
-        return obj._castSpell({ en = 'Demon Skin', zh = '恶魔皮肤' }, mode, nil, nil, true)
+    function obj.demon_skin(mode, rank)
+        return obj._castSpell({ en = 'Demon Skin', zh = '恶魔皮肤' }, mode, nil, nil, true, rank)
     end
 
     return obj
