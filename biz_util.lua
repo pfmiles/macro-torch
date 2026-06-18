@@ -76,11 +76,12 @@ function macroTorch.isSpellExist(spellName, bookType)
     return macroTorch.toBoolean(macroTorch.getSpellIdByName(spellName, bookType))
 end
 
--- a solid implementation of cast spell by name
+-- a solid implementation of cast spell by name, defaulting to the highest rank
 -- @param spellName string spell name
 -- @param bookType string book type, 'spell' or 'pet' for example
-function macroTorch.castSpellByName(spellName, bookType)
-    local spellId = macroTorch.getSpellIdByName(spellName, bookType)
+-- @param rank number|nil optional rank (1-based), nil = highest rank
+function macroTorch.castSpellByName(spellName, bookType, rank)
+    local spellId = macroTorch.getSpellIdByNameRank(spellName, bookType, rank)
     if not spellId then
         return
     end
