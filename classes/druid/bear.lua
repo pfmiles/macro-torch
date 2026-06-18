@@ -24,13 +24,13 @@ function macroTorch.bearOtMod(clickContext)
             return
         end
         -- If Growl on CD, use Savage Bite as high threat alternative
-        macroTorch.player.ferocious_bite('safe')
+        macroTorch.player.ferocious_bite()
     end
 end
 function macroTorch.bearDebuffMod(clickContext)
     -- Track Demoralizing Roar - works in both solo and group
     if not macroTorch.isDemoralizingRoarPresent(clickContext) then
-        macroTorch.player.demoralizing_roar('safe')
+        macroTorch.player.demoralizing_roar()
     end
 end
 function macroTorch.bearFFMod(clickContext)
@@ -45,12 +45,12 @@ end
 function macroTorch.bearRegularAttack(clickContext)
     -- High rage: Savage Bite (rage dump when above threshold)
     -- But avoid using Savage Bite in rough mode to reduce threat generation
-    if not clickContext.rough and clickContext.rage > clickContext.RAGE_DUMP_THRESHOLD and macroTorch.player.ferocious_bite('safe') then
+    if not clickContext.rough and clickContext.rage > clickContext.RAGE_DUMP_THRESHOLD and macroTorch.player.ferocious_bite() then
         return
     end
 
     -- Primary: Maul
-    if macroTorch.player.maul('safe') then
+    if macroTorch.player.maul() then
         return
     end
 end
@@ -77,7 +77,7 @@ function macroTorch.bearAoe()
     macroTorch.bearDebuffMod(clickContext)
 
     -- Use Swipe if we have enough rage
-    if macroTorch.player.swipe('safe') then
+    if macroTorch.player.swipe() then
         return
     end
 end

@@ -15,7 +15,7 @@ function macroTorch.burstMod(clickContext)
         -- berserk
         if not flags.berserk then
             if not clickContext.berserk then
-                player.berserk()
+                player.berserk('ready')
             end
             flags.berserk = true
             return
@@ -48,15 +48,15 @@ function macroTorch.regularAttack(clickContext)
     -- ooc doesn't consume energy, so use ready mode (nil) instead of safe mode
     if macroTorch.shouldUseShred(clickContext) then
         if clickContext.ooc then
-            macroTorch.player.shred()
+            macroTorch.player.shred('ready')
         else
-            macroTorch.player.shred('safe')
+            macroTorch.player.shred()
         end
     else
         if clickContext.ooc then
-            macroTorch.player.claw()
+            macroTorch.player.claw('ready')
         else
-            macroTorch.player.claw('safe')
+            macroTorch.player.claw()
         end
     end
 end

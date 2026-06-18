@@ -5,11 +5,11 @@ function macroTorch.casterAtk()
         return
     end
     if not macroTorch.player.isInCombat then
-        macroTorch.player.wrath('safe')
+        macroTorch.player.wrath()
     elseif not macroTorch.target.buffed('Moonfire', 'Spell_Nature_StarFall') then
-        macroTorch.player.moonfire('safe')
+        macroTorch.player.moonfire()
     else
-        macroTorch.player.wrath('safe')
+        macroTorch.player.wrath()
     end
 end
 
@@ -53,22 +53,22 @@ function macroTorch.druidHeal()
         end
         TargetUnit(lowestUnit)
         if lowestHp < 50 then
-            macroTorch.player.healing_touch('safe', false)
+            macroTorch.player.healing_touch(nil, false)
         elseif lowestHp < 70 then
-            macroTorch.player.regrowth('safe', false)
+            macroTorch.player.regrowth(nil, false)
         else
-            macroTorch.player.rejuvenation('safe', false)
+            macroTorch.player.rejuvenation(nil, false)
         end
     else
         if not macroTorch.player.buffed(nil, 'Spell_Nature_Rejuvenation') then
-            macroTorch.player.rejuvenation('safe', true)
+            macroTorch.player.rejuvenation(nil, true)
             return
         end
         if not macroTorch.player.buffed(nil, 'Spell_Nature_ResistNature') then
-            macroTorch.player.regrowth('safe', true)
+            macroTorch.player.regrowth(nil, true)
             return
         end
-        macroTorch.player.healing_touch('safe', true)
+        macroTorch.player.healing_touch(nil, true)
     end
 end
 
@@ -101,7 +101,7 @@ function macroTorch.druidControl()
     if target.distance < 8 then
         macroTorch.player.bash('ready')
     else
-        macroTorch.player.entangling_roots('safe')
+        macroTorch.player.entangling_roots()
     end
 end
 

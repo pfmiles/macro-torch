@@ -384,10 +384,10 @@ function macroTorch.Druid:new()
             if clickContext.prowling then
                 if not target.isImmune('Pounce') and target.health >= 1500 then
                     if macroTorch.isGcdOk(clickContext) and macroTorch.isNearBy(clickContext) then
-                        macroTorch.player.pounce('safe')
+                        macroTorch.player.pounce()
                     end
                 else
-                    player.ravage()
+                    player.ravage('ready')
                 end
             end
 

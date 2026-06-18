@@ -32,7 +32,7 @@ function macroTorch.Player:new()
 
     -- Internal: shared spell casting helper with locale support, readiness, and resource checks
     -- @param localeNames table { en = 'EnglishName', zh = '中文名' }
-    -- @param mode string|nil nil='ready', 'raw'=no checks, 'safe'=all checks
+    -- @param mode string|nil nil='safe' (default), 'ready'=readiness only, 'raw'=no checks
     -- @param range number|nil distance in yards, nil = melee (no check)
     -- @param resourceCost number|function|nil cost or function returning cost, nil = skip check
     -- @param onSelf boolean true if cast on self
@@ -54,8 +54,8 @@ function macroTorch.Player:new()
             end
         end
 
-        -- 3. Safe mode: distance + resource checks
-        if mode == 'safe' then
+        -- 3. Distance + resource checks (skip for 'ready' and 'raw', default nil = safe)
+        if mode ~= 'ready' and mode ~= 'raw' then
             if range and not onSelf and not obj._isInRange(range) then
                 return false
             end

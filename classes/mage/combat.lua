@@ -24,7 +24,7 @@ function macroTorch.mageRangedAtk(_reapLine)
         PetAttack()
     end
 
-    player.frostbolt()
+    player.frostbolt('ready')
 end
 
 ---近战逻辑
@@ -36,7 +36,7 @@ function macroTorch.mageMeleeAtk(_reapLine)
         PetAttack()
     end
 
-    player.frostbolt()
+    player.frostbolt('ready')
 end
 
 ---buff逻辑

@@ -22,7 +22,7 @@ function macroTorch.wroRangedAtk(reapLine)
         PetDefensiveMode()
         PetAttack()
     end
-    macroTorch.player.throw()
+    macroTorch.player.throw('ready')
 end
 
 ---近战固定前置策略
@@ -49,11 +49,11 @@ function macroTorch.meleeCommonTactics(reapLine)
 
     -- 当前目标拉住
     if not macroTorch.isTargetAttackingMe() then
-        macroTorch.player.taunt()
+        macroTorch.player.taunt('ready')
     end
 
     -- 优先用掉复仇
-    macroTorch.player.revenge()
+    macroTorch.player.revenge('ready')
 end
 
 ---近战单体逻辑
@@ -70,9 +70,9 @@ function macroTorch.wroMeleeAtk(reapLine)
     -- 在团队中时叠破甲
     local targetIsBoss = UnitClassification(t) == 'worldboss'
     if GetNumPartyMembers() >= 4 and targetIsBoss and macroTorch.getTargetBuffOrDebuffLayers(t, macroTorch.SPELL_TEXTURE_MAP['Sunder Armor']) < 5 then
-        macroTorch.player.sunder_armor()
+        macroTorch.player.sunder_armor('ready')
     else
-        macroTorch.player.shield_slam()
+        macroTorch.player.shield_slam('ready')
     end
 
     ---CastSpellByName('Slam')
@@ -89,7 +89,7 @@ function macroTorch.wroAoe(reapLine)
     macroTorch.castIfBuffAbsent(t, 'Thunder Clap', macroTorch.SPELL_TEXTURE_MAP['Thunder Clap'])
 
     if not macroTorch.isActionCooledDown('Spell_Nature_ThunderClap') then
-        macroTorch.player.cleave()
+        macroTorch.player.cleave('ready')
     end
 end
 
@@ -142,6 +142,6 @@ function macroTorch.tmpCharge(pvp)
         if not macroTorch.isStanceActive(1) then
             CastShapeshiftForm(1)
         end
-        macroTorch.player.charge()
+        macroTorch.player.charge('ready')
     end
 end
