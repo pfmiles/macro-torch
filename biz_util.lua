@@ -33,6 +33,33 @@ function macroTorch.getSpellIdByName(spellName, bookType)
     return nil
 end
 
+-- get spell id by name and rank (1-based, rank 1 = first match/lowest level)
+-- @param spellName string spell name
+-- @param bookType string book type, 'spell' or 'pet' for example
+-- @param rank number|nil the rank to select (1-based), nil or exceeding max → highest rank
+-- @return number spell id, or nil if not found
+function macroTorch.getSpellIdByNameRank(spellName, bookType, rank)
+    local ids = {}
+    local i = 1
+    while true do
+        local ok, sName, spellRank = pcall(GetSpellName, i, bookType)
+        if not ok or not sName then
+            break
+        end
+        if macroTorch.equalsIgnoreCase(sName, spellName) then
+            table.insert(ids, i)
+        end
+        i = i + 1
+    end
+    if macroTorch.tableLen(ids) == 0 then
+        return nil
+    end
+    if rank == nil or rank > macroTorch.tableLen(ids) then
+        return ids[macroTorch.tableLen(ids)] -- highest rank
+    end
+    return ids[rank]
+end
+
 function macroTorch.getSpellUniqIdByName(spellName, bookType)
     local spellId = macroTorch.getSpellIdByName(spellName, bookType)
     if not spellId then
