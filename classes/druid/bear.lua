@@ -29,6 +29,10 @@ function macroTorch.bearOtMod(clickContext)
 end
 function macroTorch.bearDebuffMod(clickContext)
     -- Track Demoralizing Roar - works in both solo and group
+    -- Only cast when target is in melee range to avoid wasting rage on distant targets
+    if not CheckInteractDistance('target', 3) then
+        return
+    end
     if not macroTorch.isDemoralizingRoarPresent(clickContext) then
         macroTorch.player.demoralizing_roar()
     end
