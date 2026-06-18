@@ -40,7 +40,7 @@ function macroTorch.pickPocketBeforeCast(spell)
         CastSpellByName(spell)
     else
         if n ~= 1 then
-            macroTorch.player.pick_pocket()
+            macroTorch.player.pick_pocket('ready')
             macroTorch.pickPocketState = 1
         else
             CastSpellByName(spell)
@@ -65,10 +65,10 @@ end
 function macroTorch.rogueBattle()
     local player = macroTorch.player
     if not macroTorch.isTargetRogueFaint('target') and macroTorch.isTargetAttackingMe() then
-        player.ghostly_strike()
+        player.ghostly_strike('ready')
     end
-    player.hemorrhage()
-    player.sinister_strike()
+    player.hemorrhage('ready')
+    player.sinister_strike('ready')
     macroTorch.startAutoAtk()
 end
 
@@ -101,7 +101,7 @@ end
 
 function macroTorch.rogueBattleBack()
     local player = macroTorch.player
-    player.backstab()
+    player.backstab('ready')
     macroTorch.startAutoAtk()
 end
 
@@ -148,10 +148,10 @@ function macroTorch.readyVanish()
     if not macroTorch.isBuffOrDebuffPresent('player', 'Ability_Stealth') then
         local player = macroTorch.player
         if macroTorch.isActionCooledDown('Ability_Vanish') then
-            player.vanish()
+            player.vanish('ready')
         else
-            player.preparation()
-            player.vanish()
+            player.preparation('ready')
+            player.vanish('ready')
         end
     end
 end

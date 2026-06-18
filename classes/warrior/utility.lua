@@ -25,7 +25,7 @@ function macroTorch.wroBuffs()
         macroTorch.castIfBuffAbsent(p, 'Battle Shout', 'Ability_Warrior_BattleShout')
     end
     if UnitAffectingCombat(p) and UnitMana(p) < 10 then
-        macroTorch.player.bloodrage()
+        macroTorch.player.bloodrage('ready')
     end
 end
 
@@ -46,13 +46,13 @@ function macroTorch.wroCtrl(pvp)
             if macroTorch.isStanceActive(2) and UnitMana(p) < 7 then
                 CastSpellByName('Battle Stance')
             end
-            macroTorch.player.hamstring()
+            macroTorch.player.hamstring('ready')
         end
     else
         if not macroTorch.isStanceActive(1) and UnitMana(p) < 7 then
             CastSpellByName('Battle Stance')
         end
-        macroTorch.player.charge()
+        macroTorch.player.charge('ready')
     end
 end
 
@@ -61,7 +61,7 @@ function macroTorch.wroInterrupt()
     if macroTorch.isStanceActive(3) and UnitMana(p) < 7 then
         CastSpellByName('Defensive Stance')
     end
-    macroTorch.player.shield_bash()
+    macroTorch.player.shield_bash('ready')
 end
 
 --- 大保命逻辑
@@ -70,10 +70,10 @@ function macroTorch.warriorDefence()
         CastSpellByName('Defensive Stance')
     end
     if macroTorch.isActionCooledDown(macroTorch.SPELL_TEXTURE_MAP['Disarm']) and UnitMana('player') >= 20 then
-        macroTorch.player.disarm()
+        macroTorch.player.disarm('ready')
     else
         if macroTorch.isActionCooledDown(macroTorch.SPELL_TEXTURE_MAP['Shield Wall']) then
-            macroTorch.player.shield_wall()
+            macroTorch.player.shield_wall('ready')
         end
     end
     UseInventoryItem(13)

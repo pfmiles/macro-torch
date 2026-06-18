@@ -36,16 +36,16 @@ function macroTorch.hunterAtk()
         if target.distance < 8 then
             -- melee logic
             player.startAutoAtk()
-            player.mongoose_bite('safe')
-            player.raptor_strike('safe')
+            player.mongoose_bite()
+            player.raptor_strike()
         else
             -- ranged logic
             if not target.buffed(nil, 'Ability_Hunter_SniperShot') then
-                player.hunters_mark()
+                player.hunters_mark('ready')
             end
             player.startAutoShoot()
-            player.arcane_shot('safe')
-            player.multi_shot('safe')
+            player.arcane_shot()
+            player.multi_shot()
         end
     end
 end
@@ -69,6 +69,6 @@ function macroTorch.htOtMod(clickContext)
         player.use('Invulnerability Potion', true)
     end
     if target.isAttackingMe or (target.classification == 'worldboss' and player.threatPercent >= macroTorch.COWER_THREAT_THRESHOLD) then
-        player.disengage()
+        player.disengage('ready')
     end
 end

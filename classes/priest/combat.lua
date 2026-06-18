@@ -27,7 +27,7 @@ function macroTorch.priestRangedAtk()
     end
     if macroTorch.isActionCooledDown('Spell_Holy_SearingLight') and not macroTorch.isBuffOrDebuffPresent(t, 'Spell_Holy_SearingLight') and UnitMana(p) >= 95 and macroTorch.getUnitHealthPercent(t) > 10 and GetNumPartyMembers() == 0 then
         macroTorch.stopAutoShoot()
-        player.holy_fire()
+        player.holy_fire('ready')
         -- else
         --     if isActionCooledDown('Spell_Arcane_StarFire') then
         --         CastSpellByName('Starshards')
