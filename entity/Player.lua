@@ -75,14 +75,11 @@ function macroTorch.Player:new()
         end
 
         -- 4. Execute the cast
-        -- self-cast must use WoW API directly; apply rank suffix if specified
-        -- otherwise prefer obj.cast for precise spell targeting
+        -- self-cast: always highest rank via CastSpellByName; rank param intentionally ignored
+        -- (self-cast spells are forms/buffs with no multi-rank concerns)
+        -- target cast: prefers obj.cast for precise spell targeting with rank support
         if onSelf then
-            if rank and rank > 1 then
-                CastSpellByName(spellName .. "(Rank " .. rank .. ")", true)
-            else
-                CastSpellByName(spellName, true)
-            end
+            CastSpellByName(spellName, true)
         else
             obj.cast(spellName, rank)
         end
