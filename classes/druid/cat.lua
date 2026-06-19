@@ -184,6 +184,10 @@ function macroTorch.reshiftMod(clickContext)
     end
 end
 function macroTorch.shouldDoReshift(clickContext)
+    -- [NEW CHECK] D-04: if reshift would give zero energy, skip entirely
+    if clickContext.RESHIFT_ENERGY == 0 then
+        return false
+    end
     -- 不在战斗、潜行中、ooc时、或killshot/lastChance时，不做reshift
     if not macroTorch.player.isInCombat or clickContext.prowling or clickContext.ooc or macroTorch.isKillShotOrLastChance(clickContext) then
         return false
