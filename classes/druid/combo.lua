@@ -8,8 +8,16 @@ function macroTorch.casterAtk()
         macroTorch.player.wrath()
     elseif not macroTorch.target.buffed('Moonfire', 'Spell_Nature_StarFall') then
         macroTorch.player.moonfire()
+    elseif not macroTorch.target.buffed('Faerie Fire', 'Spell_Nature_FaerieFire') then
+        macroTorch.player.faerie_fire()
+    elseif not macroTorch.target.buffed('Insect Swarm', 'Spell_Nature_InsectSwarm') then
+        macroTorch.player.insect_swarm()
+    elseif macroTorch._starfireNext then
+        macroTorch.player.starfire()
+        macroTorch._starfireNext = false
     else
         macroTorch.player.wrath()
+        macroTorch._starfireNext = true
     end
 end
 
