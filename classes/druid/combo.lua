@@ -12,12 +12,12 @@ function macroTorch.casterAtk()
         macroTorch.player.faerie_fire()
     elseif not macroTorch.target.buffed('Insect Swarm', 'Spell_Nature_InsectSwarm') then
         macroTorch.player.insect_swarm()
-    elseif macroTorch._starfireNext then
+    elseif macroTorch.context._starfireNext then
         macroTorch.player.starfire()
-        macroTorch._starfireNext = false
+        macroTorch.context._starfireNext = false
     else
         macroTorch.player.wrath()
-        macroTorch._starfireNext = true
+        macroTorch.context._starfireNext = true
     end
 end
 
