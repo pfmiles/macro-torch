@@ -724,6 +724,19 @@ Plans:
 
 - [ ] TBD (run /gsd-plan-phase 11 to break down)
 
+### Phase 13: 使catAtk一键宏适配小号练级场景：技能存在性检查、动态能量消耗计算、低等级降级策略，同时保持60级满级极限DPS能力不变
+
+**Goal:** 使 catAtk 一键宏适配小号练级场景：技能存在性检查（isSpellExist guard）、动态能量消耗计算（computeReshiftEnergy 替代硬编码60）、低等级降级策略（模块级 guard 自动跳过不可用技能，rotation 自然 fallback 到 Claw）。保持60级满级极限DPS能力完全不变。
+
+**Requirements**: R8-PRESERVE (60级满技能+DPS不变), LOW-LVL-SKIP (低等级自动跳过不可用技能), DYNAMIC-RESHIFT (天赋+装备动态计算reshift能量), DECISION-GUARD (共享决策函数skill缺失时返回false)
+**Depends on:** Phase 10
+**Plans:** 2 plans
+
+Plans:
+
+- [ ] 13-01-PLAN.md — Guard插入: computeReshiftEnergy新函数+RESHIFT_ENERGY动态替换+3个共享决策函数guard+openerMod guard+shouldDoReshift零值检查 (Wave 1)
+- [ ] 13-02-PLAN.md — Selftest: 8个Category H自检注册 (computeReshiftEnergy范围验证/决策函数guard验证/level60对等验证/fallback链验证) (Wave 2)
+
 ---
 
 ## Task 统计
