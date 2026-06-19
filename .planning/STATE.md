@@ -3,14 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: context exhaustion at 76% (2026-06-18)
-last_updated: "2026-06-18T17:35:00.000Z"
+last_updated: "2026-06-19T16:06:06.129Z"
+last_activity: "2026-06-19 - Completed quick task 260619-qbj: casterAtk加入Faerie Fire/Insect Swarm debuff + Starfire交替循环"
 progress:
-  total_phases: 11
+  total_phases: 12
   completed_phases: 8
   total_plans: 25
   completed_plans: 25
-  percent: 73
+  percent: 67
+stopped_at: context exhaustion at 76% (2026-06-18)
 ---
 
 # Project State
@@ -36,6 +37,7 @@ progress:
 | Phase 8: 非Druid职业代码结构重构（对齐Druid架构） | ✅ complete | 2026-06-15 | 2026-06-15 | 4 plans |
 | Phase 9: pokemonLoad 移至 Player 层 | 🔵 in_progress | 2026-06-16 | — | — |
 | Phase 10: Druid 综合一键宏方法（druidAtk/Aoe/Heal/Defend/Control） | ✅ complete | 2026-06-16 | 2026-06-17 | 2 plans |
+| Phase 13: catAtk 小号练级适配（技能存在性检查、动态能量消耗、降级策略） | 🔵 planned | 2026-06-19 | — | 0 plans |
 
 ## Accumulated Context
 
@@ -45,6 +47,7 @@ progress:
 - Phase 6 added: Fix Druid _castSpell isSpellReady nil bug - Player.lua 中 _castSpell/_isInRange/_hasResource 点号定义与 Druid.lua 冒号调用不匹配，导致闭包 self 错误 (2026-06-14)
 - Phase 7 added: Druid 形态判断语义化方法 — 新增 isInCatForm/isInBearForm 等 5 个语义方法替换 isFormActive 硬编码调用 (2026-06-15)
 - Phase 10 added: Druid 综合一键宏方法 — 创建 druidAtk/druidAoe/druidHeal/druidDefend/druidControl 5 个方法，内部按形态 if-else 路由到对应子方法 (2026-06-16)
+- Phase 13 added: catAtk 小号练级适配 — 技能存在性检查、动态能量消耗计算、低等级降级策略，保持60级满级DPS能力不变 (2026-06-19)
 
 ## Key Decisions
 
@@ -125,7 +128,7 @@ progress:
 
 ## Session
 
-**Last session:** 2026-06-19T10:57:03.075Z
+**Last session:** 2026-06-19T16:06:06.117Z
 **Last activity:** 2026-06-19 - Completed quick task 260619-qbj: casterAtk加入Faerie Fire/Insect Swarm debuff + Starfire交替循环
-**Stopped at:** context exhaustion at 76% (2026-06-18)
-**Resume file:** None
+**Stopped at:** Phase 13 context gathered
+**Resume file:** .planning/phases/13-catatk-60-dps/13-CONTEXT.md
