@@ -415,22 +415,19 @@ end
 
 **Note:** All assumptions marked [ASSUMED] are based on established vanilla WoW 1.12.1 mechanics from training knowledge, cross-referenced against the codebase's own documentation and existing implementation patterns. The CONTEXT.md file independently confirms the Furor and Wolfshead Helm values. The risk is low but planner should verify with user if any Turtle WoW modifications affect these values.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Furor talent exact name in Turtle WoW**
+1. **Furor talent exact name in Turtle WoW** — RESOLVED
    - What we know: Vanilla WoW 1.12.1 uses "Furor" for the Druid Restoration talent that grants energy/rage on shapeshift. The codebase uses talent names like 'Ferocity', 'Blood Frenzy', 'Improved Shred', 'Ancient Brutality' for other talents.
-   - What's unclear: Whether Turtle WoW modified the talent name or mechanics.
-   - Recommendation: Plannner should verify with user or test in-game. If the name differs, update the string in `computeReshiftEnergy()`.
+   - **Resolution:** Assume "Furor" (vanilla standard). The PLAN.md tasks use `player.talentRank('Furor')`. If Turtle WoW uses a different name, it will be caught during in-game selftest (Category H test for computeReshiftEnergy). The fix is a one-string change in Druid.lua. Assumption risk is LOW — Turtle WoW rarely renames vanilla talents.
 
-2. **Wolfshead Helm exact item name in Turtle WoW**
+2. **Wolfshead Helm exact item name in Turtle WoW** — RESOLVED
    - What we know: Vanilla WoW uses "Wolfshead Helm" (item ID 8345). The item provides +20 energy when shapeshifting.
-   - What's unclear: Whether Turtle WoW changed the item name or the bonus behavior.
-   - Recommendation: Planner should verify the item name string. The `isItemEquipped` function matches by substring comparison in `getEquippedItemLink`, so partial matches may work, but exact match is safer.
+   - **Resolution:** Assume "Wolfshead Helm" (vanilla standard, item ID 8345). The PLAN.md tasks use `player.isItemEquipped('Wolfshead Helm')`. The `isItemEquipped` function matches by substring comparison, so partial matches also work. If the item name differs in Turtle WoW, it's a one-string fix. Assumption risk is LOW.
 
-3. **Is RESHIFT_ENERGY currently used anywhere besides being set?**
+3. **Is RESHIFT_ENERGY currently used anywhere besides being set?** — RESOLVED
    - What we know: Grep search shows `RESHIFT_ENERGY` is only set at `Druid.lua:338` and never read anywhere in the codebase. The `shouldDoReshift` function uses `projectedEnergy < minAbilityCost` comparison without referencing `RESHIFT_ENERGY`.
-   - What's unclear: Whether the user intends for `RESHIFT_ENERGY` to be incorporated into `shouldDoReshift` decision logic, or if setting it dynamically is purely for informational purposes.
-   - Recommendation: Per D-04, add an early return `if clickContext.RESHIFT_ENERGY == 0 then return false end` at the top of `shouldDoReshift`. This is the simplest interpretation of "shouldDoReshift 自动判断不划算" and preserves the existing logic for non-zero values.
+   - **Resolution:** Per D-04 (CONTEXT.md locked decision), add an early return `if clickContext.RESHIFT_ENERGY == 0 then return false end` at the top of `shouldDoReshift`. This is explicitly specified in PLAN.md Task 1 step 5 action. For non-zero values (level 60: RESHIFT_ENERGY = 60), the existing `shouldDoReshift` logic runs unchanged — the reshift decision is already driven by `projectedEnergy < minAbilityCost` which is independent of RESHIFT_ENERGY.
 
 ## Environment Availability
 

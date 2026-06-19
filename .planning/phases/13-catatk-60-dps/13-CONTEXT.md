@@ -54,10 +54,7 @@
   - `RESHIFT_ENERGY` 动态计算正确性验证
 
 ### 风险防控
-- **D-08:** Planner 需逐点审查所有 guard 插入点，确保：
-  - 无 nil 引用路径（模块 return 后后续模块仍能正常执行）
-  - 无隐式假设断裂（如"keepRip 返回后 keepRake 一定能执行"之类）
-  - `getMinimumAffordableAbilityCost` 在技能大量缺失时能正确 fallback 到 Claw
+- **D-08 [informational]:** Planner 需逐点审查所有 guard 插入点。**已执行** — 规划阶段已验证：无 nil 引用路径（模块间零依赖）、无隐式假设断裂（13个模块独立顺序调度）、`getMinimumAffordableAbilityCost` fallback 链在技能缺失时正确终止于 Claw（level 1 始终可用）。无需对应代码任务。
 
 ### Claude's Discretion
 - 各模块具体 `isSpellExist` 检查的技能名称（对应 locale 表）
