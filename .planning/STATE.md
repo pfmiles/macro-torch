@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-06-20T01:12:00.000Z"
-last_activity: 2026-06-20
+last_updated: "2026-06-19T17:20:38.720Z"
+last_activity: 2026-06-19
 progress:
-  total_phases: 13
-  completed_phases: 8
-  total_plans: 29
-  completed_plans: 26
-  percent: 69
+  total_phases: 12
+  completed_phases: 9
+  total_plans: 27
+  completed_plans: 27
+  percent: 75
 stopped_at: context exhaustion at 76% (2026-06-18)
 ---
 
@@ -106,6 +106,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 | Phase 08 P01 | 407 | 3 tasks | 6 files |
 | Phase 08 P02 | N/A | 3 tasks | 4 files |
 | Phase 08 P03 | N/A | 3 tasks | 5 files |
+| Phase 13-catatk-60-dps P02 | 122 | 1 tasks | 1 files |
 
 ## Decisions
 
@@ -116,6 +117,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 - [Phase 08 P03]: Refactored Priest (3 files) and Warlock (2 files) to Druid-aligned architecture; Priest: 7 skill methods (holy_fire/shadow_word_pain/inner_fire/power_word_fortitude/heal/lesser_heal/renew), CastSpellByName for Holy Fire/Heal/Lesser Heal replaced with skill methods, castIfBuffAbsent preserved for Power Word: Fortitude/Inner Fire/Shadow Word: Pain/Renew, healing threshold logic preserved; Warlock: 4 skill methods (immolate/corruption/curse_of_agony/demon_skin) for future migration, all castIfBuffAbsent calls preserved unchanged (no CastSpellByName in original code)
 - [Phase 10 P01]: Created classes/druid/combo.lua with 5 global combo methods (druidAtk/druidAoe/druidHeal/druidDefend/druidControl) — form-based if-elseif routing, one-action-per-press design, 5 optional SelfTest registrations. druidHeal uses CancelShapeshiftForm for form cancellation. druidControl merges old druidStun logic with target type detection for Hibernate vs Entangling Roots.
 - [Phase 10 P02]: Removed bear routing block from catAtk (lines 380-384) and isInBearForm cache (line 348) in Druid.lua — catAtk is now pure cat-form. Deleted 3 obsolete functions (druidStun/druidDefend/druidControl) from utility.lua — druidBuffs retained unchanged. Added combo.lua to build_order.txt after utility.lua.
+- [Phase ?]: Category H tests placed before Category G2 for logical grouping: G1 (field integrity) -> H (guard verification) -> G2 (form semantics)
 
 ## Session
 
@@ -128,7 +130,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 
 ## Session
 
-**Last session:** 2026-06-19T16:06:06.117Z
+**Last session:** 2026-06-19T17:20:38.707Z
 **Last activity:** 2026-06-19
 **Stopped at:** Phase 13 context gathered
 **Resume file:** .planning/phases/13-catatk-60-dps/13-CONTEXT.md
