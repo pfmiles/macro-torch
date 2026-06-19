@@ -17,6 +17,8 @@
 macroTorch.SPELL_TEXTURE_MAP = {
     --- druid start
     ['Moonfire'] = 'Spell_Nature_StarFall',
+    ['Faerie Fire'] = 'Spell_Nature_FaerieFire',
+    ['Insect Swarm'] = 'Spell_Nature_InsectSwarm',
     --- druid end
     --- warrior start
     ['Defensive Stance'] = 'Ability_Warrior_DefensiveStance',
