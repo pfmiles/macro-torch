@@ -335,7 +335,8 @@ function macroTorch.Druid:new()
         macroTorch.COWER_THREAT_THRESHOLD = 75
         -- the energy resetting value after reshift
         -- TODO reshift energy restore should consider the head enchant: whether the wolfheart enchant exists
-        clickContext.RESHIFT_ENERGY = 60
+        -- [NEW] D-04: replaced hardcoded 60 with dynamic computation from Furor talent + Wolfshead Helm
+        clickContext.RESHIFT_ENERGY = macroTorch.computeReshiftEnergy()
         clickContext.RESHIFT_E_DIFF_THRESHOLD = 0
         -- the health line of urgent, whether to use some life saving items/spells
         clickContext.PLAYER_URGENT_HP_THRESHOLD = 15
@@ -381,12 +382,15 @@ function macroTorch.Druid:new()
             -- 4.rushMod, including trinkets, berserk and potions, normally triggered by holding shift while fighting
             macroTorch.burstMod(clickContext)
             -- 5.opener mod, 因为Ravage差不多可以秒掉1500血以内的目标，除此之外均使用Pounce以增加后续claw的伤害
+            -- [NEW GUARD] D-02: skip opener module if neither opener skill is available
+            local hasPounce = macroTorch.isSpellExist('Pounce', 'spell')
+            local hasRavage = macroTorch.isSpellExist('Ravage', 'spell')
             if clickContext.prowling then
-                if not target.isImmune('Pounce') and target.health >= 1500 then
+                if hasPounce and not target.isImmune('Pounce') and target.health >= 1500 then
                     if macroTorch.isGcdOk(clickContext) and macroTorch.isNearBy(clickContext) then
                         macroTorch.player.pounce()
                     end
-                else
+                elseif hasRavage then
                     player.ravage('ready')
                 end
             end
@@ -563,6 +567,18 @@ function macroTorch.computeClaw_E()
     return CLAW_E
 end
 
+function macroTorch.computeReshiftEnergy()
+    local energy = 0
+    local player = macroTorch.player
+    -- [NEW] D-04: Furor talent each rank gives +8 energy when reshifting
+    energy = energy + player.talentRank('Furor') * 8
+    -- [NEW] D-04: Wolfshead Helm provides +20 energy on shapeshift
+    if player.isItemEquipped('Wolfshead Helm') then
+        energy = energy + 20
+    end
+    return energy
+end
+
 function macroTorch.computeShred_E()
     local SHRED_E = 60
     return SHRED_E - macroTorch.player.talentRank('Improved Shred') * 6
@@ -703,6 +719,10 @@ macroTorch.registerPeriodicTask('consumeDruidBattleEvents',
         { interval = 0.1, task = macroTorch.consumeDruidBattleEvents })
 
 function macroTorch.shouldUseShred(clickContext)
+    -- [NEW GUARD] D-03: Shred not learned -> always prefer Claw
+    if not macroTorch.isSpellExist('Shred', 'spell') then
+        return false
+    end
     local bleedCount = 0
     if macroTorch.isRakePresent(clickContext) then
         bleedCount = bleedCount + 1
@@ -985,6 +1005,10 @@ end
 
 -- Helper function to determine if Rip should be cast based on combo points and battle type
 function macroTorch.shouldCastRip(clickContext)
+    -- [NEW GUARD] D-03: Rip not learned -> cannot cast Rip
+    if not macroTorch.isSpellExist('Rip', 'spell') then
+        return false
+    end
     -- Common preconditions that apply to both normal and quick battles
     if macroTorch.isRipPresent(clickContext)
             or clickContext.isImmuneRip
@@ -1006,6 +1030,10 @@ end
 
 -- Helper function to determine if Ferocious Bite should be used
 function macroTorch.shouldUseBite(clickContext)
+    -- [NEW GUARD] D-03: Ferocious Bite not learned -> cannot use Bite
+    if not macroTorch.isSpellExist('Ferocious Bite', 'spell') then
+        return false
+    end
     -- Kill shot phase: use bite with any combo points
     if macroTorch.isKillShotOrLastChance(clickContext) then
         return clickContext.comboPoints > 0
