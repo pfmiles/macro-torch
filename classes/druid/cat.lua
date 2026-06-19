@@ -61,6 +61,10 @@ function macroTorch.regularAttack(clickContext)
     end
 end
 function macroTorch.otMod(clickContext)
+    -- [NEW GUARD] D-02: skip OT module if Cower not learned
+    if not macroTorch.isSpellExist('Cower', 'spell') then
+        return
+    end
     -- 排除掉训练木桩的情况
     if clickContext.isTargetDummy then
         return
@@ -90,6 +94,10 @@ function macroTorch.otMod(clickContext)
     end
 end
 function macroTorch.termMod(clickContext)
+    -- [NEW GUARD] D-02: skip Term Mod if Ferocious Bite not learned
+    if not macroTorch.isSpellExist('Ferocious Bite', 'spell') then
+        return
+    end
     -- 若目标已经可斩杀，优先斩杀，否则做常规的5星撕咬
     macroTorch.tryBiteKillShot(clickContext)
     macroTorch.cp5Bite(clickContext)
@@ -205,6 +213,10 @@ function macroTorch.shouldDoReshift(clickContext)
     return math.ceil(projectedEnergy) < minAbilityCost, nextMove, minAbilityCost
 end
 function macroTorch.keepTigerFury(clickContext)
+    -- [NEW GUARD] D-02: skip Tiger's Fury module if spell not learned
+    if not macroTorch.isSpellExist("Tiger's Fury", 'spell') then
+        return
+    end
     -- 在距离目标20码以内才使用tiger fury，避免过早使用浪费buff时间
     if macroTorch.isTigerPresent(clickContext) or macroTorch.target.distance > 20 then
         return
@@ -212,6 +224,10 @@ function macroTorch.keepTigerFury(clickContext)
     macroTorch.safeTigerFury(clickContext)
 end
 function macroTorch.keepRip(clickContext)
+    -- [NEW GUARD] D-02: skip RIP module if spell not learned
+    if not macroTorch.isSpellExist('Rip', 'spell') then
+        return
+    end
     -- Use shared logic to check if Rip should be cast
     if not macroTorch.shouldCastRip(clickContext) then
         return
@@ -281,6 +297,10 @@ function macroTorch.quickKeepRip(clickContext)
     macroTorch.dischargeEnergyChangeRelicAndRip(clickContext, false)
 end
 function macroTorch.keepRake(clickContext)
+    -- [NEW GUARD] D-02: skip Rake module if spell not learned
+    if not macroTorch.isSpellExist('Rake', 'spell') then
+        return
+    end
     -- in no condition rake on 5cp
     if not macroTorch.isFightStarted(clickContext) or clickContext.comboPoints == 5 or macroTorch.isRakePresent(clickContext) or clickContext.isImmuneRake or macroTorch.isKillShotOrLastChance(clickContext) then
         return
@@ -292,6 +312,10 @@ function macroTorch.keepRake(clickContext)
     macroTorch.safeRake(clickContext)
 end
 function macroTorch.keepFF(clickContext)
+    -- [NEW GUARD] D-02: skip FF module if spell not learned
+    if not macroTorch.isSpellExist('Faerie Fire (Feral)', 'spell') then
+        return
+    end
     -- Check if we should cast FF during reshift waiting window
     if macroTorch.shouldCastFFDuringWaitWindow(clickContext) then
         macroTorch.safeFF(clickContext)
