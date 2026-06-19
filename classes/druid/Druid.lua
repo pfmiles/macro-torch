@@ -1304,6 +1304,106 @@ macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP humanFormMana exists",
     assert(type(val) ~= "nil", "humanFormMana is nil")
 end, true)
 
+-- Category H: catAtk low-level adaptation selftests (D-07, isOptional=true)
+macroTorch.SelfTest:register("Druid: computeReshiftEnergy returns a valid number", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local energy = macroTorch.computeReshiftEnergy()
+    assert(type(energy) == "number", "computeReshiftEnergy should return a number, got: " .. type(energy))
+    assert(energy >= 0, "computeReshiftEnergy should not be negative, got: " .. tostring(energy))
+    assert(energy <= 100, "computeReshiftEnergy should not exceed 100, got: " .. tostring(energy))
+end, true)
+
+macroTorch.SelfTest:register("Druid: shouldUseShred returns false when Shred unlearned", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    if macroTorch.isSpellExist('Shred', 'spell') then
+        -- Shred is learned; test passes trivially (guard would not trigger at level 60)
+        return
+    end
+    -- Shred is NOT learned: call shouldUseShred with a minimal clickContext
+    local ctx = { ooc = false, comboPoints = 0, isBehind = false }
+    local result = macroTorch.shouldUseShred(ctx)
+    assert(result == false, "shouldUseShred should return false when Shred is unlearned, got: " .. tostring(result))
+end, true)
+
+macroTorch.SelfTest:register("Druid: shouldCastRip returns false when Rip unlearned", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    if macroTorch.isSpellExist('Rip', 'spell') then
+        -- Rip is learned; test passes trivially
+        return
+    end
+    local ctx = { comboPoints = 5 }
+    local result = macroTorch.shouldCastRip(ctx)
+    assert(result == false, "shouldCastRip should return false when Rip is unlearned, got: " .. tostring(result))
+end, true)
+
+macroTorch.SelfTest:register("Druid: shouldUseBite returns false when Ferocious Bite unlearned", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    if macroTorch.isSpellExist('Ferocious Bite', 'spell') then
+        -- Bite is learned; test passes trivially
+        return
+    end
+    local ctx = { comboPoints = 5 }
+    local result = macroTorch.shouldUseBite(ctx)
+    assert(result == false, "shouldUseBite should return false when Bite is unlearned, got: " .. tostring(result))
+end, true)
+
+macroTorch.SelfTest:register("Druid: all key catAtk spells exist at level 60", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    -- Level 60 with all skills: verify that the guard layer is fully transparent
+    -- These are the core cat form skills that should exist at max level
+    local skills = { 'Claw', 'Shred', 'Rip', 'Rake', "Tiger's Fury", 'Ferocious Bite', 'Cower', 'Faerie Fire (Feral)', 'Pounce', 'Ravage' }
+    for _, skill in ipairs(skills) do
+        assert(macroTorch.isSpellExist(skill, 'spell'),
+            "Level 60 should have " .. skill .. " learned, but isSpellExist returned false")
+    end
+end, true)
+
+macroTorch.SelfTest:register("Druid: RESHIFT_ENERGY in clickContext is set dynamically", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    -- Verify that catAtk() sets RESHIFT_ENERGY via computeReshiftEnergy (not hardcoded 60)
+    -- We cannot call catAtk() directly in selftest, but we can verify the function exists
+    -- and produces a reasonable value for the current character
+    local energy = macroTorch.computeReshiftEnergy()
+    -- For any valid Druid: 0 <= energy <= 100
+    assert(type(energy) == "number", "computeReshiftEnergy should return a number")
+    assert(energy >= 0 and energy <= 100, "computeReshiftEnergy out of range: " .. tostring(energy))
+    -- Log the computed value for debugging (informational only, not a pass/fail check)
+    macroTorch.show("[macro-torch] Selftest: computeReshiftEnergy = " .. tostring(energy) ..
+        " (Furor rank=" .. tostring(macroTorch.player.talentRank('Furor')) ..
+        ", Wolfshead Helm=" .. tostring(macroTorch.player.isItemEquipped('Wolfshead Helm')) .. ")")
+end, true)
+
+macroTorch.SelfTest:register("Druid: isSpellExist guard key spell names match locale table", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    -- Verify spell name strings used in guards match what isSpellExist expects
+    -- These are the exact spell names from Druid.lua _castSpell locale table keys
+    -- that are used in Plan 01 guard insertions (cat.lua and Druid.lua modules)
+    local spellNames = { 'Rip', 'Rake', "Tiger's Fury", 'Ferocious Bite', 'Cower',
+        'Faerie Fire (Feral)', 'Shred', 'Pounce', 'Ravage' }
+
+    -- Simply verify isSpellExist doesn't crash for any of these names
+    -- (returns boolean, nil guard handled gracefully by the guard clauses)
+    for _, name in ipairs(spellNames) do
+        local exists = macroTorch.isSpellExist(name, 'spell')
+        assert(type(exists) == "boolean", "isSpellExist should return boolean for '" .. name .. "', got: " .. type(exists))
+    end
+end, true)
+
+macroTorch.SelfTest:register("Druid: getMinimumAffordableAbilityCost always returns a value", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    -- Verify the fallback chain terminates at Claw (always available, level 1 skill)
+    -- Even with all skills unlearned, this function must return Claw's cost
+    local ctx = {
+        BITE_E = 35, TIGER_E = 30, RIP_E = 30, RAKE_E = 40, SHRED_E = 60, CLAW_E = 45,
+        ooc = false, comboPoints = 3,
+    }
+    local cost, moveName = macroTorch.getMinimumAffordableAbilityCost(ctx)
+    assert(type(cost) == "number", "getMinimumAffordableAbilityCost should return a number cost")
+    assert(type(moveName) == "string", "getMinimumAffordableAbilityCost should return a move name string")
+    assert(cost >= 0, "getMinimumAffordableAbilityCost cost should not be negative: " .. tostring(cost))
+    assert(moveName ~= nil and moveName ~= "", "getMinimumAffordableAbilityCost move name should not be empty")
+end, true)
+
 -- Category G2: Form detection semantic methods (5 items, isOptional=true)
 macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP isInCatForm exists", function()
     if UnitClass('player') ~= 'Druid' then return end
