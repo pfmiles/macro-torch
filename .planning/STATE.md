@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-06-19T16:06:06.129Z"
-last_activity: "2026-06-19 - Completed quick task 260619-qbj: casterAtk加入Faerie Fire/Insect Swarm debuff + Starfire交替循环"
+last_updated: "2026-06-20T01:12:00.000Z"
+last_activity: 2026-06-20
 progress:
-  total_phases: 12
+  total_phases: 13
   completed_phases: 8
-  total_plans: 25
-  completed_plans: 25
-  percent: 67
+  total_plans: 29
+  completed_plans: 26
+  percent: 69
 stopped_at: context exhaustion at 76% (2026-06-18)
 ---
 
@@ -20,7 +20,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 10 — Druid 综合一键宏方法（已完成）
+- **Current Phase**: Phase 13 — catAtk 小号练级适配（执行中）
 - **Active Branch**: main
 
 ## Phase Progress
@@ -37,7 +37,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 | Phase 8: 非Druid职业代码结构重构（对齐Druid架构） | ✅ complete | 2026-06-15 | 2026-06-15 | 4 plans |
 | Phase 9: pokemonLoad 移至 Player 层 | 🔵 in_progress | 2026-06-16 | — | — |
 | Phase 10: Druid 综合一键宏方法（druidAtk/Aoe/Heal/Defend/Control） | ✅ complete | 2026-06-16 | 2026-06-17 | 2 plans |
-| Phase 13: catAtk 小号练级适配（技能存在性检查、动态能量消耗、降级策略） | 🔵 planned | 2026-06-19 | — | 0 plans |
+| Phase 13: catAtk 小号练级适配（技能存在性检查、动态能量消耗、降级策略） | 🔵 in_progress | 2026-06-20 | — | 1/2 plans |
 
 ## Accumulated Context
 
@@ -129,6 +129,6 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 ## Session
 
 **Last session:** 2026-06-19T16:06:06.117Z
-**Last activity:** 2026-06-19 - Completed quick task 260619-qbj: casterAtk加入Faerie Fire/Insect Swarm debuff + Starfire交替循环
+**Last activity:** 2026-06-19
 **Stopped at:** Phase 13 context gathered
 **Resume file:** .planning/phases/13-catatk-60-dps/13-CONTEXT.md
