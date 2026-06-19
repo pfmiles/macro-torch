@@ -318,8 +318,6 @@ function macroTorch.Druid:new()
 
         -- durations of certain time lasting spell effects
         clickContext.TIGER_DURATION = macroTorch.computeTiger_Duration()
-        macroTorch.RIP_BASE_DURATION = 10
-        macroTorch.RAKE_DURATION = 9
         clickContext.FF_DURATION = 40
         clickContext.POUNCE_DURATION = 18
 
@@ -332,7 +330,6 @@ function macroTorch.Druid:new()
         clickContext.BERSERK_ERPS = 20 / 2
 
         -- the threat/aggro threshold to use cower
-        macroTorch.COWER_THREAT_THRESHOLD = 75
         -- the energy resetting value after reshift
         -- TODO reshift energy restore should consider the head enchant: whether the wolfheart enchant exists
         -- [NEW] D-04: replaced hardcoded 60 with dynamic computation from Furor talent + Wolfshead Helm
@@ -358,8 +355,9 @@ function macroTorch.Druid:new()
         -- 计算normal relic（接下来的战斗默认穿戴的relic）
         clickContext.normalRelic = macroTorch.computeNormalRelic(clickContext)
 
-        clickContext.isTargetDummy = macroTorch.target.isCanAttack and
-                string.find(macroTorch.target.name, 'Training Dummy')
+        clickContext.isTargetDummy = macroTorch.toBoolean(
+                macroTorch.target.isCanAttack and
+                string.find(macroTorch.target.name, 'Training Dummy'))
 
         -- 0.idol recover, equip the current normal relic if not equipped
         macroTorch.recoverNormalRelic(clickContext, clickContext.normalRelic)
@@ -593,14 +591,6 @@ function macroTorch.computeRake_E()
     return RAKE_E - player.talentRank('Ferocity')
 end
 
-function macroTorch.computeRake_Duration()
-    local rakeDuration = 9
-    if macroTorch.player.isRelicEquipped('Idol of Savagery') then
-        rakeDuration = rakeDuration * 0.9
-    end
-    return rakeDuration
-end
-
 function macroTorch.computeTiger_E()
     local TIGER_E = 30
     if macroTorch.player.countEquippedItemNameContains('Cenarion') >= 5 then
@@ -832,6 +822,10 @@ macroTorch.KS_CP3_Health_raid_pps = macroTorch.KS_CP3_Health_group / 5
 macroTorch.KS_CP4_Health_raid_pps = macroTorch.KS_CP4_Health_group / 5
 macroTorch.KS_CP5_Health_raid_pps = macroTorch.KS_CP5_Health_group / 5
 
+macroTorch.RIP_BASE_DURATION = 10
+macroTorch.RAKE_DURATION = 9
+macroTorch.COWER_THREAT_THRESHOLD = 75
+
 -- 预测判断当前是否只有最后一次机会攻击目标了，目标可能快死了
 function macroTorch.isKillShotOrLastChance(clickContext)
     if macroTorch.target.willDieInSeconds(2) then
@@ -847,9 +841,6 @@ function macroTorch.isKillShotOrLastChance(clickContext)
         -- normal battle in a 5-man group
         local nearMateNum = macroTorch.player.mateNearMyTargetCount or 0
         local less = 4 - nearMateNum
-        -- if less > 0 then
-        --     macroTorch.show('nearMateNum: ' .. tostring(nearMateNum) .. ', less: ' .. tostring(less))
-        -- end
         return clickContext.comboPoints == 1 and
                 targetHealth <
                         (macroTorch.KS_CP1_Health_group - less * (macroTorch.KS_CP1_Health_group - macroTorch.KS_CP1_Health) / 4) or
@@ -867,11 +858,7 @@ function macroTorch.isKillShotOrLastChance(clickContext)
                                 (macroTorch.KS_CP5_Health_group - less * (macroTorch.KS_CP5_Health_group - macroTorch.KS_CP5_Health) / 4)
     elseif macroTorch.player.isInRaid and not fightWorldBoss and not isPvp then
         -- normal battle in a raid
-        local raidNum = macroTorch.player.raidMemberCount or 0
         local nearMateNum = macroTorch.player.mateNearMyTargetCount or 0
-        -- if nearMateNum < raidNum - 1 then
-        --     macroTorch.show('raidNum: ' .. tostring(raidNum) .. ', nearMateNum: ' .. tostring(nearMateNum))
-        -- end
 
         local more = nearMateNum - 5 + 1
         if more < 0 then
@@ -1086,13 +1073,11 @@ end
 function macroTorch.tigerLeft(clickContext)
     if clickContext.tigerLeft == nil then
         local tigerLeft = 0
-        if not not macroTorch.loginContext.tigerTimer then
+        if macroTorch.loginContext and macroTorch.loginContext.tigerTimer then
             tigerLeft = clickContext.TIGER_DURATION - (GetTime() - macroTorch.loginContext.tigerTimer)
             if tigerLeft < 0 then
                 tigerLeft = 0
             end
-        else
-            tigerLeft = 0
         end
         clickContext.tigerLeft = tigerLeft
     end
@@ -1174,13 +1159,11 @@ end
 function macroTorch.ffLeft(clickContext)
     if clickContext.ffLeft == nil then
         local ffLeft = 0
-        if not not macroTorch.context.ffTimer then
+        if macroTorch.context and macroTorch.context.ffTimer then
             ffLeft = clickContext.FF_DURATION - (GetTime() - macroTorch.context.ffTimer)
             if ffLeft < 0 then
                 ffLeft = 0
             end
-        else
-            ffLeft = 0
         end
         clickContext.ffLeft = ffLeft
     end

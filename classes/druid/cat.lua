@@ -374,9 +374,6 @@ function macroTorch.readyBite(clickContext)
 end
 function macroTorch.safeTigerFury(clickContext)
     if macroTorch.player.isSpellReady('Tiger\'s Fury') and macroTorch.tigerSelfGCD(clickContext) == 0 and macroTorch.player.mana >= clickContext.TIGER_E then
-        -- macroTorch.show('Tiger!!! Tiger present: ' ..
-        --     tostring(macroTorch.isTigerPresent(clickContext)) ..
-        --     ', tiger left: ' .. macroTorch.tigerLeft(clickContext))
         macroTorch.player.tiger_fury('ready')
         macroTorch.loginContext.tigerTimer = GetTime()
         return true
