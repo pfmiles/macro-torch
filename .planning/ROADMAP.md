@@ -733,8 +733,12 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
+**Wave 1**
 
 - [ ] 13-01-PLAN.md — Guard插入: computeReshiftEnergy新函数+RESHIFT_ENERGY动态替换+3个共享决策函数guard+openerMod guard+shouldDoReshift零值检查 (Wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 13-02-PLAN.md — Selftest: 8个Category H自检注册 (computeReshiftEnergy范围验证/决策函数guard验证/level60对等验证/fallback链验证) (Wave 2)
 
 ---
