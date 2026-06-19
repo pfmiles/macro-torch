@@ -121,9 +121,11 @@ progress:
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260619-1ry | 技能释放默认最高等级 + 可选rank参数 | 2026-06-18 | 33a9a92 | [260619-1ry-rank-1-based](./quick/260619-1ry-rank-1-based/) |
+| 260619-qbj | casterAtk加入Faerie Fire/Insect Swarm debuff + Starfire交替循环 | 2026-06-19 | c7549ff | [260619-qbj-add-faerie-fire-insect-swarm-debuff-and-](./quick/260619-qbj-add-faerie-fire-insect-swarm-debuff-and-/) |
 
 ## Session
 
-**Last session:** 2026-06-18T15:14:15.347Z
+**Last session:** 2026-06-19T10:57:03.075Z
+**Last activity:** 2026-06-19 - Completed quick task 260619-qbj: casterAtk加入Faerie Fire/Insect Swarm debuff + Starfire交替循环
 **Stopped at:** context exhaustion at 76% (2026-06-18)
 **Resume file:** None
