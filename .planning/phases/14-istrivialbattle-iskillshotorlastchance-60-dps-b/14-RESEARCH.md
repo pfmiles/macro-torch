@@ -362,17 +362,17 @@ end
 | A8 | No clickContext caching needed for isKillShotOrLastChance | Architecture / Pattern 3 | At most 2 calls per click execution; caching would add complexity without meaningful performance gain. Risk of being wrong: negligible performance impact. |
 | A9 | Single KS threshold (no group/raid/cp granularity) is adequate | Architecture / isKillShotOrLastChance | If a player runs low-level group content frequently, the single threshold may be too conservative (condition B won't trigger for group kills). Condition A (HRPS) compensates for this. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Actual DPS values at each level bracket from in-game measurement**
    - What we know: Level 60 value is 500 from existing code. Bracket values are estimated from game mechanic knowledge (skill ranks, energy regen, weapon damage progression).
    - What's unclear: Exact observed DPS for a typical cat druid at levels 25, 35, 45, 55.
-   - Recommendation: These are conservative estimates (likely 10-20% below peak DPS). The planner should include a note that values can be tuned after in-game testing. Since the fallback (conservative = don't trigger quick battle/kill shot mode) is safe, users will not notice incorrect estimates -- they will just get standard rotation behavior which is correct but sub-optimal for trivial fights.
+   - **RESOLVED:** Conservative estimates adopted (likely 10-20% below peak DPS). The plan uses these values with the understanding they can be tuned after in-game testing. Since the fallback (conservative = don't trigger quick battle/kill shot mode) is safe, users will not notice incorrect estimates -- they will just get standard rotation behavior which is correct but sub-optimal for trivial fights.
 
 2. **Whether World Boss logic needs level adaptation**
    - What we know: The world boss check (`classification == 'worldboss'`) is currently excluded from the CP-mode branching and uses its own 2% health threshold.
    - What's unclear: Whether a level 40 player fighting a level 60 world boss should use the same 2% threshold.
-   - Recommendation: Leave the world boss check as-is. World bosses are a level-60 activity in practice; the 2% health threshold combined with `comboPoints >= 3` check is already conservative and level-agnostic (uses health percentage, not absolute health).
+   - **RESOLVED:** World boss check left unchanged. World bosses are a level-60 activity in practice; the 2% health threshold combined with `comboPoints >= 3` check is already conservative and level-agnostic (uses health percentage, not absolute health).
 
 ## Environment Availability
 
