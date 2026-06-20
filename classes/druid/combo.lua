@@ -111,7 +111,7 @@ function macroTorch.catAtk(rough)
         local hasPounce = macroTorch.isSpellExist('Pounce', 'spell')
         local hasRavage = macroTorch.isSpellExist('Ravage', 'spell')
         if clickContext.prowling then
-            if hasPounce and not target.isImmune('Pounce') and target.health >= 1500 then
+            if hasPounce and not target.isImmune('Pounce') and target.health >= macroTorch.getOpenerHealthThreshold() then
                 if macroTorch.isGcdOk(clickContext) and macroTorch.isNearBy(clickContext) then
                     macroTorch.player.pounce()
                 end
