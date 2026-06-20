@@ -19,7 +19,8 @@
 function macroTorch.catLeveling()
     local level = macroTorch.player.level
 
-    if level <= 20 then
+    if level < 24 then
+        -- Rake 24级可学，在此之前只有 Claw + Rip
         macroTorch.cat_lv20()
     -- elseif level <= 30 then
     --     macroTorch.cat_lv30()
@@ -28,12 +29,12 @@ function macroTorch.catLeveling()
     -- elseif level <= 50 then
     --     macroTorch.cat_lv50()
     else
-        -- 兜底：51-59 级技能较全，直接走 catAtk
+        -- 24-59 级：Rake 已学，catAtk 的 regularAttack 条件可正常运作
         macroTorch.catAtk()
     end
 end
 
--- 20级练级宏（仅需 Claw + Rip）
+-- 低等级练级宏（Claw + Rip，适用于未学 Rake 的阶段）
 -- 逻辑：有星且目标无Rip → 挂Rip，否则 Claw
 function macroTorch.cat_lv20()
     if not macroTorch.player.isInCatForm then
@@ -48,6 +49,7 @@ function macroTorch.cat_lv20()
     macroTorch.player.startAutoAtk()
 
     if macroTorch.player.comboPoints > 0
+            and macroTorch.isSpellExist('Rip', 'spell')
             and not macroTorch.toBoolean(macroTorch.target.hasBuff('Ability_GhoulFrenzy')) then
         macroTorch.player.rip()
     else
