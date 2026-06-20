@@ -753,6 +753,19 @@ Plans:
 
 - [x] 14-01-PLAN.md — Add estimatePlayerDPS() + getKSThreshold(), modify isTrivialBattle condition B, simplify isKillShotOrLastChance, delete 15 KS_CP* constants, add 6 Category I selftests
 
+### Phase 15: 将catAtk从Druid实例方法重构为combo.lua全局一键宏方法
+
+**Goal:** 将 catAtk 从 `obj.catAtk`（Druid 实例方法）重构为 `macroTorch.catAtk(rough)`（combo.lua 全局一键宏方法），与 casterAtk/bearAtk 等其他一键宏保持一致的调用模式。函数体逻辑不变，仅改变挂载位置和调用方式。
+
+**Requirements**: REQ-15-MOVE, REQ-15-CALLER, REQ-15-SELFTEST
+**Depends on:** Phase 10
+**Plans:** 1/1 plans complete
+**Status:** ✅ complete
+
+Plans:
+
+- [x] 15-01 — 将 catAtk 函数体从 Druid.lua 移至 combo.lua，更新 druidAtk 调用方，添加 selftest，构建验证通过 (2026-06-20)
+
 ---
 
 ## Task 统计

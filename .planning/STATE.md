@@ -6,11 +6,11 @@ status: in_progress
 last_updated: "2026-06-20T03:05:25.115Z"
 last_activity: 2026-06-20
 progress:
-  total_phases: 13
-  completed_phases: 10
-  total_plans: 28
-  completed_plans: 28
-  percent: 77
+  total_phases: 14
+  completed_phases: 11
+  total_plans: 29
+  completed_plans: 29
+  percent: 79
 stopped_at: context exhaustion at 76% (2026-06-18)
 ---
 
@@ -39,6 +39,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 | Phase 10: Druid 综合一键宏方法（druidAtk/Aoe/Heal/Defend/Control） | ✅ complete | 2026-06-16 | 2026-06-17 | 2 plans |
 | Phase 13: catAtk 小号练级适配（技能存在性检查、动态能量消耗、降级策略） | 🔵 in_progress | 2026-06-20 | — | 1/2 plans |
 | Phase 14: 战斗时长预测与斩杀判断等级自适应（isTrivialBattle/isKillShotOrLastChance 静态估算动态化） | ⚪ planned | 2026-06-20 | — | — |
+| Phase 15: catAtk 从 Druid 实例方法重构为 combo.lua 全局一键宏方法 | ✅ complete | 2026-06-20 | 2026-06-20 | 1 plan |
 
 ## Accumulated Context
 
@@ -50,6 +51,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 - Phase 10 added: Druid 综合一键宏方法 — 创建 druidAtk/druidAoe/druidHeal/druidDefend/druidControl 5 个方法，内部按形态 if-else 路由到对应子方法 (2026-06-16)
 - Phase 13 added: catAtk 小号练级适配 — 技能存在性检查、动态能量消耗计算、低等级降级策略，保持60级满级DPS能力不变 (2026-06-19)
 - Phase 14 added: 战斗时长预测与斩杀判断等级自适应 — 将 isTrivialBattle 和 isKillShotOrLastChance 中硬编码的60级静态DPS估算替换为等级自适应动态估算，使练级阶段也能准确判断快速战斗和斩杀线 (2026-06-20)
+- Phase 15 added: 将catAtk从Druid实例方法重构为combo.lua全局一键宏方法 (2026-06-20)
 
 ## Key Decisions
 
@@ -122,7 +124,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 - [Phase 10 P02]: Removed bear routing block from catAtk (lines 380-384) and isInBearForm cache (line 348) in Druid.lua — catAtk is now pure cat-form. Deleted 3 obsolete functions (druidStun/druidDefend/druidControl) from utility.lua — druidBuffs retained unchanged. Added combo.lua to build_order.txt after utility.lua.
 - [Phase ?]: Category H tests placed before Category G2 for logical grouping: G1 (field integrity) -> H (guard verification) -> G2 (form semantics)
 - [Phase ?]: HRPS primary
-- [Phase ?]: Phase 14: Dropped CP-mode granularity from isKillShotOrLastChance condition B — single threshold per level adequate since HRPS is primary kill-shot path (D-02)
+- [Phase 15]: Moved catAtk from Druid instance method (obj.catAtk) to combo.lua global function (macroTorch.catAtk) — function body uses only macroTorch.* globals, no self/obj dependency; druidAtk call updated from macroTorch.player.catAtk to macroTorch.catAtk; added selftest for new function location
 
 ## Session
 
