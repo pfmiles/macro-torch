@@ -1375,6 +1375,56 @@ macroTorch.SelfTest:register("Druid: getMinimumAffordableAbilityCost always retu
     assert(moveName ~= nil and moveName ~= "", "getMinimumAffordableAbilityCost move name should not be empty")
 end, true)
 
+-- Category I: isTrivialBattle/isKillShotOrLastChance level-adaptive selftests (D-06, isOptional=true)
+macroTorch.SelfTest:register("Druid: estimatePlayerDPS(60) returns 500 (D-04 hard guard)", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local val = macroTorch.estimatePlayerDPS(60)
+    assert(val == 500, "estimatePlayerDPS(60) should return 500, got: " .. tostring(val))
+end, true)
+
+macroTorch.SelfTest:register("Druid: getKSThreshold(60) returns 1750 (D-04 hard guard)", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local val = macroTorch.getKSThreshold(60)
+    assert(val == 1750, "getKSThreshold(60) should return 1750, got: " .. tostring(val))
+end, true)
+
+macroTorch.SelfTest:register("Druid: estimatePlayerDPS bracket boundaries return valid values", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local v30 = macroTorch.estimatePlayerDPS(30)
+    local v40 = macroTorch.estimatePlayerDPS(40)
+    local v50 = macroTorch.estimatePlayerDPS(50)
+    assert(type(v30) == "number" and v30 ~= nil, "estimatePlayerDPS(30) should return a number, got: " .. tostring(v30))
+    assert(v40 >= 200, "estimatePlayerDPS(40) should be >= 200, got: " .. tostring(v40))
+    assert(v50 >= 350, "estimatePlayerDPS(50) should be >= 350, got: " .. tostring(v50))
+end, true)
+
+macroTorch.SelfTest:register("Druid: getKSThreshold bracket boundaries return valid values", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local v30 = macroTorch.getKSThreshold(30)
+    local v40 = macroTorch.getKSThreshold(40)
+    local v50 = macroTorch.getKSThreshold(50)
+    assert(type(v30) == "number" and v30 ~= nil, "getKSThreshold(30) should return a number, got: " .. tostring(v30))
+    assert(v40 >= 1050, "getKSThreshold(40) should be >= 1050, got: " .. tostring(v40))
+    assert(v50 >= 1450, "getKSThreshold(50) should be >= 1450, got: " .. tostring(v50))
+end, true)
+
+macroTorch.SelfTest:register("Druid: estimatePlayerDPS(15) returns conservative fallback 25 (D-05)", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local dpsVal = macroTorch.estimatePlayerDPS(15)
+    local ksVal = macroTorch.getKSThreshold(15)
+    assert(dpsVal == 25, "estimatePlayerDPS(15) should return 25, got: " .. tostring(dpsVal))
+    assert(ksVal == 200, "getKSThreshold(15) should return 200, got: " .. tostring(ksVal))
+end, true)
+
+macroTorch.SelfTest:register("Druid: isKillShotOrLastChance condition A (willDieInSeconds) path confirmed accessible", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    assert(type(macroTorch.isKillShotOrLastChance) == "function",
+        "isKillShotOrLastChance should be a function, got: " .. type(macroTorch.isKillShotOrLastChance))
+    assert(type(macroTorch.target.willDieInSeconds) == "function",
+        "target.willDieInSeconds should be a function, got: " .. type(macroTorch.target.willDieInSeconds))
+    macroTorch.show("[macro-torch] Selftest: isKillShotOrLastChance condition A (willDieInSeconds) path confirmed accessible")
+end, true)
+
 -- Category G2: Form detection semantic methods (5 items, isOptional=true)
 macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP isInCatForm exists", function()
     if UnitClass('player') ~= 'Druid' then return end
