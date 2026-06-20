@@ -1,107 +1,89 @@
 ---
 phase: 14-istrivialbattle-iskillshotorlastchance-60-dps-b
-reviewed: 2026-06-20T00:00:00Z
+reviewed: 2026-06-20T03:10:00Z
 depth: standard
 files_reviewed: 1
 files_reviewed_list:
   - classes/druid/Druid.lua
 findings:
   critical: 0
-  warning: 3
-  info: 3
-  total: 6
+  warning: 2
+  info: 2
+  total: 4
 status: issues_found
 ---
 
 # Phase 14: Code Review Report
 
-**Reviewed:** 2026-06-20
+**Reviewed:** 2026-06-20T03:10:00Z
 **Depth:** standard
 **Files Reviewed:** 1
 **Status:** issues_found
 
 ## Summary
 
-Reviewed Phase 14 changes to `classes/druid/Druid.lua`: two new functions (`estimatePlayerDPS`, `getKSThreshold`), modifications to `isTrivialBattle` and `isKillShotOrLastChance`, deletion of 15 `KS_CP*_Health*` constants, and 6 Category I selftest registrations.
+Reviewed Phase 14 changes to `classes/druid/Druid.lua`: adding `estimatePlayerDPS()` and `getKSThreshold()` level-adaptive functions (lines 580-623), modifying `isTrivialBattle` condition B (line 822), simplifying `isKillShotOrLastChance` condition B from 15 per-CP constants + 55-line branching to a single flat threshold (lines 859-873), and adding 6 Category I selftests (lines 1378-1426).
 
-**Key observations:**
-- The 60-level hard guards correctly preserve level-60 behavior (500 DPS, 1750 KS threshold).
-- All 15 `KS_CP*_Health*` constants are fully deleted; no references remain anywhere in the codebase.
-- Build passes cleanly (`./build.sh` exits 0).
-- The `isKillShotOrLastChance` simplification from ~55 lines to ~10 lines is correct per the design documents (D-02).
-- Three warnings identified: exact-60-only guard could fail on custom servers with levels > 60, group/raid KS threshold scaling is removed (condition B becomes more aggressive in group PvE), and selftest assertions are too permissive (`>=` instead of `==`).
-- Three info items: redundant nil check in selftest, development artifact comment, and slightly misleading comment phrasing.
+The new functions correctly implement the PLAN.md specification: proper nil-level guards via `UnitLevel('player')`, 60-level hard guards preserving level-60 DPS (500) and KS-threshold (1750) behavior, and descending if-elseif level-bracket chains. All 15 `KS_CP*_Health*` constants are fully removed with zero lingering references. The selftests follow project conventions (isOptional=true, UnitClass guard, assert style).
 
-No critical/blocker issues found. The implementation faithfully executes the Phase 14 plan.
+Two warnings and two info items found. No critical issues.
 
 ## Warnings
 
-### WR-01: `level == 60` exact-match guard fails if player level exceeds 60
-
-**File:** `classes/druid/Druid.lua:586, 609`
-**Issue:** Both `estimatePlayerDPS` and `getKSThreshold` use an exact equality check `if level == 60 then return <60-value> end`. If a custom server or future expansion allows player levels above 60, or if `UnitLevel('player')` ever returns a value > 60 (e.g., 61 in certain Turtle WoW custom content), the guard is bypassed and the function falls through to the `level >= 50` bracket, returning a lower value (350 DPS / 1450 KS threshold) instead of the intended level-60 maximum (500 DPS / 1750 KS threshold).
-
-This is primarily a defense-in-depth concern. On a standard vanilla WoW 1.12.1 server, `UnitLevel('player')` returns at most 60 for players. However, `>= 60` would be a safer guard that matches the intent: "at max level and beyond, use the max-level value."
-
-**Fix:**
-```lua
--- estimatePlayerDPS
-if level >= 60 then  -- safer than level == 60
-    return 500
-end
-
--- getKSThreshold
-if level >= 60 then  -- safer than level == 60
-    return 1750
-end
-```
-
-### WR-02: `isKillShotOrLastChance` condition B removes group/raid threshold scaling
+### WR-01: isKillShotOrLastChance condition B loses CP-aware / group / PvP scaling, producing overly aggressive Bite at low CP
 
 **File:** `classes/druid/Druid.lua:859-873`
-**Issue:** The old `isKillShotOrLastChance` condition B used CP-aware thresholds that scaled by group size and raid size. For example, at level 60 with 5 CP in a 5-man group, the threshold was ~2250-3000 health (depending on nearby mates), vs. 1750 solo. The new code uses a single `getKSThreshold(60) = 1750` for ALL scenarios (solo, group, raid, PvP).
+**Issue:** The old `isKillShotOrLastChance` condition B had per-combo-point thresholds that differed by scenario:
+- Solo/PvP (level 60): CP1=750, CP2=1000, CP3=1250, CP4=1500, CP5=1750
+- 5-man group: scaled thresholds ~1500-3000 based on nearby mate count
+- Raid: group thresholds + per-person scaling beyond 5 raiders
+- PvP classification: `isInBattleField()` explicitly gated to solo thresholds
 
-This means condition B triggers much more aggressively (earlier) in group PvE: a target at 2000 health in a group would now be flagged as a "kill shot" by the new code, whereas the old code correctly recognized that 2000 health is NOT a kill shot when 5 people are DPSing.
+The new code replaces all of this with a single call: `targetHealth < macroTorch.getKSThreshold()` (1750 at level 60) regardless of combo points, group size, or PvP status (world bosses retain their special logic).
 
-**Mitigating factors:**
-- Condition A (`willDieInSeconds(2)` via HRPS) is the PRIMARY path and remains unchanged. In group scenarios with sufficient HRPS data, condition A will make the correct call.
-- Condition B is the FALLBACK path, used only when HRPS data is insufficient (e.g., just switched target).
+**Concrete regression at CP1:** When `isKillShotOrLastChance` returns true, `shouldUseBite` (line 1013) commits to Ferocious Bite. At CP1, Bite does minimal damage for 35 energy. The old code would only trigger Bite at CP1 when the target was truly about to die (health < 750 solo, or higher thresholds in groups where others could finish it). The new code triggers Bite at CP1 with targets up to 1750 health, wasting combo points and energy.
 
-**Impact:** When a player in a group/raid switches to a new target and HRPS data hasn't accumulated yet, the addon may prematurely use Ferocious Bite (thinking it's a kill shot) when the target still has significant health. This wastes combo points in group content. The old code handled this correctly via group-scaled thresholds.
+**PvP/battleground impact:** The `isInBattleField()` check was removed entirely. In battlegrounds, the old code used the conservative solo thresholds. The new code uses the aggressive flat threshold (1750 at level 60), triggering premature kill-shot attempts in PvP across all CP counts.
 
-This is a known design tradeoff per D-02 ("Single KS health threshold lookup, no CP granularity"). The plan states this simplification is intentional. However, it represents a real behavioral regression for group dungeon play that should be documented and possibly revisited if users report issues.
+**Mitigation:** Condition A (`willDieInSeconds(2)` via HRPS) is the primary prediction path and remains unchanged. Condition B is the fallback path for when HRPS data is insufficient. The PLAN.md explicitly acknowledges this as an intentional simplification (test behavior 3: "equivalent to old KS_CP5_Health solo value").
 
-**Fix (if regression is deemed unacceptable):**
-Add an optional group-size multiplier to the call site within `isKillShotOrLastChance`:
+**Fix (if CP-awareness should be preserved):**
 ```lua
--- Condition B with group-aware scaling
-local threshold = macroTorch.getKSThreshold()
-if macroTorch.player.isInGroup and not fightWorldBoss then
-    local mateCount = macroTorch.player.mateNearMyTargetCount
-    threshold = threshold * (1 + mateCount * 0.4)  -- scale up with group size
-end
-return targetHealth < threshold
+-- Condition B with CP-aware scaling
+local baseKS = macroTorch.getKSThreshold()
+local cp = clickContext.comboPoints or 0
+-- Scale threshold to be proportional to CP value (CP1=43%, CP5=100% of base)
+local cpFraction = (cp - 1) * 0.14 + 0.43
+return targetHealth < baseKS * math.max(cpFraction, 0.43)
 ```
 
-### WR-03: Selftest bracket boundary assertions are too permissive (>= instead of ==)
+**Fix (if intentional, document the tradeoff):**
+```lua
+-- [D-02] Level-adaptive single threshold (intentionally CP-agnostic; see Plan 01 for rationale)
+-- Note: this is more aggressive than old per-CP thresholds for CP < 5.
+-- When HRPS data is available, Condition A handles prediction correctly.
+return targetHealth < macroTorch.getKSThreshold()
+```
+
+### WR-02: Selftest bracket boundary assertions are too permissive (>= instead of ==, v30 unchecked)
 
 **File:** `classes/druid/Druid.lua:1391-1409`
-**Issue:** The selftests for bracket boundary values use `>=` assertions instead of exact `==` assertions:
+**Issue:** The "bracket boundaries" selftests use `>=` assertions, which will pass even if the underlying lookup table values change unexpectedly:
 
-- Test I-3 (estimatePlayerDPS boundaries): `v40 >= 200`, `v50 >= 350` -- would pass even if the function returns 999 for level 40 or 50.
-- Test I-4 (getKSThreshold boundaries): `v40 >= 1050`, `v50 >= 1450` -- same issue.
-- v30 in both tests is only validated for `type == "number"`, not for its actual value (should be 120 and 700 respectively).
+- `v40 >= 200`, `v50 >= 350` in estimatePlayerDPS test -- would pass if the function returns 999 or any higher value
+- `v40 >= 1050`, `v50 >= 1450` in getKSThreshold test -- same
+- Level 30 is only validated for `type(v30) == "number"` with no value assertion at all -- should be exactly 120 (DPS) and 700 (KS threshold)
 
-These tests will not catch accidental bracket value changes. The 60-level hard guard tests (I-1, I-2) use exact `==` assertions and are correctly strict.
+Contrast with the D-04 hard guard tests (lines 1379-1388) which correctly use exact `==` assertions.
 
 **Fix:**
 ```lua
--- Test I-3
+-- estimatePlayerDPS boundaries
 assert(v30 == 120, "estimatePlayerDPS(30) should return 120, got: " .. tostring(v30))
 assert(v40 == 200, "estimatePlayerDPS(40) should return 200, got: " .. tostring(v40))
 assert(v50 == 350, "estimatePlayerDPS(50) should return 350, got: " .. tostring(v50))
 
--- Test I-4
+-- getKSThreshold boundaries
 assert(v30 == 700, "getKSThreshold(30) should return 700, got: " .. tostring(v30))
 assert(v40 == 1050, "getKSThreshold(40) should return 1050, got: " .. tostring(v40))
 assert(v50 == 1450, "getKSThreshold(50) should return 1450, got: " .. tostring(v50))
@@ -109,38 +91,30 @@ assert(v50 == 1450, "getKSThreshold(50) should return 1450, got: " .. tostring(v
 
 ## Info
 
-### IN-01: Redundant nil check in selftest assertions
+### IN-01: Stale TODO comments about wolfhead helm enchant (already implemented)
 
-**File:** `classes/druid/Druid.lua:1396, 1406`
-**Issue:** The assertions `type(v30) == "number" and v30 ~= nil` contain a redundant check. In Lua, if `type(v30) == "number"` is true, then `v30` is a number and therefore not nil -- the `~= nil` check is always true and adds no value. The same pattern appears in both boundary tests.
+**File:** `classes/druid/Druid.lua:334, 425`
+**Issue:** Two stale TODO comments reference work that was completed in this or a prior phase:
 
-**Fix:** Remove the redundant `and v30 ~= nil` from both assertions:
-```lua
-assert(type(v30) == "number", "estimatePlayerDPS(30) should return a number, got: " .. tostring(v30))
-```
+- Line 334: `-- TODO reshift energy restore should consider the head enchant: whether the wolfheart enchant exists`
+- Line 425: `-- TODO reshift energy restore should consider wolfheart head enchant`
 
-### IN-02: Development artifact comment in `isTrivialBattle`
+Both are now resolved by `computeReshiftEnergy()` (lines 568-578), which checks for Wolfshead Helm (+20 energy) and Furor talent ranks. The TODOs should be removed to avoid misleading future maintainers.
+
+**Fix:** Remove both TODO comment lines (334 and 425).
+
+### IN-02: [CHANGED] development artifact comment in isTrivialBattle
 
 **File:** `classes/druid/Druid.lua:823`
-**Issue:** The comment `-- [CHANGED] ^^^ 500 replaced with estimatePlayerDPS() call` is a development/transition artifact. It describes what changed rather than what the code does or why. Similar to `-- [NEW]` / `-- [D-04]` annotations used elsewhere, this could be cleaned up to a stable descriptive comment.
+**Issue:** The comment `-- [CHANGED] ^^^ 500 replaced with estimatePlayerDPS() call` is a transient development marker. It describes what changed during implementation rather than what the code does or why. This provides no ongoing value -- future maintainers will never see the old `500` literal and won't understand what "changed" means. The project conventions use `[D-01]` / `[D-02]` style annotations that describe intent, not change history.
 
-**Fix:** Replace with a stable comment:
+**Fix:** Replace with a stable intent comment or remove:
 ```lua
--- [D-01] Per-player DPS estimate from level-adaptive lookup, replaces old hardcoded 500
-```
-
-### IN-03: `isTrivialBattle` comment could clarify per-person semantics
-
-**File:** `classes/druid/Druid.lua:818`
-**Issue:** The comment `-- if the target's max health is less than we attack 25s worth of DPS` is accurate for the solo case but doesn't explain the `(mateNearMyTargetCount + 1)` multiplier which accounts for nearby group members. The old comment (before this phase) mentioned "each person" which conveyed the group-scaling intent. The current comment omits this detail.
-
-**Fix:** Suggest clarifying:
-```lua
--- if the target's max health is less than all nearby attackers' combined DPS over 25s
+-- [D-01] Per-player DPS estimate from level-adaptive lookup
 ```
 
 ---
 
-_Reviewed: 2026-06-20_
+_Reviewed: 2026-06-20T03:10:00Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
