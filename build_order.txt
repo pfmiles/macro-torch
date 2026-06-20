@@ -29,6 +29,7 @@ classes/druid/cat.lua
 classes/druid/bear.lua
 classes/druid/utility.lua
 classes/druid/combo.lua
+classes/druid/leveling.lua
 # classes/ — Hunter (Phase 8)
 classes/hunter/Hunter.lua
 classes/hunter/combat.lua
