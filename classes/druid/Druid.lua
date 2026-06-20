@@ -577,6 +577,52 @@ function macroTorch.computeReshiftEnergy()
     return energy
 end
 
+-- 基于玩家等级估算猫德DPS，用于 isTrivialBattle 条件B (D-01, D-04, D-05)
+function macroTorch.estimatePlayerDPS(level)
+    if not level then
+        level = UnitLevel('player')
+    end
+    -- [D-04] 60-level hard guard: preserve level-60 behavior exactly
+    if level == 60 then
+        return 500
+    end
+    -- [D-01] Level-DPS lookup table
+    if level >= 50 then
+        return 350
+    elseif level >= 40 then
+        return 200
+    elseif level >= 30 then
+        return 120
+    elseif level >= 20 then
+        return 60
+    else
+        return 25  -- [D-05] conservative fallback for pre-cat levels
+    end
+end
+
+-- 基于玩家等级返回斩杀血量阈值，用于 isKillShotOrLastChance 条件B (D-02, D-04, D-05)
+function macroTorch.getKSThreshold(level)
+    if not level then
+        level = UnitLevel('player')
+    end
+    -- [D-04] 60-level hard guard: preserve level-60 behavior exactly
+    if level == 60 then
+        return 1750
+    end
+    -- [D-02] Single KS health threshold lookup table
+    if level >= 50 then
+        return 1450
+    elseif level >= 40 then
+        return 1050
+    elseif level >= 30 then
+        return 700
+    elseif level >= 20 then
+        return 400
+    else
+        return 200  -- [D-05] conservative fallback for pre-cat levels
+    end
+end
+
 function macroTorch.computeShred_E()
     local SHRED_E = 60
     return SHRED_E - macroTorch.player.talentRank('Improved Shred') * 6
