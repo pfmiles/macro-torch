@@ -815,10 +815,12 @@ end
 function macroTorch.isTrivialBattle(clickContext)
     if clickContext.isTrivialBattle == nil then
         local trivialDieTime = 25
-        -- if the target's max health is less than we attack 15s with 500dps each person
+        -- if the target's max health is less than we attack 25s worth of DPS
         clickContext.isTrivialBattle = macroTorch.target.willDieInSeconds(trivialDieTime) or
                 macroTorch.target.healthMax <=
-                        (macroTorch.player.mateNearMyTargetCount + 1) * 500 * trivialDieTime
+                        (macroTorch.player.mateNearMyTargetCount + 1) *
+                        macroTorch.estimatePlayerDPS() * trivialDieTime
+        -- [CHANGED] ^^^ 500 replaced with estimatePlayerDPS() call
     end
     return clickContext.isTrivialBattle
 end
@@ -849,85 +851,25 @@ end
 
 -- 撕咬前的泄能逻辑: 当前多余能量用作撕咬加成不划算，将其拆成2个技能使用
 
-
-macroTorch.KS_CP1_Health = 750
-macroTorch.KS_CP2_Health = 1000
-macroTorch.KS_CP3_Health = 1250
-macroTorch.KS_CP4_Health = 1500
-macroTorch.KS_CP5_Health = 1750
-
-macroTorch.KS_CP1_Health_group = 1500
-macroTorch.KS_CP2_Health_group = 1850
-macroTorch.KS_CP3_Health_group = 2250
-macroTorch.KS_CP4_Health_group = 2650
-macroTorch.KS_CP5_Health_group = 3000
-
-macroTorch.KS_CP1_Health_raid_pps = macroTorch.KS_CP1_Health_group / 5
-macroTorch.KS_CP2_Health_raid_pps = macroTorch.KS_CP2_Health_group / 5
-macroTorch.KS_CP3_Health_raid_pps = macroTorch.KS_CP3_Health_group / 5
-macroTorch.KS_CP4_Health_raid_pps = macroTorch.KS_CP4_Health_group / 5
-macroTorch.KS_CP5_Health_raid_pps = macroTorch.KS_CP5_Health_group / 5
-
 macroTorch.RIP_BASE_DURATION = 10
 macroTorch.RAKE_DURATION = 9
 macroTorch.COWER_THREAT_THRESHOLD = 75
 
 -- 预测判断当前是否只有最后一次机会攻击目标了，目标可能快死了
 function macroTorch.isKillShotOrLastChance(clickContext)
+    -- [Condition A] Primary path: HRPS-based prediction (highest accuracy)
     if macroTorch.target.willDieInSeconds(2) then
         return true
     end
+    -- [Condition B] Fallback: level-adaptive health threshold
+    -- Only used when HRPS data is insufficient (e.g., just switched target)
     local targetHealth = macroTorch.target.health
     local fightWorldBoss = macroTorch.target.classification == 'worldboss'
-    local isPvp = macroTorch.target.isPlayerControlled or macroTorch.player.isInBattleField()
     if macroTorch.player.isInGroup and fightWorldBoss then
-        -- fight world boss in a group or raid
         return clickContext.comboPoints >= 3 and macroTorch.target.healthPercent <= 2
-    elseif macroTorch.player.isInGroup and not macroTorch.player.isInRaid and not fightWorldBoss and not isPvp then
-        -- normal battle in a 5-man group
-        local nearMateNum = macroTorch.player.mateNearMyTargetCount or 0
-        local less = 4 - nearMateNum
-        return clickContext.comboPoints == 1 and
-                targetHealth <
-                        (macroTorch.KS_CP1_Health_group - less * (macroTorch.KS_CP1_Health_group - macroTorch.KS_CP1_Health) / 4) or
-                clickContext.comboPoints == 2 and
-                        targetHealth <
-                                (macroTorch.KS_CP2_Health_group - less * (macroTorch.KS_CP2_Health_group - macroTorch.KS_CP2_Health) / 4) or
-                clickContext.comboPoints == 3 and
-                        targetHealth <
-                                (macroTorch.KS_CP3_Health_group - less * (macroTorch.KS_CP3_Health_group - macroTorch.KS_CP3_Health) / 4) or
-                clickContext.comboPoints == 4 and
-                        targetHealth <
-                                (macroTorch.KS_CP4_Health_group - less * (macroTorch.KS_CP4_Health_group - macroTorch.KS_CP4_Health) / 4) or
-                clickContext.comboPoints == 5 and
-                        targetHealth <
-                                (macroTorch.KS_CP5_Health_group - less * (macroTorch.KS_CP5_Health_group - macroTorch.KS_CP5_Health) / 4)
-    elseif macroTorch.player.isInRaid and not fightWorldBoss and not isPvp then
-        -- normal battle in a raid
-        local nearMateNum = macroTorch.player.mateNearMyTargetCount or 0
-
-        local more = nearMateNum - 5 + 1
-        if more < 0 then
-            more = 0
-        end
-        return clickContext.comboPoints == 1 and
-                targetHealth < (macroTorch.KS_CP1_Health_group + macroTorch.KS_CP1_Health_raid_pps * more) or
-                clickContext.comboPoints == 2 and
-                        targetHealth < (macroTorch.KS_CP2_Health_group + macroTorch.KS_CP2_Health_raid_pps * more) or
-                clickContext.comboPoints == 3 and
-                        targetHealth < (macroTorch.KS_CP3_Health_group + macroTorch.KS_CP3_Health_raid_pps * more) or
-                clickContext.comboPoints == 4 and
-                        targetHealth < (macroTorch.KS_CP4_Health_group + macroTorch.KS_CP4_Health_raid_pps * more) or
-                clickContext.comboPoints == 5 and
-                        targetHealth < (macroTorch.KS_CP5_Health_group + macroTorch.KS_CP5_Health_raid_pps * more)
-    else
-        -- fight alone or pvp
-        return clickContext.comboPoints == 1 and targetHealth < macroTorch.KS_CP1_Health or
-                clickContext.comboPoints == 2 and targetHealth < macroTorch.KS_CP2_Health or
-                clickContext.comboPoints == 3 and targetHealth < macroTorch.KS_CP3_Health or
-                clickContext.comboPoints == 4 and targetHealth < macroTorch.KS_CP4_Health or
-                clickContext.comboPoints == 5 and targetHealth < macroTorch.KS_CP5_Health
     end
+    -- [D-02] Level-adaptive single threshold replaces 15 per-CP Health constants + 55-line CP-mode branching
+    return targetHealth < macroTorch.getKSThreshold()
 end
 
 -- 判断目标是否快死了，我只有最后一次攻击机会了，那么此时应该尽量用bite把当前剩余的星都用掉从而最大化dps,不浪费星
