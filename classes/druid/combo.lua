@@ -145,7 +145,7 @@ function macroTorch.catAtk(rough)
         -- 保持FF(野性精灵之火)效果，如果目标不免疫FF的话; 且由于精灵之火的释放成本很低，无须消耗能量，成本仅仅是1s的GCD，且跟其它攻击技能或普通攻击一样有概率触发ooc，因此我会在"没有别的事情可干"的时候释放一发精灵之火，即使目标身上已有该效果
         macroTorch.keepFF(clickContext)
         -- 11.普通攻击技能模块，攒星的主要技能，主要是claw和shred, 根据实测结果，依据目标身上的流血效果数量和当前自己的站位而灵活选择claw或shred释放
-        if macroTorch.isFightStarted(clickContext) and clickContext.comboPoints < 5 and (macroTorch.isRakePresent(clickContext) or clickContext.isImmuneRake) then
+        if macroTorch.isFightStarted(clickContext) and clickContext.comboPoints < 5 and (macroTorch.isRakePresent(clickContext) or clickContext.isImmuneRake or not macroTorch.isSpellExist('Rake', 'spell')) then
             macroTorch.regularAttack(clickContext)
         end
         -- 12.reshift模块，从cat形态变身到cat形态(形态不实际改变的"变身"，乌龟服特有技能)
