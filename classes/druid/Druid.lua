@@ -513,6 +513,21 @@ function macroTorch.getOpenerHealthThreshold(level)
     end
 end
 
+-- 返回法力药水使用阈值（最大法力的30%），适配所有等级
+function macroTorch.getManaPotionThreshold()
+    return UnitMaxMana('player') * 0.3
+end
+
+-- 判断是否应该使用法力药水
+-- 使用UnitMaxMana百分比阈值（非绝对值），确保低等级法力池也能正确缩放
+-- 战斗中药水有2分钟CD，防止连续浪费
+function macroTorch.shouldUseManaPotion()
+    local player = macroTorch.player
+    local currentMana = player.humanFormMana
+    local threshold = macroTorch.getManaPotionThreshold()
+    return currentMana < threshold
+end
+
 function macroTorch.computeShred_E()
     local SHRED_E = 60
     return SHRED_E - macroTorch.player.talentRank('Improved Shred') * 6
