@@ -331,7 +331,6 @@ function macroTorch.Druid:new()
 
         -- the threat/aggro threshold to use cower
         -- the energy resetting value after reshift
-        -- TODO reshift energy restore should consider the head enchant: whether the wolfheart enchant exists
         -- [NEW] D-04: replaced hardcoded 60 with dynamic computation from Furor talent + Wolfshead Helm
         clickContext.RESHIFT_ENERGY = macroTorch.computeReshiftEnergy()
         clickContext.RESHIFT_E_DIFF_THRESHOLD = 0
@@ -422,7 +421,7 @@ function macroTorch.Druid:new()
             end
             -- 12.reshift模块，从cat形态变身到cat形态(形态不实际改变的“变身”，乌龟服特有技能)
             -- 将能量固定重置为60。判断逻辑：当“无事可做”时释放，即当前能量不足以支持任何合理技能时
-            -- TODO reshift energy restore should consider wolfheart head enchant
+            -- reshift energy is now dynamically computed by computeReshiftEnergy() (Furor + Wolfshead Helm)
             macroTorch.reshiftMod(clickContext)
         end
     end
@@ -820,7 +819,7 @@ function macroTorch.isTrivialBattle(clickContext)
                 macroTorch.target.healthMax <=
                         (macroTorch.player.mateNearMyTargetCount + 1) *
                         macroTorch.estimatePlayerDPS() * trivialDieTime
-        -- [CHANGED] ^^^ 500 replaced with estimatePlayerDPS() call
+        -- [D-01] Per-player DPS estimate from level-adaptive lookup
     end
     return clickContext.isTrivialBattle
 end
@@ -1393,9 +1392,9 @@ macroTorch.SelfTest:register("Druid: estimatePlayerDPS bracket boundaries return
     local v30 = macroTorch.estimatePlayerDPS(30)
     local v40 = macroTorch.estimatePlayerDPS(40)
     local v50 = macroTorch.estimatePlayerDPS(50)
-    assert(type(v30) == "number" and v30 ~= nil, "estimatePlayerDPS(30) should return a number, got: " .. tostring(v30))
-    assert(v40 >= 200, "estimatePlayerDPS(40) should be >= 200, got: " .. tostring(v40))
-    assert(v50 >= 350, "estimatePlayerDPS(50) should be >= 350, got: " .. tostring(v50))
+    assert(v30 == 120, "estimatePlayerDPS(30) should return 120, got: " .. tostring(v30))
+    assert(v40 == 200, "estimatePlayerDPS(40) should return 200, got: " .. tostring(v40))
+    assert(v50 == 350, "estimatePlayerDPS(50) should return 350, got: " .. tostring(v50))
 end, true)
 
 macroTorch.SelfTest:register("Druid: getKSThreshold bracket boundaries return valid values", function()
@@ -1403,9 +1402,9 @@ macroTorch.SelfTest:register("Druid: getKSThreshold bracket boundaries return va
     local v30 = macroTorch.getKSThreshold(30)
     local v40 = macroTorch.getKSThreshold(40)
     local v50 = macroTorch.getKSThreshold(50)
-    assert(type(v30) == "number" and v30 ~= nil, "getKSThreshold(30) should return a number, got: " .. tostring(v30))
-    assert(v40 >= 1050, "getKSThreshold(40) should be >= 1050, got: " .. tostring(v40))
-    assert(v50 >= 1450, "getKSThreshold(50) should be >= 1450, got: " .. tostring(v50))
+    assert(v30 == 700, "getKSThreshold(30) should return 700, got: " .. tostring(v30))
+    assert(v40 == 1050, "getKSThreshold(40) should return 1050, got: " .. tostring(v40))
+    assert(v50 == 1450, "getKSThreshold(50) should return 1450, got: " .. tostring(v50))
 end, true)
 
 macroTorch.SelfTest:register("Druid: estimatePlayerDPS(15) returns conservative fallback 25 (D-05)", function()
