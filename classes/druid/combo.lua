@@ -92,7 +92,7 @@ function macroTorch.catAtk(rough)
     -- 1.health & mana saver in combat *
     if macroTorch.isFightStarted(clickContext) then
         macroTorch.combatUrgentHPRestore(clickContext)
-        if player.humanFormMana < 350 then
+        if macroTorch.shouldUseManaPotion() then
             player.use('Mana Potion')
         end
     end
