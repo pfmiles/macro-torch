@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-06-19T17:20:38.720Z"
+last_updated: "2026-06-20T01:53:25.123Z"
 last_activity: 2026-06-19
 progress:
-  total_phases: 12
+  total_phases: 13
   completed_phases: 9
   total_plans: 27
   completed_plans: 27
-  percent: 75
+  percent: 69
 stopped_at: context exhaustion at 76% (2026-06-18)
 ---
 
@@ -38,6 +38,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 | Phase 9: pokemonLoad 移至 Player 层 | 🔵 in_progress | 2026-06-16 | — | — |
 | Phase 10: Druid 综合一键宏方法（druidAtk/Aoe/Heal/Defend/Control） | ✅ complete | 2026-06-16 | 2026-06-17 | 2 plans |
 | Phase 13: catAtk 小号练级适配（技能存在性检查、动态能量消耗、降级策略） | 🔵 in_progress | 2026-06-20 | — | 1/2 plans |
+| Phase 14: 战斗时长预测与斩杀判断等级自适应（isTrivialBattle/isKillShotOrLastChance 静态估算动态化） | ⚪ planned | 2026-06-20 | — | — |
 
 ## Accumulated Context
 
@@ -48,6 +49,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 - Phase 7 added: Druid 形态判断语义化方法 — 新增 isInCatForm/isInBearForm 等 5 个语义方法替换 isFormActive 硬编码调用 (2026-06-15)
 - Phase 10 added: Druid 综合一键宏方法 — 创建 druidAtk/druidAoe/druidHeal/druidDefend/druidControl 5 个方法，内部按形态 if-else 路由到对应子方法 (2026-06-16)
 - Phase 13 added: catAtk 小号练级适配 — 技能存在性检查、动态能量消耗计算、低等级降级策略，保持60级满级DPS能力不变 (2026-06-19)
+- Phase 14 added: 战斗时长预测与斩杀判断等级自适应 — 将 isTrivialBattle 和 isKillShotOrLastChance 中硬编码的60级静态DPS估算替换为等级自适应动态估算，使练级阶段也能准确判断快速战斗和斩杀线 (2026-06-20)
 
 ## Key Decisions
 
@@ -130,7 +132,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 
 ## Session
 
-**Last session:** 2026-06-19T17:20:38.707Z
+**Last session:** 2026-06-20T01:53:25.111Z
 **Last activity:** 2026-06-19
-**Stopped at:** Phase 13 context gathered
-**Resume file:** .planning/phases/13-catatk-60-dps/13-CONTEXT.md
+**Stopped at:** Phase 14 context gathered
+**Resume file:** .planning/phases/14-istrivialbattle-iskillshotorlastchance-60-dps-b/14-CONTEXT.md
