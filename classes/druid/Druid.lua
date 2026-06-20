@@ -868,8 +868,7 @@ function macroTorch.getMinimumAffordableAbilityCost(clickContext)
     end
 
     -- 4. Rake check (debuff maintenance)
-    -- [NEW GUARD] D-02: skip Rake check if spell not learned
-    if macroTorch.isSpellExist('Rake', 'spell') and not macroTorch.isRakePresent(clickContext) and not clickContext.isImmuneRake then
+    if not macroTorch.isRakePresent(clickContext) and not clickContext.isImmuneRake then
         return clickContext.RAKE_E, 'Rake'
     end
 
