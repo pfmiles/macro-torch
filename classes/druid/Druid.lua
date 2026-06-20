@@ -492,6 +492,27 @@ function macroTorch.getKSThreshold(level)
     end
 end
 
+-- 基于玩家等级返回opener血量阈值，高于此值使用Pounce，低于则用Ravage秒杀 (D-04, D-05)
+function macroTorch.getOpenerHealthThreshold(level)
+    if not level then
+        level = UnitLevel('player')
+    end
+    -- [D-04] 60-level hard guard: preserve level-60 behavior exactly
+    if level == 60 then
+        return 1500
+    end
+    -- Level-threshold lookup table
+    if level >= 50 then
+        return 1000
+    elseif level >= 40 then
+        return 600
+    elseif level >= 30 then
+        return 300
+    else
+        return 150  -- [D-05] conservative fallback for pre-30 levels
+    end
+end
+
 function macroTorch.computeShred_E()
     local SHRED_E = 60
     return SHRED_E - macroTorch.player.talentRank('Improved Shred') * 6
