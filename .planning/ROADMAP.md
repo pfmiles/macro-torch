@@ -747,11 +747,11 @@ Plans:
 
 **Requirements**: REQ-14-DPS, REQ-14-KS, REQ-14-DELETE, REQ-14-GUARD, REQ-14-FALLBACK, REQ-14-TEST
 **Depends on:** Phase 13
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 
-- [ ] 14-01-PLAN.md — Add estimatePlayerDPS() + getKSThreshold(), modify isTrivialBattle condition B, simplify isKillShotOrLastChance, delete 15 KS_CP* constants, add 6 Category I selftests
+- [x] 14-01-PLAN.md — Add estimatePlayerDPS() + getKSThreshold(), modify isTrivialBattle condition B, simplify isKillShotOrLastChance, delete 15 KS_CP* constants, add 6 Category I selftests
 
 ---
 
