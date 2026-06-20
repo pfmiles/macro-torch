@@ -741,6 +741,18 @@ Plans:
 
 - [x] 13-02-PLAN.md — Selftest: 8个Category H自检注册 (computeReshiftEnergy范围验证/决策函数guard验证/level60对等验证/fallback链验证) (Wave 2)
 
+### Phase 14: 改进战斗时长预测与斩杀判断 — 将 isTrivialBattle 和 isKillShotOrLastChance 中硬编码的60级静态DPS估算（条件B）替换为等级自适应的动态估算，使练级阶段也能准确判断'快速战斗'和'斩杀线'
+
+**Goal:** 将 `isTrivialBattle` 和 `isKillShotOrLastChance` 中硬编码的60级静态DPS估算（条件B）替换为等级自适应的动态估算，使练级阶段也能准确判断"快速战斗"和"斩杀线"
+
+**Requirements**: REQ-14-DPS, REQ-14-KS, REQ-14-DELETE, REQ-14-GUARD, REQ-14-FALLBACK, REQ-14-TEST
+**Depends on:** Phase 13
+**Plans:** 1 plan
+
+Plans:
+
+- [ ] 14-01-PLAN.md — Add estimatePlayerDPS() + getKSThreshold(), modify isTrivialBattle condition B, simplify isKillShotOrLastChance, delete 15 KS_CP* constants, add 6 Category I selftests
+
 ---
 
 ## Task 统计
