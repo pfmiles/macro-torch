@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-06-20T01:53:25.123Z"
-last_activity: 2026-06-19
+last_updated: "2026-06-20T03:05:25.115Z"
+last_activity: 2026-06-20
 progress:
   total_phases: 13
-  completed_phases: 9
-  total_plans: 27
-  completed_plans: 27
-  percent: 69
+  completed_phases: 10
+  total_plans: 28
+  completed_plans: 28
+  percent: 77
 stopped_at: context exhaustion at 76% (2026-06-18)
 ---
 
@@ -109,6 +109,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 | Phase 08 P02 | N/A | 3 tasks | 4 files |
 | Phase 08 P03 | N/A | 3 tasks | 5 files |
 | Phase 13-catatk-60-dps P02 | 122 | 1 tasks | 1 files |
+| Phase 14-istrivialbattle-iskillshotorlastchance-60-dps-b P01 | 462 | 3 tasks | 6 files |
 
 ## Decisions
 
@@ -120,6 +121,8 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 - [Phase 10 P01]: Created classes/druid/combo.lua with 5 global combo methods (druidAtk/druidAoe/druidHeal/druidDefend/druidControl) — form-based if-elseif routing, one-action-per-press design, 5 optional SelfTest registrations. druidHeal uses CancelShapeshiftForm for form cancellation. druidControl merges old druidStun logic with target type detection for Hibernate vs Entangling Roots.
 - [Phase 10 P02]: Removed bear routing block from catAtk (lines 380-384) and isInBearForm cache (line 348) in Druid.lua — catAtk is now pure cat-form. Deleted 3 obsolete functions (druidStun/druidDefend/druidControl) from utility.lua — druidBuffs retained unchanged. Added combo.lua to build_order.txt after utility.lua.
 - [Phase ?]: Category H tests placed before Category G2 for logical grouping: G1 (field integrity) -> H (guard verification) -> G2 (form semantics)
+- [Phase ?]: HRPS primary
+- [Phase ?]: Phase 14: Dropped CP-mode granularity from isKillShotOrLastChance condition B — single threshold per level adequate since HRPS is primary kill-shot path (D-02)
 
 ## Session
 
@@ -132,7 +135,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 
 ## Session
 
-**Last session:** 2026-06-20T01:53:25.111Z
-**Last activity:** 2026-06-19
+**Last session:** 2026-06-20T03:05:25.107Z
+**Last activity:** 2026-06-20
 **Stopped at:** Phase 14 context gathered
 **Resume file:** .planning/phases/14-istrivialbattle-iskillshotorlastchance-60-dps-b/14-CONTEXT.md
