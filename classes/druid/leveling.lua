@@ -49,7 +49,7 @@ function macroTorch.cat_lv20()
 
     -- ooc (Omen of Clarity): 触发清晰预兆时优先用 Claw（免费施放）
     if macroTorch.player.isOoc then
-        macroTorch.player.claw()
+        macroTorch.player.claw('ready')
         return
     end
 
