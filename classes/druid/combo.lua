@@ -106,7 +106,8 @@ function macroTorch.catAtk(rough)
         end
         -- 4.rushMod, including trinkets, berserk and potions, normally triggered by holding shift while fighting
         macroTorch.burstMod(clickContext)
-        -- 5.opener mod, 因为Ravage差不多可以秒掉1500血以内的目标，除此之外均使用Pounce以增加后续claw的伤害
+        -- 5.opener mod, 根据等级动态判断：高于阈值用Pounce（增加claw伤害），低于阈值用Ravage秒杀
+        -- 阈值由 getOpenerHealthThreshold() 计算 (60级=1500, 50-59=1000, 40-49=600, 30-39=300, <30=150)
         -- [NEW GUARD] D-02: skip opener module if neither opener skill is available
         local hasPounce = macroTorch.isSpellExist('Pounce', 'spell')
         local hasRavage = macroTorch.isSpellExist('Ravage', 'spell')
