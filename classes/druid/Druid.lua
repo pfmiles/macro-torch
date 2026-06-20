@@ -515,11 +515,11 @@ end
 
 -- 返回法力药水使用阈值（最大法力的30%），适配所有等级
 function macroTorch.getManaPotionThreshold()
-    return UnitMaxMana('player') * 0.3
+    return UnitManaMax('player') * 0.3
 end
 
 -- 判断是否应该使用法力药水
--- 使用UnitMaxMana百分比阈值（非绝对值），确保低等级法力池也能正确缩放
+-- 使用UnitManaMax百分比阈值（非绝对值），确保低等级法力池也能正确缩放
 -- 战斗中药水有2分钟CD，防止连续浪费
 function macroTorch.shouldUseManaPotion()
     local player = macroTorch.player
