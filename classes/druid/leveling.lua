@@ -22,15 +22,14 @@ function macroTorch.catLeveling()
     if level < 24 then
         -- Rake 24级可学，在此之前只有 Claw + Rip
         macroTorch.cat_lv20()
-    -- elseif level <= 30 then
+    -- elseif level < 34 then
     --     macroTorch.cat_lv30()
-    -- elseif level <= 40 then
+    -- elseif level < 44 then
     --     macroTorch.cat_lv40()
-    -- elseif level <= 50 then
+    -- elseif level < 54 then
     --     macroTorch.cat_lv50()
-    else
-        -- 24-59 级：Rake 已学，catAtk 的 regularAttack 条件可正常运作
-        macroTorch.catAtk()
+    -- else
+    --     54-59 级待添加
     end
 end
 
