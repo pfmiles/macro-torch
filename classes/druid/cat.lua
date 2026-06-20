@@ -14,6 +14,7 @@ function macroTorch.burstMod(clickContext)
 
         -- berserk
         if not flags.berserk then
+            if not macroTorch.isSpellExist('Berserk', 'spell') then return end
             if not clickContext.berserk then
                 player.berserk('ready')
             end
@@ -399,7 +400,7 @@ function macroTorch.atkPowerBurst(clickContext)
     local target = macroTorch.target
 
     -- trinket
-    if player.isTrinket2CooledDown() then
+    if player.isTrinket2CooledDown() and GetInventoryItemLink("player", 14) then
         player.useTrinket2()
     end
 
