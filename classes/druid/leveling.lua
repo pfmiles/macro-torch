@@ -34,7 +34,7 @@ function macroTorch.catLeveling()
 end
 
 -- 低等级练级宏（Claw + Rip，适用于未学 Rake 的阶段）
--- 逻辑：有星且目标无Rip → 挂Rip，否则 Claw
+-- 逻辑：触发ooc → Claw（免费），有星且目标无Rip → 挂Rip，否则 Claw
 function macroTorch.cat_lv20()
     if not macroTorch.player.isInCatForm then
         return
@@ -46,6 +46,12 @@ function macroTorch.cat_lv20()
     end
 
     macroTorch.player.startAutoAtk()
+
+    -- ooc (Omen of Clarity): 触发清晰预兆时优先用 Claw（免费施放）
+    if macroTorch.player.isOoc then
+        macroTorch.player.claw()
+        return
+    end
 
     if macroTorch.player.comboPoints > 0
             and macroTorch.isSpellExist('Rip', 'spell')
