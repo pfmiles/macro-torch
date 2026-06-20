@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-06-20T03:05:25.115Z"
+last_updated: "2026-06-20T05:52:57.505Z"
 last_activity: 2026-06-20
 progress:
   total_phases: 14
-  completed_phases: 11
-  total_plans: 29
-  completed_plans: 29
-  percent: 79
+  completed_phases: 10
+  total_plans: 28
+  completed_plans: 28
+  percent: 71
 stopped_at: context exhaustion at 76% (2026-06-18)
 ---
 
@@ -135,10 +135,11 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 | 260619-1ry | 技能释放默认最高等级 + 可选rank参数 | 2026-06-18 | 33a9a92 | [260619-1ry-rank-1-based](./quick/260619-1ry-rank-1-based/) |
 | 260619-qbj | casterAtk加入Faerie Fire/Insect Swarm debuff + Starfire交替循环 | 2026-06-19 | c7549ff | [260619-qbj-add-faerie-fire-insect-swarm-debuff-and-](./quick/260619-qbj-add-faerie-fire-insect-swarm-debuff-and-/) |
 | 260620-gpw | burstMod/atkPowerBurst 存在性守卫 (Berserk技能+Trinket2饰品槽) | 2026-06-20 | 7f03c82 | [260620-gpw-catatk](./quick/260620-gpw-catatk/) |
+| 260620-j2p | Opener血量阈值+法力药水阈值改为level-adaptive | 2026-06-20 | af283bd | [260620-j2p-opener-mana-level-adaptive](./quick/260620-j2p-opener-mana-level-adaptive/) |
 
 ## Session
 
-**Last session:** 2026-06-20T03:05:25.107Z
+**Last session:** 2026-06-20T05:52:57.492Z
 **Last activity:** 2026-06-20
 **Stopped at:** Phase 14 context gathered
 **Resume file:** .planning/phases/14-istrivialbattle-iskillshotorlastchance-60-dps-b/14-CONTEXT.md
