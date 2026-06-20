@@ -157,7 +157,11 @@ end
 
 function macroTorch.druidAtk(rough)
     if macroTorch.player.isInCatForm then
-        macroTorch.catAtk(rough)
+        if macroTorch.player.level >= 60 then
+            macroTorch.catAtk(rough)
+        else
+            macroTorch.catLeveling()
+        end
     elseif macroTorch.player.isInBearForm then
         macroTorch.bearAtk(rough)
     else
