@@ -132,6 +132,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 |---|-------------|------|--------|-----------|
 | 260619-1ry | 技能释放默认最高等级 + 可选rank参数 | 2026-06-18 | 33a9a92 | [260619-1ry-rank-1-based](./quick/260619-1ry-rank-1-based/) |
 | 260619-qbj | casterAtk加入Faerie Fire/Insect Swarm debuff + Starfire交替循环 | 2026-06-19 | c7549ff | [260619-qbj-add-faerie-fire-insect-swarm-debuff-and-](./quick/260619-qbj-add-faerie-fire-insect-swarm-debuff-and-/) |
+| 260620-gpw | burstMod/atkPowerBurst 存在性守卫 (Berserk技能+Trinket2饰品槽) | 2026-06-20 | 7f03c82 | [260620-gpw-catatk](./quick/260620-gpw-catatk/) |
 
 ## Session
 
