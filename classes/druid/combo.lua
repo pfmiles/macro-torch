@@ -13,11 +13,13 @@ function macroTorch.casterAtk()
     elseif not macroTorch.target.buffed('Insect Swarm', 'Spell_Nature_InsectSwarm') then
         macroTorch.player.insect_swarm()
     elseif macroTorch.context.starfireNext then
-        macroTorch.player.starfire()
-        macroTorch.context.starfireNext = false
+        if macroTorch.player.starfire() then
+            macroTorch.context.starfireNext = false
+        end
     else
-        macroTorch.player.wrath()
-        macroTorch.context.starfireNext = true
+        if macroTorch.player.wrath() then
+            macroTorch.context.starfireNext = true
+        end
     end
 end
 
