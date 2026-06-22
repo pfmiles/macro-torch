@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Executing Phase 16
-last_updated: "2026-06-22T16:25:17Z"
+last_updated: "2026-06-22T16:33:37.308Z"
 last_activity: 2026-06-22
 progress:
   total_phases: 15
-  completed_phases: 10
+  completed_phases: 11
   total_plans: 30
-  completed_plans: 29
-  percent: 67
+  completed_plans: 30
+  percent: 73
 stopped_at: context exhaustion at 76% (2026-06-18)
 ---
 
@@ -115,6 +115,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 | Phase 13-catatk-60-dps P02 | 122 | 1 tasks | 1 files |
 | Phase 14-istrivialbattle-iskillshotorlastchance-60-dps-b P01 | 462 | 3 tasks | 6 files |
 | Phase 16-catatk-dps-catatk-catleveling P01 | 141 | 1 tasks | 1 files |
+| Phase 16-catatk P02 | 87 | 1 tasks | 1 files |
 
 ## Decisions
 
@@ -129,6 +130,8 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 - [Phase ?]: HRPS primary
 - [Phase 15]: Moved catAtk from Druid instance method (obj.catAtk) to combo.lua global function (macroTorch.catAtk) — function body uses only macroTorch.* globals, no self/obj dependency; druidAtk call updated from macroTorch.player.catAtk to macroTorch.catAtk; added selftest for new function location
 - [Phase 16 P01]: Implemented catLeveling() — 210-line leveling one-button macro with 9 modules in priority order, no rough/ERPS/reshift/relic, all 8 skills guarded by isSpellExist, inline simplified FF and Shred-vs-Claw decisions. catAtk and catLeveling are fully independent.
+- [Phase ?]: test
+- [Phase ?]: Phase 16 P02: Added 5 Category J SelfTest registrations for catLeveling in core/selftest.lua — verifying function presence, shared decision function references (isKillShotOrLastChance/shouldCastRip/shouldUseBite), clickContext correctness, catAtk invariance, and ERPS/reshift independence. 2 core (isOptional=false) + 3 optional (isOptional=true) tests with UnitClass guard for non-Druid logins.
 
 ## Session
 
@@ -143,7 +146,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 
 ## Session
 
-**Last session:** 2026-06-22T16:25:17Z
+**Last session:** 2026-06-22T16:32:50.190Z
 **Last activity:** 2026-06-22
 **Stopped at:** Completed 16-01-PLAN — catLeveling 练级版一键宏实现
-**Resume file:** none
+**Resume file:** None
