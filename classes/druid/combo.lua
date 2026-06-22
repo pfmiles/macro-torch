@@ -203,9 +203,15 @@ function macroTorch.druidHeal()
         if lowestHp < 50 then
             macroTorch.player.healing_touch(nil, false)
         elseif lowestHp < 70 then
-            macroTorch.player.regrowth(nil, false)
+            if not macroTorch.target.buffed(nil, 'Spell_Nature_ResistNature') then
+                macroTorch.player.regrowth(nil, false)
+            elseif not macroTorch.target.buffed(nil, 'Spell_Nature_Rejuvenation') then
+                macroTorch.player.rejuvenation(nil, false)
+            end
         else
-            macroTorch.player.rejuvenation(nil, false)
+            if not macroTorch.target.buffed(nil, 'Spell_Nature_Rejuvenation') then
+                macroTorch.player.rejuvenation(nil, false)
+            end
         end
     else
         if not macroTorch.player.buffed(nil, 'Spell_Nature_Rejuvenation') then
