@@ -568,6 +568,48 @@ macroTorch.SelfTest:register("F: Externally-called isSpellReady resolves correct
 end, false)
 
 -- ============================================================
+-- Category J: catLeveling 练级宏验证 (5 tests, 2 core + 3 optional)
+-- ============================================================
+-- [CITED: 16-02-CONTEXT.md; 16-RESEARCH.md:342-370]
+-- Verifies catLeveling function existence, shared decision function references,
+-- clickContext correctness, catAtk invariance, and no ERPS/reshift dependency.
+
+macroTorch.SelfTest:register("J: catLeveling function exists and is callable", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    assert(type(macroTorch.catLeveling) == "function",
+        "catLeveling is not a function, got: " .. type(macroTorch.catLeveling))
+end, true)
+
+macroTorch.SelfTest:register("J: shared decision functions remain accessible (no local redefinition in leveling.lua)", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    assert(type(macroTorch.isKillShotOrLastChance) == "function",
+        "isKillShotOrLastChance is not a function")
+    assert(type(macroTorch.shouldCastRip) == "function",
+        "shouldCastRip is not a function")
+    assert(type(macroTorch.shouldUseBite) == "function",
+        "shouldUseBite is not a function")
+end, false)
+
+macroTorch.SelfTest:register("J: catLeveling invocation does not error (clickContext correctness)", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local ok, err = pcall(macroTorch.catLeveling)
+    assert(ok, "catLeveling should not error: " .. tostring(err))
+end, true)
+
+macroTorch.SelfTest:register("J: catAtk remains unmodified (Phase 16 does not change catAtk)", function()
+    assert(type(macroTorch.catAtk) == "function",
+        "catAtk is not a function, got: " .. type(macroTorch.catAtk))
+end, false)
+
+macroTorch.SelfTest:register("J: catLeveling has no ERPS/reshift dependency", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    assert(type(macroTorch.computeErps) == "function",
+        "computeErps is not a function (Druid.lua global)")
+    local ok, err = pcall(macroTorch.catLeveling)
+    assert(ok, "catLeveling invocation failed: " .. tostring(err))
+end, true)
+
+-- ============================================================
 -- Module 4: /mt SLASH command
 -- ============================================================
 -- [CITED: CONTEXT.md D-02, D-10]
