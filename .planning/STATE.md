@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in_progress
-last_updated: "2026-06-22T15:39:33.249Z"
+status: Executing Phase 16
+last_updated: "2026-06-22T16:25:17Z"
 last_activity: 2026-06-22
 progress:
   total_phases: 15
   completed_phases: 10
-  total_plans: 28
-  completed_plans: 28
+  total_plans: 30
+  completed_plans: 29
   percent: 67
 stopped_at: context exhaustion at 76% (2026-06-18)
 ---
@@ -20,7 +20,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 13 — catAtk 小号练级适配（执行中）
+- **Current Phase**: Phase 16 — catLeveling 练级版一键宏（执行中）
 - **Active Branch**: main
 
 ## Phase Progress
@@ -40,7 +40,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 | Phase 13: catAtk 小号练级适配（技能存在性检查、动态能量消耗、降级策略） | 🔵 in_progress | 2026-06-20 | — | 1/2 plans |
 | Phase 14: 战斗时长预测与斩杀判断等级自适应（isTrivialBattle/isKillShotOrLastChance 静态估算动态化） | ⚪ planned | 2026-06-20 | — | — |
 | Phase 15: catAtk 从 Druid 实例方法重构为 combo.lua 全局一键宏方法 | ✅ complete | 2026-06-20 | 2026-06-20 | 1 plan |
-| Phase 16: catLeveling 练级版一键宏 — 起手技选择、中间循环(debuff/buff/精灵之火)、斩杀线判断 | ⚪ planned | 2026-06-22 | — | — |
+| Phase 16: catLeveling 练级版一键宏 — 起手技选择、中间循环(debuff/buff/精灵之火)、斩杀线判断 | 🔵 in_progress | 2026-06-22 | — | 1/2 plans |
 
 ## Accumulated Context
 
@@ -114,6 +114,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 | Phase 08 P03 | N/A | 3 tasks | 5 files |
 | Phase 13-catatk-60-dps P02 | 122 | 1 tasks | 1 files |
 | Phase 14-istrivialbattle-iskillshotorlastchance-60-dps-b P01 | 462 | 3 tasks | 6 files |
+| Phase 16-catatk-dps-catatk-catleveling P01 | 141 | 1 tasks | 1 files |
 
 ## Decisions
 
@@ -127,6 +128,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 - [Phase ?]: Category H tests placed before Category G2 for logical grouping: G1 (field integrity) -> H (guard verification) -> G2 (form semantics)
 - [Phase ?]: HRPS primary
 - [Phase 15]: Moved catAtk from Druid instance method (obj.catAtk) to combo.lua global function (macroTorch.catAtk) — function body uses only macroTorch.* globals, no self/obj dependency; druidAtk call updated from macroTorch.player.catAtk to macroTorch.catAtk; added selftest for new function location
+- [Phase 16 P01]: Implemented catLeveling() — 210-line leveling one-button macro with 9 modules in priority order, no rough/ERPS/reshift/relic, all 8 skills guarded by isSpellExist, inline simplified FF and Shred-vs-Claw decisions. catAtk and catLeveling are fully independent.
 
 ## Session
 
@@ -141,7 +143,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 
 ## Session
 
-**Last session:** 2026-06-22T15:12:39.621Z
+**Last session:** 2026-06-22T16:25:17Z
 **Last activity:** 2026-06-22
-**Stopped at:** Phase 16 context gathered
-**Resume file:** .planning/phases/16-catatk-dps-catatk-catleveling-3-debuff-buff-ravage-pounce-ra/16-CONTEXT.md
+**Stopped at:** Completed 16-01-PLAN — catLeveling 练级版一键宏实现
+**Resume file:** none
