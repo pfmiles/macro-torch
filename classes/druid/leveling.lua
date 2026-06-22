@@ -108,9 +108,10 @@ function macroTorch.catLeveling()
             and macroTorch.tigerSelfGCD(clickContext) == 0
             and player.mana >= clickContext.TIGER_E then
         player.tiger_fury('ready')
-        if macroTorch.loginContext then
-            macroTorch.loginContext.tigerTimer = GetTime()
+        if not macroTorch.loginContext then
+            macroTorch.loginContext = {}
         end
+        macroTorch.loginContext.tigerTimer = GetTime()
         return
     end
 
@@ -128,7 +129,7 @@ function macroTorch.catLeveling()
 
     -- ============================================================
     -- 模块6: Rake 模块
-    -- 维持 Rake 流血 debuff，5星时不再打 Rake（优先消耗连击点）
+    -- 维持 Rake 流血 debuff，仅在连击点 < 5 时施放（5星时优先消耗连击点）
     -- ============================================================
     if macroTorch.isSpellExist('Rake', 'spell')
             and not macroTorch.isRakePresent(clickContext)
@@ -175,11 +176,11 @@ function macroTorch.catLeveling()
     -- 非 OOC 时仅在有足够能量时施放；OOC 时可无视能量消耗施放
     -- ============================================================
     if macroTorch.isFightStarted(clickContext) and clickContext.comboPoints < 5 then
+        local hasShred = macroTorch.isSpellExist('Shred', 'spell')
+        local hasClaw = macroTorch.isSpellExist('Claw', 'spell')
+
         if not clickContext.ooc then
             -- 普通情况：需要足够能量才能释放技能
-            local hasShred = macroTorch.isSpellExist('Shred', 'spell')
-            local hasClaw = macroTorch.isSpellExist('Claw', 'spell')
-
             -- 优先 Shred（如果有 + 在背后 + 背后攻击未刚失败）
             if hasShred and clickContext.isBehind and not player.isBehindAttackJustFailed
                     and player.mana >= clickContext.SHRED_E then
@@ -194,9 +195,6 @@ function macroTorch.catLeveling()
             end
         else
             -- OOC 触发：无视能量消耗，任意可用技能即可释放
-            local hasShred = macroTorch.isSpellExist('Shred', 'spell')
-            local hasClaw = macroTorch.isSpellExist('Claw', 'spell')
-
             if hasShred and clickContext.isBehind and not player.isBehindAttackJustFailed then
                 player.shred('ready')
                 return
