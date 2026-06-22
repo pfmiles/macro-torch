@@ -771,7 +771,7 @@ Plans:
 **Goal:** 创建 catLeveling() 练级版一键宏 — 独立于 catAtk 实现，按优先级链执行起手技选择(Ravage/Pounce)、斩杀判断(复用 isKillShotOrLastChance)、中间循环(TF/Rip/Rake/FF/Shred/Claw)、Reshift(低等级自动跳过)。全程 isSpellExist guard，无神像逻辑，无 catAtk keep 模块调用。
 **Requirements**: REQ-16-01, REQ-16-02, REQ-16-03, REQ-16-04, REQ-16-05, REQ-16-06, REQ-16-07
 **Depends on:** Phase 15
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 **Wave 1**
@@ -780,7 +780,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 16-02-PLAN.md — catLeveling Selftest 注册（6 条测试：函数存在性、共享函数引用、catAtk 不变性）
+- [x] 16-02-PLAN.md — catLeveling Selftest 注册（6 条测试：函数存在性、共享函数引用、catAtk 不变性）
 
 ---
 
