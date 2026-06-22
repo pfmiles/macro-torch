@@ -107,7 +107,7 @@ function macroTorch.catLeveling()
             and target.distance <= 20
             and macroTorch.tigerSelfGCD(clickContext) == 0
             and player.mana >= clickContext.TIGER_E then
-        player.tigers_fury('ready')
+        player.tiger_fury('ready')
         if macroTorch.loginContext then
             macroTorch.loginContext.tigerTimer = GetTime()
         end
