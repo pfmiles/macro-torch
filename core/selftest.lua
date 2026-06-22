@@ -568,7 +568,7 @@ macroTorch.SelfTest:register("F: Externally-called isSpellReady resolves correct
 end, false)
 
 -- ============================================================
--- Category J: catLeveling 练级宏验证 (5 tests, 2 core + 3 optional)
+-- Category J: catLeveling 练级宏验证 (5 tests, 4 core + 1 optional)
 -- ============================================================
 -- [CITED: 16-02-CONTEXT.md; 16-RESEARCH.md:342-370]
 -- Verifies catLeveling function existence, shared decision function references,
@@ -578,7 +578,7 @@ macroTorch.SelfTest:register("J: catLeveling function exists and is callable", f
     if UnitClass('player') ~= 'Druid' then return end
     assert(type(macroTorch.catLeveling) == "function",
         "catLeveling is not a function, got: " .. type(macroTorch.catLeveling))
-end, true)
+end, false)
 
 macroTorch.SelfTest:register("J: shared decision functions remain accessible (no local redefinition in leveling.lua)", function()
     if UnitClass('player') ~= 'Druid' then return end
@@ -594,19 +594,17 @@ macroTorch.SelfTest:register("J: catLeveling invocation does not error (clickCon
     if UnitClass('player') ~= 'Druid' then return end
     local ok, err = pcall(macroTorch.catLeveling)
     assert(ok, "catLeveling should not error: " .. tostring(err))
-end, true)
+end, false)
 
 macroTorch.SelfTest:register("J: catAtk remains unmodified (Phase 16 does not change catAtk)", function()
     assert(type(macroTorch.catAtk) == "function",
         "catAtk is not a function, got: " .. type(macroTorch.catAtk))
 end, false)
 
-macroTorch.SelfTest:register("J: catLeveling has no ERPS/reshift dependency", function()
+macroTorch.SelfTest:register("J: catLeveling clickContext has all required fields (no nil access at runtime)", function()
     if UnitClass('player') ~= 'Druid' then return end
-    assert(type(macroTorch.computeErps) == "function",
-        "computeErps is not a function (Druid.lua global)")
     local ok, err = pcall(macroTorch.catLeveling)
-    assert(ok, "catLeveling invocation failed: " .. tostring(err))
+    assert(ok, "catLeveling failed — possible missing clickContext field: " .. tostring(err))
 end, true)
 
 -- ============================================================
