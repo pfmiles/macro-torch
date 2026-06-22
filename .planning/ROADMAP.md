@@ -766,6 +766,22 @@ Plans:
 
 - [x] 15-01 — 将 catAtk 函数体从 Druid.lua 移至 combo.lua，更新 druidAtk 调用方，添加 selftest，构建验证通过 (2026-06-20)
 
+### Phase 16: 目前catAtk的逻辑作为满级猫德输出逻辑已经拿到了服务器第一dps，是经过了实战考验的。现在我在练新的猫德角色，希望练级过程也能用上一键宏，但我并不希望直接在catAtk上面改，而是专门在catLeveling函数中构造一个练级版；对于练级过程来讲，除了用技能之前都要判断该技能是否存在(可能还没学到)之外，只有3个点比较重要：起手技、中间循环(包括debuff、buff保持以及伤害循环)、斩杀线；起手技其实只有ravage或pounce，这个的选择依赖对战斗时长的预测：如果预测本次战斗属于"快速战斗"，则用ravage,否则用pounce,判断是否"快速战斗"的逻辑可以重用catAtk中用的逻辑; "中间循环"主要是保持自身猛虎之怒、保持目标身上的双流血buff，以及见缝插针地用精灵之火(野性版)，这部分逻辑可以参考catAtk现有逻辑，但不必直接调用catAtk，而是为catLeveling重新实现，毕竟里面应该会有差异；最后的"斩杀线"判断对于练级也很重要，它能够判断何时使用一个技能(通常是消耗连击点数的直接伤害终结技)能够不浪费连击点数地终结掉当前的目标，使得dps最大化、从而杀怪时间最短化，这个斩杀线的计算方法应该也是能和catAtk共用的
+
+**Goal:** 创建 catLeveling() 练级版一键宏 — 独立于 catAtk 实现，按优先级链执行起手技选择(Ravage/Pounce)、斩杀判断(复用 isKillShotOrLastChance)、中间循环(TF/Rip/Rake/FF/Shred/Claw)、Reshift(低等级自动跳过)。全程 isSpellExist guard，无神像逻辑，无 catAtk keep 模块调用。
+**Requirements**: REQ-16-01, REQ-16-02, REQ-16-03, REQ-16-04, REQ-16-05, REQ-16-06, REQ-16-07
+**Depends on:** Phase 15
+**Plans:** 2 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 16-01-PLAN.md — catLeveling 完整实现（clickContext + 9 模块 + druidAtk 路由更新）
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 16-02-PLAN.md — catLeveling Selftest 注册（6 条测试：函数存在性、共享函数引用、catAtk 不变性）
+
 ---
 
 ## Task 统计
