@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-06-20T05:52:57.505Z"
+last_updated: "2026-06-22T15:12:39.636Z"
 last_activity: 2026-06-20
 progress:
-  total_phases: 14
+  total_phases: 15
   completed_phases: 10
   total_plans: 28
   completed_plans: 28
-  percent: 71
+  percent: 67
 stopped_at: context exhaustion at 76% (2026-06-18)
 ---
 
@@ -40,6 +40,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 | Phase 13: catAtk 小号练级适配（技能存在性检查、动态能量消耗、降级策略） | 🔵 in_progress | 2026-06-20 | — | 1/2 plans |
 | Phase 14: 战斗时长预测与斩杀判断等级自适应（isTrivialBattle/isKillShotOrLastChance 静态估算动态化） | ⚪ planned | 2026-06-20 | — | — |
 | Phase 15: catAtk 从 Druid 实例方法重构为 combo.lua 全局一键宏方法 | ✅ complete | 2026-06-20 | 2026-06-20 | 1 plan |
+| Phase 16: catLeveling 练级版一键宏 — 起手技选择、中间循环(debuff/buff/精灵之火)、斩杀线判断 | ⚪ planned | 2026-06-22 | — | — |
 
 ## Accumulated Context
 
@@ -52,6 +53,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 - Phase 13 added: catAtk 小号练级适配 — 技能存在性检查、动态能量消耗计算、低等级降级策略，保持60级满级DPS能力不变 (2026-06-19)
 - Phase 14 added: 战斗时长预测与斩杀判断等级自适应 — 将 isTrivialBattle 和 isKillShotOrLastChance 中硬编码的60级静态DPS估算替换为等级自适应动态估算，使练级阶段也能准确判断快速战斗和斩杀线 (2026-06-20)
 - Phase 15 added: 将catAtk从Druid实例方法重构为combo.lua全局一键宏方法 (2026-06-20)
+- Phase 16 added: catLeveling 练级版一键宏 — 新建 catLeveling 函数（不修改 catAtk），实现技能存在性检查、起手技 ravage/pounce 选择（复用 isTrivialBattleOrPvp）、中间循环（猛虎之怒/双流血/精灵之火）、斩杀线判断（复用 kill shot 逻辑） (2026-06-22)
 
 ## Key Decisions
 
@@ -139,7 +141,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 
 ## Session
 
-**Last session:** 2026-06-20T05:52:57.492Z
+**Last session:** 2026-06-22T15:12:39.621Z
 **Last activity:** 2026-06-20
-**Stopped at:** Phase 14 context gathered
-**Resume file:** .planning/phases/14-istrivialbattle-iskillshotorlastchance-60-dps-b/14-CONTEXT.md
+**Stopped at:** Phase 16 context gathered
+**Resume file:** .planning/phases/16-catatk-dps-catatk-catleveling-3-debuff-buff-ravage-pounce-ra/16-CONTEXT.md
