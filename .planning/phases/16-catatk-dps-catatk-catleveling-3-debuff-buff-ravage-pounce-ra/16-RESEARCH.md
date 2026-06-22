@@ -592,22 +592,16 @@ end
 | A4 | Ancient Brutality talent is typically not available during leveling (requires level 30+ and deep Feral tree), so RAKE_ERPS/RIP_ERPS defaulting to 0 is safe | ERPS Fields | MEDIUM -- if a player specs Ancient Brutality at level 30+, these fields should be non-zero. The computeErps function will undercount energy regen. Fix: dynamically compute RAKE_ERPS/RIP_ERPS via macroTorch.computeRake_Erps()/computeRip_Erps() |
 | A5 | Existing `<24` skeleton branch should be removed in favor of generic isSpellExist-guarded modules | Skeleton Refactoring | LOW -- the `<24` branch only handles Claw+Rip which are both covered by generic modules with isSpellExist guards |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should catLeveling accept a `rough` parameter?**
-   - What we know: catAtk accepts `rough` for pvp/quick-mode override. druidAtk passes `rough` to catAtk but NOT to catLeveling (line 165: `macroTorch.catLeveling()` with no argument).
-   - What's unclear: Whether the user wants catLeveling to support a rough mode for leveling PvP scenarios.
-   - Recommendation: Add `rough` parameter to catLeveling signature and use it to set `clickContext.rough`. If not needed, the parameter is simply ignored. This matches catAtk's signature for consistency and makes the druidAtk routing change trivial (`macroTorch.catLeveling(rough)`).
+1. **Should catLeveling accept a `rough` parameter?** RESOLVED: Plan 16-01 Task 2 adds `rough` parameter to catLeveling signature and updates druidAtk routing to pass `rough` through. `clickContext.rough` is set from the parameter.
+   - Resolution: Yes, accept `rough` parameter for consistency with catAtk signature.
 
-2. **Should FF weaving use the full `shouldCastFFDuringWaitWindow` or a simplified version?**
-   - What we know: `shouldCastFFDuringWaitWindow` calls `getMinimumAffordableAbilityCost` which evaluates Bite/Tiger/Rip/Rake/Shred/Claw costs in order. This function only needs clickContext energy cost fields (all available).
-   - What's unclear: Whether the complexity is justified for leveling where FF triggers OOC procs less frequently.
-   - Recommendation: Use `shouldCastFFDuringWaitWindow` directly -- it's already written and debugged, and the cost of calling it is zero (pure Lua computation). The D-02 specification allows this under Claude's discretion ("zero-cost, returns when conditions not met").
+2. **Should FF weaving use the full `shouldCastFFDuringWaitWindow` or a simplified version?** RESOLVED: Plan 16-01 Task 1 step 9 reuses `shouldCastFFDuringWaitWindow` directly. The function only depends on clickContext energy fields which are all available.
+   - Resolution: Reuse `shouldCastFFDuringWaitWindow` directly — already debugged, zero runtime cost.
 
-3. **Should the existing `<24` skeleton code be preserved as a comment or deleted entirely?**
-   - What we know: The `<24` branch handles Claw+Rip which the new generic modules cover via isSpellExist guards.
-   - What's unclear: Whether there's value in keeping the code as reference.
-   - Recommendation: Delete the `<24` branch. The generic module structure with isSpellExist guards is clearer and covers all levels uniformly. The git history preserves the old code.
+3. **Should the existing `<24` skeleton code be preserved as a comment or deleted entirely?** RESOLVED: Plan 16-01 Task 1 replaces the entire skeleton with generic isSpellExist-guarded modules. The old `<24` branch is deleted.
+   - Resolution: Delete the `<24` branch — generic module structure covers all levels uniformly.
 
 ## Sources
 
