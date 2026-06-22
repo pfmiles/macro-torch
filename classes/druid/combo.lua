@@ -207,6 +207,8 @@ function macroTorch.druidHeal()
                 macroTorch.player.regrowth(nil, false)
             elseif not macroTorch.target.buffed(nil, 'Spell_Nature_Rejuvenation') then
                 macroTorch.player.rejuvenation(nil, false)
+            else
+                macroTorch.player.healing_touch(nil, false)
             end
         else
             if not macroTorch.target.buffed(nil, 'Spell_Nature_Rejuvenation') then
