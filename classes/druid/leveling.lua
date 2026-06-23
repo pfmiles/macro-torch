@@ -118,18 +118,24 @@ function macroTorch.catLeveling()
     -- ============================================================
     -- 模块5: Rip 模块
     -- 5星 Rip 维持（正常战斗），快速战斗低星 Rip
+    -- OOC 时使用 'ready' 模式跳过能量检查，避免 safe 模式的资源检查导致卡技能
     -- ============================================================
     if macroTorch.isSpellExist('Rip', 'spell')
             and macroTorch.shouldCastRip(clickContext)
             and macroTorch.isGcdOk(clickContext)
             and macroTorch.isNearBy(clickContext) then
-        player.rip()
+        if clickContext.ooc then
+            player.rip('ready')
+        else
+            player.rip()
+        end
         return
     end
 
     -- ============================================================
     -- 模块6: Rake 模块
     -- 维持 Rake 流血 debuff，仅在连击点 < 5 时施放（5星时优先消耗连击点）
+    -- OOC 时使用 'ready' 模式跳过能量检查，避免 safe 模式的资源检查导致卡技能
     -- ============================================================
     if macroTorch.isSpellExist('Rake', 'spell')
             and not macroTorch.isRakePresent(clickContext)
@@ -137,7 +143,11 @@ function macroTorch.catLeveling()
             and macroTorch.isGcdOk(clickContext)
             and macroTorch.isNearBy(clickContext)
             and clickContext.comboPoints < 5 then
-        player.rake()
+        if clickContext.ooc then
+            player.rake('ready')
+        else
+            player.rake()
+        end
         return
     end
 
