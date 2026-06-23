@@ -29,6 +29,8 @@ classes/druid/cat.lua
 classes/druid/bear.lua
 classes/druid/utility.lua
 classes/druid/combo.lua
+# classes/ -- Druid diagnostics (quick task 260623-wrh-druid)
+classes/druid/diag.lua
 classes/druid/leveling.lua
 # classes/ — Hunter (Phase 8)
 classes/hunter/Hunter.lua
