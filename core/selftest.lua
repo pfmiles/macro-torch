@@ -90,6 +90,9 @@ function macroTorch.SelfTest:run()
     for _, name in ipairs(warningNames) do
         macroTorch.show("[macro-torch] WARN: " .. name, 'yellow')
     end
+
+    -- Print Druid skill diagnostics after selftest (quick task 260623-wrh-druid)
+    macroTorch.printDruidDiag()
 end
 
 -- ============================================================
