@@ -602,6 +602,7 @@ function macroTorch.computePounce_Erps()
     return energyPerTick / tickInterval
 end
 
+-- TODO 这里的spellId并不稳定，实践发现不同的客户端可能有不同的spellId，最好能找到稳定获取spellId的方法
 -- tracing certain spells and maintain the landTable (declarative style)
 -- spell trace + immune registration via SpellTrace:register() API
 macroTorch.SpellTrace:register('Pounce', {
@@ -609,15 +610,15 @@ macroTorch.SpellTrace:register('Pounce', {
     immune = true, debuffTexture = 'Ability_Druid_SupriseAttack'
 })
 macroTorch.SpellTrace:register('Rake', {
-    spellId = 9904, land = true,
+    spellId = 1822, land = true,
     immune = true, debuffTexture = 'Ability_Druid_Disembowel'
 })
 macroTorch.SpellTrace:register('Rip', {
-    spellId = 9896, land = true,
+    spellId = 1079, land = true,
     immune = true, debuffTexture = 'Ability_GhoulFrenzy'
 })
 macroTorch.SpellTrace:register('Ferocious Bite', {
-    spellId = 31018, land = true,
+    spellId = 22557, land = true,
     immune = false  -- FB has consumeLandEvent but NO immune tracing in original code
 })
 macroTorch.SpellTrace:register('Faerie Fire (Feral)', {
