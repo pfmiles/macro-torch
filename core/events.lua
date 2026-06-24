@@ -86,6 +86,7 @@ function macroTorch.eventHandle()
 
     elseif event == "UNIT_CASTEVENT" then
         -- when player myself cast a spell
+        -- macroTorch.show('arg1=' .. tostring(arg1) .. ', arg2=' .. tostring(arg2) .. ', arg3=' .. tostring(arg3) .. ', arg4=' .. tostring(arg4) .. ', arg5=' .. tostring(arg5))
         local unitGuid, castType, spellId = arg1, arg3, arg4
         if unitGuid == macroTorch.player.guid and castType == 'CAST' then
             if spellId and macroTorch.tracingSpells[spellId] then
