@@ -20,13 +20,6 @@ function macroTorch.setSpellTracing(spellGuid, spellName)
         macroTorch.tracingSpells[spellGuid] = spellName
     end
 end
-function macroTorch.setSpellTracingByName(spellName, bookType)
-    local spellUniqId = macroTorch.getSpellUniqIdByName(spellName, bookType)
-    if not spellUniqId then
-        return
-    end
-    macroTorch.setSpellTracing(spellUniqId, spellName)
-end
 -- sets what spells to tracer immune
 if not macroTorch.traceSpellImmunes then
     macroTorch.traceSpellImmunes = {}

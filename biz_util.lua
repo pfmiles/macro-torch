@@ -60,18 +60,6 @@ function macroTorch.getSpellIdByNameRank(spellName, bookType, rank)
     return ids[rank]
 end
 
-function macroTorch.getSpellUniqIdByName(spellName, bookType)
-    local spellId = macroTorch.getSpellIdByName(spellName, bookType)
-    if not spellId then
-        return nil
-    end
-    local ok, _, c = pcall(GetSpellName, spellId, bookType)
-    if not ok then
-        return nil
-    end
-    return c
-end
-
 function macroTorch.isSpellExist(spellName, bookType)
     return macroTorch.toBoolean(macroTorch.getSpellIdByName(spellName, bookType))
 end

@@ -782,6 +782,17 @@ Plans:
 
 - [x] 16-02-PLAN.md — catLeveling Selftest 注册（6 条测试：函数存在性、共享函数引用、catAtk 不变性）
 
+### Phase 17: 自动发现 spell ID 并消除硬编码 — 通过纹理桥接自动发现法术 spellId，消除 Druid.lua 中的硬编码，支持跨客户端兼容
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 16
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 17 to break down)
+
 ---
 
 ## Task 统计
