@@ -830,7 +830,8 @@ function macroTorch.shouldCastFFDuringWaitWindow(clickContext)
     end
 
     -- 计算1.5秒GCD期间的预期能量恢复
-    local energyDuringGcd = macroTorch.computeErps(clickContext) * 1.5
+    local erps = macroTorch.computeErps(clickContext)
+    local energyDuringGcd = erps * 1.5
     local minAbilityCost = macroTorch.getMinimumAffordableAbilityCost(clickContext)
 
     local currentEnergy = macroTorch.player.mana
@@ -841,7 +842,9 @@ function macroTorch.shouldCastFFDuringWaitWindow(clickContext)
     if projectedEnergy >= minAbilityCost and currentEnergy < minAbilityCost then
         -- 计算需要等待的时间
         local energyNeeded = minAbilityCost - currentEnergy
-        local erps = macroTorch.computeErps(clickContext)
+        if erps <= 0 then
+            return false  -- no energy regeneration means there is no wait window to exploit
+        end
         local waitSeconds = energyNeeded / erps
 
         -- 条件3: 等待时间足够释放FF (FF的GCD是1秒)

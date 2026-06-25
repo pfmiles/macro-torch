@@ -117,6 +117,9 @@ end
 
 -- find the action slot index of which the shoot action be placed in
 function macroTorch.findAutoShootActionSlot()
+    if not macroTorch.context then
+        macroTorch.context = {}
+    end
     local texture = macroTorch.getRangedWeaponTexture()
     if texture then
         if macroTorch.context.autoShootSlot then
@@ -164,7 +167,8 @@ end
 
 function macroTorch.getItemBagIdAndSlot(itemName)
     for b = 0, 4 do
-        for s = 1, GetContainerNumSlots(b, s) do
+        local numSlots = GetContainerNumSlots(b)
+        for s = 1, numSlots do
             local n = GetContainerItemLink(b, s)
             if n and string.find(n, itemName) then
                 return b, s

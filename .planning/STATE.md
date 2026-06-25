@@ -6,7 +6,7 @@ status: Milestone complete
 last_updated: "2026-06-23T15:45:25Z"
 last_activity: 2026-06-23
 progress:
-  total_phases: 16
+  total_phases: 15
   completed_phases: 11
   total_plans: 30
   completed_plans: 30
@@ -54,7 +54,6 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 - Phase 14 added: 战斗时长预测与斩杀判断等级自适应 — 将 isTrivialBattle 和 isKillShotOrLastChance 中硬编码的60级静态DPS估算替换为等级自适应动态估算，使练级阶段也能准确判断快速战斗和斩杀线 (2026-06-20)
 - Phase 15 added: 将catAtk从Druid实例方法重构为combo.lua全局一键宏方法 (2026-06-20)
 - Phase 16 added: catLeveling 练级版一键宏 — 新建 catLeveling 函数（不修改 catAtk），实现技能存在性检查、起手技 ravage/pounce 选择（复用 isTrivialBattleOrPvp）、中间循环（猛虎之怒/双流血/精灵之火）、斩杀线判断（复用 kill shot 逻辑） (2026-06-22)
-- Phase 17 added: 自动发现 spell ID 并消除硬编码 — 纹理桥接方案消除 Druid.lua 中硬编码 spellId，新增 buildSpellTextureMap/discoverSpellId，pending queue 延迟注册模式 (2026-06-25)
 
 ## Key Decisions
 
