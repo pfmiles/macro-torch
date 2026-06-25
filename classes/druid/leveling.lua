@@ -63,6 +63,7 @@ function macroTorch.catLeveling()
     -- ============================================================
     -- 模块1: 起手技模块 (Opener)
     -- 潜行状态下选择 Pounce（非快速战斗+可用+非免疫+血量>=阈值）或 Ravage
+    -- Fallback：Pounce 和 Ravage 都没学时，用 Shred（背后）或 Claw（正面）打破潜行
     -- ============================================================
     if clickContext.prowling then
         local hasPounce = macroTorch.isSpellExist('Pounce', 'spell')
@@ -76,6 +77,16 @@ function macroTorch.catLeveling()
         elseif hasRavage then
             player.ravage('ready')
             return
+        else
+            -- 既没学 Pounce 也没学 Ravage：用普通技能打破潜行起手
+            -- 'ready' 模式跳过能量检查，确保能成功起手
+            if macroTorch.isSpellExist('Shred', 'spell') and clickContext.isBehind then
+                player.shred('ready')
+                return
+            elseif macroTorch.isSpellExist('Claw', 'spell') then
+                player.claw('ready')
+                return
+            end
         end
     end
 
