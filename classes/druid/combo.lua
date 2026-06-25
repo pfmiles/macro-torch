@@ -4,6 +4,13 @@ function macroTorch.casterAtk()
     if not macroTorch.target.isCanAttack then
         return
     end
+    -- 目标为盗贼时，优先挂精灵之火防止潜行/消失，优先级高于一切
+    local targetClass = macroTorch.target.class
+    if (targetClass == 'Rogue' or targetClass == '盗贼')
+            and not macroTorch.target.buffed('Faerie Fire', 'Spell_Nature_FaerieFire') then
+        macroTorch.player.faerie_fire()
+        return
+    end
     if not macroTorch.player.isInCombat then
         macroTorch.player.wrath()
     elseif not macroTorch.target.buffed('Moonfire', 'Spell_Nature_StarFall') then
