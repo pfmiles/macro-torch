@@ -144,10 +144,10 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 | 260620-gpw | burstMod/atkPowerBurst 存在性守卫 (Berserk技能+Trinket2饰品槽) | 2026-06-20 | 7f03c82 | [260620-gpw-catatk](./quick/260620-gpw-catatk/) |
 | 260620-j2p | Opener血量阈值+法力药水阈值改为level-adaptive | 2026-06-20 | af283bd | [260620-j2p-opener-mana-level-adaptive](./quick/260620-j2p-opener-mana-level-adaptive/) |
 | 260623-wrh | Druid技能诊断打印函数 printDruidDiag | 2026-06-23 | f1bba57 | [260623-wrh-druid](./quick/260623-wrh-druid/) |
+| 260627-g4j | 修复 spell_trace_immune.lua 日志问题 | 2026-06-27 | fef6f2f | [260627-g4j-1-3](./quick/260627-g4j-1-3/) |
 
 ## Session
 
-**Last session:** 2026-06-23T15:45:25Z
-**Last activity:** 2026-06-23
-**Stopped at:** Completed 260623-wrh quick task — Druid diagnostic print function
+**Last session:** 2026-06-27T03:36:39Z
+**Last activity:** 2026-06-27 - Completed quick task 260627-g4j: 修复 spell_trace_immune.lua 日志问题
 **Resume file:** None
