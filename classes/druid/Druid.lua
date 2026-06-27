@@ -478,17 +478,19 @@ function macroTorch.getKSThreshold(level)
     if level == 60 then
         return 1750
     end
-    -- [D-02] Single KS health threshold lookup table
+    -- [D-02] KS health thresholds for leveling (sub-60). Values halved from original
+    -- design because the old thresholds were too high for leveling dps scaling.
+    -- Level 60 is handled by catAtk with raid gear, not catLeveling.
     if level >= 50 then
-        return 1450
+        return 725
     elseif level >= 40 then
-        return 1050
+        return 525
     elseif level >= 30 then
-        return 700
+        return 350
     elseif level >= 20 then
-        return 400
+        return 200
     else
-        return 200  -- [D-05] conservative fallback for pre-cat levels
+        return 100  -- [D-05] conservative fallback for pre-cat levels
     end
 end
 
