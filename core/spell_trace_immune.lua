@@ -41,7 +41,6 @@ function macroTorch.spellsImmuneTracing()
             end
             -- 检测到近期的一次immune事件，若整个landTable均无有效land记录，则加入immune列表, 若有任意land记录，则加入definite表
             if not macroTorch.target.isDefiniteBleeding(spellName) and not macroTorch.target.isPlayerControlled then
-                macroTorch.show("recording immune by fail event: " .. tostring(failEvent[2] .. ':' .. failEvent[1]))
                 macroTorch.target.recordImmune(spellName)
             end
         end)
@@ -53,7 +52,6 @@ function macroTorch.spellsImmuneTracing()
             end
             -- 检测到合适时间以内的命中记录，若此时目标身上没有debuff, 则记录immune,否则删除immune记录
             if not macroTorch.target.hasBuff(spellDebuffTexture) and not macroTorch.target.isDefiniteBleeding(spellName) and not macroTorch.target.isPlayerControlled then
-                macroTorch.show("recording immune by land event: " .. landEvent)
                 macroTorch.target.recordImmune(spellName)
             else
                 macroTorch.target.recordDefiniteBleeding(spellName)
