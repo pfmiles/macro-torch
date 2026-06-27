@@ -163,21 +163,7 @@ function macroTorch.catLeveling()
     end
 
     -- ============================================================
-    -- 模块7: 精灵之火(野性)模块 (Faerie Fire - 简化内联版)
-    -- 非 OOC + 非免疫 + isSpellReady + GCD OK → 当前能量不足 Claw 时作为填充技
-    -- ============================================================
-    if macroTorch.isSpellExist('Faerie Fire (Feral)', 'spell')
-            and not clickContext.ooc
-            and not target.isImmune('Faerie Fire (Feral)')
-            and player.isSpellReady('Faerie Fire (Feral)')
-            and macroTorch.isGcdOk(clickContext)
-            and player.mana < clickContext.CLAW_E then
-        player.faerie_fire_feral('raw')
-        return
-    end
-
-    -- ============================================================
-    -- 模块8: Bite 终结技模块 (Ferocious Bite)
+    -- 模块7: Bite 终结技模块 (Ferocious Bite)
     -- OOC 触发时任意 CP 直接 Bite；非 OOC 时按 shouldUseBite 判定
     -- ============================================================
     if macroTorch.isSpellExist('Ferocious Bite', 'spell') then
@@ -192,7 +178,7 @@ function macroTorch.catLeveling()
     end
 
     -- ============================================================
-    -- 模块9: 攒星技模块 (Builder - 简化内联版)
+    -- 模块8: 攒星技模块 (Builder - 简化内联版)
     -- 战斗中 CP < 5 时，选择合适的攒星技能：Shred（背后）或 Claw（正面）
     -- 非 OOC 时仅在有足够能量时施放；OOC 时可无视能量消耗施放
     -- ============================================================
@@ -226,5 +212,19 @@ function macroTorch.catLeveling()
                 return
             end
         end
+    end
+
+    -- ============================================================
+    -- 模块9: 精灵之火(野性) — 见缝插针填充技 (Faerie Fire Feral)
+    -- 非 OOC + 非免疫 → 作为兜底填充，不论目标是否已有 debuff
+    -- FF 无能量消耗且可能触发 OOC，在所有高优先级模块无动作时插入
+    -- ============================================================
+    if macroTorch.isSpellExist('Faerie Fire (Feral)', 'spell')
+            and not clickContext.ooc
+            and not target.isImmune('Faerie Fire (Feral)')
+            and player.isSpellReady('Faerie Fire (Feral)')
+            and macroTorch.isGcdOk(clickContext) then
+        player.faerie_fire_feral('raw')
+        return
     end
 end
