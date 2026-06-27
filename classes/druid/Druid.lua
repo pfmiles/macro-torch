@@ -616,7 +616,7 @@ macroTorch.SpellTrace:register('Rake', {
     immune = true, debuffTexture = 'Ability_Druid_Disembowel'
 })
 macroTorch.SpellTrace:register('Rip', {
-    spellId = 1079, land = true,
+    spellId = 9492, land = true,
     immune = true, debuffTexture = 'Ability_GhoulFrenzy'
 })
 macroTorch.SpellTrace:register('Ferocious Bite', {
