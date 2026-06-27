@@ -140,6 +140,9 @@ function macroTorch.catLeveling()
         else
             player.rip()
         end
+        -- 记录本次 Rip 的连击点数，ripLeft 依赖此值计算正确时长
+        -- 5星 Rip = 18s (10 + 4*2)，未设置时默认按 1 星 10s 计算
+        macroTorch.context.lastRipAtCp = clickContext.comboPoints
         return
     end
 
