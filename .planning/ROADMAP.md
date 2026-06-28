@@ -782,6 +782,22 @@ Plans:
 
 - [x] 16-02-PLAN.md — catLeveling Selftest 注册（6 条测试：函数存在性、共享函数引用、catAtk 不变性）
 
+### Phase 17: 1. catLeveling FF prowling guard — 不能在潜行状态下释放FF 2. global spellId 静态初始化 + 动态更正机制 — spell tracing/immune 改为按名称注册，建立name→spellId双向映射(含中英文)，运行时通过UNIT_CASTEVENT捕获真实spellId并持久化矫正
+
+**Goal:** 添加 catLeveling FF 潜行守卫，建立 global spellId 名称→映射系统（SPELL_NAME_TO_ID + resolveSpellId），通过 _castSpell→current_casting_spell→UNIT_CASTEVENT 链路实现运行时 spellId 动态更正与持久化，将 Druid 4 个 land-tracing 技能从硬编码 spellId 迁移到名称驱动注册。
+**Requirements**: REQ-17-SPELLID-MAP, REQ-17-FF-PROWL-GUARD, REQ-17-CURRENT-CASTING, REQ-17-SPELLID-CORRECTION, REQ-17-DRUID-MIGRATE, REQ-17-SELFTEST
+**Depends on:** Phase 16
+**Plans:** 2 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 17-01-PLAN.md — 基础设施层：SPELL_NAME_TO_ID 映射表 + resolveSpellId + SpellTrace:register spellName 支持 + loadSpellIdMap + catLeveling FF prowling guard (Wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 17-02-PLAN.md — 应用层集成：current_casting_spell 生命周期 + UNIT_CASTEVENT 动态更正 + Druid SpellTrace:register 迁移 + Category K 自检 (Wave 2)
+
 ---
 
 ## Task 统计
