@@ -62,10 +62,11 @@ function macroTorch.catLeveling()
 
     -- ============================================================
     -- 模块1: 起手技模块 (Opener)
-    -- 潜行状态下选择 Pounce（非快速战斗+可用+非免疫+血量>=阈值）或 Ravage
+    -- 潜行 + 近战距离（≤3码）下选择 Pounce 或 Ravage
     -- Fallback：Pounce 和 Ravage 都没学时，用 Shred（背后）或 Claw（正面）打破潜行
+    -- 非近战距离时跳过起手技，允许 Module 4 TF 在接近目标途中提前释放
     -- ============================================================
-    if clickContext.prowling then
+    if clickContext.prowling and macroTorch.isNearBy(clickContext) then
         local hasPounce = macroTorch.isSpellExist('Pounce', 'spell')
         local hasRavage = macroTorch.isSpellExist('Ravage', 'spell')
         if hasPounce
