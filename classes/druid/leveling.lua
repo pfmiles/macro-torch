@@ -130,17 +130,14 @@ function macroTorch.catLeveling()
     -- ============================================================
     -- 模块5: Rip 模块
     -- 5星 Rip 维持（正常战斗），快速战斗低星 Rip
-    -- OOC 时使用 'ready' 模式跳过能量检查，避免 safe 模式的资源检查导致卡技能
+    -- OOC 时不释放 Rip，免费施法留给 Shred/Claw 以最大化 DPS
     -- ============================================================
     if macroTorch.isSpellExist('Rip', 'spell')
+            and not clickContext.ooc
             and macroTorch.shouldCastRip(clickContext)
             and macroTorch.isGcdOk(clickContext)
             and macroTorch.isNearBy(clickContext) then
-        if clickContext.ooc then
-            player.rip('ready')
-        else
-            player.rip()
-        end
+        player.rip()
         -- 记录本次 Rip 的连击点数，ripLeft 依赖此值计算正确时长
         -- 5星 Rip = 18s (10 + 4*2)，未设置时默认按 1 星 10s 计算
         macroTorch.context.lastRipAtCp = clickContext.comboPoints
@@ -150,35 +147,29 @@ function macroTorch.catLeveling()
     -- ============================================================
     -- 模块6: Rake 模块
     -- 维持 Rake 流血 debuff，仅在连击点 < 5 时施放（5星时优先消耗连击点）
-    -- OOC 时使用 'ready' 模式跳过能量检查，避免 safe 模式的资源检查导致卡技能
+    -- OOC 时不释放 Rake，免费施法留给 Shred/Claw 以最大化 DPS
     -- ============================================================
     if macroTorch.isSpellExist('Rake', 'spell')
+            and not clickContext.ooc
             and not macroTorch.isRakePresent(clickContext)
             and not clickContext.isImmuneRake
             and macroTorch.isGcdOk(clickContext)
             and macroTorch.isNearBy(clickContext)
             and clickContext.comboPoints < 5 then
-        if clickContext.ooc then
-            player.rake('ready')
-        else
-            player.rake()
-        end
+        player.rake()
         return
     end
 
     -- ============================================================
     -- 模块7: Bite 终结技模块 (Ferocious Bite)
-    -- OOC 触发时任意 CP 直接 Bite；非 OOC 时按 shouldUseBite 判定
+    -- OOC 时不 Bite（Kill Shot 已由 Module 3 处理），免费施法留给 Shred/Claw
     -- ============================================================
-    if macroTorch.isSpellExist('Ferocious Bite', 'spell') then
-        if clickContext.ooc and clickContext.comboPoints > 0 then
-            player.ferocious_bite('ready')
-            return
-        end
-        if macroTorch.shouldUseBite(clickContext) and player.mana >= clickContext.BITE_E then
-            player.ferocious_bite()
-            return
-        end
+    if macroTorch.isSpellExist('Ferocious Bite', 'spell')
+            and not clickContext.ooc
+            and macroTorch.shouldUseBite(clickContext)
+            and player.mana >= clickContext.BITE_E then
+        player.ferocious_bite()
+        return
     end
 
     -- ============================================================

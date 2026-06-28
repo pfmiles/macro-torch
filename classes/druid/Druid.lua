@@ -130,7 +130,11 @@ function macroTorch.Druid:new()
     end
 
     function obj.cat_form(mode, rank)
-        return obj._castSpell({ en = 'Cat Form', zh = '猫形态' }, mode, nil, nil, true, rank)
+        local result = obj._castSpell({ en = 'Cat Form', zh = '猫形态' }, mode, nil, nil, true, rank)
+        if result then
+            obj._castSpell({ en = 'Track Humanoids', zh = '追踪人型' }, 'raw', nil, 0, true)
+        end
+        return result
     end
 
     function obj.travel_form(mode, rank)
