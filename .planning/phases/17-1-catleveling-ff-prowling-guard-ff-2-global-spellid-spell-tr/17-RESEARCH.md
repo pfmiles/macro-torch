@@ -550,17 +550,13 @@ No user input, network communication, or external data sources are involved in t
 ### Tertiary (LOW confidence)
 - [ASSUMED] Web searches for spell ID verification — web search tools returned no actionable results. Static spell IDs (9827, 1822, 9492, 22557) are from existing code and user-confirmed in CONTEXT.md D-11. The runtime correction mechanism makes static baseline errors self-correcting.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Will the UNIT_CASTEVENT spellId for low-rank spells differ from the level-60 baseline?**
+1. **Will the UNIT_CASTEVENT spellId for low-rank spells differ from the level-60 baseline?** — RESOLVED: Plan 17-01 Task 1 and Plan 17-02 Task 1 implement the correction mechanism that handles multi-rank correctly. Each rank's spellId is discovered on first use and persisted, with latest-write-wins semantics. Land tracing only needs to know "did this spell land" — the actual rank doesn't matter for the trace logic. This is not a bug but expected behavior.
    - What we know: Each spell rank has a distinct Global Spell ID (e.g., Pounce rank 1=9827, rank 2=9829). The static baseline uses level-60 (max rank) IDs.
-   - What's unclear: Whether low-level characters using lower-rank spells will trigger spurious "corrections" because their rank-1 spellId differs from the rank-5 static baseline.
-   - Recommendation: The correction mechanism will correctly discover and persist each rank's spellId on first use. This is expected behavior -- the static baseline serves as a starting point, and the persistent map accumulates corrections for any rank actually used. The system handles multi-rank correctly because each rank produces a different spellId in UNIT_CASTEVENT, and each correction is keyed by spellName (not rank), with latest-write-wins semantics. Actually, since _castSpell resolves spellName WITHOUT rank information, and the locale-based spellName is the same for all ranks, the system will naturally track the highest or most-recently-used rank. This is acceptable because land tracing only needs to know "did this spell land" -- the actual rank doesn't matter for the trace logic.
 
-2. **Is there a race condition where UNIT_CASTEVENT fires for spell-A but current_casting_spell has been overwritten by spell-B?**
+2. **Is there a race condition where UNIT_CASTEVENT fires for spell-A but current_casting_spell has been overwritten by spell-B?** — RESOLVED: Plan 17-02 Task 1 implements the current_casting_spell lifecycle (set in _castSpell, clear in UNIT_CASTEVENT). The one-action-per-press design (catLeveling returns after first successful cast) plus human reaction time + GCD between presses provides ample time for event processing. The risk of overlap is negligible.
    - What we know: The WoW 1.12.1 client processes events sequentially. _castSpell returns synchronously after CastSpellByName(). UNIT_CASTEVENT fires on the next event frame tick.
-   - What's unclear: Whether instant-cast spells (Claw, Shred -- no cast time) can produce UNIT_CASTEVENT before the next _castSpell call in the same button-press.
-   - Recommendation: The catLeveling/catAtk design returns after the first successful action (one-action-per-press). So within a single button press, only one spell is cast. Between button presses, there is ample time (human reaction + GCD) for the UNIT_CASTEVENT to fire and be processed. The risk of overlap is minimal with the one-action-per-press design.
 
 ## Metadata
 
