@@ -54,6 +54,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 - Phase 14 added: 战斗时长预测与斩杀判断等级自适应 — 将 isTrivialBattle 和 isKillShotOrLastChance 中硬编码的60级静态DPS估算替换为等级自适应动态估算，使练级阶段也能准确判断快速战斗和斩杀线 (2026-06-20)
 - Phase 15 added: 将catAtk从Druid实例方法重构为combo.lua全局一键宏方法 (2026-06-20)
 - Phase 16 added: catLeveling 练级版一键宏 — 新建 catLeveling 函数（不修改 catAtk），实现技能存在性检查、起手技 ravage/pounce 选择（复用 isTrivialBattleOrPvp）、中间循环（猛虎之怒/双流血/精灵之火）、斩杀线判断（复用 kill shot 逻辑） (2026-06-22)
+- Phase 17 added: catLeveling FF prowling guard + global spellId 动态更正机制 — FF不能在潜行状态下释放；spell tracing/immune 改为按名称注册，建立name→spellId双向映射(含中英文)，运行时通过UNIT_CASTEVENT捕获真实spellId并持久化矫正 (2026-06-29)
 
 ## Key Decisions
 
@@ -148,6 +149,6 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 
 ## Session
 
-**Last session:** 2026-06-27T03:36:39Z
-**Last activity:** 2026-06-27 - Completed quick task 260627-g4j: 修复 spell_trace_immune.lua 日志问题
-**Resume file:** None
+**Last session:** 2026-06-29T01:07:00Z
+**Last activity:** 2026-06-29 - Phase 17 context gathered: catLeveling FF prowling guard + global spellId 动态更正机制
+**Resume file:** .planning/phases/17-1-catleveling-ff-prowling-guard-ff-2-global-spellid-spell-tr/17-CONTEXT.md
