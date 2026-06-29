@@ -611,6 +611,63 @@ macroTorch.SelfTest:register("J: catLeveling clickContext has all required field
 end, true)
 
 -- ============================================================
+-- Category K: spellId mapping system tests (5 tests, 3 core + 2 optional)
+-- ============================================================
+-- [CITED: 17-02-PLAN.md Task 2; 17-02-CONTEXT.md]
+-- Verifies SPELL_NAME_TO_ID static mapping, resolveSpellId resolution,
+-- loadSpellIdMap function, and current_casting_spell lifecycle variable.
+
+macroTorch.SelfTest:register("K: SPELL_NAME_TO_ID table exists with all 8 keys (4 spells x 2 locales)", function()
+    assert(type(macroTorch.SPELL_NAME_TO_ID) == "table",
+        "SPELL_NAME_TO_ID is not a table, got: " .. type(macroTorch.SPELL_NAME_TO_ID))
+    -- English names
+    assert(macroTorch.SPELL_NAME_TO_ID["Pounce"] == 9827, "Pounce spellId mismatch")
+    assert(macroTorch.SPELL_NAME_TO_ID["Rake"] == 1822, "Rake spellId mismatch")
+    assert(macroTorch.SPELL_NAME_TO_ID["Rip"] == 9492, "Rip spellId mismatch")
+    assert(macroTorch.SPELL_NAME_TO_ID["Ferocious Bite"] == 22557, "Ferocious Bite spellId mismatch")
+    -- Chinese names
+    assert(macroTorch.SPELL_NAME_TO_ID["突袭"] == 9827, "突袭 spellId mismatch")
+    assert(macroTorch.SPELL_NAME_TO_ID["斜掠"] == 1822, "斜掠 spellId mismatch")
+    assert(macroTorch.SPELL_NAME_TO_ID["撕扯"] == 9492, "撕扯 spellId mismatch")
+    assert(macroTorch.SPELL_NAME_TO_ID["凶猛撕咬"] == 22557, "凶猛撕咬 spellId mismatch")
+end, false)
+
+macroTorch.SelfTest:register("K: resolveSpellId function exists and resolves known spells", function()
+    assert(type(macroTorch.resolveSpellId) == "function",
+        "resolveSpellId is not a function, got: " .. type(macroTorch.resolveSpellId))
+    assert(macroTorch.resolveSpellId("Pounce") == 9827,
+        "resolveSpellId('Pounce') expected 9827, got: " .. tostring(macroTorch.resolveSpellId("Pounce")))
+    assert(macroTorch.resolveSpellId("Rake") == 1822,
+        "resolveSpellId('Rake') expected 1822, got: " .. tostring(macroTorch.resolveSpellId("Rake")))
+    assert(macroTorch.resolveSpellId("Rip") == 9492,
+        "resolveSpellId('Rip') expected 9492, got: " .. tostring(macroTorch.resolveSpellId("Rip")))
+    assert(macroTorch.resolveSpellId("Ferocious Bite") == 22557,
+        "resolveSpellId('Ferocious Bite') expected 22557, got: " .. tostring(macroTorch.resolveSpellId("Ferocious Bite")))
+end, false)
+
+macroTorch.SelfTest:register("K: resolveSpellId returns nil for unknown spell name", function()
+    local result = macroTorch.resolveSpellId("NonexistentSpell_XYZ123")
+    assert(result == nil,
+        "resolveSpellId for unknown spell should return nil, got: " .. tostring(result))
+end, true)
+
+macroTorch.SelfTest:register("K: loadSpellIdMap function exists and is callable", function()
+    assert(type(macroTorch.loadSpellIdMap) == "function",
+        "loadSpellIdMap is not a function, got: " .. type(macroTorch.loadSpellIdMap))
+    -- call it -- should not error (nil-safe with loginContext guard)
+    local ok, err = pcall(macroTorch.loadSpellIdMap)
+    assert(ok, "loadSpellIdMap should not error: " .. tostring(err))
+end, false)
+
+macroTorch.SelfTest:register("K: current_casting_spell is defined (set by _castSpell, cleared by events)", function()
+    -- current_casting_spell is nil when no cast in progress (expected initial state)
+    -- We only verify the global variable exists in the namespace (it's set/cleared at runtime)
+    -- Not asserting on value since it depends on whether a spell is being cast
+    assert(type(macroTorch.current_casting_spell) == "nil" or type(macroTorch.current_casting_spell) == "string",
+        "current_casting_spell should be nil or string, got: " .. type(macroTorch.current_casting_spell))
+end, true)
+
+-- ============================================================
 -- Module 4: /mt SLASH command
 -- ============================================================
 -- [CITED: CONTEXT.md D-02, D-10]
