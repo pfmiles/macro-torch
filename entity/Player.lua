@@ -80,7 +80,7 @@ function macroTorch.Player:new()
         -- Only set when actually casting (mode='raw' or mode='safe'/nil).
         -- Do NOT set for mode='ready' (availability check only, no cast).
         if mode ~= 'ready' then
-            macroTorch.current_casting_spell = spellName
+            macroTorch.current_casting_spell = localeNames.en
         end
         -- self-cast: always highest rank via CastSpellByName; rank param intentionally ignored
         -- (self-cast spells are forms/buffs with no multi-rank concerns)
