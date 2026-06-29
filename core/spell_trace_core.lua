@@ -42,6 +42,18 @@ end
 -- [CITED: CONTEXT.md D-06, D-07, D-08; RESEARCH A3/Pitfall 1]
 macroTorch.SpellTrace = {}
 
+-- resolve spellId from runtime-corrected map (loginContext.spellIdMap) or static baseline (SPELL_NAME_TO_ID)
+-- returns nil if spell unknown (caller must handle)
+function macroTorch.resolveSpellId(spellName)
+    if macroTorch.loginContext and macroTorch.loginContext.spellIdMap then
+        local correctedId = macroTorch.loginContext.spellIdMap[spellName]
+        if correctedId then
+            return correctedId
+        end
+    end
+    return macroTorch.SPELL_NAME_TO_ID[spellName]
+end
+
 -- 声明式 spell trace 注册 API
 -- config 字段: {spellId, immune, land, debuffTexture}
 -- spellId: 可选，仅当 land=true 时需要（用于 setSpellTracing 的数值 ID）
@@ -51,11 +63,19 @@ macroTorch.SpellTrace = {}
 function macroTorch.SpellTrace:register(name, config)
     -- [CITED: PLAN 03-02 must_haves]
     if config.land then
-        if not config.spellId then
-            macroTorch.show("[macro-torch] SpellTrace:register(" .. name .. "): land=true but no spellId", 'red')
+        local spellId = nil
+        -- resolve via spellName first (new), then fallback to config.spellId (legacy)
+        if config.spellName then
+            spellId = macroTorch.resolveSpellId(config.spellName)
+        end
+        if not spellId then
+            spellId = config.spellId
+        end
+        if not spellId then
+            macroTorch.show("[macro-torch] SpellTrace:register(" .. name .. "): land=true but no spellId resolved", 'red')
             return
         end
-        macroTorch.setSpellTracing(config.spellId, name)
+        macroTorch.setSpellTracing(spellId, name)
     end
     if config.immune then
         macroTorch.setTraceSpellImmune(name, config.debuffTexture)
