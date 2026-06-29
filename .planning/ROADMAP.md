@@ -787,12 +787,12 @@ Plans:
 **Goal:** 添加 catLeveling FF 潜行守卫，建立 global spellId 名称→映射系统（SPELL_NAME_TO_ID + resolveSpellId），通过 _castSpell→current_casting_spell→UNIT_CASTEVENT 链路实现运行时 spellId 动态更正与持久化，将 Druid 4 个 land-tracing 技能从硬编码 spellId 迁移到名称驱动注册。
 **Requirements**: REQ-17-SPELLID-MAP, REQ-17-FF-PROWL-GUARD, REQ-17-CURRENT-CASTING, REQ-17-SPELLID-CORRECTION, REQ-17-DRUID-MIGRATE, REQ-17-SELFTEST
 **Depends on:** Phase 16
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 17-01-PLAN.md — 基础设施层：SPELL_NAME_TO_ID 映射表 + resolveSpellId + SpellTrace:register spellName 支持 + loadSpellIdMap + catLeveling FF prowling guard (Wave 1)
+- [x] 17-01-PLAN.md — 基础设施层：SPELL_NAME_TO_ID 映射表 + resolveSpellId + SpellTrace:register spellName 支持 + loadSpellIdMap + catLeveling FF prowling guard (Wave 1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
