@@ -94,6 +94,31 @@ function macroTorch.eventHandle()
             if spellId and macroTorch.tracingSpells[spellId] then
                 macroTorch.recordCastTable(macroTorch.tracingSpells[spellId])
             end
+            -- spellId dynamic correction: compare event spellId with static baseline
+            -- from _castSpell's current_casting_spell, persist mismatches to SM_EXTEND
+            if macroTorch.current_casting_spell then
+                local staticSpellId = macroTorch.resolveSpellId(macroTorch.current_casting_spell)
+                if staticSpellId and staticSpellId ~= spellId then
+                    -- lazy-init SM_EXTEND.spellIdMap (same pattern as loadImmuneTable)
+                    if not SM_EXTEND then SM_EXTEND = {} end
+                    if not SM_EXTEND.spellIdMap then SM_EXTEND.spellIdMap = {} end
+                    local playerCls = macroTorch.player.class
+                    if not SM_EXTEND.spellIdMap[playerCls] then SM_EXTEND.spellIdMap[playerCls] = {} end
+                    -- persist corrected spellId
+                    SM_EXTEND.spellIdMap[playerCls][macroTorch.current_casting_spell] = spellId
+                    -- sync to loginContext if already initialized
+                    if macroTorch.loginContext and macroTorch.loginContext.spellIdMap then
+                        macroTorch.loginContext.spellIdMap[macroTorch.current_casting_spell] = spellId
+                    end
+                    -- migrate tracingSpells key: old static id -> new event id
+                    macroTorch.tracingSpells[spellId] = macroTorch.tracingSpells[staticSpellId]
+                    macroTorch.tracingSpells[staticSpellId] = nil
+                    macroTorch.show(string.format("[macro-torch] spellId corrected: %s %d -> %d",
+                        macroTorch.current_casting_spell, staticSpellId, spellId), 'yellow')
+                end
+                -- clear bridge variable after processing (must clear even if no mismatch)
+                macroTorch.current_casting_spell = nil
+            end
         end
     elseif event == "RAW_COMBATLOG" then
         -- when player cast a spell
