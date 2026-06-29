@@ -147,6 +147,9 @@ function macroTorch.computeLandTable(spell)
     if not spell or not macroTorch.target.isCanAttack then
         return
     end
+    if not macroTorch.loginContext then
+        return
+    end
     -- compute the final 'landTable'
     if not macroTorch.loginContext.landTable then
         macroTorch.loginContext.landTable = {}

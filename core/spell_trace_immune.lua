@@ -116,4 +116,17 @@ function macroTorch.loadSpellIdMap()
     if not macroTorch.loginContext.spellIdMap then
         macroTorch.loginContext.spellIdMap = SM_EXTEND.spellIdMap[playerCls]
     end
+    -- Migrate tracingSpells keys from static SPELL_NAME_TO_ID to persisted corrected IDs.
+    -- SpellTrace:register runs before loginContext exists and uses static IDs.
+    -- Without migration, tracingSpells keys stay at static IDs across sessions
+    -- and UNIT_CASTEVENT lookups silently fail when the event reports the corrected ID.
+    if macroTorch.tracingSpells then
+        for spellName, correctedId in pairs(macroTorch.loginContext.spellIdMap) do
+            local staticId = macroTorch.SPELL_NAME_TO_ID[spellName]
+            if staticId and staticId ~= correctedId and macroTorch.tracingSpells[staticId] then
+                macroTorch.tracingSpells[correctedId] = macroTorch.tracingSpells[staticId]
+                macroTorch.tracingSpells[staticId] = nil
+            end
+        end
+    end
 end
