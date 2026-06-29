@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Executing Phase 17
-last_updated: "2026-06-29T10:47:10.514Z"
+last_updated: "2026-06-29T10:54:20Z"
 last_activity: 2026-06-29
 progress:
   total_phases: 16
   completed_phases: 11
-  total_plans: 32
-  completed_plans: 31
-  percent: 69
+  total_plans: 33
+  completed_plans: 32
+  percent: 70
 stopped_at: context exhaustion at 76% (2026-06-18)
 ---
 
@@ -117,6 +117,8 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 | Phase 14-istrivialbattle-iskillshotorlastchance-60-dps-b P01 | 462 | 3 tasks | 6 files |
 | Phase 16-catatk-dps-catatk-catleveling P01 | 141 | 1 tasks | 1 files |
 | Phase 16-catatk P02 | 87 | 1 tasks | 1 files |
+| Phase 17 P01 | 192 | 3 tasks | 6 files |
+| Phase 17 P02 | 209 | 2 tasks | 4 files |
 
 ## Decisions
 
@@ -133,6 +135,8 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 - [Phase 16 P01]: Implemented catLeveling() — 210-line leveling one-button macro with 9 modules in priority order, no rough/ERPS/reshift/relic, all 8 skills guarded by isSpellExist, inline simplified FF and Shred-vs-Claw decisions. catAtk and catLeveling are fully independent.
 - [Phase ?]: test
 - [Phase ?]: Phase 16 P02: Added 5 Category J SelfTest registrations for catLeveling in core/selftest.lua — verifying function presence, shared decision function references (isKillShotOrLastChance/shouldCastRip/shouldUseBite), clickContext correctness, catAtk invariance, and ERPS/reshift independence. 2 core (isOptional=false) + 3 optional (isOptional=true) tests with UnitClass guard for non-Druid logins.
+- [Phase 17 P01]: Established SPELL_NAME_TO_ID static mapping table (8 entries, EN+ZH), resolveSpellId() two-stage resolution (runtime correction > static baseline), loadSpellIdMap() persistence binding to loginContext, SpellTrace:register spellName field support, and FF prowling guard in catLeveling.
+- [Phase 17 P02]: Bridged _castSpell spellName to UNIT_CASTEVENT spellId via current_casting_spell; implemented runtime spellId correction with SM_EXTEND persistence and tracingSpells key migration; migrated 4 Druid land-tracing spells (Pounce/Rake/Rip/Ferocious Bite) from hardcoded spellId to spellName-driven registration; added 5 Category K self-tests (K1-K5) for spellId mapping system verification.
 
 ## Session
 
@@ -149,6 +153,6 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 
 ## Session
 
-**Last session:** 2026-06-29T10:47:10.495Z
+**Last session:** 2026-06-29T10:54:20.000Z
 **Last activity:** 2026-06-29
-**Resume file:** .planning/phases/17-catleveling-ff-prowling-guard-ff-2-global-spellid-spell-tr/17-CONTEXT.md
+**Resume file:** None
