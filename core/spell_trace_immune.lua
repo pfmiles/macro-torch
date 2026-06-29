@@ -100,3 +100,20 @@ function macroTorch.loadDefiniteBleedingTable()
         macroTorch.context.definiteBleedingTable = SM_EXTEND.definiteBleedingTable[playerCls]
     end
 end
+
+-- load the spellIdMap from SM_EXTEND.spellIdMap persistent var
+-- follows the identical pattern as loadImmuneTable/loadDefiniteBleedingTable
+-- NOTE: binds to loginContext (session-scoped), NOT context (combat-scoped)
+-- spellId corrections must survive combat exit/re-entry
+function macroTorch.loadSpellIdMap()
+    if not macroTorch.loginContext then return end
+    if not SM_EXTEND then SM_EXTEND = {} end
+    if not SM_EXTEND.spellIdMap then SM_EXTEND.spellIdMap = {} end
+    local playerCls = macroTorch.player.class
+    if not SM_EXTEND.spellIdMap[playerCls] then
+        SM_EXTEND.spellIdMap[playerCls] = {}
+    end
+    if not macroTorch.loginContext.spellIdMap then
+        macroTorch.loginContext.spellIdMap = SM_EXTEND.spellIdMap[playerCls]
+    end
+end

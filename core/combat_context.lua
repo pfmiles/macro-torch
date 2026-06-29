@@ -37,4 +37,5 @@ end
 function macroTorch.onPlayerEnteringWorld()
     macroTorch.player = macroTorch.initPlayer()
     macroTorch.loginContext = {}
+    macroTorch.loadSpellIdMap()
 end
