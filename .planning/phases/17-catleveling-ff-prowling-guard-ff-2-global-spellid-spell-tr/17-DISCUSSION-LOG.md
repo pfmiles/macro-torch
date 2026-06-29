@@ -4,7 +4,7 @@
 > Decisions are captured in CONTEXT.md — this log preserves the alternatives considered.
 
 **Date:** 2026-06-29
-**Phase:** 17-1-catleveling-ff-prowling-guard-ff-2-global-spellid-spell-tr
+**Phase:** 17-catleveling-ff-prowling-guard-ff-2-global-spellid-spell-tr
 **Areas discussed:** 映射数据结构, 持久化方案, current_casting_spell 生命周期, 迁移范围
 
 ---

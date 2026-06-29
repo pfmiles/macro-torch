@@ -189,5 +189,5 @@ None — 讨论保持在 Phase 17 范围内。
 
 ---
 
-*Phase: 17-1-catleveling-ff-prowling-guard-ff-2-global-spellid-spell-tr*
+*Phase: 17-catleveling-ff-prowling-guard-ff-2-global-spellid-spell-tr*
 *Context gathered: 2026-06-29*
