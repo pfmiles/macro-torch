@@ -91,11 +91,10 @@ function macroTorch.eventHandle()
             macroTorch.show('unitId=' .. tostring(unitId) .. ', targetId=' .. tostring(targetId) .. ', type=' .. tostring(castType) .. ', spellId=' .. tostring(spellId) .. ', timeCost=' .. tostring(timeCost))
         end
         if unitId == macroTorch.player.guid and castType == 'CAST' then
-            if spellId and macroTorch.tracingSpells[spellId] then
-                macroTorch.recordCastTable(macroTorch.tracingSpells[spellId])
-            end
             -- spellId dynamic correction: compare event spellId with static baseline
-            -- from _castSpell's current_casting_spell, persist mismatches to SM_EXTEND
+            -- from _castSpell's current_casting_spell, persist mismatches to SM_EXTEND.
+            -- MUST run BEFORE recordCastTable so that tracingSpells is up-to-date
+            -- and the first cast of a corrected spell is not silently lost.
             if macroTorch.current_casting_spell then
                 local staticSpellId = macroTorch.resolveSpellId(macroTorch.current_casting_spell)
                 if staticSpellId and staticSpellId ~= spellId then
@@ -118,6 +117,9 @@ function macroTorch.eventHandle()
                 end
                 -- clear bridge variable after processing (must clear even if no mismatch)
                 macroTorch.current_casting_spell = nil
+            end
+            if spellId and macroTorch.tracingSpells[spellId] then
+                macroTorch.recordCastTable(macroTorch.tracingSpells[spellId])
             end
         end
     elseif event == "RAW_COMBATLOG" then
