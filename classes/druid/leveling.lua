@@ -71,7 +71,7 @@ function macroTorch.catLeveling()
         local hasRavage = macroTorch.isSpellExist('Ravage', 'spell')
         if hasPounce
                 and not target.isImmune('Pounce')
-                and target.health >= macroTorch.getOpenerHealthThreshold()
+                and target.health >= macroTorch.getOpenerHealthThreshold(UnitLevel('player'))
                 and not macroTorch.isTrivialBattleOrPvp(clickContext) then
             player.pounce()
             return

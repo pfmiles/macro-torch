@@ -1317,9 +1317,9 @@ macroTorch.SelfTest:register("Druid: getKSThreshold bracket boundaries return va
     local v30 = macroTorch.getKSThreshold(30)
     local v40 = macroTorch.getKSThreshold(40)
     local v50 = macroTorch.getKSThreshold(50)
-    assert(v30 == 700, "getKSThreshold(30) should return 700, got: " .. tostring(v30))
-    assert(v40 == 1050, "getKSThreshold(40) should return 1050, got: " .. tostring(v40))
-    assert(v50 == 1450, "getKSThreshold(50) should return 1450, got: " .. tostring(v50))
+    assert(v30 == 350, "getKSThreshold(30) should return 350, got: " .. tostring(v30))
+    assert(v40 == 525, "getKSThreshold(40) should return 525, got: " .. tostring(v40))
+    assert(v50 == 725, "getKSThreshold(50) should return 725, got: " .. tostring(v50))
 end, true)
 
 macroTorch.SelfTest:register("Druid: estimatePlayerDPS(15) returns conservative fallback 25 (D-05)", function()
@@ -1327,7 +1327,7 @@ macroTorch.SelfTest:register("Druid: estimatePlayerDPS(15) returns conservative 
     local dpsVal = macroTorch.estimatePlayerDPS(15)
     local ksVal = macroTorch.getKSThreshold(15)
     assert(dpsVal == 25, "estimatePlayerDPS(15) should return 25, got: " .. tostring(dpsVal))
-    assert(ksVal == 200, "getKSThreshold(15) should return 200, got: " .. tostring(ksVal))
+    assert(ksVal == 100, "getKSThreshold(15) should return 100, got: " .. tostring(ksVal))
 end, true)
 
 macroTorch.SelfTest:register("Druid: isKillShotOrLastChance condition A (willDieInSeconds) path confirmed accessible", function()

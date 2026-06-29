@@ -96,6 +96,9 @@ function macroTorch.recordCastTable(spell)
     if not spell or not macroTorch.target.isCanAttack then
         return
     end
+    if not macroTorch.loginContext then
+        return
+    end
     if not macroTorch.loginContext.castTable then
         macroTorch.loginContext.castTable = {}
     end
@@ -116,6 +119,9 @@ end
 -- it also computes the final 'landTable' immediately, cauz the cast event must arrived upon the fail event arrive
 function macroTorch.recordFailTable(spell, failType)
     if not spell or not macroTorch.target.isCanAttack then
+        return
+    end
+    if not macroTorch.loginContext then
         return
     end
     if not macroTorch.loginContext.failTable then
