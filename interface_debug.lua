@@ -14,6 +14,11 @@
    limitations under the License.
 ]] --
 
+-- 持久化日志缓冲区（依赖 SuperMacro .toc: ## SavedVariables: MACRO_TORCH_LOG）
+if not MACRO_TORCH_LOG then
+    MACRO_TORCH_LOG = { messages = {}, maxSize = 500 }
+end
+
 --- 判断技能栏中指定texture的技能是否已经冷却结束
 ---@param actionTxtContains string 技能栏中代表技能的图标texture(可以是部分内容, 使用字符串contains判断)
 function macroTorch.isActionCooledDown(actionTxtContains)
@@ -89,6 +94,19 @@ function macroTorch.show(a, color)
         c = { r = 0, g = 0.5, b = 0.9, id = 'custom_green' }
     end
     DEFAULT_CHAT_FRAME:AddMessage(tostring(a), c.r, c.g, c.b, c.id)
+end
+
+--- 同 show()，但同时将消息持久化到 MACRO_TORCH_LOG SavedVariable
+--- 日志在 logout/reload 时自动写入 WTF/.../SavedVariables/SuperMacro.lua
+---@param a any 要显示的内容（会被 tostring）
+---@param color string 可选颜色: "white"(默认), "red", "yellow", "blue", "green"
+function macroTorch.log(a, color)
+    macroTorch.show(a, color)
+    local messages = MACRO_TORCH_LOG.messages
+    while macroTorch.tableLen(messages) >= MACRO_TORCH_LOG.maxSize do
+        table.remove(messages, 1)
+    end
+    table.insert(messages, { msg = tostring(a), color = color or 'white' })
 end
 
 -- DEBUG: init trace step 10 — interface_debug loaded (macroTorch.show defined)
