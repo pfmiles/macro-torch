@@ -90,13 +90,13 @@ function macroTorch.Player:new()
                 local prev = tostring(macroTorch.current_casting_spell)
                 if macroTorch._spellIdMonitored and macroTorch._spellIdMonitored[localeNames.en] then
                     if prev ~= localeNames.en then
-                        macroTorch.log("[macro-torch] current_casting_spell was not cleared: " .. prev ..
+                        macroTorch.show("[macro-torch] current_casting_spell was not cleared: " .. prev ..
                             ", now overwritten by: " .. localeNames.en, 'yellow')
                     else
-                        macroTorch.log("[macro-torch] current_casting_spell stale (same spell recast): " .. prev, 'yellow')
+                        macroTorch.show("[macro-torch] current_casting_spell stale (same spell recast): " .. prev, 'yellow')
                     end
                 else
-                    macroTorch.log("[macro-torch] current_casting_spell was not cleared: " .. prev ..
+                    macroTorch.show("[macro-torch] current_casting_spell was not cleared: " .. prev ..
                         " (spell not monitored, stale value persists)", 'yellow')
                 end
             end
