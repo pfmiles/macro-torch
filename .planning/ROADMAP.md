@@ -800,14 +800,19 @@ Plans:
 
 ### Phase 18: spellId 自动更正机制改造方案（最终版） — 将 spellId 更正监听与 land tracing 注册合并，以 _spellIdMonitored 白名单替代无条件 current_casting_spell 设值
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** 将 `_castSpell` 中无条件的 `current_casting_spell` 设值改为以 `_spellIdMonitored` 白名单守卫，白名单由 `SpellTrace:register` 自动维护（land=true + spellName 时自动加入），消除非监控 spell 的残留污染和错误更正风险。
+**Requirements**: REQ-18-D01, REQ-18-D02, REQ-18-D03, REQ-18-D04, REQ-18-D05
 **Depends on:** Phase 17
-**Plans:** 0 plans
+**Plans:** 2 plans
 
 Plans:
+**Wave 1**
 
-- [ ] TBD (run /gsd-plan-phase 18 to break down)
+- [ ] 18-01-PLAN.md — _spellIdMonitored 初始化 + SpellTrace:register 白名单写入逻辑 (Wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 18-02-PLAN.md — _castSpell 白名单守卫 + stale 检测 + Category L 白名单验证 selftest (5 tests) (Wave 2)
 
 ---
 
