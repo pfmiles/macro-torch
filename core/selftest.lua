@@ -693,37 +693,43 @@ end, false)
 
 macroTorch.SelfTest:register("L: monitorSpellId=false excludes from whitelist even with land=true", function()
     -- Create a temporary registration with monitorSpellId=false, land=true
-    -- and a unique test spellName to verify it is NOT added to the whitelist.
+    -- and a unique spellName to verify it is NOT added to the whitelist.
+    -- Use a fake spellId (999998) so land=true path resolves without early-return,
+    -- and a unique spellName so the whitelist assertion doesn't collide with
+    -- real Druid registrations.
     local testName = "__SELFTEST_L3_DUMMY__"
+    local testSpellName = "__SELFTEST_L3_SPELL__"
     macroTorch.SpellTrace:register(testName, {
-        spellName = "Rake",
+        spellName = testSpellName,
+        spellId = 999998,
         land = true,
         monitorSpellId = false
     })
-    assert(macroTorch._spellIdMonitored[testName] == nil,
-        "monitorSpellId=false should NOT add to whitelist, but found entry for: " .. testName)
-    -- Cleanup: remove test entry from tracingSpells if SpellTrace:register added one
-    -- Resolve the spellId that would have been used and remove from tracingSpells
-    local spellId = macroTorch.resolveSpellId("Rake")
-    if spellId and macroTorch.tracingSpells[spellId] == testName then
-        macroTorch.tracingSpells[spellId] = nil
-    end
+    -- Whitelist is keyed by config.spellName, not the registration name.
+    assert(macroTorch._spellIdMonitored[testSpellName] == nil,
+        "monitorSpellId=false should NOT add to whitelist, but found entry for: " .. testSpellName)
+    -- Cleanup: remove test entry from tracingSpells (fake spellId, no collision risk)
+    macroTorch.tracingSpells[999998] = nil
 end, false)
 
 macroTorch.SelfTest:register("L: monitorSpellId=true includes even with land=false", function()
     -- Create a temporary registration with monitorSpellId=true, land=false
     -- to verify it IS added to the whitelist (override). Spells with
     -- monitorSpellId=true need spellId monitoring regardless of landing.
+    -- Use a unique spellName so the whitelist entry doesn't collide with
+    -- real Druid registrations.
     local testName = "__SELFTEST_L4_DUMMY__"
+    local testSpellName = "__SELFTEST_L4_SPELL__"
     macroTorch.SpellTrace:register(testName, {
-        spellName = "Rake",
+        spellName = testSpellName,
         land = false,
         monitorSpellId = true
     })
-    assert(macroTorch._spellIdMonitored[testName] == true,
-        "monitorSpellId=true should add to whitelist even with land=false, but not found for: " .. testName)
+    -- Whitelist is keyed by config.spellName, not the registration name.
+    assert(macroTorch._spellIdMonitored[testSpellName] == true,
+        "monitorSpellId=true should add to whitelist even with land=false, but not found for: " .. testSpellName)
     -- Cleanup: remove the whitelist entry (land=false, so setSpellTracing not called)
-    macroTorch._spellIdMonitored[testName] = nil
+    macroTorch._spellIdMonitored[testSpellName] = nil
 end, false)
 
 macroTorch.SelfTest:register("L: Faerie Fire (Feral) with land=false is NOT in whitelist (D-05 legacy compatibility)", function()
