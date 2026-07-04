@@ -668,6 +668,78 @@ macroTorch.SelfTest:register("K: current_casting_spell is defined (set by _castS
 end, true)
 
 -- ============================================================
+-- Category L: _spellIdMonitored whitelist verification (5 tests, 4 core + 1 optional)
+-- ============================================================
+-- [CITED: 18-02-PLAN.md Task 2; 18-CONTEXT.md D-03, D-05]
+-- Verifies _spellIdMonitored table existence, 4 Druid land-tracing spell entries,
+-- monitorSpellId flag behavior (exclude when false, include when true),
+-- and D-05 legacy config.spellId path backward compatibility.
+
+macroTorch.SelfTest:register("L: _spellIdMonitored table exists and is a table", function()
+    assert(type(macroTorch._spellIdMonitored) == "table",
+        "_spellIdMonitored is not a table, got: " .. type(macroTorch._spellIdMonitored))
+end, false)
+
+macroTorch.SelfTest:register("L: all 4 Druid land-tracing spells are in the whitelist", function()
+    assert(macroTorch._spellIdMonitored["Pounce"] == true,
+        "Pounce not in _spellIdMonitored")
+    assert(macroTorch._spellIdMonitored["Rake"] == true,
+        "Rake not in _spellIdMonitored")
+    assert(macroTorch._spellIdMonitored["Rip"] == true,
+        "Rip not in _spellIdMonitored")
+    assert(macroTorch._spellIdMonitored["Ferocious Bite"] == true,
+        "Ferocious Bite not in _spellIdMonitored")
+end, false)
+
+macroTorch.SelfTest:register("L: monitorSpellId=false excludes from whitelist even with land=true", function()
+    -- Create a temporary registration with monitorSpellId=false, land=true
+    -- and a unique test spellName to verify it is NOT added to the whitelist.
+    local testName = "__SELFTEST_L3_DUMMY__"
+    macroTorch.SpellTrace:register(testName, {
+        spellName = "Rake",
+        land = true,
+        monitorSpellId = false
+    })
+    assert(macroTorch._spellIdMonitored[testName] == nil,
+        "monitorSpellId=false should NOT add to whitelist, but found entry for: " .. testName)
+    -- Cleanup: remove test entry from tracingSpells if SpellTrace:register added one
+    -- Resolve the spellId that would have been used and remove from tracingSpells
+    local spellId = macroTorch.resolveSpellId("Rake")
+    if spellId and macroTorch.tracingSpells[spellId] == testName then
+        macroTorch.tracingSpells[spellId] = nil
+    end
+end, false)
+
+macroTorch.SelfTest:register("L: monitorSpellId=true includes even with land=false", function()
+    -- Create a temporary registration with monitorSpellId=true, land=false
+    -- to verify it IS added to the whitelist (override). Spells with
+    -- monitorSpellId=true need spellId monitoring regardless of landing.
+    local testName = "__SELFTEST_L4_DUMMY__"
+    macroTorch.SpellTrace:register(testName, {
+        spellName = "Rake",
+        land = false,
+        monitorSpellId = true
+    })
+    assert(macroTorch._spellIdMonitored[testName] == true,
+        "monitorSpellId=true should add to whitelist even with land=false, but not found for: " .. testName)
+    -- Cleanup: remove the whitelist entry (land=false, so setSpellTracing not called)
+    macroTorch._spellIdMonitored[testName] = nil
+end, false)
+
+macroTorch.SelfTest:register("L: Faerie Fire (Feral) with land=false is NOT in whitelist (D-05 legacy compatibility)", function()
+    -- FF(Feral) uses config.spellId path with land=false and no spellName,
+    -- so its monitorSpellId defaults to false. It should NOT pollute the
+    -- whitelist. This test is optional because it depends on FF(Feral)
+    -- being registered in Druid.lua.
+    -- spellName would be config.spellName, which FF(Feral) does not set,
+    -- so it cannot appear in _spellIdMonitored regardless.
+    assert(macroTorch._spellIdMonitored["Faerie Fire (Feral)"] == nil,
+        "Faerie Fire (Feral) should NOT be in _spellIdMonitored (legacy config.spellId path)")
+end, true)
+
+-- Registration count: Category L adds 5 tests (4 core + 1 optional)
+
+-- ============================================================
 -- Module 4: /mt SLASH command
 -- ============================================================
 -- [CITED: CONTEXT.md D-02, D-10]
