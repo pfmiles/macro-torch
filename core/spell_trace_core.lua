@@ -15,6 +15,12 @@ macroTorch.DEBUFF_LAND_LAG = 0.2
 if not macroTorch.tracingSpells then
     macroTorch.tracingSpells = {}
 end
+-- whitelist: spells whose spellId should be monitored for dynamic correction
+-- populated automatically by SpellTrace:register when config.spellName is present
+-- and monitorSpellId (defaults to config.land) is true. (per D-02)
+if not macroTorch._spellIdMonitored then
+    macroTorch._spellIdMonitored = {}
+end
 function macroTorch.setSpellTracing(spellGuid, spellName)
     if not macroTorch.tracingSpells[spellGuid] then
         macroTorch.tracingSpells[spellGuid] = spellName
