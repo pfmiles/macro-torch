@@ -75,12 +75,29 @@ function macroTorch.Player:new()
         end
 
         -- 4. Execute the cast
-        -- Bridge: set current_casting_spell so UNIT_CASTEVENT can detect
-        -- spellId mismatches and persist corrections to SM_EXTEND.spellIdMap.
-        -- Only set when actually casting (mode='raw' or mode='safe'/nil).
+        -- [Phase 18 per D-02, D-04] Whitelist-guarded current_casting_spell:
+        -- only set when actually casting (mode!='ready') AND the spell's English name
+        -- is in the _spellIdMonitored whitelist (populated by SpellTrace:register
+        -- for spells whose spellId needs dynamic correction monitoring).
         -- Do NOT set for mode='ready' (availability check only, no cast).
+        -- Stale detection: if current_casting_spell still holds a previous value,
+        -- warn before overwriting — this indicates UNIT_CASTEVENT event loss.
         if mode ~= 'ready' then
-            macroTorch.current_casting_spell = localeNames.en
+            -- [Phase 18 per D-04] Stale detection: warn if previous value not cleared
+            -- by UNIT_CASTEVENT handler (events.lua). Indicates SuperWow event loss
+            -- or a bug in event handling.
+            if macroTorch.current_casting_spell ~= nil then
+                macroTorch.log("[macro-torch] current_casting_spell was not cleared: " ..
+                    tostring(macroTorch.current_casting_spell) ..
+                    ", now overwritten by: " .. localeNames.en, 'yellow')
+            end
+            -- [Phase 18 per D-02] Whitelist guard: only set current_casting_spell
+            -- for spells registered with monitorSpellId=true (land-tracing spells
+            -- with config.spellName). Spells not in the whitelist get NO assignment
+            -- — zero pollution, no stale risk.
+            if macroTorch._spellIdMonitored and macroTorch._spellIdMonitored[localeNames.en] then
+                macroTorch.current_casting_spell = localeNames.en
+            end
         end
         -- self-cast: always highest rank via CastSpellByName; rank param intentionally ignored
         -- (self-cast spells are forms/buffs with no multi-rank concerns)
