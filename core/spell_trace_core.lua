@@ -82,6 +82,18 @@ function macroTorch.SpellTrace:register(name, config)
             return
         end
         macroTorch.setSpellTracing(spellId, name)
+        -- [Phase 18 per D-01, D-03] Whitelist maintenance: auto-register
+        -- spells whose spellId should be monitored for dynamic correction.
+        -- monitorSpellId defaults to config.land (nil treated as false).
+        local shouldMonitor
+        if config.monitorSpellId ~= nil then
+            shouldMonitor = config.monitorSpellId
+        else
+            shouldMonitor = config.land or false
+        end
+        if shouldMonitor and config.spellName then
+            macroTorch._spellIdMonitored[config.spellName] = true
+        end
     end
     if config.immune then
         macroTorch.setTraceSpellImmune(name, config.debuffTexture)
