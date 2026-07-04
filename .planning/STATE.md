@@ -55,6 +55,7 @@ stopped_at: context exhaustion at 76% (2026-06-18)
 - Phase 15 added: 将catAtk从Druid实例方法重构为combo.lua全局一键宏方法 (2026-06-20)
 - Phase 16 added: catLeveling 练级版一键宏 — 新建 catLeveling 函数（不修改 catAtk），实现技能存在性检查、起手技 ravage/pounce 选择（复用 isTrivialBattleOrPvp）、中间循环（猛虎之怒/双流血/精灵之火）、斩杀线判断（复用 kill shot 逻辑） (2026-06-22)
 - Phase 17 added: catLeveling FF prowling guard + global spellId 动态更正机制 — FF不能在潜行状态下释放；spell tracing/immune 改为按名称注册，建立name→spellId双向映射(含中英文)，运行时通过UNIT_CASTEVENT捕获真实spellId并持久化矫正 (2026-06-29)
+- Phase 18 added: spellId 自动更正机制改造 — 将 spellId 更正监听与 land tracing 注册合并，以 _spellIdMonitored 白名单替代无条件 current_casting_spell 设值，消除残留污染和错误更正风险 (2026-07-04)
 
 ## Key Decisions
 

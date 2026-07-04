@@ -798,6 +798,17 @@ Plans:
 
 - [x] 17-02-PLAN.md — 应用层集成：current_casting_spell 生命周期 + UNIT_CASTEVENT 动态更正 + Druid SpellTrace:register 迁移 + Category K 自检 (Wave 2)
 
+### Phase 18: spellId 自动更正机制改造方案（最终版） — 将 spellId 更正监听与 land tracing 注册合并，以 _spellIdMonitored 白名单替代无条件 current_casting_spell 设值
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 17
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 18 to break down)
+
 ---
 
 ## Task 统计

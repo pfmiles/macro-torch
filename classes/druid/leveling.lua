@@ -211,12 +211,12 @@ function macroTorch.catLeveling()
 
     -- ============================================================
     -- 模块9: 精灵之火(野性) — 见缝插针填充技 (Faerie Fire Feral)
-    -- 非 OOC + 非免疫 → 作为兜底填充，不论目标是否已有 debuff
+    -- 战斗中 OOC 时跳过 FF（免费施法留给 Shred/Claw），非战斗时允许 FF 用于拉怪
     -- FF 无能量消耗且可能触发 OOC，在所有高优先级模块无动作时插入
     -- NOTE: FF cannot be cast while prowling (stealthed) — WoW game mechanic constraint
     -- ============================================================
     if macroTorch.isSpellExist('Faerie Fire (Feral)', 'spell')
-            and not clickContext.ooc
+            and (not clickContext.ooc or not player.isInCombat)
             and not player.isProwling
             and not target.isImmune('Faerie Fire (Feral)')
             and player.isSpellReady('Faerie Fire (Feral)')
