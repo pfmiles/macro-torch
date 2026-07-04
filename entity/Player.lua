@@ -87,9 +87,18 @@ function macroTorch.Player:new()
             -- by UNIT_CASTEVENT handler (events.lua). Indicates SuperWow event loss
             -- or a bug in event handling.
             if macroTorch.current_casting_spell ~= nil then
-                macroTorch.log("[macro-torch] current_casting_spell was not cleared: " ..
-                    tostring(macroTorch.current_casting_spell) ..
-                    ", now overwritten by: " .. localeNames.en, 'yellow')
+                local prev = tostring(macroTorch.current_casting_spell)
+                if macroTorch._spellIdMonitored and macroTorch._spellIdMonitored[localeNames.en] then
+                    if prev ~= localeNames.en then
+                        macroTorch.log("[macro-torch] current_casting_spell was not cleared: " .. prev ..
+                            ", now overwritten by: " .. localeNames.en, 'yellow')
+                    else
+                        macroTorch.log("[macro-torch] current_casting_spell stale (same spell recast): " .. prev, 'yellow')
+                    end
+                else
+                    macroTorch.log("[macro-torch] current_casting_spell was not cleared: " .. prev ..
+                        " (spell not monitored, stale value persists)", 'yellow')
+                end
             end
             -- [Phase 18 per D-02] Whitelist guard: only set current_casting_spell
             -- for spells registered with monitorSpellId=true (land-tracing spells
