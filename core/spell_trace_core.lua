@@ -24,6 +24,16 @@ end
 function macroTorch.setSpellTracing(spellGuid, spellName)
     if not macroTorch.tracingSpells[spellGuid] then
         macroTorch.tracingSpells[spellGuid] = spellName
+    else
+        -- [Phase 18 fix] Defensive: detect spellId collision (two spell names
+        -- resolving to the same spellId). The first registration wins;
+        -- the second is silently ignored unless the names differ, which
+        -- indicates a likely data error in SPELL_NAME_TO_ID or spellIdMap.
+        if macroTorch.tracingSpells[spellGuid] ~= spellName then
+            macroTorch.show("[macro-torch] setSpellTracing: spellId " .. spellGuid ..
+                " already mapped to '" .. macroTorch.tracingSpells[spellGuid] ..
+                "', ignoring conflicting name '" .. spellName .. "'", 'yellow')
+        end
     end
 end
 -- sets what spells to tracer immune
@@ -96,6 +106,16 @@ function macroTorch.SpellTrace:register(name, config)
     end
     if shouldMonitor and config.spellName then
         macroTorch._spellIdMonitored[config.spellName] = true
+    end
+    -- [Phase 18 fix] Guard invariant: when config.spellName is set, it must equal
+    -- the registration name. Otherwise the two-key-space system breaks:
+    --   tracingSpells[id] = name   (Key Space B → A, used by recordCastTable)
+    --   _spellIdMonitored[config.spellName] (whitelist, used by _castSpell)
+    --   Chat message parsing → failTable[name] (consumed by spellsImmuneTracing)
+    -- If name ≠ config.spellName, immunity detection through fail events silently breaks.
+    if config.spellName and config.spellName ~= name then
+        macroTorch.show("[macro-torch] SpellTrace:register(" .. name ..
+            "): spellName='" .. tostring(config.spellName) .. "' differs from registration name", 'red')
     end
     if config.immune then
         macroTorch.setTraceSpellImmune(name, config.debuffTexture)

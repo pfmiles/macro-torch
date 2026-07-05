@@ -97,7 +97,11 @@ function macroTorch.Player:new()
                     end
                 else
                     macroTorch.show("[macro-torch] current_casting_spell was not cleared: " .. prev ..
-                        " (spell not monitored, stale value persists)", 'yellow')
+                        " (spell not monitored, stale value cleared)", 'yellow')
+                    -- [Phase 18 fix] Defensively clear stale value to prevent
+                    -- it from being used by a later UNIT_CASTEVENT of a
+                    -- different spell, which would corrupt spellIdMap entries.
+                    macroTorch.current_casting_spell = nil
                 end
             end
             -- [Phase 18 per D-02] Whitelist guard: only set current_casting_spell
