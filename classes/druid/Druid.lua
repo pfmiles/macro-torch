@@ -51,7 +51,7 @@ function macroTorch.Druid:new()
     end
 
     function obj.faerie_fire_feral(mode, rank)
-        return obj._castSpell({ en = 'Faerie Fire (Feral)', zh = '精灵之火（野性）' }, mode, nil, 0, false, rank)
+        return obj._castSpell({ en = 'Faerie Fire (Feral)', zh = '精灵之火 (野性)' }, mode, nil, 0, false, rank)
     end
 
     function obj.ravage(mode, rank)
@@ -159,7 +159,13 @@ function macroTorch.Druid:new()
     end
 
     function obj.barkskin(mode, rank)
-        return obj._castSpell({ en = 'Barkskin (Feral)', zh = '树皮术' }, mode, nil, 0, true, rank)
+        local spellName
+        if obj.isInCatForm or obj.isInBearForm then
+            spellName = { en = 'Barkskin (Feral)', zh = '树皮术 (野性)' }
+        else
+            spellName = { en = 'Barkskin', zh = '树皮术' }
+        end
+        return obj._castSpell(spellName, mode, nil, 0, true, rank)
     end
 
     function obj.track_humanoids(mode, rank)
