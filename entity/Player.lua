@@ -24,7 +24,7 @@ function macroTorch.Player:new()
     local obj = {}
 
     -- cast spell by name (precise spell targeting via macroTorch.castSpellByName)
-    -- for self-cast, use CastSpellByName directly (see _castSpell)
+    -- for self-cast, use obj.cast (CastSpell via spellbook index), same as _castSpell
     -- @param spellName string spell name
     -- @param rank number|nil optional rank (1-based), nil = highest rank
     function obj.cast(spellName, rank)
@@ -112,14 +112,12 @@ function macroTorch.Player:new()
                 macroTorch.current_casting_spell = localeNames.en
             end
         end
-        -- self-cast: always highest rank via CastSpellByName; rank param intentionally ignored
-        -- (self-cast spells are forms/buffs with no multi-rank concerns)
-        -- target cast: prefers obj.cast for precise spell targeting with rank support
-        if onSelf then
-            CastSpellByName(spellName, true)
-        else
-            obj.cast(spellName, rank)
-        end
+        -- Unified cast path: both self-cast and target-cast use obj.cast
+        -- (CastSpell via spellbook index), because CastSpellByName parses
+        -- parentheses as rank specifiers, silently failing for spells like
+        -- "Barkskin (Feral)" or "Faerie Fire (Feral)".
+        -- For self-only spells, CastSpell auto-targets the caster.
+        obj.cast(spellName, rank)
         return true
     end
 
