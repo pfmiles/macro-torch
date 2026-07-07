@@ -155,9 +155,10 @@ progress:
 | 260620-j2p | Opener血量阈值+法力药水阈值改为level-adaptive | 2026-06-20 | af283bd | [260620-j2p-opener-mana-level-adaptive](./quick/260620-j2p-opener-mana-level-adaptive/) |
 | 260623-wrh | Druid技能诊断打印函数 printDruidDiag | 2026-06-23 | f1bba57 | [260623-wrh-druid](./quick/260623-wrh-druid/) |
 | 260627-g4j | 修复 spell_trace_immune.lua 日志问题 | 2026-06-27 | fef6f2f | [260627-g4j-1-3](./quick/260627-g4j-1-3/) |
+| 260707-x3d | 修复catLeveling OOC+CP=5时无技能释放的bug | 2026-07-07 | 5162d02 | [260707-x3d-catleveling-ooc-cp-5-bug](./quick/260707-x3d-catleveling-ooc-cp-5-bug/) |
 
 ## Session
 
-**Last session:** 2026-07-04T07:41:58.471Z
-**Last activity:** 2026-07-04
+**Last session:** 2026-07-07T15:49:38.930Z
+**Last activity:** 2026-07-07 - Completed quick task 260707-x3d: 修复catLeveling OOC+CP=5时无技能释放的bug
 **Resume file:** None
