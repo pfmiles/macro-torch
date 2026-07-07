@@ -177,7 +177,7 @@ function macroTorch.catLeveling()
     -- 战斗中 CP < 5 时，选择合适的攒星技能：Shred（背后）或 Claw（正面）
     -- 非 OOC 时仅在有足够能量时施放；OOC 时可无视能量消耗施放
     -- ============================================================
-    if macroTorch.isFightStarted(clickContext) and clickContext.comboPoints < 5 then
+    if macroTorch.isFightStarted(clickContext) and (clickContext.comboPoints < 5 or clickContext.ooc) then
         local hasShred = macroTorch.isSpellExist('Shred', 'spell')
         local hasClaw = macroTorch.isSpellExist('Claw', 'spell')
 
