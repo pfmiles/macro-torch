@@ -174,8 +174,8 @@ function macroTorch.catLeveling()
 
     -- ============================================================
     -- 模块8: 攒星技模块 (Builder - 简化内联版)
-    -- 战斗中 CP < 5 时，选择合适的攒星技能：Shred（背后）或 Claw（正面）
-    -- 非 OOC 时仅在有足够能量时施放；OOC 时可无视能量消耗施放
+    -- 战斗中 CP < 5 或 OOC 触发时，选择合适的攒星技能：Shred（背后）或 Claw（正面）
+    -- 非 OOC 时仅在有足够能量时施放；OOC 时可无视能量和 CP 直接释放
     -- ============================================================
     if macroTorch.isFightStarted(clickContext) and (clickContext.comboPoints < 5 or clickContext.ooc) then
         local hasShred = macroTorch.isSpellExist('Shred', 'spell')
