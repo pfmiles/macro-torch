@@ -261,12 +261,42 @@ function macroTorch.druidControl()
         end
     end
 
-    if target.distance < 8 then
-        macroTorch.player.bash('ready')
-    elseif target.isBeastOrDragonkin() then
+    if target.isBeastOrDragonkin() then
         macroTorch.player.hibernate()
     else
         macroTorch.player.entangling_roots()
+    end
+end
+
+function macroTorch.druidCharge()
+    local target = macroTorch.target
+
+    if not target.isCanAttack then
+        macroTorch.player.targetEnemy()
+        if not target.isCanAttack then
+            return
+        end
+    end
+
+    if not macroTorch.player.isInBearForm then
+        if macroTorch.isSpellExist("Dire Bear Form") then
+            macroTorch.player.dire_bear_form('ready')
+        else
+            macroTorch.player.bear_form('ready')
+        end
+        return
+    end
+
+    if target.distance >= 8 then
+        if not macroTorch.isSpellExist("Feral Charge") then
+            return
+        end
+        macroTorch.player.feral_charge('safe')
+    else
+        if not macroTorch.isSpellExist("Bash") then
+            return
+        end
+        macroTorch.player.bash('ready')
     end
 end
 
@@ -303,4 +333,9 @@ end, true)
 macroTorch.SelfTest:register("Druid: combo methods -- druidControl exists", function()
     if UnitClass('player') ~= 'Druid' then return end
     assert(type(macroTorch.druidControl) == "function", "druidControl not a function")
+end, true)
+
+macroTorch.SelfTest:register("Druid: combo methods -- druidCharge exists", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    assert(type(macroTorch.druidCharge) == "function", "druidCharge not a function")
 end, true)
