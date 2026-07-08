@@ -385,7 +385,7 @@ end, true)
 
 **If this table is empty:** Not applicable — all claims in this research were verified or cited — no user confirmation needed.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Feral Charge minimum range in Turtle WoW**
    - What we know: Vanilla WoW 1.12 has Feral Charge at 8-25 yards. The codebase already uses `< 8` for Bash in druidControl, implying 8 is the melee threshold [VERIFIED: codebase — combo.lua:264]
