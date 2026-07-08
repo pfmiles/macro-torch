@@ -766,8 +766,14 @@ end, true)
 
 macroTorch.SelfTest:register("M: druidControl invocable via pcall (elseif->if promotion valid per D-07)", function()
     if UnitClass('player') ~= 'Druid' then return end
-    local ok, err = pcall(macroTorch.druidControl)
-    assert(ok, "druidControl pcall failed (elseif->if promotion may be broken): " .. tostring(err))
+    -- Guard: only invoke druidControl via pcall when a valid attackable target
+    -- already exists, to avoid side effects from targetEnemy() during login self-test
+    -- (target change, potential spell cast). When no target exists, skip the runtime
+    -- invocation and rely on M2's function-existence assertion + code review.
+    if macroTorch.target.isCanAttack then
+        local ok, err = pcall(macroTorch.druidControl)
+        assert(ok, "druidControl pcall failed (elseif->if promotion may be broken): " .. tostring(err))
+    end
 end, true)
 
 macroTorch.SelfTest:register("M: druidControl skill methods present (Hibernate + Entangling Roots per D-07)", function()
