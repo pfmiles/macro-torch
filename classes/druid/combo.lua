@@ -268,6 +268,38 @@ function macroTorch.druidControl()
     end
 end
 
+function macroTorch.druidCharge()
+    local target = macroTorch.target
+
+    if not target.isCanAttack then
+        macroTorch.player.targetEnemy()
+        if not target.isCanAttack then
+            return
+        end
+    end
+
+    if not macroTorch.player.isInBearForm then
+        if macroTorch.isSpellExist("Dire Bear Form") then
+            macroTorch.player.dire_bear_form('ready')
+        else
+            macroTorch.player.bear_form('ready')
+        end
+        return
+    end
+
+    if target.distance >= 8 then
+        if not macroTorch.isSpellExist("Feral Charge") then
+            return
+        end
+        macroTorch.player.feral_charge('safe')
+    else
+        if not macroTorch.isSpellExist("Bash") then
+            return
+        end
+        macroTorch.player.bash('ready')
+    end
+end
+
 macroTorch.SelfTest:register("Druid: combo methods -- catAtk exists", function()
     if UnitClass('player') ~= 'Druid' then return end
     assert(type(macroTorch.catAtk) == "function", "catAtk not a function")
