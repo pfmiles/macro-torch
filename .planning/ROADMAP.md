@@ -814,6 +814,22 @@ Plans:
 
 - [x] 18-02-PLAN.md — _castSpell 白名单守卫 + stale 检测 + Category L 白名单验证 selftest (5 tests) (Wave 2)
 
+### Phase 19: 改造druidControl逻辑：拆分bash到新方法druidCharge，加强形态验证和技能存在性判断，优化练级流程控制与冲锋体验
+
+**Goal:** 重构 druidControl() 控制宏，将 bear 形态的 Bash（猛击）打断逻辑拆分为独立的 druidCharge() 方法，加入 Feral Charge（野性冲锋）形成距离驱动的冲锋+打断双分支。为两个方法补充形态验证和技能存在性检查。
+**Requirements**: D-01, D-02, D-03, D-04, D-05, D-06, D-07, D-08
+**Depends on:** Phase 18
+**Plans:** 2 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 19-01-PLAN.md — druidControl Bash分支删除 + 新建 druidCharge() 距离驱动双分支方法 + combo.lua自检 (Wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 19-02-PLAN.md — selftest.lua Category M 自检注册（4项 druidCharge/druidControl 验证） (Wave 2)
+
 ---
 
 ## Task 统计
