@@ -334,3 +334,8 @@ macroTorch.SelfTest:register("Druid: combo methods -- druidControl exists", func
     if UnitClass('player') ~= 'Druid' then return end
     assert(type(macroTorch.druidControl) == "function", "druidControl not a function")
 end, true)
+
+macroTorch.SelfTest:register("Druid: combo methods -- druidCharge exists", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    assert(type(macroTorch.druidCharge) == "function", "druidCharge not a function")
+end, true)
