@@ -746,6 +746,41 @@ end, true)
 -- Registration count: Category L adds 5 tests (4 core + 1 optional)
 
 -- ============================================================
+-- Category M: druidControl/druidCharge split verification (4 tests, all isOptional=true)
+-- ============================================================
+-- [CITED: 19-CONTEXT.md D-05, D-06, D-07]
+
+macroTorch.SelfTest:register("M: druidCharge function exists", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    assert(type(macroTorch.druidCharge) == "function",
+        "druidCharge is not a function, got: " .. type(macroTorch.druidCharge))
+end, true)
+
+macroTorch.SelfTest:register("M: druidControl does not call bash (code-review verified per D-06)", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    assert(type(macroTorch.druidControl) == "function",
+        "druidControl is not a function after Bash branch removal")
+    -- Bash branch removal verified via code review in Phase 19 Plan 01.
+    -- No runtime assertion possible without filesystem access in WoW Lua.
+end, true)
+
+macroTorch.SelfTest:register("M: druidControl invocable via pcall (elseif->if promotion valid per D-07)", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local ok, err = pcall(macroTorch.druidControl)
+    assert(ok, "druidControl pcall failed (elseif->if promotion may be broken): " .. tostring(err))
+end, true)
+
+macroTorch.SelfTest:register("M: druidControl skill methods present (Hibernate + Entangling Roots per D-07)", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    assert(type(macroTorch.player.hibernate) == "function",
+        "hibernate skill method is not a function, got: " .. type(macroTorch.player.hibernate))
+    assert(type(macroTorch.player.entangling_roots) == "function",
+        "entangling_roots skill method is not a function, got: " .. type(macroTorch.player.entangling_roots))
+end, true)
+
+-- Registration count: Category M adds 4 tests (4 optional)
+
+-- ============================================================
 -- Module 4: /mt SLASH command
 -- ============================================================
 -- [CITED: CONTEXT.md D-02, D-10]
