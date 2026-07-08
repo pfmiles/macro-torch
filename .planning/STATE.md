@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Milestone complete
-stopped_at: Phase 18 context gathered
-last_updated: "2026-07-04T08:14:31.619Z"
-last_activity: 2026-07-04
+stopped_at: Phase 19 context gathered
+last_updated: "2026-07-08T12:05:49.222Z"
+last_activity: "2026-07-07 - Completed quick task 260707-x3d: 修复catLeveling OOC+CP=5时无技能释放的bug"
 progress:
-  total_phases: 17
-  completed_phases: 12
-  total_plans: 32
-  completed_plans: 32
-  percent: 71
+  total_phases: 18
+  completed_phases: 13
+  total_plans: 34
+  completed_plans: 34
+  percent: 72
 ---
 
 # Project State
@@ -56,6 +56,7 @@ progress:
 - Phase 16 added: catLeveling 练级版一键宏 — 新建 catLeveling 函数（不修改 catAtk），实现技能存在性检查、起手技 ravage/pounce 选择（复用 isTrivialBattleOrPvp）、中间循环（猛虎之怒/双流血/精灵之火）、斩杀线判断（复用 kill shot 逻辑） (2026-06-22)
 - Phase 17 added: catLeveling FF prowling guard + global spellId 动态更正机制 — FF不能在潜行状态下释放；spell tracing/immune 改为按名称注册，建立name→spellId双向映射(含中英文)，运行时通过UNIT_CASTEVENT捕获真实spellId并持久化矫正 (2026-06-29)
 - Phase 18 added: spellId 自动更正机制改造 — 将 spellId 更正监听与 land tracing 注册合并，以 _spellIdMonitored 白名单替代无条件 current_casting_spell 设值，消除残留污染和错误更正风险 (2026-07-04)
+- Phase 19 added: 改造druidControl逻辑 — 拆分bash到新方法druidCharge，加强形态验证和技能存在性判断，优化练级流程控制与冲锋体验 (2026-07-08)
 
 ## Key Decisions
 
@@ -141,9 +142,9 @@ progress:
 
 ## Session
 
-**Last session:** 2026-07-04T07:43:47.550Z
-**Stopped at:** Phase 18 context gathered
-**Resume file:** .planning/phases/18-spellid-spellid-land-tracing-spellidmonitored-current-castin/18-CONTEXT.md
+**Last session:** 2026-07-08T12:05:49.204Z
+**Stopped at:** Phase 19 context gathered
+**Resume file:** .planning/phases/19-druidcontrol-bash-druidcharge/19-CONTEXT.md
 
 ## Quick Tasks Completed
 
