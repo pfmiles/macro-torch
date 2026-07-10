@@ -83,33 +83,35 @@ function macroTorch.Player:new()
         -- Stale detection: if current_casting_spell still holds a previous value,
         -- warn before overwriting — this indicates UNIT_CASTEVENT event loss.
         if mode ~= 'ready' then
-            -- [Phase 18 per D-04] Stale detection: warn if previous value not cleared
-            -- by UNIT_CASTEVENT handler (events.lua). Indicates SuperWow event loss
-            -- or a bug in event handling.
-            if macroTorch.current_casting_spell ~= nil then
-                local prev = tostring(macroTorch.current_casting_spell)
-                if macroTorch._spellIdMonitored and macroTorch._spellIdMonitored[localeNames.en] then
-                    if prev ~= localeNames.en then
-                        macroTorch.show("[macro-torch] current_casting_spell was not cleared: " .. prev ..
-                            ", now overwritten by: " .. localeNames.en, 'yellow')
+            if macroTorch.SPELL_ID_AUTO_CORRECT then
+                -- [Phase 18 per D-04] Stale detection: warn if previous value not cleared
+                -- by UNIT_CASTEVENT handler (events.lua). Indicates SuperWow event loss
+                -- or a bug in event handling.
+                if macroTorch.current_casting_spell ~= nil then
+                    local prev = tostring(macroTorch.current_casting_spell)
+                    if macroTorch._spellIdMonitored and macroTorch._spellIdMonitored[localeNames.en] then
+                        if prev ~= localeNames.en then
+                            macroTorch.show("[macro-torch] current_casting_spell was not cleared: " .. prev ..
+                                ", now overwritten by: " .. localeNames.en, 'yellow')
+                        else
+                            macroTorch.show("[macro-torch] current_casting_spell stale (same spell recast): " .. prev, 'yellow')
+                        end
                     else
-                        macroTorch.show("[macro-torch] current_casting_spell stale (same spell recast): " .. prev, 'yellow')
+                        macroTorch.show("[macro-torch] current_casting_spell was not cleared: " .. prev ..
+                            " (spell not monitored, stale value cleared)", 'yellow')
+                        -- [Phase 18 fix] Defensively clear stale value to prevent
+                        -- it from being used by a later UNIT_CASTEVENT of a
+                        -- different spell, which would corrupt spellIdMap entries.
+                        macroTorch.current_casting_spell = nil
                     end
-                else
-                    macroTorch.show("[macro-torch] current_casting_spell was not cleared: " .. prev ..
-                        " (spell not monitored, stale value cleared)", 'yellow')
-                    -- [Phase 18 fix] Defensively clear stale value to prevent
-                    -- it from being used by a later UNIT_CASTEVENT of a
-                    -- different spell, which would corrupt spellIdMap entries.
-                    macroTorch.current_casting_spell = nil
                 end
-            end
-            -- [Phase 18 per D-02] Whitelist guard: only set current_casting_spell
-            -- for spells registered with monitorSpellId=true (land-tracing spells
-            -- with config.spellName). Spells not in the whitelist get NO assignment
-            -- — zero pollution, no stale risk.
-            if macroTorch._spellIdMonitored and macroTorch._spellIdMonitored[localeNames.en] then
-                macroTorch.current_casting_spell = localeNames.en
+                -- [Phase 18 per D-02] Whitelist guard: only set current_casting_spell
+                -- for spells registered with monitorSpellId=true (land-tracing spells
+                -- with config.spellName). Spells not in the whitelist get NO assignment
+                -- — zero pollution, no stale risk.
+                if macroTorch._spellIdMonitored and macroTorch._spellIdMonitored[localeNames.en] then
+                    macroTorch.current_casting_spell = localeNames.en
+                end
             end
         end
         -- Unified cast path: both self-cast and target-cast use obj.cast

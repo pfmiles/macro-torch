@@ -95,7 +95,7 @@ function macroTorch.eventHandle()
             -- from _castSpell's current_casting_spell, persist mismatches to SM_EXTEND.
             -- MUST run BEFORE recordCastTable so that tracingSpells is up-to-date
             -- and the first cast of a corrected spell is not silently lost.
-            if macroTorch.current_casting_spell then
+            if macroTorch.SPELL_ID_AUTO_CORRECT and macroTorch.current_casting_spell then
                 local staticSpellId = macroTorch.resolveSpellId(macroTorch.current_casting_spell)
                 if staticSpellId and staticSpellId ~= spellId then
                     -- lazy-init SM_EXTEND.spellIdMap (same pattern as loadImmuneTable)
