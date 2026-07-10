@@ -838,9 +838,13 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
+**Wave 1**
 
 - [ ] 20-01-PLAN.md — macro_torch.lua 定义变量 + spell_trace_core.lua resolveSpellId() 守卫 + spell_trace_immune.lua loadSpellIdMap() 守卫 (Wave 1)
 - [ ] 20-02-PLAN.md — entity/Player.lua _castSpell() 桥接变量守卫 + core/events.lua UNIT_CASTEVENT 分支守卫 (Wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 20-03-PLAN.md — core/selftest.lua Category N 自检注册 (5 tests) (Wave 2)
 
 ---

@@ -4,8 +4,8 @@ milestone: v1.0
 milestone_name: milestone
 status: Milestone complete
 stopped_at: Phase 19 context gathered
-last_updated: "2026-07-08T15:11:45.449Z"
-last_activity: 2026-07-08
+last_updated: "2026-07-10T18:51:11.087Z"
+last_activity: 2026-07-10
 progress:
   total_phases: 18
   completed_phases: 14
@@ -57,6 +57,7 @@ progress:
 - Phase 17 added: catLeveling FF prowling guard + global spellId 动态更正机制 — FF不能在潜行状态下释放；spell tracing/immune 改为按名称注册，建立name→spellId双向映射(含中英文)，运行时通过UNIT_CASTEVENT捕获真实spellId并持久化矫正 (2026-06-29)
 - Phase 18 added: spellId 自动更正机制改造 — 将 spellId 更正监听与 land tracing 注册合并，以 _spellIdMonitored 白名单替代无条件 current_casting_spell 设值，消除残留污染和错误更正风险 (2026-07-04)
 - Phase 19 added: 改造druidControl逻辑 — 拆分bash到新方法druidCharge，加强形态验证和技能存在性判断，优化练级流程控制与冲锋体验 (2026-07-08)
+- Phase 20 added: 添加 SPELL_ID_AUTO_CORRECT 全局开关控制 spellId 自动修正机制 — 涉及 macro_torch.lua / spell_trace_core.lua / Player.lua / events.lua / spell_trace_immune.lua 五个文件的守卫逻辑 (2026-07-10)
 
 ## Key Decisions
 
@@ -161,5 +162,5 @@ progress:
 ## Session
 
 **Last session:** 2026-07-07T15:49:38.930Z
-**Last activity:** 2026-07-08
+**Last activity:** 2026-07-10
 **Resume file:** None
