@@ -61,10 +61,12 @@ macroTorch.SpellTrace = {}
 -- resolve spellId from runtime-corrected map (loginContext.spellIdMap) or static baseline (SPELL_NAME_TO_ID)
 -- returns nil if spell unknown (caller must handle)
 function macroTorch.resolveSpellId(spellName)
-    if macroTorch.loginContext and macroTorch.loginContext.spellIdMap then
-        local correctedId = macroTorch.loginContext.spellIdMap[spellName]
-        if correctedId then
-            return correctedId
+    if macroTorch.SPELL_ID_AUTO_CORRECT then
+        if macroTorch.loginContext and macroTorch.loginContext.spellIdMap then
+            local correctedId = macroTorch.loginContext.spellIdMap[spellName]
+            if correctedId then
+                return correctedId
+            end
         end
     end
     return macroTorch.SPELL_NAME_TO_ID[spellName]
