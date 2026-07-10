@@ -835,7 +835,7 @@ Plans:
 **Goal:** 在 macro-torch 中添加全局开关 `macroTorch.SPELL_ID_AUTO_CORRECT`（默认 true），守卫 resolveSpellId()、_castSpell() 桥接变量、UNIT_CASTEVENT 更正分支、loadSpellIdMap() 四个关键路径，false 时完全禁用 spellId 动态修正。
 **Requirements**: REQ-20-VARIABLE, REQ-20-RESOLVE, REQ-20-LOADMAP, REQ-20-CASTSPELL, REQ-20-UNITCASTEVENT, REQ-20-SELFTEST
 **Depends on:** Phase 19
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 **Wave 1**
@@ -845,7 +845,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 20-03-PLAN.md — core/selftest.lua Category N 自检注册 (5 tests) (Wave 2)
+- [x] 20-03-PLAN.md — core/selftest.lua Category N 自检注册 (5 tests) (Wave 2)
 
 ---
 
