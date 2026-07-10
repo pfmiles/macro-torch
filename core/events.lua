@@ -87,7 +87,7 @@ function macroTorch.eventHandle()
     elseif event == "UNIT_CASTEVENT" then
         -- when player myself cast a spell
         local unitId, targetId, castType, spellId, timeCost = arg1, arg2, arg3, arg4, arg5
-        if unitId == macroTorch.player.guid and castType ~= 'MAINHAND' and castType ~= 'OFFHAND' then
+        if unitId and macroTorch.player and macroTorch.player.guid and unitId == macroTorch.player.guid and castType ~= 'MAINHAND' and castType ~= 'OFFHAND' then
             macroTorch.show('unitId=' .. tostring(unitId) .. ', targetId=' .. tostring(targetId) .. ', type=' .. tostring(castType) .. ', spellId=' .. tostring(spellId) .. ', timeCost=' .. tostring(timeCost))
         end
         if unitId == macroTorch.player.guid and castType == 'CAST' then

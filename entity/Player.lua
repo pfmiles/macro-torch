@@ -751,7 +751,8 @@ end
 ---@param itemName string 物品名，可仅仅指定一部分名字，使用字符串包含判断
 function macroTorch.useItemInBag(t, itemName)
     for b = 0, 4 do
-        for s = 1, GetContainerNumSlots(b, s) do
+        local numSlots = GetContainerNumSlots(b)
+        for s = 1, numSlots do
             local n = GetContainerItemLink(b, s)
             if n and string.find(n, itemName) then
                 UseContainerItem(b, s)
