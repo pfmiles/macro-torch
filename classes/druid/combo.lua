@@ -261,6 +261,20 @@ function macroTorch.druidControl()
         end
     end
 
+    -- Hibernate and Entangling Roots both require humanoid form; cancel shapeshift first
+    if macroTorch.player.isInCatForm then
+        macroTorch.player.cat_form('ready')
+        return
+    end
+    if macroTorch.player.isInBearForm then
+        if macroTorch.player.isFormActive('Dire Bear Form') then
+            macroTorch.player.dire_bear_form('ready')
+        else
+            macroTorch.player.bear_form('ready')
+        end
+        return
+    end
+
     if target.isBeastOrDragonkin() then
         macroTorch.player.hibernate()
     else
