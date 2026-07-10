@@ -830,6 +830,19 @@ Plans:
 
 - [x] 19-02-PLAN.md — selftest.lua Category M 自检注册（4项 druidCharge/druidControl 验证） (Wave 2)
 
+### Phase 20: 添加 SPELL_ID_AUTO_CORRECT 全局开关控制 spellId 自动修正机制
+
+**Goal:** 在 macro-torch 中添加全局开关 `macroTorch.SPELL_ID_AUTO_CORRECT`（默认 true），守卫 resolveSpellId()、_castSpell() 桥接变量、UNIT_CASTEVENT 更正分支、loadSpellIdMap() 四个关键路径，false 时完全禁用 spellId 动态修正。
+**Requirements**: REQ-20-VARIABLE, REQ-20-RESOLVE, REQ-20-LOADMAP, REQ-20-CASTSPELL, REQ-20-UNITCASTEVENT, REQ-20-SELFTEST
+**Depends on:** Phase 19
+**Plans:** 3 plans
+
+Plans:
+
+- [ ] 20-01-PLAN.md — macro_torch.lua 定义变量 + spell_trace_core.lua resolveSpellId() 守卫 + spell_trace_immune.lua loadSpellIdMap() 守卫 (Wave 1)
+- [ ] 20-02-PLAN.md — entity/Player.lua _castSpell() 桥接变量守卫 + core/events.lua UNIT_CASTEVENT 分支守卫 (Wave 1)
+- [ ] 20-03-PLAN.md — core/selftest.lua Category N 自检注册 (5 tests) (Wave 2)
+
 ---
 
 ## Task 统计
