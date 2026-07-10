@@ -787,6 +787,96 @@ end, true)
 -- Registration count: Category M adds 4 tests (4 optional)
 
 -- ============================================================
+-- Category N: SPELL_ID_AUTO_CORRECT switch verification (5 tests, all isOptional=true)
+-- ============================================================
+-- [CITED: 20-CONTEXT.md]
+
+macroTorch.SelfTest:register("N: SPELL_ID_AUTO_CORRECT default value is true", function()
+    assert(macroTorch.SPELL_ID_AUTO_CORRECT == true,
+        "SPELL_ID_AUTO_CORRECT should be true by default, got: " .. tostring(macroTorch.SPELL_ID_AUTO_CORRECT))
+end, true)
+
+macroTorch.SelfTest:register("N: resolveSpellId() returns static value when switch is false", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local spellName = "Rake"
+    local staticId = macroTorch.SPELL_NAME_TO_ID[spellName]
+    assert(staticId, "SPELL_NAME_TO_ID['Rake'] is nil")
+    local ok, result = pcall(function()
+        local saved = macroTorch.SPELL_ID_AUTO_CORRECT
+        macroTorch.SPELL_ID_AUTO_CORRECT = false
+        local ret = macroTorch.resolveSpellId(spellName)
+        macroTorch.SPELL_ID_AUTO_CORRECT = saved
+        return ret
+    end)
+    -- If pcall failed, restore before re-raising
+    if not ok then
+        macroTorch.SPELL_ID_AUTO_CORRECT = true
+        assert(false, "resolveSpellId pcall failed when switch=false: " .. tostring(result))
+    end
+    assert(result == staticId,
+        "resolveSpellId with switch=false should return static value " .. tostring(staticId) ..
+        ", got: " .. tostring(result))
+end, true)
+
+macroTorch.SelfTest:register("N: resolveSpellId() returns corrected value when switch is true and corrected value exists", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    if not macroTorch.loginContext then return end
+    local spellName = "Rake"
+    local staticId = macroTorch.SPELL_NAME_TO_ID[spellName]
+    assert(staticId, "SPELL_NAME_TO_ID['Rake'] is nil")
+    local testValue = staticId + 10000
+    local ok, result = pcall(function()
+        -- init spellIdMap if needed
+        if not macroTorch.loginContext.spellIdMap then
+            macroTorch.loginContext.spellIdMap = {}
+        end
+        -- ensure we don't overwrite a real correction
+        local prev = macroTorch.loginContext.spellIdMap[spellName]
+        macroTorch.loginContext.spellIdMap[spellName] = testValue
+        local ret = macroTorch.resolveSpellId(spellName)
+        -- cleanup: restore previous value (or nil)
+        if prev then
+            macroTorch.loginContext.spellIdMap[spellName] = prev
+        else
+            macroTorch.loginContext.spellIdMap[spellName] = nil
+        end
+        return ret
+    end)
+    -- If pcall failed, cleanup before re-raising
+    if not ok then
+        if macroTorch.loginContext and macroTorch.loginContext.spellIdMap then
+            macroTorch.loginContext.spellIdMap[spellName] = nil
+        end
+        assert(false, "resolveSpellId pcall failed when switch=true: " .. tostring(result))
+    end
+    assert(result == testValue,
+        "resolveSpellId with switch=true should return corrected value " .. tostring(testValue) ..
+        ", got: " .. tostring(result))
+end, true)
+
+macroTorch.SelfTest:register("N: loadSpellIdMap() function exists and is callable without error", function()
+    if not macroTorch.loginContext then return end
+    assert(type(macroTorch.loadSpellIdMap) == "function",
+        "loadSpellIdMap is not a function, got: " .. type(macroTorch.loadSpellIdMap))
+    local ok, err = pcall(macroTorch.loadSpellIdMap)
+    assert(ok, "loadSpellIdMap should not error: " .. tostring(err))
+end, true)
+
+macroTorch.SelfTest:register("N: current_casting_spell is nil after mode='ready' _castSpell when switch is true", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    if not macroTorch.player.rake then return end
+    -- init current_casting_spell to nil if not already
+    macroTorch.current_casting_spell = nil
+    -- Call rake in 'ready' mode (availability check, no actual cast)
+    macroTorch.player.rake('ready')
+    assert(macroTorch.current_casting_spell == nil,
+        "current_casting_spell should be nil after mode='ready' _castSpell, got: " ..
+        tostring(macroTorch.current_casting_spell))
+end, true)
+
+-- Registration count: Category N adds 5 tests (5 optional)
+
+-- ============================================================
 -- Module 4: /mt SLASH command
 -- ============================================================
 -- [CITED: CONTEXT.md D-02, D-10]
