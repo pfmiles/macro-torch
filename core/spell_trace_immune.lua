@@ -106,6 +106,7 @@ end
 -- NOTE: binds to loginContext (session-scoped), NOT context (combat-scoped)
 -- spellId corrections must survive combat exit/re-entry
 function macroTorch.loadSpellIdMap()
+    if not macroTorch.SPELL_ID_AUTO_CORRECT then return end
     if not macroTorch.loginContext then return end
     if not SM_EXTEND then SM_EXTEND = {} end
     if not SM_EXTEND.spellIdMap then SM_EXTEND.spellIdMap = {} end
