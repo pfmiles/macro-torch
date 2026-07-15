@@ -791,9 +791,9 @@ end, true)
 -- ============================================================
 -- [CITED: 20-CONTEXT.md]
 
-macroTorch.SelfTest:register("N: SPELL_ID_AUTO_CORRECT default value is true", function()
-    assert(macroTorch.SPELL_ID_AUTO_CORRECT == true,
-        "SPELL_ID_AUTO_CORRECT should be true by default, got: " .. tostring(macroTorch.SPELL_ID_AUTO_CORRECT))
+macroTorch.SelfTest:register("N: SPELL_ID_AUTO_CORRECT default value is false", function()
+    assert(macroTorch.SPELL_ID_AUTO_CORRECT == false,
+        "SPELL_ID_AUTO_CORRECT should be false by default, got: " .. tostring(macroTorch.SPELL_ID_AUTO_CORRECT))
 end, true)
 
 macroTorch.SelfTest:register("N: resolveSpellId() returns static value when switch is false", function()
@@ -810,7 +810,7 @@ macroTorch.SelfTest:register("N: resolveSpellId() returns static value when swit
     end)
     -- If pcall failed, restore before re-raising
     if not ok then
-        macroTorch.SPELL_ID_AUTO_CORRECT = true
+        macroTorch.SPELL_ID_AUTO_CORRECT = false
         assert(false, "resolveSpellId pcall failed when switch=false: " .. tostring(result))
     end
     assert(result == staticId,
