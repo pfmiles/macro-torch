@@ -311,7 +311,7 @@ function macroTorch.druidCharge()
     end
 
     if not macroTorch.player.isInBearForm then
-        if macroTorch.isSpellExist("Dire Bear Form") then
+        if macroTorch.isSpellExist("Dire Bear Form", 'spell') then
             macroTorch.player.dire_bear_form('ready')
         else
             macroTorch.player.bear_form('ready')
@@ -320,12 +320,12 @@ function macroTorch.druidCharge()
     end
 
     if target.distance >= 8 then
-        if not macroTorch.isSpellExist("Feral Charge") then
+        if not macroTorch.isSpellExist("Feral Charge", 'spell') then
             return
         end
         macroTorch.player.feral_charge('safe')
     else
-        if not macroTorch.isSpellExist("Bash") then
+        if not macroTorch.isSpellExist("Bash", 'spell') then
             return
         end
         macroTorch.player.bash('ready')
