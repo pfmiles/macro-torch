@@ -7,25 +7,33 @@ function macroTorch.casterAtk()
     -- 目标为盗贼时，优先挂精灵之火防止潜行/消失，优先级高于一切
     local targetClass = macroTorch.target.class
     if (targetClass == 'Rogue' or targetClass == '盗贼')
+            and macroTorch.isSpellExist('Faerie Fire', 'spell')
             and not macroTorch.target.buffed('Faerie Fire', 'Spell_Nature_FaerieFire') then
         macroTorch.player.faerie_fire()
         return
     end
     if not macroTorch.player.isInCombat then
         macroTorch.player.wrath()
-    elseif not macroTorch.target.buffed('Moonfire', 'Spell_Nature_StarFall') then
+    elseif macroTorch.isSpellExist('Moonfire', 'spell')
+            and not macroTorch.target.buffed('Moonfire', 'Spell_Nature_StarFall') then
         macroTorch.player.moonfire()
-    elseif not macroTorch.target.buffed('Faerie Fire', 'Spell_Nature_FaerieFire') then
+    elseif macroTorch.isSpellExist('Faerie Fire', 'spell')
+            and not macroTorch.target.buffed('Faerie Fire', 'Spell_Nature_FaerieFire') then
         macroTorch.player.faerie_fire()
-    elseif not macroTorch.target.buffed('Insect Swarm', 'Spell_Nature_InsectSwarm') then
+    elseif macroTorch.isSpellExist('Insect Swarm', 'spell')
+            and not macroTorch.target.buffed('Insect Swarm', 'Spell_Nature_InsectSwarm') then
         macroTorch.player.insect_swarm()
-    elseif macroTorch.context.starfireNext then
+    elseif macroTorch.isSpellExist('Starfire', 'spell')
+            and macroTorch.context.starfireNext then
         if macroTorch.player.starfire() then
             macroTorch.context.starfireNext = false
         end
     else
+        -- Fallback: Wrath (innate). Reset starfireNext if starfire not learned
         if macroTorch.player.wrath() then
-            macroTorch.context.starfireNext = true
+            if macroTorch.isSpellExist('Starfire', 'spell') then
+                macroTorch.context.starfireNext = true
+            end
         end
     end
 end
@@ -183,7 +191,8 @@ function macroTorch.druidAoe()
         macroTorch.bearAoe()
     elseif macroTorch.player.isInCatForm then
         return -- No cat form AoE in vanilla WoW
-    elseif macroTorch.player.humanFormMana >= 880 then
+    elseif macroTorch.isSpellExist('Hurricane', 'spell')
+            and macroTorch.player.humanFormMana >= 880 then
         macroTorch.player.hurricane('ready')
     end
 end
@@ -210,24 +219,29 @@ function macroTorch.druidHeal()
         if lowestHp < 50 then
             macroTorch.player.healing_touch(nil, false)
         elseif lowestHp < 70 then
-            if not macroTorch.target.buffed(nil, 'Spell_Nature_ResistNature') then
+            if macroTorch.isSpellExist('Regrowth', 'spell')
+                    and not macroTorch.target.buffed(nil, 'Spell_Nature_ResistNature') then
                 macroTorch.player.regrowth(nil, false)
-            elseif not macroTorch.target.buffed(nil, 'Spell_Nature_Rejuvenation') then
+            elseif macroTorch.isSpellExist('Rejuvenation', 'spell')
+                    and not macroTorch.target.buffed(nil, 'Spell_Nature_Rejuvenation') then
                 macroTorch.player.rejuvenation(nil, false)
             else
                 macroTorch.player.healing_touch(nil, false)
             end
         else
-            if not macroTorch.target.buffed(nil, 'Spell_Nature_Rejuvenation') then
+            if macroTorch.isSpellExist('Rejuvenation', 'spell')
+                    and not macroTorch.target.buffed(nil, 'Spell_Nature_Rejuvenation') then
                 macroTorch.player.rejuvenation(nil, false)
             end
         end
     else
-        if not macroTorch.player.buffed(nil, 'Spell_Nature_Rejuvenation') then
+        if macroTorch.isSpellExist('Rejuvenation', 'spell')
+                and not macroTorch.player.buffed(nil, 'Spell_Nature_Rejuvenation') then
             macroTorch.player.rejuvenation(nil, true)
             return
         end
-        if not macroTorch.player.buffed(nil, 'Spell_Nature_ResistNature') then
+        if macroTorch.isSpellExist('Regrowth', 'spell')
+                and not macroTorch.player.buffed(nil, 'Spell_Nature_ResistNature') then
             macroTorch.player.regrowth(nil, true)
             return
         end
@@ -236,7 +250,8 @@ function macroTorch.druidHeal()
 end
 
 function macroTorch.druidDefend()
-    if macroTorch.player.isSpellReady('Barkskin (Feral)') then
+    if macroTorch.isSpellExist('Barkskin', 'spell')
+            and macroTorch.player.isSpellReady('Barkskin (Feral)') then
         macroTorch.player.barkskin('ready')
         return
     end
@@ -246,7 +261,9 @@ function macroTorch.druidDefend()
         return
     end
 
-    if macroTorch.player.isInBearForm and macroTorch.player.isSpellReady('Frenzied Regeneration') then
+    if macroTorch.isSpellExist('Frenzied Regeneration', 'spell')
+            and macroTorch.player.isInBearForm
+            and macroTorch.player.isSpellReady('Frenzied Regeneration') then
         macroTorch.player.frenzied_regeneration('ready')
     end
 end
@@ -275,9 +292,10 @@ function macroTorch.druidControl()
         return
     end
 
-    if target.isBeastOrDragonkin() then
+    if target.isBeastOrDragonkin()
+            and macroTorch.isSpellExist('Hibernate', 'spell') then
         macroTorch.player.hibernate()
-    else
+    elseif macroTorch.isSpellExist('Entangling Roots', 'spell') then
         macroTorch.player.entangling_roots()
     end
 end
