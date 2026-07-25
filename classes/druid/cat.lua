@@ -187,9 +187,9 @@ function macroTorch.reshiftMod(clickContext)
         return
     end
     -- 如果当前做reshift”划算”，则做reshift
-    local shouldDoReshift, nextMove, minAbilityCost = macroTorch.shouldDoReshift(clickContext)
+    local shouldDoReshift, nextMove, nextAbilityCost = macroTorch.shouldDoReshift(clickContext)
     if shouldDoReshift then
-        macroTorch.readyReshift(clickContext, nextMove, minAbilityCost)
+        macroTorch.readyReshift(clickContext, nextMove, nextAbilityCost)
     end
 end
 function macroTorch.shouldDoReshift(clickContext)
@@ -207,11 +207,11 @@ function macroTorch.shouldDoReshift(clickContext)
     local projectedEnergy = macroTorch.player.mana + energyDuringGcd
 
     -- 获取可释放的最低技能能量消耗
-    local minAbilityCost, nextMove = macroTorch.getMinimumAffordableAbilityCost(clickContext)
+    local nextAbilityCost, nextMove = macroTorch.getNextAbilityCost(clickContext)
 
     -- 如果1.5秒自然恢复后能量足够 → 不reshift（避免1.5s GCD卡住技能）
     -- 如果1.5秒自然恢复后能量不够 → reshift（反正都要等，利用1.5s GCD）
-    return math.ceil(projectedEnergy) < minAbilityCost, nextMove, minAbilityCost
+    return math.ceil(projectedEnergy) < nextAbilityCost, nextMove, nextAbilityCost
 end
 function macroTorch.keepTigerFury(clickContext)
     -- [NEW GUARD] D-02: skip Tiger's Fury module if spell not learned
@@ -322,14 +322,15 @@ function macroTorch.keepFF(clickContext)
         macroTorch.safeFF(clickContext)
     end
 end
-function macroTorch.readyReshift(clickContext, nextMove, minAbilityCost)
+function macroTorch.readyReshift(clickContext, nextMove, nextAbilityCost)
     if macroTorch.player.isSpellReady('Reshift') then
         macroTorch.show('Reshift!!! energy = ' ..
                 macroTorch.player.mana ..
                 ', nextMove: ' .. tostring(nextMove) ..
                 ', curErps1.5: ' ..
                 tostring(macroTorch.computeErps(clickContext) * 1.5) ..
-                ', nextMoveCost: ' .. tostring(minAbilityCost) .. ', tigerLeft = ' .. macroTorch.tigerLeft(clickContext))
+                ', nextAbilityCost: ' .. tostring(nextAbilityCost) .. ', tigerLeft = ' .. macroTorch.tigerLeft(clickContext) ..
+                ', earning = ' .. tostring(clickContext.RESHIFT_ENERGY - macroTorch.player.mana - clickContext.TIGER_E))
         macroTorch.player.reshift('ready')
         return true
     end

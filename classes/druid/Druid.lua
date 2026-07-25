@@ -449,8 +449,10 @@ function macroTorch.computeReshiftEnergy()
     local player = macroTorch.player
     -- [NEW] D-04: Furor talent each rank gives +8 energy when reshifting
     energy = energy + player.talentRank('Furor') * 8
-    -- [NEW] D-04: Wolfshead Helm provides +20 energy on shapeshift
-    if player.isItemEquipped('Wolfshead Helm') then
+    -- [NEW] D-04: Wolfheart (狼心) 头部附魔提供 +20 变身后回能
+    -- 原实现检测的是 Wolfshead Helm 同名装备，但实际回能来源是头部附魔 "Wolfsheart"
+    -- 故改为扫描头部 tooltip 关键词，通用性更好且语义准确
+    if macroTorch.isKeywordInEquippedItemTooltip(1, 'Wolfsheart') then
         energy = energy + 20
     end
     return energy
@@ -844,7 +846,7 @@ function macroTorch.shouldCastFFDuringWaitWindow(clickContext)
     -- 计算1.5秒GCD期间的预期能量恢复
     local erps = macroTorch.computeErps(clickContext)
     local energyDuringGcd = erps * 1.5
-    local minAbilityCost = macroTorch.getMinimumAffordableAbilityCost(clickContext)
+    local minAbilityCost = macroTorch.getNextAbilityCost(clickContext)
 
     local currentEnergy = macroTorch.player.mana
     local projectedEnergy = currentEnergy + energyDuringGcd
@@ -866,7 +868,7 @@ function macroTorch.shouldCastFFDuringWaitWindow(clickContext)
     return false
 end
 
-function macroTorch.getMinimumAffordableAbilityCost(clickContext)
+function macroTorch.getNextAbilityCost(clickContext)
     -- 1. Ferocious Bite check (highest priority in Term Mod)
     -- Note: Bite has priority over Tiger during kill shot or 5cp with rip
     if macroTorch.shouldUseBite(clickContext) then
@@ -1280,7 +1282,7 @@ macroTorch.SelfTest:register("Druid: isSpellExist guard key spell names match lo
     end
 end, true)
 
-macroTorch.SelfTest:register("Druid: getMinimumAffordableAbilityCost always returns a value", function()
+macroTorch.SelfTest:register("Druid: getNextAbilityCost always returns a value", function()
     if UnitClass('player') ~= 'Druid' then return end
     -- Verify the fallback chain terminates at Claw (always available, level 1 skill)
     -- Even with all skills unlearned, this function must return Claw's cost
@@ -1288,11 +1290,11 @@ macroTorch.SelfTest:register("Druid: getMinimumAffordableAbilityCost always retu
         BITE_E = 35, TIGER_E = 30, RIP_E = 30, RAKE_E = 40, SHRED_E = 60, CLAW_E = 45,
         ooc = false, comboPoints = 3,
     }
-    local cost, moveName = macroTorch.getMinimumAffordableAbilityCost(ctx)
-    assert(type(cost) == "number", "getMinimumAffordableAbilityCost should return a number cost")
-    assert(type(moveName) == "string", "getMinimumAffordableAbilityCost should return a move name string")
-    assert(cost >= 0, "getMinimumAffordableAbilityCost cost should not be negative: " .. tostring(cost))
-    assert(moveName ~= nil and moveName ~= "", "getMinimumAffordableAbilityCost move name should not be empty")
+    local cost, moveName = macroTorch.getNextAbilityCost(ctx)
+    assert(type(cost) == "number", "getNextAbilityCost should return a number cost")
+    assert(type(moveName) == "string", "getNextAbilityCost should return a move name string")
+    assert(cost >= 0, "getNextAbilityCost cost should not be negative: " .. tostring(cost))
+    assert(moveName ~= nil and moveName ~= "", "getNextAbilityCost move name should not be empty")
 end, true)
 
 -- Category I: isTrivialBattle/isKillShotOrLastChance level-adaptive selftests (D-06, isOptional=true)
