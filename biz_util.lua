@@ -363,11 +363,8 @@ end
 --   -- 判断是否有耐久度损失（中文客户端）
 --   macroTorch.isKeywordInEquippedItemTooltip(1, '破损')
 function macroTorch.isKeywordInEquippedItemTooltip(slot, keyword)
-    if not macroTorch._tooltipScanFrame then
-        macroTorch._tooltipScanFrame = CreateFrame("GameTooltip", "MacroTorchTooltipScan", UIParent, "GameTooltipTemplate")
-        macroTorch._tooltipScanFrame:SetOwner(UIParent, "ANCHOR_NONE")
-    end
-    local tooltip = macroTorch._tooltipScanFrame
+    local tooltip = CreateFrame("GameTooltip", "MacroTorchTooltipScan", UIParent, "GameTooltipTemplate")
+    tooltip:SetOwner(UIParent, "ANCHOR_NONE")
     tooltip:ClearLines()
     tooltip:SetInventoryItem("player", slot)
 
