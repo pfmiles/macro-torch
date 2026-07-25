@@ -350,19 +350,12 @@ function macroTorch.equipItem(itemName, slot)
     EquipCursorItem(slot)
 end
 
--- 扫描指定装备槽位上穿戴物品的 tooltip，检查是否包含指定关键字
+-- 检查指定装备槽位上的穿戴物品（含附魔）的完整描述文本中是否含有指定关键字
 -- 应用场景：判断装备是否有某附魔、是否带某属性、是否有耐久度损失提示等
--- 原理：通过创建隐藏的 GameTooltip 读取装备 tooltip 的每一行文本，逐行匹配关键字
--- 注意：tooltip 内容与客户端语言相关，中英文客户端输出的文本不同
+-- 原理：通过隐藏 GameTooltip 获取装备 tooltip，将所有行拼接为完整字符串后整体匹配
 -- @param slot number 装备槽位索引 (1=头部, 2=项链, 3=肩部, ..., 18=远程武器)
--- @param keyword string 要查找的关键字，大小写敏感（tooltip 输出为英文字符时）
+-- @param keyword string 要查找的关键字，大小写敏感
 -- @return boolean 是否找到关键字
---
--- 匹配规则：
---   使用 string.find 进行子串精确匹配（普通模式，非正则），keyword 必须
---   在 tooltip 某一行中原样出现。不支持跨行、模糊或正则匹配。
---   注意：'+' 在 Lua 正则中是量词，这里使用的是 string.find 的 plain 模式
---   （第四个参数为 true），因此 '+' 被视为普通字符。
 --
 -- 样例：
 --   -- 判断头部装备是否有 Wolfsheart (狼心) 附魔
@@ -375,23 +368,22 @@ function macroTorch.isKeywordInEquippedItemTooltip(slot, keyword)
         macroTorch._tooltipScanFrame:SetOwner(UIParent, "ANCHOR_NONE")
     end
     local tooltip = macroTorch._tooltipScanFrame
+    -- 先调用 ClearLines 清除旧内容，再 SetInventoryItem 填充新内容
+    -- 注意：不要在此处 Hide，Hide 会导致复用时 SetInventoryItem 无法重新填充
     tooltip:ClearLines()
     tooltip:SetInventoryItem("player", slot)
 
-    local found = false
+    local allText = ""
     for i = 1, tooltip:NumLines() do
-        local leftText = _G["MacroTorchTooltipScanTextLeft" .. i]
-        local rightText = _G["MacroTorchTooltipScanTextRight" .. i]
-        if leftText and leftText:GetText() and string.find(leftText:GetText(), keyword, 1, true) then
-            found = true
-            break
+        local region = _G["MacroTorchTooltipScanTextLeft" .. i]
+        if region and region:GetText() then
+            allText = allText .. region:GetText()
         end
-        if rightText and rightText:GetText() and string.find(rightText:GetText(), keyword, 1, true) then
-            found = true
-            break
+        region = _G["MacroTorchTooltipScanTextRight" .. i]
+        if region and region:GetText() then
+            allText = allText .. region:GetText()
         end
     end
 
-    tooltip:Hide()
-    return found
+    return string.find(allText, keyword, 1, true) ~= nil
 end
