@@ -90,6 +90,7 @@ function macroTorch.eventHandle()
         -- if unitId and macroTorch.player and macroTorch.player.guid and unitId == macroTorch.player.guid and castType ~= 'MAINHAND' and castType ~= 'OFFHAND' then
         --     macroTorch.show('unitId=' .. tostring(unitId) .. ', targetId=' .. tostring(targetId) .. ', type=' .. tostring(castType) .. ', spellId=' .. tostring(spellId) .. ', timeCost=' .. tostring(timeCost))
         -- end
+        -- only CAST events carry spellId data; MAINHAND/OFFHAND are auto-attack swings
         if unitId == macroTorch.player.guid and castType == 'CAST' then
             -- spellId dynamic correction: compare event spellId with static baseline
             -- from _castSpell's current_casting_spell, persist mismatches to SM_EXTEND.
