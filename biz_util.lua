@@ -363,8 +363,13 @@ end
 --   -- 判断是否有耐久度损失（中文客户端）
 --   macroTorch.isKeywordInEquippedItemTooltip(1, '破损')
 function macroTorch.isKeywordInEquippedItemTooltip(slot, keyword)
-    local tooltip = CreateFrame("GameTooltip", "MacroTorchTooltipScan", UIParent, "GameTooltipTemplate")
-    tooltip:SetOwner(UIParent, "ANCHOR_NONE")
+    if not macroTorch._tooltipScanFrame then
+        macroTorch._tooltipScanFrame = CreateFrame("GameTooltip", "MacroTorchTooltipScan", UIParent, "GameTooltipTemplate")
+        macroTorch._tooltipScanFrame:SetOwner(UIParent, "ANCHOR_NONE")
+    end
+    local tooltip = macroTorch._tooltipScanFrame
+    -- 先调用 ClearLines 清除旧内容，再 SetInventoryItem 填充新内容
+    -- 注意：不要在此处 Hide，Hide 会导致复用时 SetInventoryItem 无法重新填充
     tooltip:ClearLines()
     tooltip:SetInventoryItem("player", slot)
 
@@ -379,12 +384,6 @@ function macroTorch.isKeywordInEquippedItemTooltip(slot, keyword)
             allText = allText .. region:GetText()
         end
     end
-
-    tooltip:Hide()
-
-    -- DEBUG
-    local itemLink = GetInventoryItemLink("player", slot)
-    macroTorch.show("[DEBUG] slot=" .. slot .. " lines=" .. tooltip:NumLines() .. " text=[" .. allText .. "] link=[" .. tostring(itemLink) .. "]")
 
     return string.find(allText, keyword, 1, true) ~= nil
 end
