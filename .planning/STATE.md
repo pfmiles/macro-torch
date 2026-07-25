@@ -158,9 +158,10 @@ progress:
 | 260623-wrh | Druid技能诊断打印函数 printDruidDiag | 2026-06-23 | f1bba57 | [260623-wrh-druid](./quick/260623-wrh-druid/) |
 | 260627-g4j | 修复 spell_trace_immune.lua 日志问题 | 2026-06-27 | fef6f2f | [260627-g4j-1-3](./quick/260627-g4j-1-3/) |
 | 260707-x3d | 修复catLeveling OOC+CP=5时无技能释放的bug | 2026-07-07 | 5162d02 | [260707-x3d-catleveling-ooc-cp-5-bug](./quick/260707-x3d-catleveling-ooc-cp-5-bug/) |
+| 260725-s1v | getMinimumAffordableAbilityCost重命名+earning日志字段 | 2026-07-25 | c371482 | [260725-s1v-reshift-minabilitycost-nextabilitycost-r](./quick/260725-s1v-reshift-minabilitycost-nextabilitycost-r/) |
 
 ## Session
 
-**Last session:** 2026-07-07T15:49:38.930Z
-**Last activity:** 2026-07-10
+**Last session:** 2026-07-25T12:17:19.000Z
+**Last activity:** 2026-07-25
 **Resume file:** None
