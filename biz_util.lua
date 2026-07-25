@@ -385,8 +385,9 @@ function macroTorch.isKeywordInEquippedItemTooltip(slot, keyword)
 
     tooltip:Hide()
 
-    -- DEBUG: 打印完整 tooltip 文本，人眼确认内容
-    macroTorch.show("[DEBUG] Head slot tooltip text:\n" .. allText)
+    -- DEBUG
+    local itemLink = GetInventoryItemLink("player", slot)
+    macroTorch.show("[DEBUG] slot=" .. slot .. " lines=" .. tooltip:NumLines() .. " text=[" .. allText .. "] link=[" .. tostring(itemLink) .. "]")
 
     return string.find(allText, keyword, 1, true) ~= nil
 end
