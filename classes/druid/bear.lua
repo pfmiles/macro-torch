@@ -4,7 +4,7 @@ function macroTorch.bearOocMod(clickContext)
         return
     end
     -- Use Savage Bite when OOC is active (no rage cost)
-    macroTorch.player.ferocious_bite('ready')
+    macroTorch.player.savage_bite('ready')
 end
 function macroTorch.bearOtMod(clickContext)
     -- Only when grouped and target not controlled by player
@@ -24,7 +24,7 @@ function macroTorch.bearOtMod(clickContext)
             return
         end
         -- If Growl on CD, use Savage Bite as high threat alternative
-        macroTorch.player.ferocious_bite()
+        macroTorch.player.savage_bite()
     end
 end
 function macroTorch.bearDebuffMod(clickContext)
@@ -49,7 +49,7 @@ end
 function macroTorch.bearRegularAttack(clickContext)
     -- High rage: Savage Bite (rage dump when above threshold)
     -- But avoid using Savage Bite in rough mode to reduce threat generation
-    if not clickContext.rough and clickContext.rage > clickContext.RAGE_DUMP_THRESHOLD and macroTorch.player.ferocious_bite() then
+    if not clickContext.rough and clickContext.rage > clickContext.RAGE_DUMP_THRESHOLD and macroTorch.player.savage_bite() then
         return
     end
 

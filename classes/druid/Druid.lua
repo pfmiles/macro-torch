@@ -60,7 +60,7 @@ function macroTorch.Druid:new()
 
     -- Bear form skills (Type A: enemy target only, using fixed rage costs)
     function obj.growl(mode, rank)
-        return obj._castSpell({ en = 'Growl', zh = '低吼' }, mode, nil, 10, false, rank)
+        return obj._castSpell({ en = 'Growl', zh = '低吼' }, mode, nil, 0, false, rank)
     end
 
     function obj.bash(mode, rank)
@@ -79,8 +79,12 @@ function macroTorch.Druid:new()
         return obj._castSpell({ en = 'Demoralizing Roar', zh = '挫志咆哮' }, mode, nil, 10, false, rank)
     end
 
+    function obj.savage_bite(mode, rank)
+        return obj._castSpell({ en = 'Savage Bite', zh = '野蛮撕咬' }, mode, nil, 25, false, rank)
+    end
+
     function obj.feral_charge(mode, rank)
-        return obj._castSpell({ en = 'Feral Charge', zh = '野性冲锋' }, mode, 25, nil, false, rank)
+        return obj._castSpell({ en = 'Feral Charge', zh = '野性冲锋' }, mode, 25, 5, false, rank)
     end
 
     function obj.challenging_roar(mode, rank)
