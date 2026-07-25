@@ -358,11 +358,15 @@ end
 -- @param keyword string 要查找的关键字，大小写敏感（tooltip 输出为英文字符时）
 -- @return boolean 是否找到关键字
 --
+-- 匹配规则：
+--   使用 string.find 进行子串精确匹配（普通模式，非正则），keyword 必须
+--   在 tooltip 某一行中原样出现。不支持跨行、模糊或正则匹配。
+--   注意：'+' 在 Lua 正则中是量词，这里使用的是 string.find 的 plain 模式
+--   （第四个参数为 true），因此 '+' 被视为普通字符。
+--
 -- 样例：
---   -- 判断头部装备是否有 Wolfheart (狼心) 附魔
+--   -- 判断头部装备是否有 Wolfsheart (狼心) 附魔
 --   macroTorch.isKeywordInEquippedItemTooltip(1, 'Wolfsheart')
---   -- 判断武器是否有 +伤害 的词条
---   macroTorch.isKeywordInEquippedItemTooltip(16, '+ Damage')
 --   -- 判断是否有耐久度损失（中文客户端）
 --   macroTorch.isKeywordInEquippedItemTooltip(1, '破损')
 function macroTorch.isKeywordInEquippedItemTooltip(slot, keyword)
@@ -378,11 +382,11 @@ function macroTorch.isKeywordInEquippedItemTooltip(slot, keyword)
     for i = 1, tooltip:NumLines() do
         local leftText = _G["MacroTorchTooltipScanTextLeft" .. i]
         local rightText = _G["MacroTorchTooltipScanTextRight" .. i]
-        if leftText and leftText:GetText() and string.find(leftText:GetText(), keyword) then
+        if leftText and leftText:GetText() and string.find(leftText:GetText(), keyword, 1, true) then
             found = true
             break
         end
-        if rightText and rightText:GetText() and string.find(rightText:GetText(), keyword) then
+        if rightText and rightText:GetText() and string.find(rightText:GetText(), keyword, 1, true) then
             found = true
             break
         end
