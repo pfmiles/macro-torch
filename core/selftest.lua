@@ -622,14 +622,14 @@ macroTorch.SelfTest:register("K: SPELL_NAME_TO_ID table exists with all 8 keys (
         "SPELL_NAME_TO_ID is not a table, got: " .. type(macroTorch.SPELL_NAME_TO_ID))
     -- English names
     assert(macroTorch.SPELL_NAME_TO_ID["Pounce"] == 9827, "Pounce spellId mismatch")
-    assert(macroTorch.SPELL_NAME_TO_ID["Rake"] == 1822, "Rake spellId mismatch")
-    assert(macroTorch.SPELL_NAME_TO_ID["Rip"] == 9492, "Rip spellId mismatch")
-    assert(macroTorch.SPELL_NAME_TO_ID["Ferocious Bite"] == 22557, "Ferocious Bite spellId mismatch")
+    assert(macroTorch.SPELL_NAME_TO_ID["Rake"] == 9904, "Rake spellId mismatch")
+    assert(macroTorch.SPELL_NAME_TO_ID["Rip"] == 9896, "Rip spellId mismatch")
+    assert(macroTorch.SPELL_NAME_TO_ID["Ferocious Bite"] == 31018, "Ferocious Bite spellId mismatch")
     -- Chinese names
     assert(macroTorch.SPELL_NAME_TO_ID["突袭"] == 9827, "突袭 spellId mismatch")
-    assert(macroTorch.SPELL_NAME_TO_ID["斜掠"] == 1822, "斜掠 spellId mismatch")
-    assert(macroTorch.SPELL_NAME_TO_ID["撕扯"] == 9492, "撕扯 spellId mismatch")
-    assert(macroTorch.SPELL_NAME_TO_ID["凶猛撕咬"] == 22557, "凶猛撕咬 spellId mismatch")
+    assert(macroTorch.SPELL_NAME_TO_ID["斜掠"] == 9904, "斜掠 spellId mismatch")
+    assert(macroTorch.SPELL_NAME_TO_ID["撕扯"] == 9896, "撕扯 spellId mismatch")
+    assert(macroTorch.SPELL_NAME_TO_ID["凶猛撕咬"] == 31018, "凶猛撕咬 spellId mismatch")
 end, false)
 
 macroTorch.SelfTest:register("K: resolveSpellId function exists and resolves known spells", function()
@@ -637,12 +637,12 @@ macroTorch.SelfTest:register("K: resolveSpellId function exists and resolves kno
         "resolveSpellId is not a function, got: " .. type(macroTorch.resolveSpellId))
     assert(macroTorch.resolveSpellId("Pounce") == 9827,
         "resolveSpellId('Pounce') expected 9827, got: " .. tostring(macroTorch.resolveSpellId("Pounce")))
-    assert(macroTorch.resolveSpellId("Rake") == 1822,
-        "resolveSpellId('Rake') expected 1822, got: " .. tostring(macroTorch.resolveSpellId("Rake")))
-    assert(macroTorch.resolveSpellId("Rip") == 9492,
-        "resolveSpellId('Rip') expected 9492, got: " .. tostring(macroTorch.resolveSpellId("Rip")))
-    assert(macroTorch.resolveSpellId("Ferocious Bite") == 22557,
-        "resolveSpellId('Ferocious Bite') expected 22557, got: " .. tostring(macroTorch.resolveSpellId("Ferocious Bite")))
+    assert(macroTorch.resolveSpellId("Rake") == 9904,
+        "resolveSpellId('Rake') expected 9904, got: " .. tostring(macroTorch.resolveSpellId("Rake")))
+    assert(macroTorch.resolveSpellId("Rip") == 9896,
+        "resolveSpellId('Rip') expected 9896, got: " .. tostring(macroTorch.resolveSpellId("Rip")))
+    assert(macroTorch.resolveSpellId("Ferocious Bite") == 31018,
+        "resolveSpellId('Ferocious Bite') expected 31018, got: " .. tostring(macroTorch.resolveSpellId("Ferocious Bite")))
 end, false)
 
 macroTorch.SelfTest:register("K: resolveSpellId returns nil for unknown spell name", function()
