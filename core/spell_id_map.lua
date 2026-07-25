@@ -21,12 +21,12 @@
 macroTorch.SPELL_NAME_TO_ID = {
     -- English names
     ["Pounce"] = 9827,
-    ["Rake"] = 1822,
-    ["Rip"] = 9492,
-    ["Ferocious Bite"] = 22557,
+    ["Rake"] = 9904,
+    ["Rip"] = 9896,
+    ["Ferocious Bite"] = 31018,
     -- Chinese names (from Druid.lua _castSpell locale tables)
     ["突袭"] = 9827,        -- Pounce
-    ["斜掠"] = 1822,        -- Rake
-    ["撕扯"] = 9492,        -- Rip
-    ["凶猛撕咬"] = 22557,    -- Ferocious Bite
+    ["斜掠"] = 9904,        -- Rake
+    ["撕扯"] = 9896,        -- Rip
+    ["凶猛撕咬"] = 31018,    -- Ferocious Bite
 }
