@@ -2,7 +2,10 @@
 
 function macroTorch.casterAtk()
     if not macroTorch.target.isCanAttack then
-        return
+        macroTorch.player.targetEnemy()
+        if not macroTorch.target.isCanAttack then
+            return
+        end
     end
     -- 目标为盗贼时，优先挂精灵之火防止潜行/消失，优先级高于一切
     local targetClass = macroTorch.target.class
