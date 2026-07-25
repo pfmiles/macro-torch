@@ -349,3 +349,45 @@ function macroTorch.equipItem(itemName, slot)
     PickupContainerItem(bagId, slotIndex)
     EquipCursorItem(slot)
 end
+
+-- 扫描指定装备槽位上穿戴物品的 tooltip，检查是否包含指定关键字
+-- 应用场景：判断装备是否有某附魔、是否带某属性、是否有耐久度损失提示等
+-- 原理：通过创建隐藏的 GameTooltip 读取装备 tooltip 的每一行文本，逐行匹配关键字
+-- 注意：tooltip 内容与客户端语言相关，中英文客户端输出的文本不同
+-- @param slot number 装备槽位索引 (1=头部, 2=项链, 3=肩部, ..., 18=远程武器)
+-- @param keyword string 要查找的关键字，大小写敏感（tooltip 输出为英文字符时）
+-- @return boolean 是否找到关键字
+--
+-- 样例：
+--   -- 判断头部装备是否有 Wolfheart (狼心) 附魔
+--   macroTorch.isKeywordInEquippedItemTooltip(1, 'Wolfsheart')
+--   -- 判断武器是否有 +伤害 的词条
+--   macroTorch.isKeywordInEquippedItemTooltip(16, '+ Damage')
+--   -- 判断是否有耐久度损失（中文客户端）
+--   macroTorch.isKeywordInEquippedItemTooltip(1, '破损')
+function macroTorch.isKeywordInEquippedItemTooltip(slot, keyword)
+    if not macroTorch._tooltipScanFrame then
+        macroTorch._tooltipScanFrame = CreateFrame("GameTooltip", "MacroTorchTooltipScan", UIParent, "GameTooltipTemplate")
+        macroTorch._tooltipScanFrame:SetOwner(UIParent, "ANCHOR_NONE")
+    end
+    local tooltip = macroTorch._tooltipScanFrame
+    tooltip:ClearLines()
+    tooltip:SetInventoryItem("player", slot)
+
+    local found = false
+    for i = 1, tooltip:NumLines() do
+        local leftText = _G["MacroTorchTooltipScanTextLeft" .. i]
+        local rightText = _G["MacroTorchTooltipScanTextRight" .. i]
+        if leftText and leftText:GetText() and string.find(leftText:GetText(), keyword) then
+            found = true
+            break
+        end
+        if rightText and rightText:GetText() and string.find(rightText:GetText(), keyword) then
+            found = true
+            break
+        end
+    end
+
+    tooltip:Hide()
+    return found
+end
