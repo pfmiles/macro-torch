@@ -368,8 +368,6 @@ function macroTorch.isKeywordInEquippedItemTooltip(slot, keyword)
         macroTorch._tooltipScanFrame:SetOwner(UIParent, "ANCHOR_NONE")
     end
     local tooltip = macroTorch._tooltipScanFrame
-    -- 先调用 ClearLines 清除旧内容，再 SetInventoryItem 填充新内容
-    -- 注意：不要在此处 Hide，Hide 会导致复用时 SetInventoryItem 无法重新填充
     tooltip:ClearLines()
     tooltip:SetInventoryItem("player", slot)
 
