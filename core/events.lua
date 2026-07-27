@@ -49,7 +49,17 @@ function macroTorch.eventHandle()
         -- on player login
     elseif event == 'PLAYER_ENTERING_WORLD' then
         macroTorch.onPlayerEnteringWorld()
-        macroTorch.SelfTest:run()
+        -- Defer selfTest to next render frame so UI subsystems (tooltip, inventory)
+        -- are fully initialized before tests that depend on them (e.g. computeReshiftEnergy
+        -- creates a cached GameTooltip frame; creating it too early produces a persistent
+        -- bad state that causes session-long failures like Wolfsheart detection).
+        if not macroTorch._selfTestRan then
+            macroTorch._selfTestFrame = macroTorch._selfTestFrame or CreateFrame("Frame")
+            macroTorch._selfTestFrame:SetScript("OnUpdate", function(self)
+                macroTorch.SelfTest:run()
+                self:SetScript("OnUpdate", nil)
+            end)
+        end
     elseif event == 'PLAYER_TARGET_CHANGED' then
         -- target changed
         if macroTorch.player.isInCombat and macroTorch.target.isCanAttack then
