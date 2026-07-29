@@ -3,15 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Completed 21-catAtk-maintainability-02-PLAN.md
-last_updated: "2026-07-29T14:16:17Z"
+stopped_at: Completed 21-catAtk-maintainability-03-PLAN.md
+last_updated: "2026-07-29T14:35:39.527Z"
 last_activity: 2026-07-29
 progress:
   total_phases: 19
-  completed_phases: 14
-  total_plans: 37
-  completed_plans: 37
-  percent: 76
+  completed_phases: 16
+  total_plans: 42
+  completed_plans: 42
 ---
 
 # Project State
@@ -20,7 +19,7 @@ progress:
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 21 — catAtk 可维护性清理（Plans 01-02 complete, 03 pending）
+- **Current Phase**: Phase 21 — catAtk 可维护性清理（Plans 01-03 complete）
 - **Active Branch**: main
 
 ## Phase Progress
@@ -45,7 +44,7 @@ progress:
 | Phase 18: spellId 自动更正机制改造 | ✅ complete | 2026-07-04 | 2026-07-04 | 2 plans |
 | Phase 19: 改造druidControl逻辑 — druidCharge | ✅ complete | 2026-07-08 | 2026-07-08 | 2 plans |
 | Phase 20: SPELL_ID_AUTO_CORRECT 全局开关 | ✅ complete | 2026-07-10 | 2026-07-10 | 3 plans |
-| Phase 21: catAtk 可维护性清理 | 🔵 in_progress | 2026-07-29 | — | 2/3 plans |
+| Phase 21: catAtk 可维护性清理 | ✅ complete | 2026-07-29 | 2026-07-29 | 3/3 plans |
 
 ## Accumulated Context
 
@@ -128,6 +127,11 @@ progress:
 | Phase 16-catatk P02 | 87 | 1 tasks | 1 files |
 | Phase 17 P01 | 192 | 3 tasks | 6 files |
 | Phase 17 P02 | 209 | 2 tasks | 4 files |
+**Per-Plan Metrics:**
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 21-catAtk-maintainability P03 | 4 | 2 tasks | 1 files |
 
 ## Decisions
 
@@ -146,12 +150,14 @@ progress:
 - [Phase ?]: Phase 16 P02: Added 5 Category J SelfTest registrations for catLeveling in core/selftest.lua — verifying function presence, shared decision function references (isKillShotOrLastChance/shouldCastRip/shouldUseBite), clickContext correctness, catAtk invariance, and ERPS/reshift independence. 2 core (isOptional=false) + 3 optional (isOptional=true) tests with UnitClass guard for non-Druid logins.
 - [Phase 17 P01]: Established SPELL_NAME_TO_ID static mapping table (8 entries, EN+ZH), resolveSpellId() two-stage resolution (runtime correction > static baseline), loadSpellIdMap() persistence binding to loginContext, SpellTrace:register spellName field support, and FF prowling guard in catLeveling.
 - [Phase 17 P02]: Bridged _castSpell spellName to UNIT_CASTEVENT spellId via current_casting_spell; implemented runtime spellId correction with SM_EXTEND persistence and tracingSpells key migration; migrated 4 Druid land-tracing spells (Pounce/Rake/Rip/Ferocious Bite) from hardcoded spellId to spellName-driven registration; added 5 Category K self-tests (K1-K5) for spellId mapping system verification.
+- [Phase ?]: Phase 21-03: D-08 Scheme A — comment block annotation only, zero code changes in keepRake. Documents why atkPowerBurst is called here: AP snapshot maximizes Rake bleed, burstMod handles manual Shift-key while this is automated optimization
+- [Phase ?]: Phase 21-03: D-09 Third and final commit of Phase 21 — docs(catAtk): annotate ATK burst side effect in keepRake — completes 3-commit strategy
 
 ## Session
 
-**Last session:** 2026-07-08T12:05:49.204Z
-**Stopped at:** Phase 19 context gathered
-**Resume file:** .planning/phases/19-druidcontrol-bash-druidcharge/19-CONTEXT.md
+**Last session:** 2026-07-29T14:35:39.502Z
+**Stopped at:** Completed 21-catAtk-maintainability-03-PLAN.md
+**Resume file:** None
 
 ## Quick Tasks Completed
 
