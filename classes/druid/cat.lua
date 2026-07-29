@@ -309,7 +309,12 @@ function macroTorch.keepRake(clickContext)
     if not macroTorch.isFightStarted(clickContext) or clickContext.comboPoints == 5 or macroTorch.isRakePresent(clickContext) or clickContext.isImmuneRake or macroTorch.isKillShotOrLastChance(clickContext) then
         return
     end
-    -- boost attack power to rake when fighting world boss
+    -- [SIDE EFFECT] ATK Power burst for Rake on priority targets
+    -- Rake benefits from AP snapshotting; consuming burst items here
+    -- maximizes bleed damage for the entire Rake duration.
+    -- This is placed in keepRake rather than burstMod because:
+    --   1. burstMod handles manual (Shift-key) burst coordination
+    --   2. This is an automated optimization for high-value targets
     if ((macroTorch.target.classification == 'worldboss' and macroTorch.isRipPresent(clickContext) and not clickContext.isTargetDummy) or macroTorch.target.isPlayerControlled) and macroTorch.isNearBy(clickContext) then
         macroTorch.atkPowerBurst(clickContext)
     end
