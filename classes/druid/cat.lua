@@ -114,7 +114,7 @@ function macroTorch.cp5Bite(clickContext)
         local shouldDischarge = true
 
         -- Skip discharge if energy regeneration exceeds Shred cost (infinite energy scenario)
-        if macroTorch.computeErps(clickContext) >= clickContext.SHRED_E then
+        if clickContext.isPseudoInfiniteEnergy then
             shouldDischarge = false
         end
 
@@ -137,7 +137,7 @@ function macroTorch.cp5Bite(clickContext)
 end
 function macroTorch.energyDischargeBeforeBite(clickContext)
     -- Skip discharge when energy regeneration exceeds Shred cost (infinite energy scenario)
-    if macroTorch.computeErps(clickContext) >= clickContext.SHRED_E then
+    if clickContext.isPseudoInfiniteEnergy then
         return
     end
 
@@ -252,7 +252,7 @@ function macroTorch.dischargeEnergyChangeRelicAndRip(clickContext, equipSavagery
     -- When energy regeneration exceeds Shred cost, discharge becomes meaningless
     -- Skip discharge logic and proceed directly to relic swap + rip
     local erps = macroTorch.computeErps(clickContext)
-    local skipDischarge = erps >= clickContext.SHRED_E
+    local skipDischarge = clickContext.isPseudoInfiniteEnergy
 
     -- need to switch relic and have it
     if equipSavagery and macroTorch.player.hasItem('Idol of Savagery') and not macroTorch.player.isRelicEquipped('Idol of Savagery') then
