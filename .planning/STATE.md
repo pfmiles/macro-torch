@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Phase 21 context gathered
-last_updated: "2026-07-29T00:00:00Z"
+stopped_at: Completed 21-catAtk-maintainability-02-PLAN.md
+last_updated: "2026-07-29T14:16:17Z"
 last_activity: 2026-07-29
 progress:
   total_phases: 19
   completed_phases: 14
-  total_plans: 36
-  completed_plans: 36
-  percent: 74
+  total_plans: 37
+  completed_plans: 37
+  percent: 76
 ---
 
 # Project State
@@ -20,7 +20,7 @@ progress:
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 21 — catAtk 可维护性清理（新增，待规划）
+- **Current Phase**: Phase 21 — catAtk 可维护性清理（Plans 01-02 complete, 03 pending）
 - **Active Branch**: main
 
 ## Phase Progress
@@ -45,7 +45,7 @@ progress:
 | Phase 18: spellId 自动更正机制改造 | ✅ complete | 2026-07-04 | 2026-07-04 | 2 plans |
 | Phase 19: 改造druidControl逻辑 — druidCharge | ✅ complete | 2026-07-08 | 2026-07-08 | 2 plans |
 | Phase 20: SPELL_ID_AUTO_CORRECT 全局开关 | ✅ complete | 2026-07-10 | 2026-07-10 | 3 plans |
-| Phase 21: catAtk 可维护性清理 | 🔵 context-ready | — | — | — |
+| Phase 21: catAtk 可维护性清理 | 🔵 in_progress | 2026-07-29 | — | 2/3 plans |
 
 ## Accumulated Context
 
@@ -166,8 +166,13 @@ progress:
 | 260707-x3d | 修复catLeveling OOC+CP=5时无技能释放的bug | 2026-07-07 | 5162d02 | [260707-x3d-catleveling-ooc-cp-5-bug](./quick/260707-x3d-catleveling-ooc-cp-5-bug/) |
 | 260725-s1v | getMinimumAffordableAbilityCost重命名+earning日志字段 | 2026-07-25 | c371482 | [260725-s1v-reshift-minabilitycost-nextabilitycost-r](./quick/260725-s1v-reshift-minabilitycost-nextabilitycost-r/) |
 
+- [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
+- [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
+- [Phase 21-02]: D-06: All 5 explicit comparisons replaced (oocMod, cp5Bite, energyDischargeBeforeBite, dischargeEnergyChangeRelicAndRip, shouldUseShred), local erps retained where needed for overflow calculations
+- [Phase 21-02]: D-07: 3 implicit comparisons preserved unchanged — shouldDoReshift, shouldCastFFDuringWaitWindow, recoverNormalRelic express different semantics (energy overflow, not isPseudoInfiniteEnergy)
+
 ## Session
 
-**Last session:** 2026-07-29T00:00:00.000Z
+**Last session:** 2026-07-29T14:16:17.000Z
 **Last activity:** 2026-07-29
-**Resume file:** .planning/phases/21-catAtk-maintainability/21-CONTEXT.md
+**Resume file:** .planning/phases/21-catAtk-maintainability/21-03-PLAN.md

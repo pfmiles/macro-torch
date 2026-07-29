@@ -852,7 +852,7 @@ Plans:
 **Goal:** 基于 `catAtk-core-principles.md` 原则→实现逆向审视的结论，对 `catAtk()` 及其子模块进行 4 项纯代码结构改进：修复注释编号连续性、为斩杀双入口添加设计意图注释、将 `erps >= SHRED_E` 判断集中为 `clickContext.isPseudoInfiniteEnergy`、从 `keepRake` 中标注 ATK 爆发副作用。不改行为，零 DPS 影响。
 **Requirements**: REQ-21-COMMENTS, REQ-21-ISINFINITEENERGY, REQ-21-KEEPRAKE-CLEANUP
 **Depends on:** Phase 20
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 **Source:** `.planning/catAtk-phaseA-maintainability.md`
 
 Plans:
@@ -862,7 +862,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 21-02-PLAN.md — Centralize isPseudoInfiniteEnergy in clickContext; replace 5 explicit comparisons across cat.lua + Druid.lua (Item 3)
+- [x] 21-02-PLAN.md — Centralize isPseudoInfiniteEnergy in clickContext; replace 5 explicit comparisons across cat.lua + Druid.lua (Item 3)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
