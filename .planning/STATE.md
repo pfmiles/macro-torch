@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Milestone complete
-stopped_at: Phase 19 context gathered
-last_updated: "2026-07-10T18:51:11.087Z"
-last_activity: 2026-07-10
+status: in_progress
+stopped_at: Phase 21 context gathered
+last_updated: "2026-07-29T00:00:00Z"
+last_activity: 2026-07-29
 progress:
-  total_phases: 18
+  total_phases: 19
   completed_phases: 14
   total_plans: 36
   completed_plans: 36
-  percent: 78
+  percent: 74
 ---
 
 # Project State
@@ -20,7 +20,7 @@ progress:
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 16 — catLeveling 练级版一键宏（执行中）
+- **Current Phase**: Phase 21 — catAtk 可维护性清理（新增，待规划）
 - **Active Branch**: main
 
 ## Phase Progress
@@ -37,10 +37,15 @@ progress:
 | Phase 8: 非Druid职业代码结构重构（对齐Druid架构） | ✅ complete | 2026-06-15 | 2026-06-15 | 4 plans |
 | Phase 9: pokemonLoad 移至 Player 层 | 🔵 in_progress | 2026-06-16 | — | — |
 | Phase 10: Druid 综合一键宏方法（druidAtk/Aoe/Heal/Defend/Control） | ✅ complete | 2026-06-16 | 2026-06-17 | 2 plans |
-| Phase 13: catAtk 小号练级适配（技能存在性检查、动态能量消耗、降级策略） | 🔵 in_progress | 2026-06-20 | — | 1/2 plans |
-| Phase 14: 战斗时长预测与斩杀判断等级自适应（isTrivialBattle/isKillShotOrLastChance 静态估算动态化） | ⚪ planned | 2026-06-20 | — | — |
+| Phase 13: catAtk 小号练级适配（技能存在性检查、动态能量消耗、降级策略） | ✅ complete | 2026-06-20 | 2026-06-20 | 2 plans |
+| Phase 14: 战斗时长预测与斩杀判断等级自适应 | ✅ complete | 2026-06-20 | 2026-06-20 | 1 plan |
 | Phase 15: catAtk 从 Druid 实例方法重构为 combo.lua 全局一键宏方法 | ✅ complete | 2026-06-20 | 2026-06-20 | 1 plan |
-| Phase 16: catLeveling 练级版一键宏 — 起手技选择、中间循环(debuff/buff/精灵之火)、斩杀线判断 | 🔵 in_progress | 2026-06-22 | — | 1/2 plans |
+| Phase 16: catLeveling 练级版一键宏 | ✅ complete | 2026-06-22 | 2026-06-23 | 2 plans |
+| Phase 17: catLeveling FF prowling guard + global spellId 动态更正机制 | ✅ complete | 2026-06-29 | 2026-06-29 | 2 plans |
+| Phase 18: spellId 自动更正机制改造 | ✅ complete | 2026-07-04 | 2026-07-04 | 2 plans |
+| Phase 19: 改造druidControl逻辑 — druidCharge | ✅ complete | 2026-07-08 | 2026-07-08 | 2 plans |
+| Phase 20: SPELL_ID_AUTO_CORRECT 全局开关 | ✅ complete | 2026-07-10 | 2026-07-10 | 3 plans |
+| Phase 21: catAtk 可维护性清理 | 🔵 context-ready | — | — | — |
 
 ## Accumulated Context
 
@@ -58,6 +63,7 @@ progress:
 - Phase 18 added: spellId 自动更正机制改造 — 将 spellId 更正监听与 land tracing 注册合并，以 _spellIdMonitored 白名单替代无条件 current_casting_spell 设值，消除残留污染和错误更正风险 (2026-07-04)
 - Phase 19 added: 改造druidControl逻辑 — 拆分bash到新方法druidCharge，加强形态验证和技能存在性判断，优化练级流程控制与冲锋体验 (2026-07-08)
 - Phase 20 added: 添加 SPELL_ID_AUTO_CORRECT 全局开关控制 spellId 自动修正机制 — 涉及 macro_torch.lua / spell_trace_core.lua / Player.lua / events.lua / spell_trace_immune.lua 五个文件的守卫逻辑 (2026-07-10)
+- Phase 21 added: catAtk 可维护性清理 — 基于 catAtk-core-principles.md 逆向审视，4 项纯代码改进：注释编号修复、斩杀入口注释、isInfiniteEnergy 集中化、keepRake ATK 爆发分离。来源：`.planning/catAtk-phaseA-maintainability.md` (2026-07-29)
 
 ## Key Decisions
 
@@ -162,6 +168,6 @@ progress:
 
 ## Session
 
-**Last session:** 2026-07-25T12:17:19.000Z
-**Last activity:** 2026-07-25
-**Resume file:** None
+**Last session:** 2026-07-29T00:00:00.000Z
+**Last activity:** 2026-07-29
+**Resume file:** .planning/phases/21-catAtk-maintainability/21-CONTEXT.md
