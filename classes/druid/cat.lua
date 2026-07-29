@@ -94,6 +94,7 @@ function macroTorch.otMod(clickContext)
         macroTorch.safeCower(clickContext)
     end
 end
+-- termMod 终结技模块：KillShot 斩杀优先 > 5CP Bite；若 oocMod 中 OoC 已消费 KillShot 则此处仅处理常规 5 星撕咬
 function macroTorch.termMod(clickContext)
     -- [NEW GUARD] D-02: skip Term Mod if Ferocious Bite not learned
     if not macroTorch.isSpellExist('Ferocious Bite', 'spell') then
@@ -153,6 +154,8 @@ function macroTorch.energyDischargeBeforeBite(clickContext)
         macroTorch.safeRake(clickContext)
     end
 end
+-- oocMod (Omen of Clarity) 模块：节能施法状态下优先用免费技能
+-- KillShot 仍是最优先，其次才是常规攒星或 5CP 撕咬
 function macroTorch.oocMod(clickContext)
     if not clickContext.ooc then
         return
