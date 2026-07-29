@@ -106,6 +106,8 @@ function macroTorch.catAtk(rough)
             macroTorch.target.isCanAttack and
             string.find(macroTorch.target.name, 'Training Dummy'))
 
+    clickContext.isPseudoInfiniteEnergy = macroTorch.computeErps(clickContext) >= clickContext.SHRED_E
+
     -- 0.idol recover, equip the current normal relic if not equipped
     macroTorch.recoverNormalRelic(clickContext, clickContext.normalRelic)
 

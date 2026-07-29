@@ -162,7 +162,7 @@ function macroTorch.oocMod(clickContext)
     end
     -- When energy regeneration exceeds Shred cost, skip ooc special handling
     -- and go through normal rotation to reach cp5 bite faster
-    if macroTorch.computeErps(clickContext) >= clickContext.SHRED_E then
+    if clickContext.isPseudoInfiniteEnergy then
         return
     end
     -- 如果目标已经可斩杀，直接斩杀，不用考虑其它逻辑了
