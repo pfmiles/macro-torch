@@ -141,12 +141,12 @@ function macroTorch.catAtk(rough)
             end
         end
 
-        -- 7.oocMod: 没有潜行且ooc 或 前行但目标正在攻击我
+        -- 6.oocMod: 清晰预兆优先 — OoC 触发时用免费技能打 KillShot/Bite
         if not clickContext.prowling or target.isAttackingMe then
             -- ooc = Omen of Clarity, 为施法节能状态, 这里实现该状态的技能逻辑，目的为尽可能dps最大化
             macroTorch.oocMod(clickContext)
         end
-        -- 6.termMod: 终结技模块，实际上这里就只是bite模块，因为rip在单独自己的模块里处理了
+        -- 7.termMod: 普通 GCD 终结技 — KillShot > 5CP Bite；若 OoC 已消费则此处跳过
         macroTorch.termMod(clickContext)
         -- 8.OT mod, 处理快要OT时的情况，比如使用Cower降低威胁值，或直接无敌药水暂时避免boss攻击我
         macroTorch.otMod(clickContext)
