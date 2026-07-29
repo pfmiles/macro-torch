@@ -14,8 +14,7 @@ function macroTorch.burstMod(clickContext)
 
         -- berserk
         if not flags.berserk then
-            if not macroTorch.isSpellExist('Berserk', 'spell') then return end
-            if not clickContext.berserk then
+            if macroTorch.isSpellExist('Berserk', 'spell') and not clickContext.berserk then
                 player.berserk('ready')
             end
             flags.berserk = true
@@ -350,8 +349,8 @@ function macroTorch.safeRake(clickContext)
                 tostring(macroTorch.isRakePresent(clickContext)) ..
                 ', bleed idol equipped: ' ..
                 tostring(macroTorch.player.isRelicEquipped('Idol of Savagery')))
-        macroTorch.loginContext.lastRakeEquippedSavagery = macroTorch.player.isRelicEquipped('Idol of Savagery')
         macroTorch.player.rake('ready')
+        macroTorch.loginContext.lastRakeEquippedSavagery = macroTorch.player.isRelicEquipped('Idol of Savagery')
         return true
     end
     return false
@@ -364,8 +363,8 @@ function macroTorch.safeRip(clickContext)
                 tostring(macroTorch.isRipPresent(clickContext)) ..
                 ', bleed idol equipped: ' ..
                 tostring(macroTorch.player.isRelicEquipped('Idol of Savagery')))
-        macroTorch.loginContext.lastRipEquippedSavagery = macroTorch.player.isRelicEquipped('Idol of Savagery')
         macroTorch.player.rip('ready')
+        macroTorch.loginContext.lastRipEquippedSavagery = macroTorch.player.isRelicEquipped('Idol of Savagery')
         macroTorch.context.lastRipAtCp = clickContext.comboPoints
         return true
     end

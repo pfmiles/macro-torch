@@ -763,7 +763,6 @@ function macroTorch.isFightStarted(clickContext)
     if clickContext.isFightStarted == nil then
         clickContext.isFightStarted = (not clickContext.prowling and
                 (macroTorch.player.isInCombat
-                        or macroTorch.inCombat
                         or macroTorch.target.isPlayerControlled
                         or (macroTorch.target.isHostile and macroTorch.target.isInCombat)
                 ))
