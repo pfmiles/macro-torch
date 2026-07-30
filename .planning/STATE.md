@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Phase 22 context gathered
-last_updated: "2026-07-30T14:24:23.470Z"
+stopped_at: Completed 22-01-PLAN.md
+last_updated: "2026-07-30T15:31:15.679Z"
 last_activity: 2026-07-30
 progress:
   total_phases: 20
   completed_phases: 16
   total_plans: 44
-  completed_plans: 42
+  completed_plans: 43
 ---
 
 # Project State
@@ -133,6 +133,7 @@ progress:
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 21-catAtk-maintainability P03 | 4 | 2 tasks | 1 files |
+| Phase 22 P01 | 367 | 2 tasks | 3 files |
 
 ## Decisions
 
@@ -153,12 +154,13 @@ progress:
 - [Phase 17 P02]: Bridged _castSpell spellName to UNIT_CASTEVENT spellId via current_casting_spell; implemented runtime spellId correction with SM_EXTEND persistence and tracingSpells key migration; migrated 4 Druid land-tracing spells (Pounce/Rake/Rip/Ferocious Bite) from hardcoded spellId to spellName-driven registration; added 5 Category K self-tests (K1-K5) for spellId mapping system verification.
 - [Phase ?]: Phase 21-03: D-08 Scheme A — comment block annotation only, zero code changes in keepRake. Documents why atkPowerBurst is called here: AP snapshot maximizes Rake bleed, burstMod handles manual Shift-key while this is automated optimization
 - [Phase ?]: Phase 21-03: D-09 Third and final commit of Phase 21 — docs(catAtk): annotate ATK burst side effect in keepRake — completes 3-commit strategy
+- [Phase ?]: PF-01 conditional skip guard auto-fixed: plan had negated logic (skip when condition MET), corrected to skip when NOT met (~= 0 instead of == 0)
 
 ## Session
 
-**Last session:** 2026-07-30T12:51:50.908Z
-**Stopped at:** Phase 22 context gathered
-**Resume file:** .planning/phases/22-catatk-selftest-catatk-core-principles-md-d/22-CONTEXT.md
+**Last session:** 2026-07-30T15:31:15.653Z
+**Stopped at:** Completed 22-01-PLAN.md
+**Resume file:** None
 
 ## Quick Tasks Completed
 
