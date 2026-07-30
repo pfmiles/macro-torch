@@ -105,6 +105,224 @@ macroTorch.SelfTest:register("Principle R9-03: getKSThreshold(15) returns 100", 
     "expected 100, got " .. tostring(macroTorch.getKSThreshold(15)))
 end, true)
 
--- End of Batch 1 -- Batch 2 tests go below (added in plan 22-02)
+-- End of Batch 1
+
+	-- Batch 2: Conditional Decision Tests
+
+	-- Rule 2: Energy Starvation — shouldDoReshift (R2-01 ~ R2-07)
+
+	macroTorch.SelfTest:register("Principle R2-01: reshift energy 0 — no reshift triggered", function()
+		assert(macroTorch.shouldDoReshift({ RESHIFT_ENERGY = 0 }) == false,
+			"expected false when RESHIFT_ENERGY is 0")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R2-02: not in combat — no reshift triggered", function()
+		if macroTorch.player.isInCombat then return end
+		local ctx = { RESHIFT_ENERGY = 40 }
+		assert(macroTorch.shouldDoReshift(ctx) == false,
+			"expected false when not in combat")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R2-03: prowling — no reshift triggered", function()
+		if not macroTorch.player.isInCombat then return end
+		local ctx = { RESHIFT_ENERGY = 40, prowling = true }
+		assert(macroTorch.shouldDoReshift(ctx) == false,
+			"expected false when prowling")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R2-04: Omen of Clarity active — no reshift triggered", function()
+		if not macroTorch.player.isInCombat then return end
+		local ctx = { RESHIFT_ENERGY = 40, ooc = true }
+		assert(macroTorch.shouldDoReshift(ctx) == false,
+			"expected false when OoC active")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R2-05: kill shot phase — no reshift triggered", function()
+		if not macroTorch.player.isInCombat then return end
+		local ctx = { RESHIFT_ENERGY = 40 }
+		if not macroTorch.isKillShotOrLastChance(ctx) then return end
+		assert(macroTorch.shouldDoReshift(ctx) == false,
+			"expected false during kill shot phase")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R2-06: 1.5s natural recovery sufficient — no reshift triggered", function()
+		if not macroTorch.player.isInCombat then return end
+		local ctx = {
+			RESHIFT_ENERGY = 40,
+			comboPoints = 0,
+			AUTO_TICK_ERPS = 10,
+			TIGER_ERPS = 10 / 3,
+			RAKE_ERPS = 0,
+			RIP_ERPS = 0,
+			POUNCE_ERPS = 0,
+			BERSERK_ERPS = 10,
+			berserk = false,
+			hasEssenceOfTheRed = false,
+			isRipPresent = true,
+			isImmuneRip = false,
+			isRakePresent = true,
+			isImmuneRake = false,
+			isTigerPresent = true,
+			CLAW_E = 45,
+			SHRED_E = 60,
+			BITE_E = 35,
+			RAKE_E = 40,
+			RIP_E = 30,
+			TIGER_E = 30,
+		}
+		local erps = macroTorch.computeErps(ctx)
+		local projectedEnergy = macroTorch.player.mana + erps * 1.5
+		local nextAbilityCost = macroTorch.getNextAbilityCost(ctx)
+		if math.ceil(projectedEnergy) < nextAbilityCost then return end
+		assert(macroTorch.shouldDoReshift(ctx) == false,
+			"expected false when 1.5s recovery is sufficient")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R2-07: 1.5s natural recovery insufficient — reshift triggered", function()
+		if not macroTorch.player.isInCombat then return end
+		local ctx = {
+			RESHIFT_ENERGY = 40,
+			comboPoints = 0,
+			AUTO_TICK_ERPS = 10,
+			TIGER_ERPS = 10 / 3,
+			RAKE_ERPS = 0,
+			RIP_ERPS = 0,
+			POUNCE_ERPS = 0,
+			BERSERK_ERPS = 10,
+			berserk = false,
+			hasEssenceOfTheRed = false,
+			isRipPresent = true,
+			isImmuneRip = false,
+			isRakePresent = true,
+			isImmuneRake = false,
+			isTigerPresent = true,
+			CLAW_E = 45,
+			SHRED_E = 60,
+			BITE_E = 35,
+			RAKE_E = 40,
+			RIP_E = 30,
+			TIGER_E = 30,
+		}
+		local erps = macroTorch.computeErps(ctx)
+		local projectedEnergy = macroTorch.player.mana + erps * 1.5
+		local nextAbilityCost = macroTorch.getNextAbilityCost(ctx)
+		if math.ceil(projectedEnergy) >= nextAbilityCost then return end
+		assert(macroTorch.shouldDoReshift(ctx),
+			"expected true when 1.5s recovery is insufficient")
+	end, true)
+
+	-- Rule 4+5: Bleed Primacy + Duration-Adaptive Rip — shouldCastRip (R4-01 ~ R5-04)
+
+	macroTorch.SelfTest:register("Principle R4-01: 5CP without Rip in normal battle — should cast Rip", function()
+		local ctx = {
+			comboPoints = 5,
+			isRipPresent = false,
+			isImmuneRip = false,
+			rough = false,
+			isTrivialBattle = false,
+			isFightStarted = true,
+			isNearBy = true,
+		}
+		if macroTorch.isKillShotOrLastChance(ctx) then return end
+		assert(macroTorch.shouldCastRip(ctx) == true,
+			"expected true: 5CP without Rip should cast Rip")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R4-02: 5CP with Rip present — should not cast Rip", function()
+		local ctx = {
+			comboPoints = 5,
+			isRipPresent = true,
+			isImmuneRip = false,
+			isFightStarted = true,
+			isNearBy = true,
+		}
+		if macroTorch.isKillShotOrLastChance(ctx) then return end
+		assert(macroTorch.shouldCastRip(ctx) == false,
+			"expected false: Rip already present")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R4-03: 5CP immune to Rip — should not cast Rip", function()
+		local ctx = {
+			comboPoints = 5,
+			isRipPresent = false,
+			isImmuneRip = true,
+			isFightStarted = true,
+			isNearBy = true,
+		}
+		if macroTorch.isKillShotOrLastChance(ctx) then return end
+		assert(macroTorch.shouldCastRip(ctx) == false,
+			"expected false: target immune to Rip")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R4-04: kill shot phase — should not cast Rip", function()
+		local ctx = {
+			comboPoints = 5,
+			isRipPresent = false,
+			isImmuneRip = false,
+			isFightStarted = true,
+			isNearBy = true,
+		}
+		if not macroTorch.isKillShotOrLastChance(ctx) then return end
+		assert(macroTorch.shouldCastRip(ctx) == false,
+			"expected false: kill shot phase should not cast Rip")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R5-01: trivial battle 1CP without Rip — should cast Rip", function()
+		local ctx = {
+			comboPoints = 1,
+			isRipPresent = false,
+			isImmuneRip = false,
+			isTrivialBattle = true,
+			isFightStarted = true,
+			isNearBy = true,
+		}
+		if macroTorch.isKillShotOrLastChance(ctx) then return end
+		assert(macroTorch.shouldCastRip(ctx) == true,
+			"expected true: trivial battle 1CP should cast Rip")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R5-02: trivial battle 2CP without Rip — should cast Rip", function()
+		local ctx = {
+			comboPoints = 2,
+			isRipPresent = false,
+			isImmuneRip = false,
+			isTrivialBattle = true,
+			isFightStarted = true,
+			isNearBy = true,
+		}
+		if macroTorch.isKillShotOrLastChance(ctx) then return end
+		assert(macroTorch.shouldCastRip(ctx) == true,
+			"expected true: trivial battle 2CP should cast Rip")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R5-03: trivial battle 3CP — should not cast Rip, should Bite instead", function()
+		local ctx = {
+			comboPoints = 3,
+			isRipPresent = false,
+			isImmuneRip = false,
+			isTrivialBattle = true,
+			isFightStarted = true,
+			isNearBy = true,
+		}
+		if macroTorch.isKillShotOrLastChance(ctx) then return end
+		assert(macroTorch.shouldCastRip(ctx) == false,
+			"expected false: trivial battle 3CP should Bite, not Rip")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R5-04: normal battle 3CP — should not cast Rip (need 5CP)", function()
+		local ctx = {
+			comboPoints = 3,
+			isRipPresent = false,
+			isImmuneRip = false,
+			isTrivialBattle = false,
+			isFightStarted = true,
+			isNearBy = true,
+		}
+		if macroTorch.isKillShotOrLastChance(ctx) then return end
+		assert(macroTorch.shouldCastRip(ctx) == false,
+			"expected false: normal battle needs 5CP for Rip")
+	end, true)
+
+	-- Rules 6+7+8: Builder Choice, Bite Trigger, FF Fill (R6-01 ~ R8-06) — continued in next task
 
 end
