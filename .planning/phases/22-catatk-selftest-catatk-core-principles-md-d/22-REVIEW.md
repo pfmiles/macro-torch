@@ -2,15 +2,14 @@
 phase: 22-catatk-selftest-catatk-core-principles-md-d
 reviewed: 2026-07-31T00:00:00Z
 depth: standard
-files_reviewed: 2
+files_reviewed: 1
 files_reviewed_list:
   - classes/druid/selftest.lua
-  - build_order.txt
 findings:
-  critical: 1
-  warning: 4
-  info: 2
-  total: 7
+  critical: 0
+  warning: 3
+  info: 3
+  total: 6
 status: issues_found
 ---
 
@@ -18,216 +17,148 @@ status: issues_found
 
 **Reviewed:** 2026-07-31
 **Depth:** standard
-**Files Reviewed:** 2
+**Files Reviewed:** 1
 **Status:** issues_found
 
 ## Summary
 
-Reviewed `classes/druid/selftest.lua` (585 lines, 43 SelfTest registrations for catAtk principle regression tests) and `build_order.txt` (58 lines, build order manifest). One BLOCKER-level bug was found: R6-01 through R6-05 have incomplete `clickContext` objects that can cause runtime Lua arithmetic errors when the player has live buffs (Tiger's Fury, Berserk). Four WARNING-level issues cover incomplete ctx objects in R8-04, inconsistent field presets across the R4/R5 test series, silent test skipping that masks missing coverage, and indentation style inconsistency. Two INFO items note the isOptional=true assignment for pure-function tests and a test-count discrepancy between phase plan and implementation.
+Reviewed `classes/druid/selftest.lua` (585 lines, 43 SelfTest registrations for catAtk principle regression tests across two batches). No security vulnerabilities or data-loss risks found. Three warning-level issues were identified: incomplete clickContext tables in the R6 test series can cause Lua nil-arithmetic runtime errors when the player has Tiger's Fury active; dead code in R8-04 where `erps` is computed but never used; and incomplete context tables in R8-05/R8-06 passed to `shouldDoReshift`, which internally calls `getNextAbilityCost` with missing required fields. Three informational items cover code duplication, indentation inconsistency, and the systemic silent-test-skip pattern.
 
----
-
-## Critical Issues
-
-### CR-01: R6-01 through R6-05 -- Incomplete clickContext can cause nil arithmetic error in computeErps
-
-**File:** `classes/druid/selftest.lua:328-393`
-**Issue:** Tests R6-01 through R6-05 call `shouldUseShred(ctx)`, which unconditionally invokes `computeErps(ctx)` at Druid.lua line 699. The ctx objects for these five tests lack the baseline fields required by `computeErps()`:
-
-Missing fields: `AUTO_TICK_ERPS`, `TIGER_ERPS`, `RAKE_ERPS`, `RIP_ERPS`, `POUNCE_ERPS`, `BERSERK_ERPS`, `berserk`, `hasEssenceOfTheRed`, `isTigerPresent`.
-
-In `computeErps()` (Druid.lua:801-830):
-```lua
-local erps = clickContext.AUTO_TICK_ERPS  -- nil (field not in ctx)
-if macroTorch.isTigerPresent(clickContext) then  -- queries live game state
-    erps = erps + clickContext.TIGER_ERPS  -- nil + nil = Lua error!
-end
-```
-
-When the player has Tiger's Fury active (or Berserk, or Essence of the Red), `computeErps` attempts arithmetic on nil values (`nil + nil` or `nil + number`), causing a Lua runtime error. The pcall wrapper in `SelfTest:run()` catches the error, but it produces a spurious test failure unrelated to the principle being tested.
-
-Even when no live buffs trigger the conditional branches, `computeErps` returns nil and caches `clickContext.computeErps = nil` on the ctx object, polluting the cache for any downstream code that reuses the ctx.
-
-R6-06 (line 395) correctly includes all computeErps fields and serves as the reference for the canonical baseline.
-
-**Fix:**
-Add the canonical computeErps baseline fields to tests R6-01 through R6-05. For R6-01 (the most impactful example):
-
-```lua
--- R6-01: BEFORE (lines 329-337)
-local ctx = {
-    ooc = true,
-    isBehind = true,
-    isRakePresent = false,
-    isRipPresent = false,
-    isPouncePresent = false,
-    isPseudoInfiniteEnergy = false,
-    CLAW_E = 45,
-}
-
--- R6-01: AFTER
-local ctx = {
-    ooc = true,
-    isBehind = true,
-    isRakePresent = false,
-    isRipPresent = false,
-    isPouncePresent = false,
-    isPseudoInfiniteEnergy = false,
-    CLAW_E = 45,
-    -- computeErps baseline (prevents nil arithmetic)
-    AUTO_TICK_ERPS = 10,
-    TIGER_ERPS = 10 / 3,
-    RAKE_ERPS = 0,
-    RIP_ERPS = 0,
-    POUNCE_ERPS = 0,
-    BERSERK_ERPS = 10,
-    berserk = false,
-    hasEssenceOfTheRed = false,
-    isTigerPresent = false,
-}
-```
-
-Apply the same baseline fields to R6-02, R6-03, R6-04, and R6-05 (lines 343-393).
+Note: `macroTorch.player.isInCombat` was traced to `entity/Unit.lua:226-228` where it is defined as a metatable `__index` function that auto-resolves to a boolean on property access. This is the intended pattern across the codebase (verified by `core/selftest.lua:344-345`). The property access without `()` seen throughout the file is correct.
 
 ---
 
 ## Warnings
 
-### WR-01: R8-04 -- Fragile ctx with incomplete fields; downstream nil arithmetic risk
+### WR-01: R6-01 through R6-05 -- incomplete clickContext causes nil-arithmetic error in computeErps when Tiger's Fury is active
 
-**File:** `classes/druid/selftest.lua:507-517`
-**Issue:** R8-04 creates ctx `{ ooc = false }` and calls `computeErps(ctx)` and `getNextAbilityCost(ctx)` with this minimal object. While line 512 includes a defensive nil-guard (`if erps == nil then erps = 10 end`), the subsequent call to `getNextAbilityCost(ctx)` can return nil for the ability cost (e.g., when `shouldUseBite` or `shouldUseShred` resolves with missing fields). When `minAbilityCost` is nil, the guard `if macroTorch.player.mana < nil then return end` evaluates to false in Lua (nil comparison always returns false), so the test does NOT skip. Execution continues into `shouldCastFFDuringWaitWindow`, which internally calls `shouldDoReshift(ctx)` with the same incomplete ctx. If the target is not immune to Faerie Fire and not in kill-shot phase, `shouldDoReshift` reaches `computeErps(ctx)` with nil `AUTO_TICK_ERPS`, triggering the same class of nil-arithmetic error described in CR-01.
+**File:** `classes/druid/selftest.lua:328-393`
 
-The test behavior depends heavily on live game state (player mana, target immunity, kill-shot status), making it non-deterministic.
+**Issue:** Tests R6-01 through R6-05 call `macroTorch.shouldUseShred(ctx)` which unconditionally invokes `macroTorch.computeErps(ctx)` (Druid.lua:699). The ctx objects in these five tests omit the baseline fields required by `computeErps()`:
 
-**Fix:** Either provide the full computeErps/getNextAbilityCost baseline fields in the ctx, or harden the guard to also skip when `minAbilityCost` is nil:
+Missing fields: `AUTO_TICK_ERPS`, `TIGER_ERPS`, `RAKE_ERPS`, `RIP_ERPS`, `POUNCE_ERPS`, `BERSERK_ERPS`, `berserk`, `hasEssenceOfTheRed`, `isTigerPresent`.
+
+In `computeErps()` (Druid.lua:801-829), line 807 initializes `erps = clickContext.AUTO_TICK_ERPS` (nil when absent). When the player has Tiger's Fury active, `macroTorch.isTigerPresent(clickContext)` (Druid.lua:978-983) falls back to querying live game state (since `clickContext.isTigerPresent` is nil), and returns true. Line 809 then evaluates `erps + clickContext.TIGER_ERPS` which is `nil + nil`, producing a Lua runtime error: "attempt to perform arithmetic on a nil value".
+
+When Tiger's Fury is NOT active, `computeErps` returns nil without error, and the early-return paths in `shouldUseShred` (line 706 for R6-01/02/03, line 726 for R6-04, line 728 for R6-05) prevent the nil result from being used in later arithmetic. The nil return is also cached as `clickContext.computeErps = nil` (line 828), which could cause downstream issues if the ctx is reused.
+
+R6-06 (line 395) correctly includes the full computeErps baseline and serves as a reference for the canonical set of fields.
+
+**Fix:** Add the computeErps baseline fields to R6-01 through R6-05. Using R6-06 as the canonical reference:
 
 ```lua
-local minAbilityCost = macroTorch.getNextAbilityCost(ctx)
-if minAbilityCost == nil or macroTorch.player.mana < minAbilityCost then return end
+-- Add to R6-01 ctx (lines 329-337), R6-02 ctx (lines 344-350),
+-- R6-03 ctx (lines 357-364), R6-04 ctx (lines 370-377),
+-- and R6-05 ctx (lines 382-390):
+
+AUTO_TICK_ERPS = 10,
+TIGER_ERPS = 10 / 3,
+RAKE_ERPS = 0,
+RIP_ERPS = 0,
+POUNCE_ERPS = 0,
+BERSERK_ERPS = 10,
+berserk = false,
+hasEssenceOfTheRed = false,
+isTigerPresent = false,
 ```
 
-Better still, provide the canonical baseline ctx fields so the function chain operates deterministically:
+Setting `isTigerPresent = false` prevents the live-state fallback query, making the test deterministic regardless of buff state.
+
+---
+
+### WR-02: Dead code -- `erps` computed but never used in R8-04
+
+**File:** `classes/druid/selftest.lua:511-512`
+
+**Issue:** Lines 511-512 compute `erps` from `computeErps(ctx)` and apply a nil-guard fallback of 10, but the variable `erps` is never referenced anywhere in the rest of the R8-04 test body. The subsequent logic only uses `minAbilityCost` (from `getNextAbilityCost`) and `macroTorch.player.mana`. This is a vestigial computation, likely copied from the R8-05/R8-06 test structure where `erps` is legitimately used for energy projection and wait-window calculation. In R8-04, computing `erps` also triggers the same incomplete-ctx issue as WR-01 if Tiger's Fury is active (ctx has only `{ ooc = false }`).
+
+**Fix:** Remove lines 511-512:
+
+```lua
+-- Remove lines 511-512:
+-- local erps = macroTorch.computeErps(ctx)
+-- if erps == nil then erps = 10 end
+```
+
+---
+
+### WR-03: R8-05 and R8-06 pass incomplete context to shouldDoReshift and getNextAbilityCost
+
+**File:** `classes/druid/selftest.lua:509 (R8-04), 519-549 (R8-05), 551-581 (R8-06)`
+
+**Issue:** Tests R8-04, R8-05, and R8-06 construct context tables missing fields required by the downstream call chain:
+
+- **R8-04** (line 509): ctx is `{ ooc = false }`. `getNextAbilityCost(ctx)` (Druid.lua:874-903) internally calls `shouldUseBite(ctx)` (Druid.lua:933-958). At line 940, `shouldUseBite` evaluates `clickContext.comboPoints > 0` when `isKillShotOrLastChance` returns true. With `comboPoints` absent (nil), this becomes `nil > 0`, producing a Lua error. At line 948, `clickContext.comboPoints >= 3` produces the same error.
+
+- **R8-05** (line 536) and **R8-06** (line 568): call `shouldDoReshift(ctx)` with ctx missing: `CLAW_E`, `SHRED_E`, `BITE_E`, `RAKE_E`, `RIP_E`, `TIGER_E`, `comboPoints`, `isImmuneRake`. `shouldDoReshift` (cat.lua:197-216) calls `getNextAbilityCost(ctx)` at line 212, which triggers the same `shouldUseBite`-to-`comboPoints` nil-comparison path.
+
+The guard conditions at lines 500/508/520/552 (`if not macroTorch.player.isInCombat then return end`) mitigate some risk — if the player is not in combat, the test skips before reaching the problematic calls. But once in combat, execution depends on live game state (target health for `isKillShotOrLastChance`, mana values for energy guards), making these tests non-deterministic and potentially error-prone.
+
+**Fix:** Provide complete context tables for these tests. For R8-04 as the most minimal case:
 
 ```lua
 local ctx = {
     ooc = false,
-    AUTO_TICK_ERPS = 10,
-    TIGER_ERPS = 10 / 3,
-    RAKE_ERPS = 0,
-    RIP_ERPS = 0,
-    POUNCE_ERPS = 0,
-    BERSERK_ERPS = 10,
-    berserk = false,
-    hasEssenceOfTheRed = false,
-    isTigerPresent = false,
-    isRakePresent = false,
+    -- Required by getNextAbilityCost chain
+    comboPoints = 0,
     isRipPresent = false,
-    isPouncePresent = false,
+    isImmuneRip = false,
+    isImmuneRake = false,
+    isTrivialBattle = false,
+    isFightStarted = true,
+    isNearBy = true,
     CLAW_E = 45,
     SHRED_E = 60,
     BITE_E = 35,
     RAKE_E = 40,
     RIP_E = 30,
     TIGER_E = 30,
-    comboPoints = 0,
-    isImmuneRip = false,
-    isImmuneRake = false,
-    isTrivialBattle = false,
-    isFightStarted = true,
-    isNearBy = true,
-    isBehind = true,
-    isPseudoInfiniteEnergy = false,
-    prowling = false,
-    RESHIFT_ENERGY = 40,
+    -- Required by computeErps chain
+    AUTO_TICK_ERPS = 10,
+    TIGER_ERPS = 10 / 3,
+    RAKE_ERPS = 0,
+    RIP_ERPS = 0,
+    POUNCE_ERPS = 0,
+    BERSERK_ERPS = 10,
+    berserk = false,
+    hasEssenceOfTheRed = false,
+    isTigerPresent = false,
 }
 ```
 
-### WR-02: Inconsistent ctx field presets across R4 and R5 test series
-
-**File:** `classes/druid/selftest.lua:216-324`
-**Issue:** Within the `shouldCastRip` test series, R4-01 explicitly presets both `rough = false` and `isTrivialBattle = false` in its ctx. However, R4-02 (line 231), R4-03 (line 244), and R4-04 (line 257) omit both fields entirely. In `shouldCastRip` (Druid.lua:923), these fields gate the battle-type path:
-```lua
-if macroTorch.isTrivialBattleOrPvp(clickContext) or clickContext.rough then
-    -- Quick battle: 1-2 CP
-else
-    -- Normal battle: 5 CP
-end
-```
-When `isTrivialBattle` is omitted (nil), the `isTrivialBattle(clickContext)` function computes it from live game state (target health, estimated DPS, nearby player count), which can differ from the intended test scenario. Similarly, when `rough` is omitted (nil, falsy), the behavior is correct by accident -- nil is falsy so the normal battle path is taken -- but it is inconsistent with R4-01 which explicitly sets it.
-
-R5-01 through R5-04 set `isTrivialBattle` explicitly but omit `rough` (nil, defaulting to falsy).
-
-**Fix:** Add explicit `rough = false` to all R4 and R5 ctx objects for consistency with R4-01. Add explicit `isTrivialBattle` to R4-02 through R4-04 (already set to false in R4-01; set to true in R5-01 through R5-03, and false in R5-04).
-
-### WR-03: Test skip guards produce silent pass without assertion verification
-
-**File:** `classes/druid/selftest.lua` -- multiple locations (see below)
-**Issue:** The `SelfTest:run()` framework (core/selftest.lua:61-62) counts any pcall-successful test function execution as "passed", even if the function body returns early via a skip guard and never reaches an `assert`. This means tests that silently skip are indistinguishable from tests that actually verified their assertions.
-
-Affected tests and their skip conditions:
-
-| Test | Line | Skip Condition |
-|------|------|----------------|
-| R2-05 | 143 | `isKillShotOrLastChance(ctx)` returns false (depends on live target health) |
-| R2-06 | 176 | `math.ceil(projectedEnergy) < nextAbilityCost` (depends on live player mana) |
-| R2-07 | 209 | `math.ceil(projectedEnergy) >= nextAbilityCost` (depends on live player mana) |
-| R7-01 | 424 | `isKillShotOrLastChance(ctx)` returns false |
-| R7-02 | 430 | `isKillShotOrLastChance(ctx)` returns false |
-| R8-04 | 514 | `player.mana < minAbilityCost` (depends on live mana and context) |
-| R8-05 | 536-546 | Multiple guards depending on live mana and erps |
-| R8-06 | 568-578 | Multiple guards depending on live mana and erps |
-
-When these guards trigger, the test is recorded as "passed" even though no principle was verified. There is no mechanism to detect or report skipped tests, making it impossible to know whether these principles are actually being tested in any given session.
-
-**Fix:** This is a systemic issue in the SelfTest framework design. The recommended approach for this file is to add debug-mode logging when a guard triggers a skip, so at least during development, skips are visible:
-
-```lua
--- Example for R2-05
-if not macroTorch.isKillShotOrLastChance(ctx) then
-    -- macroTorch.show("[self-test] R2-05: skipped (not in kill shot phase)", 'debug')
-    return
-end
-```
-
-Alternatively, a separate skip counter in `SelfTest:run()` could track how many tests skipped vs. actually ran assertions. But this is a framework-level change and may be out of scope for this phase.
-
-### WR-04: Indentation inconsistency between Batch 1 and Batch 2
-
-**File:** `classes/druid/selftest.lua:21-108 (Batch 1) vs 110-583 (Batch 2)`
-**Issue:** Batch 1 (PF-01 through R9-03) uses space indentation (2 spaces per level). Starting at line 110, Batch 2 (R2 through R8 tests) switches to tab indentation. This makes the file harder to read and maintain, and is inconsistent with the project's other Lua files which generally use 2-space indentation.
-
-The container `if UnitClass('player') == 'Druid' then` at line 19 uses 0 indentation, but the Batch 2 tests inside it (line 110 onward) use deep tab indentation that does not align with the Batch 1 tests at the same nesting level.
-
-**Fix:** Normalize all indentation in the file to 2-space indentation. The Batch 2 tests should be indented 1 level (2 spaces) from the `if UnitClass` guard, matching the Batch 1 test indentation.
+For R8-05 and R8-06, add the ability-cost and combo-point fields to the existing ctx tables, or replace the `shouldDoReshift(ctx)` guard with an inline energy projection check that matches the computation already present in the test body.
 
 ---
 
 ## Info
 
-### IN-01: Pure function tests marked optional could be core
+### IN-01: Significant code duplication between R8-05 and R8-06
 
-**File:** `classes/druid/selftest.lua` -- all `register()` calls
-**Issue:** All 43 tests in this file pass `true` as the third argument to `SelfTest:register()`, marking them all as optional. The following tests are pure functions that do not depend on live game state and should arguably be core (`isOptional=false`):
+**File:** `classes/druid/selftest.lua:519-581`
 
-- PF-04, PF-05 (`estimatePlayerDPS`): pure level-to-DPS mapping
-- PF-06, PF-07 (`computeErps`): pure arithmetic on ctx fields (all fields preset)
-- R9-01, R9-02, R9-03 (`getKSThreshold`): pure level-to-threshold mapping
+**Issue:** R8-05 (wait window too short, no FF) and R8-06 (wait window sufficient, cast FF) share approximately 50 lines of nearly identical code. The only differences are the guard condition (line 546: `waitSeconds >= 1.0` vs line 578: `waitSeconds < 1.0`) and the assertion. Any change to the context construction, erps computation, energy projection, or wait time calculation must be made in two places synchronously.
 
-When marked optional, a failure in these tests produces a yellow "WARN" message rather than a red "FAIL". Since these pure functions have no external dependencies, any failure indicates a genuine regression in the principle implementation and should produce a red error.
+**Fix:** Extract the shared logic (context construction, erps/energy/wait-time computation) into a local helper function within the test, or parameterize the diverging guard and assertion.
 
-**Fix:** Change the third argument from `true` to `false` for PF-04, PF-05, PF-06, PF-07, R9-01, R9-02, and R9-03.
+---
 
-### IN-02: Test count discrepancy -- 43 registrations vs. "~38" in phase plan
+### IN-02: Code duplication between R2-06 and R2-07
 
-**File:** `classes/druid/selftest.lua` -- test count
-**Issue:** The phase plan (captured in the phase directory) references "~38 SelfTest regression tests", but the file contains 43 `SelfTest:register()` calls. While "~38" uses the approximate qualifier, 43 is outside the typical ~10% tolerance for approximate counts (43 is ~13% above 38). The breakdown:
+**File:** `classes/druid/selftest.lua:148-212`
 
-- Batch 1: PF-01..PF-07 (7) + R9-01..R9-03 (3) = 10 tests
-- Batch 2: R2-01..R2-07 (7) + R4-01..R4-04 (4) + R5-01..R5-04 (4) + R6-01..R6-06 (6) + R7-01..R7-06 (6) + R8-01..R8-06 (6) = 33 tests
-- Total: 43
+**Issue:** Same duplication pattern as IN-01. R2-06 (1.5s natural recovery sufficient, no reshift) and R2-07 (1.5s recovery insufficient, reshift triggered) share approximately 50 lines of identical context setup and energy projection logic, differing only in the guard condition (line 176: `math.ceil(projectedEnergy) < nextAbilityCost` vs line 209: `math.ceil(projectedEnergy) >= nextAbilityCost`) and the assertion.
 
-This is likely due to R8 tests (6) being added after the initial estimate. Not a defect, but worth noting for plan-vs-implementation traceability.
+**Fix:** Apply the same extraction approach suggested for IN-01.
+
+---
+
+### IN-03: Inconsistent indentation between test batches
+
+**File:** `classes/druid/selftest.lua:23-108 (Batch 1) vs 110-583 (Batch 2)`
+
+**Issue:** Batch 1 tests (PF-01 through R9-03, lines 23-108) use a single tab indentation level from the enclosing `if UnitClass('player') == 'Druid' then` block. Batch 2 tests (R2 through R8, lines 110-583) use a deeper double tab indentation level. This creates visual misalignment between the two batches at the same logical nesting depth and increases the effort required to scan the file.
+
+**Fix:** Normalize indentation to a consistent level throughout. For example, align Batch 2 tests to the same single-tab level as Batch 1, since both are at the same depth within the `if UnitClass` guard.
 
 ---
 
