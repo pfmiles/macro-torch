@@ -874,12 +874,12 @@ Plans:
 
 **Requirements**: TBD
 **Depends on:** Phase 21
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 22-01-PLAN.md — Create `classes/druid/selftest.lua` with Batch 1 (~10 pure-function tests: PF-01~07 + R9-01~03) + fix catAtk-core-principles.md Appendix D Rule 13 + update build_order.txt
+- [x] 22-01-PLAN.md — Create `classes/druid/selftest.lua` with Batch 1 (~10 pure-function tests: PF-01~07 + R9-01~03) + fix catAtk-core-principles.md Appendix D Rule 13 + update build_order.txt
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
