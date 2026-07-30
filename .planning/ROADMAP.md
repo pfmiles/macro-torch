@@ -874,7 +874,7 @@ Plans:
 
 **Requirements**: TBD
 **Depends on:** Phase 21
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans executed
 
 Plans:
 **Wave 1**
@@ -883,7 +883,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 22-02-PLAN.md — Append Batch 2 (~28 conditional decision tests: R2 reshift, R4+R5 bleed primacy, R6 builder choice, R7 bite trigger, R8 FF fill) to selftest.lua
+- [x] 22-02-PLAN.md — Append Batch 2 (~28 conditional decision tests: R2 reshift, R4+R5 bleed primacy, R6 builder choice, R7 bite trigger, R8 FF fill) to selftest.lua
 
 ---
 
