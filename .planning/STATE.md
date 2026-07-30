@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Completed 21-catAtk-maintainability-03-PLAN.md
-last_updated: "2026-07-29T15:03:33.029Z"
+stopped_at: Phase 22 context gathered
+last_updated: "2026-07-30T12:51:50.953Z"
 last_activity: 2026-07-29
 progress:
-  total_phases: 19
+  total_phases: 20
   completed_phases: 16
   total_plans: 42
   completed_plans: 42
@@ -63,6 +63,7 @@ progress:
 - Phase 19 added: 改造druidControl逻辑 — 拆分bash到新方法druidCharge，加强形态验证和技能存在性判断，优化练级流程控制与冲锋体验 (2026-07-08)
 - Phase 20 added: 添加 SPELL_ID_AUTO_CORRECT 全局开关控制 spellId 自动修正机制 — 涉及 macro_torch.lua / spell_trace_core.lua / Player.lua / events.lua / spell_trace_immune.lua 五个文件的守卫逻辑 (2026-07-10)
 - Phase 21 added: catAtk 可维护性清理 — 基于 catAtk-core-principles.md 逆向审视，4 项纯代码改进：注释编号修复、斩杀入口注释、isInfiniteEnergy 集中化、keepRake ATK 爆发分离。来源：`.planning/catAtk-phaseA-maintainability.md` (2026-07-29)
+- Phase 22 added: catAtk 质量保障 — 基于原则的 SelfTest 回归测试 + 原则文档补充（附录 D 可追溯性矩阵）。来源：`.planning/catAtk-phaseB-quality.md` (2026-07-30)
 
 ## Key Decisions
 
@@ -155,9 +156,9 @@ progress:
 
 ## Session
 
-**Last session:** 2026-07-29T14:35:39.502Z
-**Stopped at:** Completed 21-catAtk-maintainability-03-PLAN.md
-**Resume file:** None
+**Last session:** 2026-07-30T12:51:50.908Z
+**Stopped at:** Phase 22 context gathered
+**Resume file:** .planning/phases/22-catatk-selftest-catatk-core-principles-md-d/22-CONTEXT.md
 
 ## Quick Tasks Completed
 
