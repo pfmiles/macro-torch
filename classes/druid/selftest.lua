@@ -334,6 +334,15 @@ end, true)
 			isPouncePresent = false,
 			isPseudoInfiniteEnergy = false,
 			CLAW_E = 45,
+			AUTO_TICK_ERPS = 10,
+			TIGER_ERPS = 10 / 3,
+			RAKE_ERPS = 0,
+			RIP_ERPS = 0,
+			POUNCE_ERPS = 0,
+			BERSERK_ERPS = 10,
+			berserk = false,
+			hasEssenceOfTheRed = false,
+			isTigerPresent = false,
 		}
 		macroTorch.player.isBehindAttackJustFailed = false
 		assert(macroTorch.shouldUseShred(ctx) == true,
@@ -347,6 +356,15 @@ end, true)
 			isRakePresent = false,
 			isRipPresent = false,
 			isPouncePresent = false,
+			AUTO_TICK_ERPS = 10,
+			TIGER_ERPS = 10 / 3,
+			RAKE_ERPS = 0,
+			RIP_ERPS = 0,
+			POUNCE_ERPS = 0,
+			BERSERK_ERPS = 10,
+			berserk = false,
+			hasEssenceOfTheRed = false,
+			isTigerPresent = false,
 		}
 		macroTorch.player.isBehindAttackJustFailed = false
 		assert(macroTorch.shouldUseShred(ctx) == true,
@@ -361,6 +379,15 @@ end, true)
 			isRakePresent = true,
 			isRipPresent = true,
 			isPouncePresent = false,
+			AUTO_TICK_ERPS = 10,
+			TIGER_ERPS = 10 / 3,
+			RAKE_ERPS = 0,
+			RIP_ERPS = 0,
+			POUNCE_ERPS = 0,
+			BERSERK_ERPS = 10,
+			berserk = false,
+			hasEssenceOfTheRed = false,
+			isTigerPresent = false,
 		}
 		macroTorch.player.isBehindAttackJustFailed = false
 		assert(macroTorch.shouldUseShred(ctx) == true,
@@ -374,6 +401,15 @@ end, true)
 			isRakePresent = true,
 			isRipPresent = true,
 			isPouncePresent = false,
+			AUTO_TICK_ERPS = 10,
+			TIGER_ERPS = 10 / 3,
+			RAKE_ERPS = 0,
+			RIP_ERPS = 0,
+			POUNCE_ERPS = 0,
+			BERSERK_ERPS = 10,
+			berserk = false,
+			hasEssenceOfTheRed = false,
+			isTigerPresent = false,
 		}
 		assert(macroTorch.shouldUseShred(ctx) == false,
 			"expected false: 2 bleeds without OoC or infinite energy should use Claw")
@@ -387,6 +423,15 @@ end, true)
 			isRakePresent = true,
 			isRipPresent = true,
 			isPouncePresent = true,
+			AUTO_TICK_ERPS = 10,
+			TIGER_ERPS = 10 / 3,
+			RAKE_ERPS = 0,
+			RIP_ERPS = 0,
+			POUNCE_ERPS = 0,
+			BERSERK_ERPS = 10,
+			berserk = false,
+			hasEssenceOfTheRed = false,
+			isTigerPresent = false,
 		}
 		assert(macroTorch.shouldUseShred(ctx) == false,
 			"expected false: 3+ bleeds should always use Claw")
@@ -508,8 +553,6 @@ end, true)
 		if not macroTorch.player.isInCombat then return end
 		local ctx = { ooc = false }
 		-- This test expects player.mana >= minAbilityCost
-		local erps = macroTorch.computeErps(ctx)
-		if erps == nil then erps = 10 end
 		local minAbilityCost = macroTorch.getNextAbilityCost(ctx)
 		if macroTorch.player.mana < minAbilityCost then return end
 		assert(macroTorch.shouldCastFFDuringWaitWindow(ctx) == false,
