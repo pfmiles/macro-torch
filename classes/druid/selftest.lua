@@ -323,6 +323,263 @@ end, true)
 			"expected false: normal battle needs 5CP for Rip")
 	end, true)
 
-	-- Rules 6+7+8: Builder Choice, Bite Trigger, FF Fill (R6-01 ~ R8-06) — continued in next task
+	-- Rule 6: Builder Choice — shouldUseShred (R6-01 ~ R6-06)
+
+	macroTorch.SelfTest:register("Principle R6-01: 0 bleeds OoC behind — use Shred", function()
+		local ctx = {
+			ooc = true,
+			isBehind = true,
+			isRakePresent = false,
+			isRipPresent = false,
+			isPouncePresent = false,
+			isPseudoInfiniteEnergy = false,
+			CLAW_E = 45,
+		}
+		macroTorch.player.isBehindAttackJustFailed = false
+		assert(macroTorch.shouldUseShred(ctx) == true,
+			"expected true: 0 bleeds OoC behind should use Shred")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R6-02: 0 bleeds infinite energy behind — use Shred", function()
+		local ctx = {
+			isPseudoInfiniteEnergy = true,
+			isBehind = true,
+			isRakePresent = false,
+			isRipPresent = false,
+			isPouncePresent = false,
+		}
+		macroTorch.player.isBehindAttackJustFailed = false
+		assert(macroTorch.shouldUseShred(ctx) == true,
+			"expected true: 0 bleeds infinite energy behind should use Shred")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R6-03: 2 bleeds OoC behind — use Shred", function()
+		local ctx = {
+			ooc = true,
+			isBehind = true,
+			isPseudoInfiniteEnergy = false,
+			isRakePresent = true,
+			isRipPresent = true,
+			isPouncePresent = false,
+		}
+		macroTorch.player.isBehindAttackJustFailed = false
+		assert(macroTorch.shouldUseShred(ctx) == true,
+			"expected true: 2 bleeds OoC behind should use Shred")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R6-04: 2 bleeds no OoC no infinite — use Claw", function()
+		local ctx = {
+			ooc = false,
+			isPseudoInfiniteEnergy = false,
+			isRakePresent = true,
+			isRipPresent = true,
+			isPouncePresent = false,
+		}
+		assert(macroTorch.shouldUseShred(ctx) == false,
+			"expected false: 2 bleeds without OoC or infinite energy should use Claw")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R6-05: 3+ bleeds always Claw regardless of OoC/infinite", function()
+		local ctx = {
+			ooc = true,
+			isBehind = true,
+			isPseudoInfiniteEnergy = true,
+			isRakePresent = true,
+			isRipPresent = true,
+			isPouncePresent = true,
+		}
+		assert(macroTorch.shouldUseShred(ctx) == false,
+			"expected false: 3+ bleeds should always use Claw")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R6-06: Rip absent normal battle — use Claw for faster CP generation", function()
+		local ctx = {
+			isBehind = true,
+			isPseudoInfiniteEnergy = false,
+			ooc = false,
+			isRakePresent = true,
+			isRipPresent = false,
+			isPouncePresent = false,
+			isImmuneRip = false,
+			isTrivialBattle = false,
+			CLAW_E = 45,
+			AUTO_TICK_ERPS = 10,
+			TIGER_ERPS = 10 / 3,
+			RAKE_ERPS = 0,
+			RIP_ERPS = 0,
+			POUNCE_ERPS = 0,
+			BERSERK_ERPS = 10,
+			berserk = false,
+			hasEssenceOfTheRed = false,
+			isTigerPresent = false,
+		}
+		assert(macroTorch.shouldUseShred(ctx) == false,
+			"expected false: Rip absent in normal battle should use Claw for faster CP")
+	end, true)
+
+	-- Rule 7: GCD Priority / Bite Trigger — shouldUseBite (R7-01 ~ R7-06)
+
+	macroTorch.SelfTest:register("Principle R7-01: kill shot with combo points — should Bite", function()
+		local ctx = { comboPoints = 3 }
+		if not macroTorch.isKillShotOrLastChance(ctx) then return end
+		assert(macroTorch.shouldUseBite(ctx) == true,
+			"expected true: kill shot with CP should Bite")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R7-02: kill shot zero combo points — should not Bite", function()
+		local ctx = { comboPoints = 0 }
+		if not macroTorch.isKillShotOrLastChance(ctx) then return end
+		assert(macroTorch.shouldUseBite(ctx) == false,
+			"expected false: kill shot with 0 CP should not Bite")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R7-03: 5CP Rip present normal battle — should Bite", function()
+		local ctx = {
+			comboPoints = 5,
+			isRipPresent = true,
+			isImmuneRip = false,
+			isTrivialBattle = false,
+			rough = false,
+		}
+		if macroTorch.isKillShotOrLastChance(ctx) then return end
+		assert(macroTorch.shouldUseBite(ctx) == true,
+			"expected true: 5CP with Rip present should Bite")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R7-04: 5CP immune to Rip — should Bite (no Rip option)", function()
+		local ctx = {
+			comboPoints = 5,
+			isImmuneRip = true,
+			isTrivialBattle = false,
+		}
+		if macroTorch.isKillShotOrLastChance(ctx) then return end
+		assert(macroTorch.shouldUseBite(ctx) == true,
+			"expected true: 5CP immune to Rip should Bite")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R7-05: trivial battle 3CP no Rip — should Bite", function()
+		local ctx = {
+			comboPoints = 3,
+			isTrivialBattle = true,
+			isRipPresent = false,
+			isImmuneRip = false,
+		}
+		if macroTorch.isKillShotOrLastChance(ctx) then return end
+		assert(macroTorch.shouldUseBite(ctx) == true,
+			"expected true: trivial battle 3CP no Rip should Bite")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R7-06: trivial battle 2CP no Rip — should not Bite (need 3+ CP)", function()
+		local ctx = {
+			comboPoints = 2,
+			isTrivialBattle = true,
+			isRipPresent = false,
+			isImmuneRip = false,
+		}
+		if macroTorch.isKillShotOrLastChance(ctx) then return end
+		assert(macroTorch.shouldUseBite(ctx) == false,
+			"expected false: trivial battle 2CP should not Bite")
+	end, true)
+
+	-- Rule 8: FF Fill During Wait Window — shouldCastFFDuringWaitWindow (R8-01 ~ R8-06)
+
+	macroTorch.SelfTest:register("Principle R8-01: Omen of Clarity active — no FF fill", function()
+		local ctx = { ooc = true }
+		assert(macroTorch.shouldCastFFDuringWaitWindow(ctx) == false,
+			"expected false: OoC active should not cast FF")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R8-02: target immune to FF — no FF fill", function()
+		if not macroTorch.target.isImmune('Faerie Fire (Feral)') then return end
+		local ctx = { ooc = false }
+		assert(macroTorch.shouldCastFFDuringWaitWindow(ctx) == false,
+			"expected false: target immune to FF should not cast FF")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R8-03: reshift pending — no FF fill (reshift takes priority)", function()
+		if not macroTorch.player.isInCombat then return end
+		local ctx = { ooc = false, RESHIFT_ENERGY = 40 }
+		if not macroTorch.shouldDoReshift(ctx) then return end
+		assert(macroTorch.shouldCastFFDuringWaitWindow(ctx) == false,
+			"expected false: reshift pending should not cast FF")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R8-04: energy sufficient — no wait window, no FF fill", function()
+		if not macroTorch.player.isInCombat then return end
+		local ctx = { ooc = false }
+		-- This test expects player.mana >= minAbilityCost
+		local erps = macroTorch.computeErps(ctx)
+		if erps == nil then erps = 10 end
+		local minAbilityCost = macroTorch.getNextAbilityCost(ctx)
+		if macroTorch.player.mana < minAbilityCost then return end
+		assert(macroTorch.shouldCastFFDuringWaitWindow(ctx) == false,
+			"expected false: energy sufficient, no wait needed")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R8-05: wait window too short to cast FF", function()
+		if not macroTorch.player.isInCombat then return end
+		local ctx = {
+			ooc = false,
+			isTigerPresent = true,
+			isRakePresent = false,
+			isRipPresent = false,
+			isPouncePresent = false,
+			AUTO_TICK_ERPS = 10,
+			TIGER_ERPS = 10 / 3,
+			RAKE_ERPS = 0,
+			RIP_ERPS = 0,
+			POUNCE_ERPS = 0,
+			BERSERK_ERPS = 10,
+			berserk = false,
+			hasEssenceOfTheRed = false,
+		}
+		if macroTorch.shouldDoReshift(ctx) then return end
+		local erps = macroTorch.computeErps(ctx)
+		if erps <= 0 then return end
+		local minAbilityCost = macroTorch.getNextAbilityCost(ctx)
+		local currentEnergy = macroTorch.player.mana
+		if currentEnergy >= minAbilityCost then return end
+		local energyDuringGcd = erps * 1.5
+		if currentEnergy + energyDuringGcd < minAbilityCost then return end
+		local energyNeeded = minAbilityCost - currentEnergy
+		local waitSeconds = energyNeeded / erps
+		if waitSeconds >= 1.0 then return end
+		assert(macroTorch.shouldCastFFDuringWaitWindow(ctx) == false,
+			"expected false: wait window too short (less than 1s)")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R8-06: wait window sufficient (>= 1s) — cast FF", function()
+		if not macroTorch.player.isInCombat then return end
+		local ctx = {
+			ooc = false,
+			isTigerPresent = true,
+			isRakePresent = false,
+			isRipPresent = false,
+			isPouncePresent = false,
+			AUTO_TICK_ERPS = 10,
+			TIGER_ERPS = 10 / 3,
+			RAKE_ERPS = 0,
+			RIP_ERPS = 0,
+			POUNCE_ERPS = 0,
+			BERSERK_ERPS = 10,
+			berserk = false,
+			hasEssenceOfTheRed = false,
+		}
+		if macroTorch.shouldDoReshift(ctx) then return end
+		local erps = macroTorch.computeErps(ctx)
+		if erps <= 0 then return end
+		local minAbilityCost = macroTorch.getNextAbilityCost(ctx)
+		local currentEnergy = macroTorch.player.mana
+		if currentEnergy >= minAbilityCost then return end
+		local energyDuringGcd = erps * 1.5
+		if currentEnergy + energyDuringGcd < minAbilityCost then return end
+		local energyNeeded = minAbilityCost - currentEnergy
+		local waitSeconds = energyNeeded / erps
+		if waitSeconds < 1.0 then return end
+		assert(macroTorch.shouldCastFFDuringWaitWindow(ctx) == true,
+			"expected true: wait window sufficient for FF (>= 1s)")
+	end, true)
+
+	-- End of Batch 2 — all catAtk principle regression tests complete
 
 end
