@@ -868,6 +868,23 @@ Plans:
 
 - [x] 21-03-PLAN.md — Annotate ATK burst side-effect in keepRake with [SIDE EFFECT] comment block; final verification (Item 4)
 
+### Phase 22: catAtk 质量保障 — SelfTest 回归测试 + 原则文档补充
+
+**Goal:** 基于 `catAtk-core-principles.md` 的 14 条设计原则，为 `catAtk()` 及其子模块建立 ~38 个 SelfTest 回归测试用例（Batch 1: ~10 pure function tests + Batch 2: ~28 conditional decision tests），附带修正 `catAtk-core-principles.md` 附录 D Rule 13 命名不一致（`isInfiniteEnergy` → `isPseudoInfiniteEnergy`）。所有测试在游戏客户端内通过 `/mt` 执行，利用 `clickContext` 预设值绕过游戏状态依赖。零行为变更，纯质量基础设施。（Batch 3 副作用验证排除，文档补充 Phase 21 已完成）
+
+**Requirements**: TBD
+**Depends on:** Phase 21
+**Plans:** 2 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 22-01-PLAN.md — Create `classes/druid/selftest.lua` with Batch 1 (~10 pure-function tests: PF-01~07 + R9-01~03) + fix catAtk-core-principles.md Appendix D Rule 13 + update build_order.txt
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 22-02-PLAN.md — Append Batch 2 (~28 conditional decision tests: R2 reshift, R4+R5 bleed primacy, R6 builder choice, R7 bite trigger, R8 FF fill) to selftest.lua
+
 ---
 
 ## Task 统计
