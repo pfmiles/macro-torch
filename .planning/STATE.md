@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Completed 22-01-PLAN.md
-last_updated: "2026-07-30T15:31:15.679Z"
+stopped_at: Completed 22-02-PLAN.md
+last_updated: "2026-07-30T15:49:37.650Z"
 last_activity: 2026-07-30
 progress:
   total_phases: 20
-  completed_phases: 16
+  completed_phases: 17
   total_plans: 44
-  completed_plans: 43
+  completed_plans: 44
 ---
 
 # Project State
@@ -19,7 +19,7 @@ progress:
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 21 — catAtk 可维护性清理（Plans 01-03 complete）
+- **Current Phase**: Phase 22 — catAtk 质量保障 SelfTest + 文档补充（Plans 01-02 complete）
 - **Active Branch**: main
 
 ## Phase Progress
@@ -45,6 +45,7 @@ progress:
 | Phase 19: 改造druidControl逻辑 — druidCharge | ✅ complete | 2026-07-08 | 2026-07-08 | 2 plans |
 | Phase 20: SPELL_ID_AUTO_CORRECT 全局开关 | ✅ complete | 2026-07-10 | 2026-07-10 | 3 plans |
 | Phase 21: catAtk 可维护性清理 | ✅ complete | 2026-07-29 | 2026-07-29 | 3/3 plans |
+| Phase 22: catAtk 质量保障 — SelfTest + 文档补充 | ✅ complete | 2026-07-30 | 2026-07-30 | 2/2 plans |
 
 ## Accumulated Context
 
@@ -134,6 +135,7 @@ progress:
 |------|----------|-------|-------|
 | Phase 21-catAtk-maintainability P03 | 4 | 2 tasks | 1 files |
 | Phase 22 P01 | 367 | 2 tasks | 3 files |
+| Phase 22 P02 | 480 | 2 tasks | 1 files |
 
 ## Decisions
 
@@ -158,8 +160,8 @@ progress:
 
 ## Session
 
-**Last session:** 2026-07-30T15:31:15.653Z
-**Stopped at:** Completed 22-01-PLAN.md
+**Last session:** 2026-07-30T15:49:37.621Z
+**Stopped at:** Completed 22-02-PLAN.md
 **Resume file:** None
 
 ## Quick Tasks Completed
