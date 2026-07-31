@@ -178,7 +178,44 @@ end, true)
 			"expected false when 1.5s recovery is sufficient")
 	end, true)
 
-	macroTorch.SelfTest:register("Principle R2-07: 1.5s natural recovery insufficient — reshift triggered", function()
+	macroTorch.SelfTest:register("Principle R2-07: 1.5s natural recovery insufficient + earning>0 — reshift triggered", function()
+		if not macroTorch.player.isInCombat then return end
+		local ctx = {
+			RESHIFT_ENERGY = 60,
+			comboPoints = 0,
+			AUTO_TICK_ERPS = 10,
+			TIGER_ERPS = 10 / 3,
+			RAKE_ERPS = 0,
+			RIP_ERPS = 0,
+			POUNCE_ERPS = 0,
+			BERSERK_ERPS = 10,
+			berserk = false,
+			hasEssenceOfTheRed = false,
+			isRipPresent = true,
+			isImmuneRip = false,
+			isRakePresent = true,
+			isImmuneRake = false,
+			isTigerPresent = true,
+			CLAW_E = 45,
+			SHRED_E = 60,
+			BITE_E = 35,
+			RAKE_E = 40,
+			RIP_E = 30,
+			TIGER_E = 30,
+		}
+		local erps = macroTorch.computeErps(ctx)
+		local projectedEnergy = macroTorch.player.mana + erps * 1.5
+		local nextAbilityCost = macroTorch.getNextAbilityCost(ctx)
+		-- Skip test if waiting 1.5s is already sufficient
+		if math.ceil(projectedEnergy) >= nextAbilityCost then return end
+		-- Skip test if earning <= 0 (would not reshift with effective guard)
+		local effectiveEnergy = ctx.RESHIFT_ENERGY - ctx.TIGER_E  -- Tiger present, will be removed
+		if effectiveEnergy <= macroTorch.player.mana then return end
+		assert(macroTorch.shouldDoReshift(ctx),
+			"expected true when 1.5s recovery is insufficient AND reshift improves position")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R2-08: earning <= 0 — no reshift even when 1.5s recovery insufficient", function()
 		if not macroTorch.player.isInCombat then return end
 		local ctx = {
 			RESHIFT_ENERGY = 40,
@@ -206,9 +243,13 @@ end, true)
 		local erps = macroTorch.computeErps(ctx)
 		local projectedEnergy = macroTorch.player.mana + erps * 1.5
 		local nextAbilityCost = macroTorch.getNextAbilityCost(ctx)
+		-- Only test when waiting 1.5s is insufficient (otherwise the first condition already blocks reshift)
 		if math.ceil(projectedEnergy) >= nextAbilityCost then return end
-		assert(macroTorch.shouldDoReshift(ctx),
-			"expected true when 1.5s recovery is insufficient")
+		-- Only test when earning <= 0 (the new guard's domain)
+		local effectiveEnergy = ctx.RESHIFT_ENERGY - ctx.TIGER_E
+		if effectiveEnergy > macroTorch.player.mana then return end
+		assert(macroTorch.shouldDoReshift(ctx) == false,
+			"expected false when earning <= 0 (reshift does not improve energy position)")
 	end, true)
 
 	-- Rule 4+5: Bleed Primacy + Duration-Adaptive Rip — shouldCastRip (R4-01 ~ R5-04)
