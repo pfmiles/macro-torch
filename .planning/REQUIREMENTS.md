@@ -116,7 +116,7 @@ classes/  — Druid (含 Druid/cat, Druid/bear, Druid/utility), Hunter, Mage, Pr
 - [ ] `grep -c "function macroTorch.\(catAtk\|regularAttack\|keepRip\|keepRake\|keepFF\|shouldUseShred\|shouldCastRip\|shouldUseBite\|canDoReshift\)" SM_Extend.lua` 返回 ≥ 9
 - [ ] 能量常量（CLAW_E, SHRED_E, RAKE_E 等）初始化逻辑不变
 - [ ] DRUID_FIELD_FUNC_MAP 所有字段不变
-- [ ] 模块执行顺序不变（idolRecover → healthManaSaver → targetEnemy → keepAutoAttack → rushMod → openerMod → oocMod → termMod → otMod → tigerFury → debuffMod → regularAttack → reshift）
+- [ ] 模块执行顺序不变（recoverNormalRelic → combatUrgentHPRestore → targetEnemy → startAutoAtk → burstMod → openerMod(Pounce/Ravage) → oocMod → termMod → otMod → keepTigerFury → keepRip/quickKeepRip+keepRake+keepFF → regularAttack → reshiftMod）
 
 ## 优先级
 

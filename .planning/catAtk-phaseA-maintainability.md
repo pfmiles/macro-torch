@@ -95,7 +95,7 @@
 
 ---
 
-## 条目 3：集中化 `isInfiniteEnergy` 判断
+## 条目 3：集中化 `isPseudoInfiniteEnergy` 判断
 
 **文件：**
 - `classes/druid/combo.lua`（添加计算）
@@ -121,21 +121,21 @@
 
 **目标：**
 
-在 `catAtk` 中一次性计算，存入 `clickContext.isInfiniteEnergy`，所有子模块读取此标志。
+在 `catAtk` 中一次性计算，存入 `clickContext.isPseudoInfiniteEnergy`，所有子模块读取此标志。
 
 ```lua
 -- 在 catAtk 中，computeErps 的值在 clickContext 初始化后添加：
-clickContext.isInfiniteEnergy = macroTorch.computeErps(clickContext) >= clickContext.SHRED_E
+clickContext.isPseudoInfiniteEnergy = macroTorch.computeErps(clickContext) >= clickContext.SHRED_E
 ```
 
-然后将各模块中的 `macroTorch.computeErps(clickContext) >= clickContext.SHRED_E` 替换为 `clickContext.isInfiniteEnergy`。
+然后将各模块中的 `macroTorch.computeErps(clickContext) >= clickContext.SHRED_E` 替换为 `clickContext.isPseudoInfiniteEnergy`。
 
 **特殊处理：**
 
-以下两处使用了独立的 `local erps = macroTorch.computeErps(clickContext)` 然后比较——改为直接读取 `clickContext.isInfiniteEnergy`：
+以下两处使用了独立的 `local erps = macroTorch.computeErps(clickContext)` 然后比较——改为直接读取 `clickContext.isPseudoInfiniteEnergy`：
 
-- `shouldUseShred` (`Druid.lua:699-700`)：`local infiniteEnergy = erps >= clickContext.SHRED_E` → `clickContext.isInfiniteEnergy`
-- `dischargeEnergyChangeRelicAndRip` (`cat.lua:251-252`)：`local skipDischarge = erps >= clickContext.SHRED_E` → `clickContext.isInfiniteEnergy`
+- `shouldUseShred` (`Druid.lua`)：`local infiniteEnergy = erps >= clickContext.SHRED_E` → `clickContext.isPseudoInfiniteEnergy`
+- `dischargeEnergyChangeRelicAndRip` (`cat.lua`)：`local skipDischarge = erps >= clickContext.SHRED_E` → `clickContext.isPseudoInfiniteEnergy`
 
 **不改动的位置：**
 
@@ -147,7 +147,7 @@ clickContext.isInfiniteEnergy = macroTorch.computeErps(clickContext) >= clickCon
 
 **改动：** 在 `catAtk` 添加 1 行计算；在 4 处替换显式比较。
 
-**验证：** 确保 `computeErps` 在 `isInfiniteEnergy` 计算之前已可用（当前 `computeErps` 依赖 `clickContext` 中的 `AUTO_TICK_ERPS`、`TIGER_ERPS` 等字段，这些字段在 `isInfiniteEnergy` 计算之前已设置——但 `computeErps` 内部调用 `isTigerPresent`、`isRakePresent` 等函数，这些函数又读取 `clickContext` 的缓存。由于此时尚未进入战斗，Tiger/Rake 等 buff 均不存在，`computeErps` 在这时调用返回的是基础 erps 值。**需确认**：`isInfiniteEnergy` 的值在战斗过程中是否可能发生变化（如 Tiger's Fury 被施放、Rake 被应用后 erps 增加）。如果可能变化，则 `isInfiniteEnergy` 应在每次点击时重新计算——当前 `clickContext` 本身就是每次点击新建的，满足此要求。✓）
+**验证：** 确保 `computeErps` 在 `isPseudoInfiniteEnergy` 计算之前已可用（当前 `computeErps` 依赖 `clickContext` 中的 `AUTO_TICK_ERPS`、`TIGER_ERPS` 等字段，这些字段在 `isPseudoInfiniteEnergy` 计算之前已设置——但 `computeErps` 内部调用 `isTigerPresent`、`isRakePresent` 等函数，这些函数又读取 `clickContext` 的缓存。由于此时尚未进入战斗，Tiger/Rake 等 buff 均不存在，`computeErps` 在这时调用返回的是基础 erps 值。**需确认**：`isPseudoInfiniteEnergy` 的值在战斗过程中是否可能发生变化（如 Tiger's Fury 被施放、Rake 被应用后 erps 增加）。如果可能变化，则 `isPseudoInfiniteEnergy` 应在每次点击时重新计算——当前 `clickContext` 本身就是每次点击新建的，满足此要求。✓）
 
 ---
 
