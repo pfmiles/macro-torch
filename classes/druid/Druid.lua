@@ -448,6 +448,8 @@ function macroTorch.computeClaw_E()
     return CLAW_E
 end
 
+-- 返回 reshift 后的原始能量值（Furor天赋 + 狼心附魔）
+-- 注意：此值不含猛虎补打消耗。变身会抹除猛虎buff，调用方若用于决策须自行扣除 TIGER_E。
 function macroTorch.computeReshiftEnergy()
     local energy = 0
     local player = macroTorch.player
@@ -879,6 +881,9 @@ function macroTorch.getNextAbilityCost(clickContext)
     end
 
     -- 2. Tiger's Fury check (maintain buff if not active)
+    -- NOTE: 返回的是"当前状态"下的下一个技能消耗。
+    --       若调用方用于 reshift 决策：变身会抹除猛虎，有效消耗 = 本返回值 + TIGER_E。
+    --       调用方需自行扣除猛虎成本。
     if not macroTorch.isTigerPresent(clickContext) then
         return clickContext.TIGER_E, 'Tiger'
     end
@@ -1140,6 +1145,8 @@ function macroTorch.safeFF(clickContext)
 end
 
 
+-- 猛虎内置1s CD（非全局GCD）。猛虎本身无GCD，此方法用于防止无GCD技能被连续双击误触。
+-- 返回剩余CD秒数，0表示可释放。
 function macroTorch.tigerSelfGCD(clickContext)
     if clickContext.tigerSelfGCD == nil then
         if not macroTorch or not macroTorch.loginContext or not macroTorch.loginContext.tigerTimer then

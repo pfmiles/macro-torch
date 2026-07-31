@@ -194,6 +194,13 @@ function macroTorch.reshiftMod(clickContext)
         macroTorch.readyReshift(clickContext, nextMove, nextAbilityCost)
     end
 end
+-- reshift economics:
+--   reshift 后能量重置为 RESHIFT_ENERGY，GCD(1.5s)期间能量照常恢复
+--   变身会抹除猛虎之怒，需立即瞬补（猛虎无GCD），故有效能量 = RESHIFT_ENERGY - TIGER_E(如有猛虎)
+--   两条路径(reshift vs 等待)在1.5s内的erps回能相同 → 抵消
+--   因此 reshift 净收益 = effectiveEnergy - currentEnergy (= earning)
+--   条件1: 等1.5s仍不够(projectedEnergy < nextAbilityCost) → 需要行动
+--   条件2: 行动后能量确实变多(effectiveEnergy > currentEnergy) → 行动划算
 function macroTorch.shouldDoReshift(clickContext)
     -- [NEW CHECK] D-04: if reshift would give zero energy, skip entirely
     if clickContext.RESHIFT_ENERGY == 0 then
@@ -211,9 +218,18 @@ function macroTorch.shouldDoReshift(clickContext)
     -- 获取可释放的最低技能能量消耗
     local nextAbilityCost, nextMove = macroTorch.getNextAbilityCost(clickContext)
 
-    -- 如果1.5秒自然恢复后能量足够 → 不reshift（避免1.5s GCD卡住技能）
-    -- 如果1.5秒自然恢复后能量不够 → reshift（反正都要等，利用1.5s GCD）
-    return math.ceil(projectedEnergy) < nextAbilityCost, nextMove, nextAbilityCost
+    -- reshift 会抹除猛虎之怒，有效回能需扣除必补的猛虎消耗
+    -- [NEW] effective guard: only reshift when it actually improves energy position
+    local effectiveEnergy = clickContext.RESHIFT_ENERGY
+    if macroTorch.isTigerPresent(clickContext) then
+        effectiveEnergy = effectiveEnergy - clickContext.TIGER_E
+    end
+
+    -- 条件1: 1.5秒自然恢复后能量不够 → 需要行动
+    -- 条件2: reshift后能量确实比现在多 → 行动划算(earning > 0)
+    return math.ceil(projectedEnergy) < nextAbilityCost
+           and effectiveEnergy > macroTorch.player.mana,
+           nextMove, nextAbilityCost
 end
 function macroTorch.keepTigerFury(clickContext)
     -- [NEW GUARD] D-02: skip Tiger's Fury module if spell not learned
