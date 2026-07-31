@@ -17,25 +17,28 @@ function macroTorch.casterAtk()
     end
     if not macroTorch.player.isInCombat then
         macroTorch.player.wrath()
-    elseif macroTorch.isSpellExist('Moonfire', 'spell')
-            and not macroTorch.target.buffed('Moonfire', 'Spell_Nature_StarFall') then
-        macroTorch.player.moonfire()
-    elseif macroTorch.isSpellExist('Faerie Fire', 'spell')
-            and not macroTorch.target.buffed('Faerie Fire', 'Spell_Nature_FaerieFire') then
-        macroTorch.player.faerie_fire()
-    elseif macroTorch.isSpellExist('Insect Swarm', 'spell')
-            and not macroTorch.target.buffed('Insect Swarm', 'Spell_Nature_InsectSwarm') then
-        macroTorch.player.insect_swarm()
-    elseif macroTorch.isSpellExist('Starfire', 'spell')
-            and macroTorch.context.starfireNext then
-        if macroTorch.player.starfire() then
-            macroTorch.context.starfireNext = false
-        end
     else
-        -- Fallback: Wrath (innate). Reset starfireNext if starfire not learned
-        if macroTorch.player.wrath() then
-            if macroTorch.isSpellExist('Starfire', 'spell') then
-                macroTorch.context.starfireNext = true
+        macroTorch.startAutoAtk()
+        if macroTorch.isSpellExist('Moonfire', 'spell')
+                and not macroTorch.target.buffed('Moonfire', 'Spell_Nature_StarFall') then
+            macroTorch.player.moonfire()
+        elseif macroTorch.isSpellExist('Faerie Fire', 'spell')
+                and not macroTorch.target.buffed('Faerie Fire', 'Spell_Nature_FaerieFire') then
+            macroTorch.player.faerie_fire()
+        elseif macroTorch.isSpellExist('Insect Swarm', 'spell')
+                and not macroTorch.target.buffed('Insect Swarm', 'Spell_Nature_InsectSwarm') then
+            macroTorch.player.insect_swarm()
+        elseif macroTorch.isSpellExist('Starfire', 'spell')
+                and macroTorch.context.starfireNext then
+            if macroTorch.player.starfire() then
+                macroTorch.context.starfireNext = false
+            end
+        else
+            -- Fallback: Wrath (innate). Reset starfireNext if starfire not learned
+            if macroTorch.player.wrath() then
+                if macroTorch.isSpellExist('Starfire', 'spell') then
+                    macroTorch.context.starfireNext = true
+                end
             end
         end
     end
