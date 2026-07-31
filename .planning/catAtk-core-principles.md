@@ -49,7 +49,7 @@ THEN discharge() BEFORE mainAction()
 - 自然回能 > 1.5s → 变身（利用本来就需要等待的空闲 GCD）
 
 ```
-IF  projectedEnergy(1.5s) < nextAbilityCost    -- 1.5s 回能仍不够
+IF  math.ceil(projectedEnergy(1.5s)) < nextAbilityCost    -- 1.5s 回能仍不够
 AND isInCombat                                   -- 仅在战斗中
 AND NOT prowling                                 -- 不打破潜行
 AND NOT ooc                                      -- 不浪费清晰预兆
@@ -159,6 +159,16 @@ IF  bleedCount >= 3:
 | `regularAttack` (`cat.lua`) | 调用 `shouldUseShred` 执行攒星技能 |
 
 **无限能量阈值：** `erps >= SHRED_E`（在 `shouldUseShred` 中检查）
+
+**能量恢复速度优化：**
+当 `bleedCount <= 1` 且 1 秒内自然回能 ≥ 爪击消耗（`erps * 1 >= CLAW_E`）时，优先用撕碎。理由：能量恢复速度足够快，撕碎的高伤害可以防止能量溢出——与其等能量满了溢出，不如用撕碎消耗更多能量换取更高伤害。
+
+```
+IF  bleedCount <= 1
+AND erps * 1 >= CLAW_E
+AND isBehind
+THEN useShred()             -- 能量回收快 → 撕碎防溢出 + 高伤害
+```
 
 **加速攒星优化（首次割裂前）：**
 当割裂不存在、非快战、目标不免疫流血时，优先级从"最大化每 GCD 伤害"（撕碎）切换为"最大化连击点生成速度"（爪击）。爪击更便宜，CP 生成更快，能更快到达 5 星割裂。割裂施放后，`shouldUseShred` 恢复到标准的流血数量决策树。
@@ -441,22 +451,22 @@ IF  isKillShot → 跳过仇恨管理                          -- 战斗即将�
 
 ## 附录 D：原则→代码可追溯矩阵
 
-| 规则 | 原则 | 主要函数 | 文件:行号 |
-|------|------|----------|-----------|
-| 1 | 溢出预防 | `energyDischargeBeforeBite`、`dischargeEnergyChangeRelicAndRip` | `cat.lua:137`、`cat.lua:242` |
-| 2 | 能量饥渴避免 | `shouldDoReshift`、`readyReshift` | `cat.lua:195`、`cat.lua:325` |
-| 3 | 撕咬转化效率 | `energyDischargeBeforeBite` | `cat.lua:137` |
-| 4 | 流血优先 | `shouldCastRip`、`cp5Bite` | `Druid.lua:909`、`cat.lua:106` |
-| 5 | 时长自适应割裂 | `shouldCastRip`、`quickKeepRip`、`keepRip` | `Druid.lua:909`、`cat.lua:281`、`cat.lua:227` |
-| 6 | 攒星技能选择 | `shouldUseShred`、`regularAttack` | `Druid.lua:681`、`cat.lua:47` |
-| 7 | GCD 优先级 | `catAtk`（模块顺序）、`getNextAbilityCost` | `combo.lua:47`、`Druid.lua:875` |
-| 8 | 精灵之火填充 | `shouldCastFFDuringWaitWindow`、`keepFF` | `Druid.lua:842`、`cat.lua:315` |
-| 9 | 斩杀 | `isKillShotOrLastChance`、`tryBiteKillShot`、`getKSThreshold` | `Druid.lua:783`、`cat.lua:175`、`Druid.lua:489` |
-| 10 | 仇恨感知 | `otMod`、`safeCower` | `cat.lua:64`、`cat.lua:393` |
-| 11 | 紧急生存 | `combatUrgentHPRestore` | `Druid.lua:752` |
-| 12 | 圣物交换 | `computeNormalRelic`、`recoverNormalRelic`、`dischargeEnergyChangeRelicAndRip` | `Druid.lua:362`、`Druid.lua:424`、`cat.lua:242` |
-| 13 | 无限能量 | `computeErps`、`isPseudoInfiniteEnergy` | `Druid.lua:802`、`combo.lua` |
-| 14 | 爆发协调 | `burstMod`、`atkPowerBurst` | `cat.lua:2`、`cat.lua:399` |
+| 规则 | 原则 | 主要函数 | 文件 |
+|------|------|----------|------|
+| 1 | 溢出预防 | `energyDischargeBeforeBite`、`dischargeEnergyChangeRelicAndRip` | `cat.lua`、`cat.lua` |
+| 2 | 能量饥渴避免 | `shouldDoReshift`、`readyReshift` | `cat.lua`、`cat.lua` |
+| 3 | 撕咬转化效率 | `energyDischargeBeforeBite` | `cat.lua` |
+| 4 | 流血优先 | `shouldCastRip`、`cp5Bite` | `Druid.lua`、`cat.lua` |
+| 5 | 时长自适应割裂 | `shouldCastRip`、`quickKeepRip`、`keepRip` | `Druid.lua`、`cat.lua`、`cat.lua` |
+| 6 | 攒星技能选择 | `shouldUseShred`、`regularAttack` | `Druid.lua`、`cat.lua` |
+| 7 | GCD 优先级 | `catAtk`（模块顺序）、`getNextAbilityCost` | `combo.lua`、`Druid.lua` |
+| 8 | 精灵之火填充 | `shouldCastFFDuringWaitWindow`、`keepFF` | `Druid.lua`、`cat.lua` |
+| 9 | 斩杀 | `isKillShotOrLastChance`、`tryBiteKillShot`、`getKSThreshold` | `Druid.lua`、`cat.lua`、`Druid.lua` |
+| 10 | 仇恨感知 | `otMod`、`safeCower` | `cat.lua`、`cat.lua` |
+| 11 | 紧急生存 | `combatUrgentHPRestore` | `Druid.lua` |
+| 12 | 圣物交换 | `computeNormalRelic`、`recoverNormalRelic`、`dischargeEnergyChangeRelicAndRip` | `Druid.lua`、`Druid.lua`、`cat.lua` |
+| 13 | 无限能量 | `computeErps`、`isPseudoInfiniteEnergy` | `Druid.lua`、`combo.lua` |
+| 14 | 爆发协调 | `burstMod`、`atkPowerBurst` | `cat.lua`、`cat.lua` |
 
 ### SelfTest 覆盖
 

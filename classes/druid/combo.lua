@@ -171,8 +171,8 @@ function macroTorch.catAtk(rough)
             macroTorch.regularAttack(clickContext)
         end
         -- 12.reshift模块，从cat形态变身到cat形态(形态不实际改变的"变身"，乌龟服特有技能)
-        -- 将能量固定重置为60。判断逻辑：当"无事可做"时释放，即当前能量不足以支持任何合理技能时
-        -- reshift energy is now dynamically computed by computeReshiftEnergy() (Furor + Wolfshead Helm)
+        -- 判断逻辑：当"无事可做"时释放，即当前能量不足以支持任何合理技能时
+        -- reshift energy is dynamically computed by computeReshiftEnergy() (Furor + Wolfshead Helm)
         macroTorch.reshiftMod(clickContext)
     end
 end

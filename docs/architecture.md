@@ -1,6 +1,6 @@
 # macro-torch 重构完成后代码架构
 
-> 最后更新: 2026-06-09 | Phase 1-4 全部完成后的最终架构
+> 最后更新: 2026-07-31 | 持续更新
 
 ## 总览
 
@@ -184,49 +184,71 @@ macro_torch.lua → impl_util.lua → biz_util.lua
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│               🐾 Druid (1842 行 → 4 文件拆分)                 │
+│               🐾 Druid (8 文件)                               │
 │                                                              │
 │  ┌─────────────────────┐  ┌─────────────────────────────┐   │
 │  │ Druid.lua           │  │ cat.lua                     │   │
 │  │                     │  │                             │   │
-│  │ 类定义 + new()      │  │ catAtk 辅助函数            │   │
-│  │ catAtk() 主入口     │  │                             │   │
-│  │ 能量常量 (CLAW_E..) │  │ 13 个模块 (按优先级):       │   │
-│  │ _MAP                │  │  0. idolRecover            │   │
-│  │                     │  │  1. healthManaSaver        │   │
-│  │ 全局共享辅助函数:    │  │  2. targetEnemy            │   │
-│  │ · shouldUseShred    │  │  3. keepAutoAttack         │   │
-│  │ · shouldCastRip     │  │  4. rushMod                │   │
-│  │ · shouldUseBite     │  │  5. openerMod              │   │
-│  │ · shouldCastFF      │  │  7. oocMod                 │   │
-│  │   DuringWaitWindow  │  │  6. termMod                │   │
-│  │ · getMinimum        │  │  8. otMod                  │   │
-│  │   AffordableAbility │  │  9. tigerFury              │   │
-│  │   Cost              │  │ 10. debuffMod              │   │
-│  │ · computeErps       │  │     (keepRip/keepRake/     │   │
-│  │ · computeNormalRelic│  │      keepFF/safeFF)        │   │
-│  │                     │  │ 11. regularAttack          │   │
-│  │ SpellTrace:register │  │     (Shred/Claw)           │   │
-│  │ SelfTest:register   │  │ 12. reshiftMod             │   │
-│  │                     │  │                             │   │
-│  │ registerPlayerClass │  │ 辅助函数:                   │   │
-│  │ ("Druid", ...)      │  │ · cp5Bite                  │   │
-│  └─────────────────────┘  │ · canDoReshift             │   │
+│  │ 类定义 + new()      │  │ catAtk 辅助函数 (13 模块)  │   │
+│  │ 能量常量 (CLAW_E..) │  │                             │   │
+│  │ _MAP                │  │  0. recoverNormalRelic     │   │
+│  │                     │  │  1. combatUrgentHPRestore  │   │
+│  │ 全局共享辅助函数:    │  │     + mana potion          │   │
+│  │ · shouldUseShred    │  │  2. targetEnemy            │   │
+│  │ · shouldCastRip     │  │  3. startAutoAtk           │   │
+│  │ · shouldUseBite     │  │  4. burstMod               │   │
+│  │ · shouldCastFF      │  │  5. openerMod              │   │
+│  │   DuringWaitWindow  │  │  6. oocMod                 │   │
+│  │ · getNextAbilityCost│  │  7. termMod                │   │
+│  │ · computeErps       │  │  8. otMod                  │   │
+│  │ · computeNormalRelic│  │  9. keepTigerFury          │   │
+│  │ · recoverNormalRelic│  │ 10. keepRip/quickKeepRip   │   │
+│  │                     │  │     + keepRake + keepFF    │   │
+│  │ SpellTrace:register │  │ 11. regularAttack          │   │
+│  │ SelfTest:register   │  │     (Shred/Claw)           │   │
+│  │                     │  │ 12. reshiftMod             │   │
+│  │ registerPlayerClass │  │                             │   │
+│  │ ("Druid", ...)      │  │ 辅助函数:                   │   │
+│  └─────────────────────┘  │ · cp5Bite                  │   │
 │                           │ · energyDischargeBeforeBite│   │
 │  ┌─────────────────────┐  │ · dischargeEnergyChange    │   │
-│  │ bear.lua            │  │   RelicAndRip              │   │
+│  │ combo.lua           │  │   RelicAndRip              │   │
 │  │                     │  │ · quickKeepRip             │   │
-│  │ bearAtk()           │  └─────────────────────────────┘   │
-│  │ bearOocMod          │                                    │
-│  │ bearOtMod           │  ┌─────────────────────────────┐   │
-│  │ bearDebuffMod       │  │ utility.lua                 │   │
-│  │ bearRegularAttack   │  │                             │   │
-│  │ bearReshiftMod      │  │ druidBuffs()                │   │
-│  │ bearAoe             │  │ druidStun()                 │   │
-│  └─────────────────────┘  │ druidDefend()               │   │
-│                           │ druidControl()              │   │
-│                           │ pokemonLoad() 物品装载系统  │   │
-│                           └─────────────────────────────┘   │
+│  │ catAtk() 主入口     │  │ · tryBiteKillShot          │   │
+│  │ druidAtk() 分发     │  │ · keepRip                  │   │
+│  │ casterAtk()         │  │ · keepRake                 │   │
+│  │ druidHeal()         │  │ · keepFF                   │   │
+│  │ druidDefend()       │  │ · keepTigerFury            │   │
+│  │ druidControl()      │  │ · shouldDoReshift          │   │
+│  │ druidCharge()       │  │ · readyReshift             │   │
+│  │ druidAoe()          │  │ · safeRake/safeRip/        │   │
+│  └─────────────────────┘  │   safeBite/safeCower/      │   │
+│                           │   safeTigerFury/readyBite   │   │
+│  ┌─────────────────────┐  │ · atkPowerBurst            │   │
+│  │ bear.lua            │  │ · burstMod                 │   │
+│  │                     │  │ · otMod                    │   │
+│  │ bearAtk()           │  │ · oocMod                   │   │
+│  │ bearOocMod          │  │ · termMod                  │   │
+│  │ bearOtMod           │  │ · reshiftMod               │   │
+│  │ bearDebuffMod       │  │ · regularAttack            │   │
+│  │ bearRegularAttack   │  └─────────────────────────────┘   │
+│  │ bearReshiftMod      │                                    │
+│  │ bearAoe             │  ┌─────────────────────────────┐   │
+│  └─────────────────────┘  │ utility.lua                 │   │
+│                           │                             │   │
+│  ┌─────────────────────┐  │ druidBuffs()                │   │
+│  │ leveling.lua        │  │ druidStun()                 │   │
+│  │                     │  │ druidDefend()               │   │
+│  │ catLeveling()       │  │ druidControl()              │   │
+│  │ 低等级练级宏         │  │ pokemonLoad() 物品装载系统  │   │
+│  └─────────────────────┘  └─────────────────────────────┘   │
+│                                                              │
+│  ┌─────────────────────┐  ┌─────────────────────┐           │
+│  │ selftest.lua        │  │ diag.lua            │           │
+│  │                     │  │                     │           │
+│  │ SelfTest:register   │  │ Druid 诊断工具      │           │
+│  │ 原则驱动测试用例     │  │ 能量/状态快照输出   │           │
+│  └─────────────────────┘  └─────────────────────┘           │
 └──────────────────────────────────────────────────────────────┘
 
 ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
@@ -242,11 +264,15 @@ macro_torch.lua → impl_util.lua → biz_util.lua
 
 | 文件 | 职责 |
 |------|------|
-| `classes/Druid.lua` | 类定义 + `catAtk()` 主入口 + 能量常量 + `DRUID_FIELD_FUNC_MAP` + 全局共享辅助函数 + SpellTrace/SelfTest 注册 |
-| `classes/Druid/cat.lua` | 13 个模块 + cat 辅助函数 (~400 行) |
-| `classes/Druid/bear.lua` | 熊形态全部逻辑 (~190 行) |
-| `classes/Druid/utility.lua` | buffs/stun/defend/control + pokemonLoad 物品装载 (~90 行) |
-| `classes/{Hunter,Mage,Priest,Rogue,Warlock,Warrior}.lua` | 原 `SM_Extend_*.lua` 直接迁移 |
+| `classes/druid/Druid.lua` | 类定义 + 能量常量 + `DRUID_FIELD_FUNC_MAP` + 全局共享辅助函数 + SpellTrace/SelfTest 注册 |
+| `classes/druid/combo.lua` | `catAtk()` 主入口 + `druidAtk()` 分发 + `casterAtk()`/`druidHeal()`/`druidDefend()`/`druidControl()`/`druidCharge()`/`druidAoe()` 组合宏 |
+| `classes/druid/cat.lua` | 13 个 catAtk 模块 + cat 辅助函数 |
+| `classes/druid/bear.lua` | 熊形态全部逻辑 |
+| `classes/druid/utility.lua` | buffs/stun/defend/control + pokemonLoad 物品装载 |
+| `classes/druid/leveling.lua` | `catLeveling()` 低等级练级宏 |
+| `classes/druid/selftest.lua` | `SelfTest:register` 原则驱动测试用例 |
+| `classes/druid/diag.lua` | Druid 诊断工具（能量/状态快照输出） |
+| `classes/{hunter,mage,priest,rogue,warlock,warrior}/*.lua` | 原 `SM_Extend_*.lua` 迁移 |
 
 ---
 
@@ -399,9 +425,9 @@ PLAYER_ENTERING_WORLD 事件
 | 入口+工具 | 根目录 | 5 | — | macro_torch, impl_util, biz_util, texture_map, interface_debug |
 | 基础设施 | `core/` | 7 | P1-P3 | class, periodic, combat_context, spell_trace_core, spell_trace_immune, events, selftest |
 | 实体层 | `entity/` | 9 | P1 | Unit, Player, Target, Pet, TargetTarget, TargetPet, PetTarget, Group, Raid |
-| 职业层 | `classes/` | 10 | P4 | Druid(4), Hunter(1), Mage(1), Priest(1), Rogue(1), Warlock(1), Warrior(1) |
+| 职业层 | `classes/` | 22 | P4-P8 | Druid(8), Hunter(3), Warrior(3), Rogue(2), Mage(2), Priest(3), Warlock(2) |
 | 构建系统 | 根目录 | 2 | P1 | build_order.txt, build.sh |
-| **合计** | | **33** | | |
+| **合计** | | **45** | | |
 
 ---
 

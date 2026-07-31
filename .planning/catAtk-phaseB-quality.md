@@ -65,10 +65,10 @@ end)
 
 | 测试ID | 场景 | 被测函数 | 预设 ctx | 预期 |
 |--------|------|----------|----------|------|
-| R1-01 | 无限能量时跳过泄能 | `energyDischargeBeforeBite` | `isInfiniteEnergy=true` | 函数直接 return（不调用 regularAttack） |
-| R1-02 | 正常能量 + OoC 时泄能 | `energyDischargeBeforeBite` | `isInfiniteEnergy=false, ooc=true, mana=100, BITE_E=35, SHRED_E=60` | 调用 regularAttack（OoC 免费泄能） |
-| R1-03 | 能量充足 + 在背后时用 Shred 泄能 | `energyDischargeBeforeBite` | `isInfiniteEnergy=false, ooc=false, mana=100, BITE_E=35, SHRED_E=60, isBehind=true` | 调用 regularAttack |
-| R1-04 | 能量不足 + 无 Rake 时用 Rake 泄能 | `energyDischargeBeforeBite` | `isInfiniteEnergy=false, ooc=false, mana=70, BITE_E=35, SHRED_E=60, CLAW_E=45, isRakePresent=false` | 调用 safeRake |
+| R1-01 | 无限能量时跳过泄能 | `energyDischargeBeforeBite` | `isPseudoInfiniteEnergy=true` | 函数直接 return（不调用 regularAttack） |
+| R1-02 | 正常能量 + OoC 时泄能 | `energyDischargeBeforeBite` | `isPseudoInfiniteEnergy=false, ooc=true, mana=100, BITE_E=35, SHRED_E=60` | 调用 regularAttack（OoC 免费泄能） |
+| R1-03 | 能量充足 + 在背后时用 Shred 泄能 | `energyDischargeBeforeBite` | `isPseudoInfiniteEnergy=false, ooc=false, mana=100, BITE_E=35, SHRED_E=60, isBehind=true` | 调用 regularAttack |
+| R1-04 | 能量不足 + 无 Rake 时用 Rake 泄能 | `energyDischargeBeforeBite` | `isPseudoInfiniteEnergy=false, ooc=false, mana=70, BITE_E=35, SHRED_E=60, CLAW_E=45, isRakePresent=false` | 调用 safeRake |
 
 > **注意：** R1-02~R1-04 的"调用 regularAttack/safeRake"验证需要该函数有返回值或在测试中 hook。如果当前函数无返回值，测试可以改为验证"不 crash"（pcall 包裹）或建议先给函数加返回值。
 
@@ -102,9 +102,9 @@ end)
 | 测试ID | 场景 | 被测函数 | 预设 ctx | 预期 |
 |--------|------|----------|----------|------|
 | R6-01 | 0 流血 + OoC + 在背后 → Shred | `shouldUseShred` | `bleedCount=0, ooc=true, isBehind=true` | `true` |
-| R6-02 | 0 流血 + 无限能量 + 在背后 → Shred | `shouldUseShred` | `bleedCount=0, isInfiniteEnergy=true, isBehind=true` | `true` |
+| R6-02 | 0 流血 + 无限能量 + 在背后 → Shred | `shouldUseShred` | `bleedCount=0, isPseudoInfiniteEnergy=true, isBehind=true` | `true` |
 | R6-03 | 2 流血 + OoC + 在背后 → Shred | `shouldUseShred` | `bleedCount=2, ooc=true, isBehind=true` | `true` |
-| R6-04 | 2 流血 + 无 OoC + 无无限能量 → Claw | `shouldUseShred` | `bleedCount=2, ooc=false, isInfiniteEnergy=false` | `false` |
+| R6-04 | 2 流血 + 无 OoC + 无无限能量 → Claw | `shouldUseShred` | `bleedCount=2, ooc=false, isPseudoInfiniteEnergy=false` | `false` |
 | R6-05 | 3+ 流血 → 始终 Claw | `shouldUseShred` | `bleedCount=3, ooc=true, isBehind=true` | `false` |
 | R6-06 | Rip 不存在 + 正常战 → Claw（加速攒星） | `shouldUseShred` | `bleedCount≤1, isTrivialBattle=false, isImmuneRip=false, isRipPresent=false` | `false` |
 
@@ -142,9 +142,9 @@ end)
 
 | 测试ID | 场景 | 被测函数 | 预设 ctx | 预期 |
 |--------|------|----------|----------|------|
-| R12-01 | 5CP + Rip 存在 + 无限能量 → 跳过泄能，直接 Bite | `cp5Bite` | `cp=5, isRipPresent=true, isInfiniteEnergy=true` | 不调 energyDischarge，直接 readyBite/safeBite |
+| R12-01 | 5CP + Rip 存在 + 无限能量 → 跳过泄能，直接 Bite | `cp5Bite` | `cp=5, isRipPresent=true, isPseudoInfiniteEnergy=true` | 不调 energyDischarge，直接 readyBite/safeBite |
 | R12-02 | 5CP + Rip 存在 + Rip ≤ 2.3s → 跳过泄能保 Rip | `cp5Bite` | `cp=5, isRipPresent=true, ripLeft≤2.3` | `shouldDischarge=false` |
-| R12-03 | 5CP + Rip 存在 + 正常 → 先泄能再 Bite | `cp5Bite` | `cp=5, isRipPresent=true, isInfiniteEnergy=false, ripLeft>2.3` | `shouldDischarge=true`，调用 energyDischargeBeforeBite |
+| R12-03 | 5CP + Rip 存在 + 正常 → 先泄能再 Bite | `cp5Bite` | `cp=5, isRipPresent=true, isPseudoInfiniteEnergy=false, ripLeft>2.3` | `shouldDischarge=true`，调用 energyDischargeBeforeBite |
 
 #### 纯函数测试
 
@@ -250,7 +250,7 @@ burst sequence and does not interfere with it.
 | 10 | Threat Awareness | `otMod`, `safeCower` | `cat.lua:64`, `cat.lua:393` |
 | 11 | Emergency Survival | `combatUrgentHPRestore` | `Druid.lua:752` |
 | 12 | Relic Swap | `computeNormalRelic`, `recoverNormalRelic`, `dischargeEnergyChangeRelicAndRip` | `Druid.lua:362`, `Druid.lua:424`, `cat.lua:242` |
-| 13 | Infinite Energy | `computeErps`, `isInfiniteEnergy` (Phase A 新增) | `Druid.lua:802`, `combo.lua` |
+| 13 | Infinite Energy | `computeErps`, `isPseudoInfiniteEnergy` (Phase A 新增) | `Druid.lua:802`, `combo.lua` |
 | 14 | Burst Coordination | `burstMod`, `atkPowerBurst` | `cat.lua:2`, `cat.lua:399` |
 
 ### SelfTest Coverage
