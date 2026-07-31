@@ -176,6 +176,7 @@ progress:
 | 260627-g4j | 修复 spell_trace_immune.lua 日志问题 | 2026-06-27 | fef6f2f | [260627-g4j-1-3](./quick/260627-g4j-1-3/) |
 | 260707-x3d | 修复catLeveling OOC+CP=5时无技能释放的bug | 2026-07-07 | 5162d02 | [260707-x3d-catleveling-ooc-cp-5-bug](./quick/260707-x3d-catleveling-ooc-cp-5-bug/) |
 | 260725-s1v | getMinimumAffordableAbilityCost重命名+earning日志字段 | 2026-07-25 | c371482 | [260725-s1v-reshift-minabilitycost-nextabilitycost-r](./quick/260725-s1v-reshift-minabilitycost-nextabilitycost-r/) |
+| 260801-akl | 修复 druidBuffs 自我施法和 casterAtk 自动攻击 | 2026-08-01 | 605531b | [260801-akl-druid-buffs-caster-atk-fix](./quick/260801-akl-druid-buffs-caster-atk-fix/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
@@ -185,5 +186,5 @@ progress:
 ## Session
 
 **Last session:** 2026-07-29T14:16:17.000Z
-**Last activity:** 2026-07-30
+**Last activity:** 2026-08-01 - Completed quick task 260801-akl: 修复 druidBuffs 自我施法和 casterAtk 自动攻击
 **Resume file:** .planning/phases/21-catAtk-maintainability/21-03-PLAN.md
