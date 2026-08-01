@@ -307,8 +307,8 @@ function macroTorch.Druid:new()
         macroTorch.equipItem(relicName, 18)
     end
 
-    -- catAtk moved to classes/druid/combo.lua as macroTorch.catAtk(rough)
-    -- NOTE: obj.catAtk no longer exists; call macroTorch.catAtk(rough) instead.
+    -- catAtk moved to classes/druid/combo.lua as macroTorch.catAtk()
+    -- NOTE: obj.catAtk no longer exists; call macroTorch.catAtk() instead.
 
     return obj
 end
@@ -369,7 +369,7 @@ function macroTorch.computeNormalRelic(clickContext)
         end
     else
         -- 已进入战斗
-        if macroTorch.isTrivialBattleOrPvp(clickContext) or clickContext.rough then
+        if macroTorch.isTrivialBattleOrPvp(clickContext) then
             -- 快速战斗/PvP，保持原逻辑
             if clickContext.isImmuneRip then
                 return macroTorch.selectFerocityOrEmeraldRot()
@@ -925,7 +925,7 @@ function macroTorch.shouldCastRip(clickContext)
     end
 
     -- Determine CP requirements based on battle type
-    if macroTorch.isTrivialBattleOrPvp(clickContext) or clickContext.rough then
+    if macroTorch.isTrivialBattleOrPvp(clickContext) then
         -- Quick battle: use 1-2 combo points
         return clickContext.comboPoints >= 1 and clickContext.comboPoints <= 2
     else
@@ -947,7 +947,7 @@ function macroTorch.shouldUseBite(clickContext)
 
     -- Quick battle without Rip and not immune: CP >= 3 should bite
     -- (to quickly consume CP and get to 1-2 CP for low-star Rip)
-    if (macroTorch.isTrivialBattleOrPvp(clickContext) or clickContext.rough)
+    if (macroTorch.isTrivialBattleOrPvp(clickContext))
             and not clickContext.isImmuneRip
             and not macroTorch.isRipPresent(clickContext)
             and clickContext.comboPoints >= 3 then
