@@ -340,6 +340,66 @@ function macroTorch.druidCharge()
     end
 end
 
+-- 德鲁伊抢怪一键宏：在怪物刷新第一时间尽可能抢先造成伤害以夺取拾取权
+-- 思路：先尝试用最快的方式对目标造成伤害（tag），随后对接 druidAtk 正常输出流程
+-- @param rough boolean 是否 rough 模式（降低仇恨生成），传递给 druidAtk
+function macroTorch.druidMobTagging(rough)
+    local player = macroTorch.player
+    local target = macroTorch.target
+
+    -- 人形态：月火术是唯一可直伤远程 tag 手段（瞬发、30码）
+    if not player.isInCatForm and not player.isInBearForm then
+        player.moonfire('ready')
+        macroTorch.druidAtk(rough)
+        return
+    end
+
+    -- 猫/熊形态公共目标选择：排除 PvP 玩家目标
+    if not target.isCanAttack or target.distance > 30 or target.isPlayerControlled then
+        player.targetEnemy()
+        -- 二次确认：如果选到的还是玩家，清掉等下一 tick
+        if target.isCanAttack and target.isPlayerControlled then
+            ClearTarget()
+        end
+        return
+    end
+
+    -- 目标在 30 码以内，按距离分支
+    if target.distance <= 5 then
+        -- 近战范围（≤5码）：可以真正造成伤害 tag
+        if player.isInCatForm then
+            if player.isProwling and player.isBehindTarget then
+                -- 潜行 + 身后：交给 druidAtk 起手模块处理（Pounce/Ravage）
+                macroTorch.druidAtk(rough)
+            else
+                -- 非潜行或非身后：普攻 + 爪击（瞬发直伤）
+                player.startAutoAtk()
+                player.claw('ready')
+                macroTorch.druidAtk(rough)
+            end
+        else
+            -- 熊形态：普攻 + 槌击（附加在下一次普攻上）
+            player.startAutoAtk()
+            if macroTorch.isSpellExist('Maul', 'spell') then
+                player.maul('ready')
+            end
+            macroTorch.druidAtk(rough)
+        end
+    else
+        -- 5yd < 距离 ≤ 30yd：引怪区，自身无法直伤 tag
+        -- 熊形态优先冲锋贴脸（复用已有 druidCharge 逻辑）
+        if player.isInBearForm then
+            macroTorch.druidCharge()
+        end
+        -- 通用兜底：野性精灵之火引怪（猫唯一远程手段，熊冲锋失败时的后备）
+        -- 零消耗、4s CD，即使冲锋成功后再放也不亏（刷新 debuff + 触发 OoC）
+        if macroTorch.isSpellExist('Faerie Fire (Feral)', 'spell') then
+            player.faerie_fire_feral('ready')
+        end
+        macroTorch.druidAtk(rough)
+    end
+end
+
 macroTorch.SelfTest:register("Druid: combo methods -- catAtk exists", function()
     if UnitClass('player') ~= 'Druid' then return end
     assert(type(macroTorch.catAtk) == "function", "catAtk not a function")
@@ -378,4 +438,9 @@ end, true)
 macroTorch.SelfTest:register("Druid: combo methods -- druidCharge exists", function()
     if UnitClass('player') ~= 'Druid' then return end
     assert(type(macroTorch.druidCharge) == "function", "druidCharge not a function")
+end, true)
+
+macroTorch.SelfTest:register("Druid: combo methods -- druidMobTagging exists", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    assert(type(macroTorch.druidMobTagging) == "function", "druidMobTagging not a function")
 end, true)
