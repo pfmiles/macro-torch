@@ -349,6 +349,11 @@ function macroTorch.druidMobTagging(rough)
 
     -- 人形态：月火术是唯一可直伤远程 tag 手段（瞬发、30码）
     if not player.isInCatForm and not player.isInBearForm then
+        -- 排除 PvP 玩家目标，避免误伤触发 PvP 标记
+        if target.isPlayerControlled then
+            ClearTarget()
+            return
+        end
         player.moonfire('ready')
         macroTorch.druidAtk(rough)
         return
