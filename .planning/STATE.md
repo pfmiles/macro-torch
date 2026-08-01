@@ -177,7 +177,7 @@ progress:
 | 260707-x3d | 修复catLeveling OOC+CP=5时无技能释放的bug | 2026-07-07 | 5162d02 | [260707-x3d-catleveling-ooc-cp-5-bug](./quick/260707-x3d-catleveling-ooc-cp-5-bug/) |
 | 260725-s1v | getMinimumAffordableAbilityCost重命名+earning日志字段 | 2026-07-25 | c371482 | [260725-s1v-reshift-minabilitycost-nextabilitycost-r](./quick/260725-s1v-reshift-minabilitycost-nextabilitycost-r/) |
 | 260801-akl | 修复 druidBuffs 自我施法和 casterAtk 自动攻击 | 2026-08-01 | 605531b | [260801-akl-druid-buffs-caster-atk-fix](./quick/260801-akl-druid-buffs-caster-atk-fix/) |
-| 260802-remove-rough-param | 从 druid 一键宏链路中移除已废弃的 rough 参数 | 2026-08-02 | TBD | [260802-remove-rough-param](./quick/260802-remove-rough-param/) |
+| 260802-remove-rough-param | 从 druid 一键宏链路中移除已废弃的 rough 参数 | 2026-08-02 | b4bf3a3 | [260802-remove-rough-param](./quick/260802-remove-rough-param/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
