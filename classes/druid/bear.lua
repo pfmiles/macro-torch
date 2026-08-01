@@ -12,11 +12,6 @@ function macroTorch.bearOtMod(clickContext)
         return
     end
 
-    -- If in rough mode, avoid using high threat skills to let others overtake our threat
-    if clickContext.rough then
-        return
-    end
-
     -- If target not attacking me
     if not macroTorch.target.isAttackingMe then
         -- Try Growl first (costs no rage, only checks CD)
@@ -48,8 +43,7 @@ function macroTorch.bearFFMod(clickContext)
 end
 function macroTorch.bearRegularAttack(clickContext)
     -- High rage: Savage Bite (rage dump when above threshold)
-    -- But avoid using Savage Bite in rough mode to reduce threat generation
-    if not clickContext.rough and clickContext.rage > clickContext.RAGE_DUMP_THRESHOLD and macroTorch.player.savage_bite() then
+    if clickContext.rage > clickContext.RAGE_DUMP_THRESHOLD and macroTorch.player.savage_bite() then
         return
     end
 
@@ -85,11 +79,10 @@ function macroTorch.bearAoe()
         return
     end
 end
-function macroTorch.bearAtk(rough)
+function macroTorch.bearAtk()
     -- clickContext is single-click context, used for value caching optimization
     local clickContext = {}
     clickContext.FF_DURATION = 40
-    clickContext.rough = macroTorch.toBoolean(rough)
 
     local player = macroTorch.player
     local target = macroTorch.target

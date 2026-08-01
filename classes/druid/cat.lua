@@ -254,7 +254,7 @@ function macroTorch.keepRip(clickContext)
 
     -- 普通版rip逻辑会要求尽量在rip时穿戴流血idol(Idol of Savagery)
     -- Switch relic if needed and apply Rip
-    local shouldEquipSavagery = not clickContext.rough and not macroTorch.isTrivialBattleOrPvp(clickContext)
+    local shouldEquipSavagery = not macroTorch.isTrivialBattleOrPvp(clickContext)
     macroTorch.dischargeEnergyChangeRelicAndRip(clickContext, shouldEquipSavagery)
 end
 function macroTorch.dischargeEnergyChangeRelicAndRip(clickContext, equipSavagery)
@@ -312,7 +312,7 @@ function macroTorch.quickKeepRip(clickContext)
     end
 
     -- 在快战版的rip逻辑中，无须要求更换流血idol，因为战斗速度很快，更换idol会带来1.5s GCD，可能得不偿失
-    -- Apply Rip without switching relic (rough or pvp mode)
+    -- Apply Rip without switching relic (quick battle or pvp mode)
     macroTorch.dischargeEnergyChangeRelicAndRip(clickContext, false)
 end
 function macroTorch.keepRake(clickContext)

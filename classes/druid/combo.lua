@@ -46,16 +46,13 @@ end
 
 -- 这是猫德一键输出宏逻辑，目标是dps最大化，利用好当前猫德伤害机制，利用好每一点能量，尽可能使能量不溢出、也不因为能量不足而卡技能
 --- The 'E' key regular dps function for feral cat druid
---- if rough, all combats are considered short
-function macroTorch.catAtk(rough)
+function macroTorch.catAtk()
     if not macroTorch.player.isInCatForm then
         return
     end
 
     -- clickContext是单次点击范围内的context，用作取值cache优化
     local clickContext = {}
-
-    clickContext.rough = macroTorch.toBoolean(rough)
 
     -- energy costs of certain skills
     clickContext.POUNCE_E = 50
@@ -158,7 +155,7 @@ function macroTorch.catAtk(rough)
         -- 9.tiger fury模块，战斗中时刻保持tiger fury buff
         macroTorch.keepTigerFury(clickContext)
         -- 10.debuffMod, including rip, rake and FF
-        if clickContext.rough or macroTorch.isTrivialBattleOrPvp(clickContext) then
+        if macroTorch.isTrivialBattleOrPvp(clickContext) then
             -- 如果是pvp或者预判出本次战斗持续时间很短，则无须做5星rip，直接低星rip让claw受益即可，因为rip是持续流血效果，回报周期长，目标坚持不了那么久
             macroTorch.quickKeepRip(clickContext)
         else
@@ -180,15 +177,15 @@ function macroTorch.catAtk(rough)
     end
 end
 
-function macroTorch.druidAtk(rough)
+function macroTorch.druidAtk()
     if macroTorch.player.isInCatForm then
         if macroTorch.player.level >= 60 then
-            macroTorch.catAtk(rough)
+            macroTorch.catAtk()
         else
             macroTorch.catLeveling()
         end
     elseif macroTorch.player.isInBearForm then
-        macroTorch.bearAtk(rough)
+        macroTorch.bearAtk()
     else
         macroTorch.casterAtk()
     end
@@ -342,8 +339,7 @@ end
 
 -- 德鲁伊抢怪一键宏：在怪物刷新第一时间尽可能抢先造成伤害以夺取拾取权
 -- 思路：先尝试用最快的方式对目标造成伤害（tag），随后对接 druidAtk 正常输出流程
--- @param rough boolean 是否 rough 模式（降低仇恨生成），传递给 druidAtk
-function macroTorch.druidMobTagging(rough)
+function macroTorch.druidMobTagging()
     local player = macroTorch.player
     local target = macroTorch.target
 
@@ -355,7 +351,7 @@ function macroTorch.druidMobTagging(rough)
             return
         end
         player.moonfire('ready')
-        macroTorch.druidAtk(rough)
+        macroTorch.druidAtk()
         return
     end
 
@@ -375,12 +371,12 @@ function macroTorch.druidMobTagging(rough)
         if player.isInCatForm then
             if player.isProwling and player.isBehindTarget then
                 -- 潜行 + 身后：交给 druidAtk 起手模块处理（Pounce/Ravage）
-                macroTorch.druidAtk(rough)
+                macroTorch.druidAtk()
             else
                 -- 非潜行或非身后：普攻 + 爪击（瞬发直伤）
                 player.startAutoAtk()
                 player.claw('ready')
-                macroTorch.druidAtk(rough)
+                macroTorch.druidAtk()
             end
         else
             -- 熊形态：普攻 + 槌击（附加在下一次普攻上）
@@ -388,7 +384,7 @@ function macroTorch.druidMobTagging(rough)
             if macroTorch.isSpellExist('Maul', 'spell') then
                 player.maul('ready')
             end
-            macroTorch.druidAtk(rough)
+            macroTorch.druidAtk()
         end
     else
         -- 5yd < 距离 ≤ 30yd：引怪区，自身无法直伤 tag
@@ -401,7 +397,7 @@ function macroTorch.druidMobTagging(rough)
         if macroTorch.isSpellExist('Faerie Fire (Feral)', 'spell') then
             player.faerie_fire_feral('ready')
         end
-        macroTorch.druidAtk(rough)
+        macroTorch.druidAtk()
     end
 end
 

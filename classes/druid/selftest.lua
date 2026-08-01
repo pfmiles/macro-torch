@@ -259,7 +259,6 @@ end, true)
 			comboPoints = 5,
 			isRipPresent = false,
 			isImmuneRip = false,
-			rough = false,
 			isTrivialBattle = false,
 			isFightStarted = true,
 			isNearBy = true,
@@ -525,7 +524,6 @@ end, true)
 			isRipPresent = true,
 			isImmuneRip = false,
 			isTrivialBattle = false,
-			rough = false,
 		}
 		if macroTorch.isKillShotOrLastChance(ctx) then return end
 		assert(macroTorch.shouldUseBite(ctx) == true,
