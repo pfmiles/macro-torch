@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: in_progress
 stopped_at: Phase 23 context gathered
-last_updated: "2026-08-02T11:54:47.960Z"
+last_updated: "2026-08-02T14:27:43.260Z"
 last_activity: 2026-08-02
 last_activity_desc: "Completed quick task 260802-remove-rough-param: 从 druid 一键宏链路中移除已废弃的 rough 参数"
 progress:
-  total_phases: 20
+  total_phases: 21
   completed_phases: 17
-  total_plans: 44
+  total_plans: 45
   completed_plans: 44
 ---
 
