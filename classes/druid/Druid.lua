@@ -360,31 +360,28 @@ macroTorch.registerPlayerClass("Druid", macroTorch.Druid)
 --    - 快速战斗/PvP：保持原逻辑不变
 --    - 普通战斗：如果rip已存在且目标不免疫rip，则使用fero/emerald_rot以便快速打出claw或造成更多伤害；否则用savagery
 function macroTorch.computeNormalRelic(clickContext)
-    if not macroTorch.player.isInCombat then
-        -- 未进入战斗，按原逻辑
-        if clickContext.isImmuneRip then
-            return macroTorch.selectFerocityOrEmeraldRot()
-        else
-            return 'Idol of Savagery'
-        end
-    else
-        -- 已进入战斗
-        if macroTorch.isTrivialBattleOrPvp(clickContext) then
-            -- 快速战斗/PvP，保持原逻辑
-            if clickContext.isImmuneRip then
-                return macroTorch.selectFerocityOrEmeraldRot()
-            else
-                return 'Idol of Savagery'
-            end
-        else
-            -- 普通战斗，如果rip已存在且目标不免疫rip，则使用fero/emerald_rot
-            if not clickContext.isImmuneRip and macroTorch.isRipPresent(clickContext) then
-                return macroTorch.selectFerocityOrEmeraldRot()
-            else
-                return 'Idol of Savagery'
-            end
-        end
+    -- non-combat, immune Rip target: Builder idol (preserved per D-02)
+    if not macroTorch.player.isInCombat and clickContext.isImmuneRip then
+        return macroTorch.selectFerocityOrEmeraldRot()
     end
+    -- non-combat, non-immune: pre-switch to Savagery for opening snapshot (preserved per D-02)
+    if not macroTorch.player.isInCombat then
+        return 'Idol of Savagery'
+    end
+    -- fast combat / PvP: always Builder idol, never waste GCD on Savagery (Gap 1 fix per D-01)
+    if macroTorch.isTrivialBattleOrPvp(clickContext) then
+        return macroTorch.selectFerocityOrEmeraldRot()
+    end
+    -- immune to Rip: Savagery provides zero benefit, always Builder idol (Gap 2 fix per D-01)
+    if clickContext.isImmuneRip then
+        return macroTorch.selectFerocityOrEmeraldRot()
+    end
+    -- Rip already present on target: use Builder idol to save energy
+    if macroTorch.isRipPresent(clickContext) then
+        return macroTorch.selectFerocityOrEmeraldRot()
+    end
+    -- no Rip, not immune, normal combat: prepare Savagery snapshot
+    return 'Idol of Savagery'
 end
 
 -- 在Idol of Ferocity和Idol of the Emerald Rot之间选择
@@ -430,6 +427,11 @@ function macroTorch.recoverNormalRelic(clickContext, relicName)
         return
     end
     if not player.hasItem(relicName) or player.isRelicEquipped(relicName) then
+        return
+    end
+    -- Distance break: running time covers relic GCD, skip energy check per D-03/D-04
+    if macroTorch.target.distance >= 20 then
+        macroTorch.player.ensureRelicEquipped(relicName)
         return
     end
     if not macroTorch.isFightStarted(clickContext) or (clickContext.comboPoints < 5 and not clickContext.ooc and player.mana + (macroTorch.computeErps(clickContext) * 2.5) <= 100) then

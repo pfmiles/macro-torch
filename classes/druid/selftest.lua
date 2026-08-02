@@ -664,4 +664,24 @@ end, true)
 
 	-- End of Batch 2 — all catAtk principle regression tests complete
 
+	-- Category O: Idol Dance (Phase 23)
+
+	macroTorch.SelfTest:register("Cat O-01: fast combat returns Fero/Rot (Gap 1 fix) — per D-01", function()
+		local ctx = {
+			isTrivialBattle = true,
+			isImmuneRip = false,
+		}
+		assert(macroTorch.computeNormalRelic(ctx) ~= 'Idol of Savagery',
+			"expected non-Savagery for fast combat, got " .. tostring(macroTorch.computeNormalRelic(ctx)))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat O-05: Rip absent in normal combat returns Savagery — per D-01", function()
+		local ctx = {
+			isTrivialBattle = false,
+			isImmuneRip = false,
+		}
+		assert(macroTorch.computeNormalRelic(ctx) == 'Idol of Savagery',
+			"expected Savagery when Rip absent in normal combat, got " .. tostring(macroTorch.computeNormalRelic(ctx)))
+	end, true)
+
 end
