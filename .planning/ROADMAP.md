@@ -885,6 +885,20 @@ Plans:
 
 - [x] 22-02-PLAN.md — Append Batch 2 (~28 conditional decision tests: R2 reshift, R4+R5 bleed primacy, R6 builder choice, R7 bite trigger, R8 FF fill) to selftest.lua
 
+### Phase 23: Idol Dance (神像舞) Refactor — computeNormalRelic 逻辑修复 + recoverNormalRelic 距离优化
+
+**Goal:** 修复 computeNormalRelic() 神像舞逻辑中 2 个已确认的 gap（快速战斗/PvP 浪费 GCD 切 Savagery vs 免疫 Rip 目标错误使用 Savagery），并在 recoverNormalRelic() 中添加远距离旁路（≥20yd 时绕过能量检查）。~25 行改动，2 个文件。
+
+**Requirements**: REQ-23-GAP1, REQ-23-GAP2, REQ-23-GAP4, REQ-23-TEST
+**Depends on:** Phase 22
+**Plans:** 1 plan
+**Source:** `.planning/phases/23-idol-dance-refactor/23-CONTEXT.md`, `.planning/phases/23-idol-dance-refactor/23-DESIGN.md`
+
+Plans:
+**Wave 1**
+
+- [ ] 23-01-PLAN.md — Rewrite computeNormalRelic (flat chain, Gap 1+2 fix) + distance bypass in recoverNormalRelic (Gap 4) + Category O SelfTest (7 tests)
+
 ---
 
 ## Task 统计
@@ -895,7 +909,8 @@ Plans:
 | Phase 2 | 5 | events.lua, combat_context.lua, spell_trace_core.lua, spell_trace_immune.lua, battle_event_queue.lua 删除 |
 | Phase 3 | 10 | SelfTest 框架 (1) + 4 类测试 (4) + 挂载 (1) + SpellTrace:register (1) + Druid 集成 (2) |
 | Phase 4 | 14 | Druid 拆 4 文件 + 删除旧文件 (5)，6 个职业文件迁移 (6)，build_order 检查 (1)，build.sh 严格模式 (1) |
-| **合计** | **44** | |
+| Phase 23 | 2 | computeNormalRelic 重写 + recoverNormalRelic 距离旁路 + Category O SelfTest (7 tests) |
+| **合计** | **46** | |
 
 ## 依赖关系
 
