@@ -619,7 +619,12 @@ function macroTorch.computePounce_Erps()
     end
 
     local energyPerTick = (ancientBrutalityRank == 1) and 3 or 5
-    local tickInterval = 3 -- Pounce tick interval is always 3 seconds, not affected by equipment
+    local tickInterval = 3 -- Base 3 seconds
+
+    -- Check if Savagery idol was equipped when Pounce was cast (snapshot mechanic)
+    if macroTorch.loginContext and macroTorch.loginContext.lastPounceEquippedSavagery then
+        tickInterval = tickInterval * 0.9 -- 10% shorter tick interval
+    end
 
     return energyPerTick / tickInterval
 end
@@ -1113,7 +1118,11 @@ function macroTorch.pounceLeft(clickContext)
         if not lastLandedPounceTime then
             clickContext.pounceLeft = 0
         else
-            local pounceLeft = clickContext.POUNCE_DURATION - (GetTime() - lastLandedPounceTime)
+            local pounceDuration = clickContext.POUNCE_DURATION
+            if macroTorch.loginContext and macroTorch.loginContext.lastPounceEquippedSavagery then
+                pounceDuration = pounceDuration * 0.9
+            end
+            local pounceLeft = pounceDuration - (GetTime() - lastLandedPounceTime)
             if pounceLeft < 0 then
                 pounceLeft = 0
             end
