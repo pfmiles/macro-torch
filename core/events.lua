@@ -55,9 +55,9 @@ function macroTorch.eventHandle()
         -- bad state that causes session-long failures like Wolfsheart detection).
         if not macroTorch._selfTestRan then
             macroTorch._selfTestFrame = macroTorch._selfTestFrame or CreateFrame("Frame")
-            macroTorch._selfTestFrame:SetScript("OnUpdate", function(self)
+            macroTorch._selfTestFrame:SetScript("OnUpdate", function()
                 macroTorch.SelfTest:run()
-                self:SetScript("OnUpdate", nil)
+                macroTorch._selfTestFrame:SetScript("OnUpdate", nil)
             end)
         end
     elseif event == 'PLAYER_TARGET_CHANGED' then
