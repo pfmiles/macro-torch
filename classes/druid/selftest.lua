@@ -721,6 +721,7 @@ end, true)
 		if macroTorch.player.isInCombat then return end
 		local ctx = {
 			isImmuneRip = false,
+			isTrivialBattle = false,   -- pin to normal-battle path; otherwise trivial-target runtime state could short-circuit the top-level guard and fail the assertion
 		}
 		assert(macroTorch.computeNormalRelic(ctx) == 'Idol of Savagery',
 			"expected Savagery for non-combat non-immune, got " .. tostring(macroTorch.computeNormalRelic(ctx)))
