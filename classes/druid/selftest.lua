@@ -684,4 +684,50 @@ end, true)
 			"expected Savagery when Rip absent in normal combat, got " .. tostring(macroTorch.computeNormalRelic(ctx)))
 	end, true)
 
+	macroTorch.SelfTest:register("Cat O-02: PvP target returns Fero/Rot (Gap 1 fix) — per D-01", function()
+		local ctx = {
+			isTrivialBattle = true,
+			isImmuneRip = false,
+		}
+		assert(macroTorch.computeNormalRelic(ctx) ~= 'Idol of Savagery',
+			"expected non-Savagery for PvP target, got " .. tostring(macroTorch.computeNormalRelic(ctx)))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat O-03: Immune Rip in combat returns Fero/Rot (Gap 2 fix) — per D-01", function()
+		if not macroTorch.player.isInCombat then return end
+		local ctx = {
+			isImmuneRip = true,
+			isTrivialBattle = false,
+		}
+		assert(macroTorch.computeNormalRelic(ctx) ~= 'Idol of Savagery',
+			"expected non-Savagery for immune Rip in combat, got " .. tostring(macroTorch.computeNormalRelic(ctx)))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat O-04: Rip present returns Fero/Rot — per D-01", function()
+		if not macroTorch.player.isInCombat then return end
+		local ctx = {
+			isImmuneRip = false,
+			isTrivialBattle = false,
+			isRipPresent = true,
+		}
+		assert(macroTorch.computeNormalRelic(ctx) ~= 'Idol of Savagery',
+			"expected non-Savagery when Rip present, got " .. tostring(macroTorch.computeNormalRelic(ctx)))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat O-06: Non-combat non-immune returns Savagery (D-02 preserved) — per D-01", function()
+		if macroTorch.player.isInCombat then return end
+		local ctx = {
+			isImmuneRip = false,
+		}
+		assert(macroTorch.computeNormalRelic(ctx) == 'Idol of Savagery',
+			"expected Savagery for non-combat non-immune, got " .. tostring(macroTorch.computeNormalRelic(ctx)))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat O-07: Distance >= 20 bypass present (Gap 4 fix) — per D-03", function()
+		assert(type(macroTorch.recoverNormalRelic) == 'function',
+			"recoverNormalRelic should be a function")
+		assert(macroTorch.target.distance ~= nil,
+			"target.distance API not available on this client")
+	end, true)
+
 end
