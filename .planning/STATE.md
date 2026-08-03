@@ -186,6 +186,7 @@ last_activity_desc: "Completed Phase 23 Plan 01: idol dance refactor — fix com
 | 260725-s1v | getMinimumAffordableAbilityCost重命名+earning日志字段 | 2026-07-25 | c371482 | [260725-s1v-reshift-minabilitycost-nextabilitycost-r](./quick/260725-s1v-reshift-minabilitycost-nextabilitycost-r/) |
 | 260801-akl | 修复 druidBuffs 自我施法和 casterAtk 自动攻击 | 2026-08-01 | 605531b | [260801-akl-druid-buffs-caster-atk-fix](./quick/260801-akl-druid-buffs-caster-atk-fix/) |
 | 260802-remove-rough-param | 从 druid 一键宏链路中移除已废弃的 rough 参数 | 2026-08-02 | b4bf3a3 | [260802-remove-rough-param](./quick/260802-remove-rough-param/) |
+| 260804-0bz | Pounce duration/ERPS 适配 Idol of Savagery | 2026-08-04 | c6f83a7 | [260804-0bz-fix-pounce-savagery-duration](./quick/260804-0bz-fix-pounce-savagery-duration/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
@@ -195,5 +196,5 @@ last_activity_desc: "Completed Phase 23 Plan 01: idol dance refactor — fix com
 ## Session
 
 **Last session:** 2026-07-29T14:16:17.000Z
-**Last activity:** 2026-08-03
+**Last activity:** 2026-08-04
 **Resume file:** .planning/phases/21-catAtk-maintainability/21-03-PLAN.md
