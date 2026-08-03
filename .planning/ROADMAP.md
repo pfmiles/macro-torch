@@ -891,7 +891,7 @@ Plans:
 
 **Requirements**: REQ-23-GAP1, REQ-23-GAP2, REQ-23-GAP4, REQ-23-TEST
 **Depends on:** Phase 22
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 **Source:** `.planning/phases/23-idol-dance-refactor/23-CONTEXT.md`, `.planning/phases/23-idol-dance-refactor/23-DESIGN.md`
 
 Plans:

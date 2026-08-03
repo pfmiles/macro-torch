@@ -4,14 +4,14 @@ milestone: v1.0
 milestone_name: milestone
 status: in_progress
 stopped_at: Phase 23 Plan 01 complete
-last_updated: "2026-08-03T10:49:58.000Z"
+last_updated: "2026-08-03T11:08:33.897Z"
 last_activity: 2026-08-03
-last_activity_desc: "Completed Phase 23 Plan 01: idol dance refactor — fix computeNormalRelic + distance bypass + 7 Category O SelfTests"
 progress:
-  total_phases: 22
+  total_phases: 21
   completed_phases: 18
-  total_plans: 46
+  total_plans: 45
   completed_plans: 45
+last_activity_desc: "Completed Phase 23 Plan 01: idol dance refactor — fix computeNormalRelic + distance bypass + 7 Category O SelfTests"
 ---
 
 # Project State
@@ -195,5 +195,5 @@ progress:
 ## Session
 
 **Last session:** 2026-07-29T14:16:17.000Z
-**Last activity:** 2026-08-02 - Completed quick task 260802-remove-rough-param: 从 druid 一键宏链路中移除已废弃的 rough 参数
+**Last activity:** 2026-08-03
 **Resume file:** .planning/phases/21-catAtk-maintainability/21-03-PLAN.md
