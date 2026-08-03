@@ -354,12 +354,18 @@ macroTorch.registerPlayerClass("Druid", macroTorch.Druid)
 
 
 -- 计算normal relic（接下来的战斗默认穿戴的relic）
--- 逻辑：
--- 1. 不在战斗时：免疫rip用fero/emerald_rot，不免疫用savagery
--- 2. 在战斗时：
---    - 快速战斗/PvP：保持原逻辑不变
---    - 普通战斗：如果rip已存在且目标不免疫rip，则使用fero/emerald_rot以便快速打出claw或造成更多伤害；否则用savagery
+-- 逻辑（按优先级）：
+-- 1. PvP/快速战斗：始终用 Builder idol，不浪费 GCD 在 Savagery 切换上
+-- 2. 不在战斗时：免疫rip用fero/emerald_rot，不免疫用savagery（开场快照）
+-- 3. 在战斗时（普通战斗）：
+--    - 免疫rip → Builder
+--    - rip已存在 → Builder（省能量打claw）
+--    - rip不存在 → Savagery（准备快照）
 function macroTorch.computeNormalRelic(clickContext)
+    -- fast combat / PvP: always Builder idol, never waste GCD on Savagery (Gap 1 fix per D-01)
+    if macroTorch.isTrivialBattleOrPvp(clickContext) then
+        return macroTorch.selectFerocityOrEmeraldRot()
+    end
     -- non-combat, immune Rip target: Builder idol (preserved per D-02)
     if not macroTorch.player.isInCombat and clickContext.isImmuneRip then
         return macroTorch.selectFerocityOrEmeraldRot()
@@ -367,10 +373,6 @@ function macroTorch.computeNormalRelic(clickContext)
     -- non-combat, non-immune: pre-switch to Savagery for opening snapshot (preserved per D-02)
     if not macroTorch.player.isInCombat then
         return 'Idol of Savagery'
-    end
-    -- fast combat / PvP: always Builder idol, never waste GCD on Savagery (Gap 1 fix per D-01)
-    if macroTorch.isTrivialBattleOrPvp(clickContext) then
-        return macroTorch.selectFerocityOrEmeraldRot()
     end
     -- immune to Rip: Savagery provides zero benefit, always Builder idol (Gap 2 fix per D-01)
     if clickContext.isImmuneRip then
