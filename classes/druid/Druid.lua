@@ -672,13 +672,13 @@ function macroTorch.consumeDruidBattleEvents()
             if macroTorch.isRakePresent(clickContext) then
                 macroTorch.show('Renewing rake... left: ' ..
                         tostring(macroTorch.rakeLeft(clickContext)) ..
-                        ', bleed idol: ' .. tostring(macroTorch.context.lastRakeEquippedSavagery))
+                        ', bleed idol: ' .. tostring(macroTorch.loginContext.lastRakeEquippedSavagery))
                 macroTorch.recordCastTable('Rake')
             end
             if macroTorch.isRipPresent(clickContext) then
                 macroTorch.show('Renewing rip... left: ' ..
                         tostring(macroTorch.ripLeft(clickContext)) ..
-                        ', bleed idol: ' .. tostring(macroTorch.context.lastRipEquippedSavagery))
+                        ', bleed idol: ' .. tostring(macroTorch.loginContext.lastRipEquippedSavagery))
                 macroTorch.recordCastTable('Rip')
             end
         end

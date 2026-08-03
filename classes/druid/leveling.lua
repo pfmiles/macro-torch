@@ -73,6 +73,8 @@ function macroTorch.catLeveling()
                 and not target.isImmune('Pounce')
                 and target.health >= macroTorch.getOpenerHealthThreshold(UnitLevel('player'))
                 and not macroTorch.isTrivialBattleOrPvp(clickContext) then
+            macroTorch.show('Pounce!!! bleed idol equipped: ' ..
+                    tostring(macroTorch.player.isRelicEquipped('Idol of Savagery')))
             player.pounce()
             macroTorch.loginContext.lastPounceEquippedSavagery = macroTorch.player.isRelicEquipped('Idol of Savagery')
             return

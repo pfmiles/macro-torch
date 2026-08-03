@@ -136,6 +136,8 @@ function macroTorch.catAtk()
         if clickContext.prowling then
             if hasPounce and not target.isImmune('Pounce') and target.health >= macroTorch.getOpenerHealthThreshold() then
                 if macroTorch.isGcdOk(clickContext) and macroTorch.isNearBy(clickContext) then
+                    macroTorch.show('Pounce!!! bleed idol equipped: ' ..
+                            tostring(macroTorch.player.isRelicEquipped('Idol of Savagery')))
                     macroTorch.player.pounce()
                     macroTorch.loginContext.lastPounceEquippedSavagery = macroTorch.player.isRelicEquipped('Idol of Savagery')
                 end
