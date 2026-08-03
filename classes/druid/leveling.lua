@@ -74,6 +74,7 @@ function macroTorch.catLeveling()
                 and target.health >= macroTorch.getOpenerHealthThreshold(UnitLevel('player'))
                 and not macroTorch.isTrivialBattleOrPvp(clickContext) then
             player.pounce()
+            macroTorch.loginContext.lastPounceEquippedSavagery = macroTorch.player.isRelicEquipped('Idol of Savagery')
             return
         elseif hasRavage then
             player.ravage('ready')
