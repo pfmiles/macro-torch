@@ -897,7 +897,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 23-01-PLAN.md — Rewrite computeNormalRelic (flat chain, Gap 1+2 fix) + distance bypass in recoverNormalRelic (Gap 4) + Category O SelfTest (7 tests)
+- [x] 23-01-PLAN.md — Rewrite computeNormalRelic (flat chain, Gap 1+2 fix) + distance bypass in recoverNormalRelic (Gap 4) + Category O SelfTest (7 tests)
 
 ---
 

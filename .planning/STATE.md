@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Phase 23 context gathered
-last_updated: "2026-08-02T14:27:43.260Z"
-last_activity: 2026-08-02
-last_activity_desc: "Completed quick task 260802-remove-rough-param: 从 druid 一键宏链路中移除已废弃的 rough 参数"
+stopped_at: Phase 23 Plan 01 complete
+last_updated: "2026-08-03T10:49:58.000Z"
+last_activity: 2026-08-03
+last_activity_desc: "Completed Phase 23 Plan 01: idol dance refactor — fix computeNormalRelic + distance bypass + 7 Category O SelfTests"
 progress:
-  total_phases: 21
-  completed_phases: 17
-  total_plans: 45
-  completed_plans: 44
+  total_phases: 22
+  completed_phases: 18
+  total_plans: 46
+  completed_plans: 45
 ---
 
 # Project State
@@ -20,7 +20,7 @@ progress:
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 22 — catAtk 质量保障 SelfTest + 文档补充（Plans 01-02 complete）
+- **Current Phase**: Phase 23 — idol dance refactor（Plan 01 complete）
 - **Active Branch**: main
 
 ## Phase Progress
@@ -47,6 +47,7 @@ progress:
 | Phase 20: SPELL_ID_AUTO_CORRECT 全局开关 | ✅ complete | 2026-07-10 | 2026-07-10 | 3 plans |
 | Phase 21: catAtk 可维护性清理 | ✅ complete | 2026-07-29 | 2026-07-29 | 3/3 plans |
 | Phase 22: catAtk 质量保障 — SelfTest + 文档补充 | ✅ complete | 2026-07-30 | 2026-07-30 | 2/2 plans |
+| Phase 23: idol dance refactor — computeNormalRelic + 距离优化 | 🟡 in_progress | 2026-08-02 | — | 1/1 plan |
 
 ## Accumulated Context
 
@@ -66,6 +67,7 @@ progress:
 - Phase 20 added: 添加 SPELL_ID_AUTO_CORRECT 全局开关控制 spellId 自动修正机制 — 涉及 macro_torch.lua / spell_trace_core.lua / Player.lua / events.lua / spell_trace_immune.lua 五个文件的守卫逻辑 (2026-07-10)
 - Phase 21 added: catAtk 可维护性清理 — 基于 catAtk-core-principles.md 逆向审视，4 项纯代码改进：注释编号修复、斩杀入口注释、isInfiniteEnergy 集中化、keepRake ATK 爆发分离。来源：`.planning/catAtk-phaseA-maintainability.md` (2026-07-29)
 - Phase 22 added: catAtk 质量保障 — 基于原则的 SelfTest 回归测试 + 原则文档补充（附录 D 可追溯性矩阵）。来源：`.planning/catAtk-phaseB-quality.md` (2026-07-30)
+- Phase 23 added: Idol Dance (神像舞) Refactor — 修复 computeNormalRelic 2 个逻辑 gap + recoverNormalRelic 距离旁路优化 + Category O SelfTest 覆盖。来源：`.planning/phases/23-idol-dance-refactor/23-CONTEXT.md` (2026-08-02)
 
 ## Key Decisions
 
@@ -137,6 +139,7 @@ progress:
 | Phase 21-catAtk-maintainability P03 | 4 | 2 tasks | 1 files |
 | Phase 22 P01 | 367 | 2 tasks | 3 files |
 | Phase 22 P02 | 480 | 2 tasks | 1 files |
+| Phase 23 P01 | 55 | 2 tasks | 2 files |
 
 ## Decisions
 
@@ -158,12 +161,16 @@ progress:
 - [Phase ?]: Phase 21-03: D-08 Scheme A — comment block annotation only, zero code changes in keepRake. Documents why atkPowerBurst is called here: AP snapshot maximizes Rake bleed, burstMod handles manual Shift-key while this is automated optimization
 - [Phase ?]: Phase 21-03: D-09 Third and final commit of Phase 21 — docs(catAtk): annotate ATK burst side effect in keepRake — completes 3-commit strategy
 - [Phase ?]: PF-01 conditional skip guard auto-fixed: plan had negated logic (skip when condition MET), corrected to skip when NOT met (~= 0 instead of == 0)
+- [Phase 23 P01]: D-01: Flat 5-branch if-else chain in computeNormalRelic — non-combat immune → Fero/Rot, non-combat non-immune → Savagery, trivialBattle/PvP → Fero/Rot, immune Rip → Fero/Rot, Rip present → Fero/Rot, fallback → Savagery
+- [Phase 23 P01]: D-02: Non-combat pre-switch to Savagery preserved as first branch fallthrough
+- [Phase 23 P01]: D-03/D-04: Distance bypass (20yd threshold) in recoverNormalRelic inserted before energy check
+- [Phase 23 P01]: O-04 deviation: Plan instructed pendingCasts approach but actual isRipPresent checks clickContext.isRipPresent — fixed by injecting field directly in clickContext
 
 ## Session
 
-**Last session:** 2026-08-02T11:54:47.930Z
-**Stopped at:** Phase 23 context gathered
-**Resume file:** .planning/phases/23-idol-dance-refactor/23-CONTEXT.md
+**Last session:** 2026-08-03T10:49:58.000Z
+**Stopped at:** Phase 23 Plan 01 complete
+**Resume file:** .planning/phases/23-idol-dance-refactor/23-01-PLAN.md
 
 ## Quick Tasks Completed
 
