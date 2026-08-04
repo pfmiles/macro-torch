@@ -357,7 +357,7 @@ function macroTorch.druidMobTagging()
             end
             return
         end
-        player.moonfire('ready')
+        player.moonfire('ready', 1)  -- rank 1 最低级，省蓝抢怪
         -- 抢怪确认：怪物正在攻击我时才进入正常输出流程
         if target.isAttackingMe then
             macroTorch.druidAtk()
