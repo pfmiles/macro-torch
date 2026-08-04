@@ -346,15 +346,22 @@ function macroTorch.druidMobTagging()
     local player = macroTorch.player
     local target = macroTorch.target
 
-    -- 人形态：月火术是唯一可直伤远程 tag 手段（瞬发、30码）
+    -- 人/caster形态：月火术是唯一可直伤远程 tag 手段（瞬发、30码）
     if not player.isInCatForm and not player.isInBearForm then
-        -- 排除 PvP 玩家目标，避免误伤触发 PvP 标记
-        if target.isPlayerControlled then
-            ClearTarget()
+        -- 目标有效性检查（与猫/熊分支对齐）：无目标或超出射程时尝试选目标
+        if not target.isCanAttack or target.distance > 30 or target.isPlayerControlled then
+            player.targetEnemy()
+            -- 二次确认：选到的仍是玩家则清掉等下一 tick
+            if target.isCanAttack and target.isPlayerControlled then
+                ClearTarget()
+            end
             return
         end
         player.moonfire('ready')
-        macroTorch.druidAtk()
+        -- 抢怪确认：怪物正在攻击我时才进入正常输出流程
+        if target.isAttackingMe then
+            macroTorch.druidAtk()
+        end
         return
     end
 
