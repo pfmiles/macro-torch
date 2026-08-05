@@ -345,7 +345,18 @@ macroTorch.DRUID_FIELD_FUNC_MAP = {
         return self.isFormActive('Moonkin Form')
     end, -- reserved for future expansion
     ['humanFormMana'] = function(self)
+        if SUPERWOW_STRING and (self.isInCatForm or self.isInBearForm) then
+            local _, casterMana = UnitMana(self.ref)
+            return casterMana or UnitMana(self.ref) or 0
+        end
         return UnitMana(self.ref) or 0
+    end,
+    ['humanFormManaMax'] = function(self)
+        if SUPERWOW_STRING and (self.isInCatForm or self.isInBearForm) then
+            local _, casterManaMax = UnitManaMax(self.ref)
+            return casterManaMax or UnitManaMax(self.ref) or 0
+        end
+        return UnitManaMax(self.ref) or 0
     end,
 }
 
@@ -543,7 +554,7 @@ end
 
 -- 返回法力药水使用阈值（最大法力的30%），适配所有等级
 function macroTorch.getManaPotionThreshold()
-    return UnitManaMax('player') * 0.3
+    return macroTorch.player.humanFormManaMax * 0.3
 end
 
 -- 判断是否应该使用法力药水
@@ -551,6 +562,11 @@ end
 -- 战斗中药水有2分钟CD，防止连续浪费
 function macroTorch.shouldUseManaPotion()
     local player = macroTorch.player
+    -- 未安装 SuperWoW 时，猫/熊形态下无法读取真实法力值，
+    -- 阈值判定无意义，直接禁用避免浪费法力药水
+    if not SUPERWOW_STRING and (player.isInCatForm or player.isInBearForm) then
+        return false
+    end
     local currentMana = player.humanFormMana
     local threshold = macroTorch.getManaPotionThreshold()
     return currentMana < threshold
