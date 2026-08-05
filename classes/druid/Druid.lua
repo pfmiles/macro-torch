@@ -428,6 +428,10 @@ function macroTorch.recoverNormalRelic(clickContext, relicName)
     if not player.isInCatForm then
         return
     end
+    -- 战斗中且目标非worldboss：不切换idol，保持pre-combat穿戴的神像不变
+    if player.isInCombat and macroTorch.target.classification ~= 'worldboss' then
+        return
+    end
     if not player.hasItem(relicName) or player.isRelicEquipped(relicName) then
         return
     end
