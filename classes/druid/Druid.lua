@@ -1241,6 +1241,12 @@ macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP humanFormMana exists",
     assert(type(val) ~= "nil", "humanFormMana is nil")
 end, true)
 
+macroTorch.SelfTest:register("Druid: DRUID_FIELD_FUNC_MAP humanFormManaMax exists", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local val = macroTorch.player.humanFormManaMax
+    assert(type(val) ~= "nil", "humanFormManaMax is nil")
+end, true)
+
 -- Category H: catAtk low-level adaptation selftests (D-07, isOptional=true)
 macroTorch.SelfTest:register("Druid: computeReshiftEnergy returns a valid number", function()
     if UnitClass('player') ~= 'Druid' then return end
