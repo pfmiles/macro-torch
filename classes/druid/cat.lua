@@ -23,7 +23,7 @@ function macroTorch.burstMod(clickContext)
 
         -- juju flurry
         if not flags.jujuFlurry then
-            if not player.hasBuff('INV_Misc_MonsterScales_17') and not clickContext.isInBearForm and player.hasItem('Juju Flurry') and player.isItemInBagCooledDown('Juju Flurry') and not target.isPlayerControlled then
+            if not player.hasBuff('INV_Misc_MonsterScales_17') and not clickContext.isInBearForm and player.hasItem('Juju Flurry') and player.isItemInBagCooledDown('Juju Flurry') and macroTorch.target.classification == 'worldboss' then
                 player.use('Juju Flurry', true)
             end
             flags.jujuFlurry = true
@@ -255,6 +255,7 @@ function macroTorch.keepRip(clickContext)
     -- 普通版rip逻辑会要求尽量在rip时穿戴流血idol(Idol of Savagery)
     -- Switch relic if needed and apply Rip
     local shouldEquipSavagery = not macroTorch.isTrivialBattleOrPvp(clickContext)
+        and macroTorch.target.classification == 'worldboss'
     macroTorch.dischargeEnergyChangeRelicAndRip(clickContext, shouldEquipSavagery)
 end
 function macroTorch.dischargeEnergyChangeRelicAndRip(clickContext, equipSavagery)
@@ -429,12 +430,12 @@ function macroTorch.atkPowerBurst(clickContext)
     end
 
     -- juju power
-    if not player.hasBuff('INV_Misc_MonsterScales_11') and not clickContext.isInBearForm and player.hasItem('Juju Power') and player.isItemInBagCooledDown('Juju Power') and not target.isPlayerControlled then
+    if not player.hasBuff('INV_Misc_MonsterScales_11') and not clickContext.isInBearForm and player.hasItem('Juju Power') and player.isItemInBagCooledDown('Juju Power') and macroTorch.target.classification == 'worldboss' then
         player.use('Juju Power', true)
     end
 
     -- Mighty Rage Potion
-    if not player.hasBuff('Ability_Warrior_InnerRage') and not clickContext.isInBearForm and player.hasItem('Mighty Rage Potion') and player.isItemInBagCooledDown('Mighty Rage Potion') and not target.isPlayerControlled then
+    if not player.hasBuff('Ability_Warrior_InnerRage') and not clickContext.isInBearForm and player.hasItem('Mighty Rage Potion') and player.isItemInBagCooledDown('Mighty Rage Potion') and macroTorch.target.classification == 'worldboss' then
         player.use('Mighty Rage Potion', true)
     end
 end
