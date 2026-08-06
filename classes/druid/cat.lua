@@ -1,7 +1,6 @@
 -- Druid cat form combat functions (extracted from SM_Extend_Druid.lua)
 function macroTorch.burstMod(clickContext)
     local player = macroTorch.player
-    local target = macroTorch.target
     -- put on the flags
     if IsShiftKeyDown() then
         if not macroTorch.context.burstFlags then
@@ -23,7 +22,7 @@ function macroTorch.burstMod(clickContext)
 
         -- juju flurry
         if not flags.jujuFlurry then
-            if not player.hasBuff('INV_Misc_MonsterScales_17') and not clickContext.isInBearForm and player.hasItem('Juju Flurry') and player.isItemInBagCooledDown('Juju Flurry') and macroTorch.target.classification == 'worldboss' then
+            if not player.hasBuff('INV_Misc_MonsterScales_17') and not clickContext.isInBearForm and player.hasItem('Juju Flurry') and player.isItemInBagCooledDown('Juju Flurry') and macroTorch.target.classification == 'worldboss' and player.isInRaid then
                 player.use('Juju Flurry', true)
             end
             flags.jujuFlurry = true
@@ -422,7 +421,6 @@ function macroTorch.safeCower(clickContext)
 end
 function macroTorch.atkPowerBurst(clickContext)
     local player = macroTorch.player
-    local target = macroTorch.target
 
     -- trinket
     if player.isTrinket2CooledDown() and GetInventoryItemLink("player", 14) then
@@ -430,12 +428,12 @@ function macroTorch.atkPowerBurst(clickContext)
     end
 
     -- juju power
-    if not player.hasBuff('INV_Misc_MonsterScales_11') and not clickContext.isInBearForm and player.hasItem('Juju Power') and player.isItemInBagCooledDown('Juju Power') and macroTorch.target.classification == 'worldboss' then
+    if not player.hasBuff('INV_Misc_MonsterScales_11') and not clickContext.isInBearForm and player.hasItem('Juju Power') and player.isItemInBagCooledDown('Juju Power') and macroTorch.target.classification == 'worldboss' and player.isInRaid then
         player.use('Juju Power', true)
     end
 
     -- Mighty Rage Potion
-    if not player.hasBuff('Ability_Warrior_InnerRage') and not clickContext.isInBearForm and player.hasItem('Mighty Rage Potion') and player.isItemInBagCooledDown('Mighty Rage Potion') and macroTorch.target.classification == 'worldboss' then
+    if not player.hasBuff('Ability_Warrior_InnerRage') and not clickContext.isInBearForm and player.hasItem('Mighty Rage Potion') and player.isItemInBagCooledDown('Mighty Rage Potion') and macroTorch.target.classification == 'worldboss' and player.isInRaid then
         player.use('Mighty Rage Potion', true)
     end
 end
