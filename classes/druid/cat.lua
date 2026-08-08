@@ -79,9 +79,14 @@ function macroTorch.otMod(clickContext)
             or not macroTorch.player.isInGroup then
         return
     end
+    -- [NEW GUARD] 如果附近没有队友（60码内），降仇恨无意义（怪物无论如何都会打你）
+    if not macroTorch.hasNearbyGroupMates(60) then
+        return
+    end
     if target.isAttackingMe and not player.isSpellReady('Cower') and target.classification == 'worldboss' then
         -- boss正在攻击我且Cower没好，直接使用无敌药水
         player.use('Invulnerability Potion', true)
+        return
     end
 
     -- 当目前威胁值大于一定阈值，使用cower降低威胁值

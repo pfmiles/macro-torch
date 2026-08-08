@@ -247,6 +247,26 @@ function macroTorch.filterGroupMates(predFunc)
     return result
 end
 
+--- 检查玩家附近是否有存活的队友（排除自己、排除死人）
+--- 用于判断降仇恨技能是否有意义：如果没人在身边分担仇恨，降仇恨是浪费资源
+--- @param rangeYards number 距离阈值（码），建议 60（远程最大射程）
+--- @return boolean 是否有队友在范围内
+function macroTorch.hasNearbyGroupMates(rangeYards)
+    -- [GUARD] UnitXP 模块未安装时，退化为允许降仇恨（宁可多放，不可漏放）
+    if not macroTorch.isFunctionExist('UnitXP') then
+        return true
+    end
+    local function mateNearPlayer(unitId)
+        local distance = UnitXP("distanceBetween", "player", unitId)
+        if not distance or distance < 0 then
+            return false
+        end
+        return distance <= rangeYards
+    end
+    local nearMates = macroTorch.filterGroupMates(mateNearPlayer)
+    return macroTorch.tableLen(nearMates) > 0
+end
+
 -- 找到当前团队/raid中损血最多的成员（包含玩家自己的比较）
 -- @return unitId string 损血最多的unitId，默认返回"player"
 -- @return healthPercent number 该单位的血量百分比
