@@ -4,8 +4,8 @@ milestone: v1.0
 milestone_name: milestone
 status: in_progress
 stopped_at: Phase 23 Plan 01 complete
-last_updated: "2026-08-03T11:08:33.897Z"
-last_activity: 2026-08-03
+last_updated: "2026-08-08T12:57:29.012Z"
+last_activity: 2026-08-08
 progress:
   total_phases: 21
   completed_phases: 18
@@ -188,6 +188,7 @@ last_activity_desc: "Completed Phase 23 Plan 01: idol dance refactor — fix com
 | 260802-remove-rough-param | 从 druid 一键宏链路中移除已废弃的 rough 参数 | 2026-08-02 | b4bf3a3 | [260802-remove-rough-param](./quick/260802-remove-rough-param/) |
 | 260804-0bz | Pounce duration/ERPS 适配 Idol of Savagery | 2026-08-04 | c6f83a7 | [260804-0bz-fix-pounce-savagery-duration](./quick/260804-0bz-fix-pounce-savagery-duration/) |
 | 260806-0y9 | 修复 druid 猫/熊形态下法力药水误消耗 | 2026-08-06 | ac8d30d | [260806-0y9-fix-druid-mana-potion](./quick/260806-0y9-fix-druid-mana-potion/) |
+| 260808-t3w | druid cower otMod guard — hasNearbyGroupMates 附近队友检查 | 2026-08-08 | 601160c | [260808-t3w-druid-cower-otmod-guard-hasnearbygroupma](./quick/260808-t3w-druid-cower-otmod-guard-hasnearbygroupma/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
