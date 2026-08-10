@@ -49,10 +49,11 @@ function macroTorch.eventHandle()
         -- on player login
     elseif event == 'PLAYER_ENTERING_WORLD' then
         macroTorch.onPlayerEnteringWorld()
-        -- Defer selfTest to next render frame so UI subsystems (tooltip, inventory)
-        -- are fully initialized before tests that depend on them (e.g. computeReshiftEnergy
-        -- creates a cached GameTooltip frame; creating it too early produces a persistent
-        -- bad state that causes session-long failures like Wolfsheart detection).
+        -- Defer selfTest by ~30 frames (~0.5s at 60fps) so UI subsystems
+        -- (tooltip, inventory) are fully initialized before tests that depend
+        -- on them (e.g. computeReshiftEnergy creates a cached GameTooltip frame;
+        -- creating it too early produces a persistent bad state that causes
+        -- session-long failures like Wolfsheart detection).
         if not macroTorch._selfTestRan then
             -- Defer selftest by ~30 frames (~0.5s at 60fps) to ensure GameTooltip
             -- manager is fully initialized before creating the cached _tooltipScanFrame.

@@ -481,7 +481,14 @@ function macroTorch.hasWolfsheartEnchant()
     end
 
     if macroTorch._wolfsheartCache[link] == nil then
-        macroTorch._wolfsheartCache[link] = macroTorch.isKeywordInEquippedItemTooltip(1, 'Wolfsheart')
+        local hasIt = macroTorch.isKeywordInEquippedItemTooltip(1, 'Wolfsheart')
+        -- Only cache true: false may be a transient tooltip-unready result,
+        -- and caching it would cause session-long false-negatives (same class
+        -- of bug as the _tooltipScanFrame bad-state caching).
+        if hasIt then
+            macroTorch._wolfsheartCache[link] = true
+        end
+        return hasIt
     end
 
     return macroTorch._wolfsheartCache[link]
