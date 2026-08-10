@@ -467,6 +467,26 @@ function macroTorch.computeClaw_E()
     return CLAW_E
 end
 
+-- 检测头部装备是否拥有 Wolfsheart（狼心）附魔，结果以 itemLink 为 key 缓存
+-- itemLink 随装备更换而变化 → 自动 cache miss → 重新扫描，无需事件监听
+-- GetInventoryItemLink 返回 string|nil（nil = item cache 未就绪或槽位为空）
+function macroTorch.hasWolfsheartEnchant()
+    local link = GetInventoryItemLink("player", 1)  -- 头部装备槽
+    if not link then
+        return false  -- item cache 未就绪，安全默认值
+    end
+
+    if not macroTorch._wolfsheartCache then
+        macroTorch._wolfsheartCache = {}
+    end
+
+    if macroTorch._wolfsheartCache[link] == nil then
+        macroTorch._wolfsheartCache[link] = macroTorch.isKeywordInEquippedItemTooltip(1, 'Wolfsheart')
+    end
+
+    return macroTorch._wolfsheartCache[link]
+end
+
 -- 返回 reshift 后的原始能量值（Furor天赋 + 狼心附魔）
 -- 注意：此值不含猛虎补打消耗。变身会抹除猛虎buff，调用方若用于决策须自行扣除 TIGER_E。
 function macroTorch.computeReshiftEnergy()
@@ -475,9 +495,8 @@ function macroTorch.computeReshiftEnergy()
     -- [NEW] D-04: Furor talent each rank gives +8 energy when reshifting
     energy = energy + player.talentRank('Furor') * 8
     -- [NEW] D-04: Wolfheart (狼心) 头部附魔提供 +20 变身后回能
-    -- 原实现检测的是 Wolfshead Helm 同名装备，但实际回能来源是头部附魔 "Wolfsheart"
-    -- 故改为扫描头部 tooltip 关键词，通用性更好且语义准确
-    if macroTorch.isKeywordInEquippedItemTooltip(1, 'Wolfsheart') then
+    -- 结果由 hasWolfsheartEnchant() 以 itemLink 为 key 缓存，避免热路径重复扫描 tooltip
+    if macroTorch.hasWolfsheartEnchant() then
         energy = energy + 20
     end
     return energy
