@@ -189,6 +189,7 @@ last_activity_desc: "Completed Phase 23 Plan 01: idol dance refactor — fix com
 | 260804-0bz | Pounce duration/ERPS 适配 Idol of Savagery | 2026-08-04 | c6f83a7 | [260804-0bz-fix-pounce-savagery-duration](./quick/260804-0bz-fix-pounce-savagery-duration/) |
 | 260806-0y9 | 修复 druid 猫/熊形态下法力药水误消耗 | 2026-08-06 | ac8d30d | [260806-0y9-fix-druid-mana-potion](./quick/260806-0y9-fix-druid-mana-potion/) |
 | 260808-t3w | druid cower otMod guard — hasNearbyGroupMates 附近队友检查 | 2026-08-08 | 601160c | [260808-t3w-druid-cower-otmod-guard-hasnearbygroupma](./quick/260808-t3w-druid-cower-otmod-guard-hasnearbygroupma/) |
+| 260810-fix-cower-raid | otMod guard 同时支持 raid（isInGroup → isInGroup or isInRaid） | 2026-08-10 | e917b88 | [260810-fix-druid-cower-raid-guard](./quick/260810-fix-druid-cower-raid-guard/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
