@@ -68,6 +68,10 @@ function macroTorch.otMod(clickContext)
     if clickContext.isTargetDummy then
         return
     end
+    -- 排除 solo 玩家：既不在队伍也不在团队中
+    if not macroTorch.player.isInGroup and not macroTorch.player.isInRaid then
+        return
+    end
     local player = macroTorch.player
     local target = macroTorch.target
     if not player.isInCombat
@@ -75,8 +79,7 @@ function macroTorch.otMod(clickContext)
             or clickContext.prowling
             or macroTorch.isKillShotOrLastChance(clickContext)
             or not target.isCanAttack
-            or target.isPlayerControlled
-            or not macroTorch.player.isInGroup then
+            or target.isPlayerControlled then
         return
     end
     -- [NEW GUARD] 如果附近没有队友（60码内），降仇恨无意义（怪物无论如何都会打你）
