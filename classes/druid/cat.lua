@@ -82,7 +82,7 @@ function macroTorch.otMod(clickContext)
             or target.isPlayerControlled then
         return
     end
-    -- [NEW GUARD] 如果附近没有队友（60码内），降仇恨无意义（怪物无论如何都会打你）
+    -- 如果附近没有队友（60码内），降仇恨无意义（怪物无论如何都会打你）
     if not macroTorch.hasNearbyGroupMates(60) then
         return
     end
