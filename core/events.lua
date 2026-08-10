@@ -54,8 +54,16 @@ function macroTorch.eventHandle()
         -- creates a cached GameTooltip frame; creating it too early produces a persistent
         -- bad state that causes session-long failures like Wolfsheart detection).
         if not macroTorch._selfTestRan then
+            -- Defer selftest by ~30 frames (~0.5s at 60fps) to ensure GameTooltip
+            -- manager is fully initialized before creating the cached _tooltipScanFrame.
+            -- A single OnUpdate frame is not enough on all hardware configurations.
             macroTorch._selfTestFrame = macroTorch._selfTestFrame or CreateFrame("Frame")
+            macroTorch._selfTestDelay = 30
             macroTorch._selfTestFrame:SetScript("OnUpdate", function()
+                macroTorch._selfTestDelay = macroTorch._selfTestDelay - 1
+                if macroTorch._selfTestDelay > 0 then
+                    return
+                end
                 macroTorch.SelfTest:run()
                 macroTorch._selfTestFrame:SetScript("OnUpdate", nil)
             end)

@@ -391,8 +391,17 @@ function macroTorch.isKeywordInEquippedItemTooltip(slot, keyword)
     tooltip:ClearLines()
     tooltip:SetInventoryItem("player", slot)
 
+    -- [DEFENSE] If tooltip system is not ready (e.g. frame created before full UI init),
+    -- NumLines() returns 0. Invalidate the cached frame so the next call recreates it
+    -- instead of reusing a permanently broken frame for the entire session.
+    local numLines = tooltip:NumLines()
+    if numLines == 0 then
+        macroTorch._tooltipScanFrame = nil
+        return false
+    end
+
     local allText = ""
-    for i = 1, tooltip:NumLines() do
+    for i = 1, numLines do
         local region = _G["MacroTorchTooltipScanTextLeft" .. i]
         if region and region:GetText() then
             allText = allText .. region:GetText()
