@@ -173,9 +173,61 @@ Shred、Bite、Rip、自动攻击不受 Ferocity 影响。
 
 ---
 
+## erps 敏感性分析：FA 何时反超？
+
+### 倒 U 形曲线
+
+扫描不同额外 erps 水平下 Ferocity 的收益变化：
+
+| 额外 erps | 总 erps | 平均能量 | P(可立即 Claw) | Ferocity 收益 | vs FA (0.45%) |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| 0 | 17.5 | 35.6 | 47.3% | **0.57%** | Fero 胜 |
+| +5 | 22.5 | 41.5 | 60.8% | **0.62%** | Fero 胜 |
+| +10 | 27.5 | 50.7 | 74.1% | **0.70%** | Fero **峰值** |
+| +15 | 32.5 | 63.8 | 84.8% | 0.62% | Fero 胜 |
+| **+20** | **37.5** | **73.7** | **90.1%** | **0.46%** | **临界点** |
+| +30 | 47.5 | 81.0 | 93.1% | 0.32% | **FA 反超** |
+| +50 | 67.5 | 82.8 | 93.6% | 0.28% | FA 胜 |
+
+**关键发现：Ferocity 收益随 erps 呈先升后降的倒 U 形曲线。**
+
+- **低 erps（极度饥饿）：** 几乎总在等多 GCD，1 点能量淹没在大量等待中 → 收益低
+- **中低 erps（~17-22）：** 处于"临界敏感区"——E 经常在阈值附近 → 收益适中
+- **中高 erps（~27）：** 最敏感区间——频繁在"刚好够"和"差一点"间摇摆 → **Ferocity 收益峰值**
+- **高 erps（>38）：** 几乎总能立即施放 → 1 点能量差失效 → **FA 反超**
+
+FA 反超阈值：总 erps ≈ **38**。
+
+### 当前 `computeErps` 全量 erps 来源
+
+从 `classes/druid/Druid.lua:computeErps()` 追溯：
+
+| 来源 | 代码常量 | erps | 触发条件 |
+|------|------|:---:|------|
+| 基础 tick | `AUTO_TICK_ERPS` | 10.00 | 始终 |
+| Tiger's Fury | `TIGER_ERPS` | 3.33 | `isTigerPresent()` |
+| Rip 流血 | `RIP_ERPS` | 2.78 | `isRipPresent()` + Savagery |
+| Rake 流血 | `RAKE_ERPS` | 1.85 | `isRakePresent()` + Savagery |
+| Pounce 流血 | `POUNCE_ERPS` | 1.85 | `isPouncePresent()` + Savagery |
+| Berserk | `BERSERK_ERPS` | 10.00 | `berserk` 状态 |
+| Essence of the Red | 硬编码 | 50.00 | `hasEssenceOfTheRed` |
+
+各场景汇总：
+
+| 场景 | erps | FA 态势 |
+|------|:---:|:---:|
+| 常规稳态（Tiger+Rip+Rake, Savagery） | **17.96** | Ferocity 优 |
+| + Berserk 爆发 | **27.96** | Ferocity **峰值** |
+| + Essence of the Red | **67.96** | FA 反超（临时） |
+| 理论极限（全开+Pounce） | **79.81** | FA 反超（临时） |
+
+> **核心结论：常规稳态 ~18 erps 离 FA 反超阈值 ~38 erps 差距显著。** Berserk 爆发期（~28 erps）也只是进入 Ferocity 峰值区间，而非 FA 反超区。仅有 Essence of the Red 的临时 +50 能让 FA 短暂反超，但 uptime 极低不改变总体结论。
+
+---
+
 ## 结论
 
-**Ferocity 5/5 + FA 4/5  ≳  Ferocity 4/5 + FA 5/5**（微弱优势）
+**Ferocity 5/5 + FA 4/5  >  Ferocity 4/5 + FA 5/5**
 
 | | 最后 1 点 Ferocity | 最后 1 点 FA | 比值 |
 |------|:----:|:---:|:---:|
@@ -183,16 +235,29 @@ Shred、Bite、Rip、自动攻击不受 Ferocity 影响。
 
 ### 模型演进总结
 
-| 版本 | 回能模型 | Ferocity 收益 |
-|:---:|------|:---:|
-| v1 | 仅基础 20/2s 离散 | ~0.9%（上一版未拆解总 DPS） |
-| v2 | +连续 bleed + Tiger 20% | ~1.0% |
-| v3 | **全离散 + Tiger 100%** | **~0.6%** |
+| 版本 | 回能模型 | Ferocity 收益 | FA 收益 | 比值 |
+|:---:|------|:---:|:---:|:---:|
+| v1 | 仅基础 20/2s 离散 | — | 0.45% | — |
+| v2 | +连续 bleed + Tiger 20% | ~1.0% | 0.45% | ~2.2:1 |
+| v3 | **全离散 + Tiger 100%** | **~0.6%** | 0.45% | **~1.3:1** |
 
-随着回能模型逐步贴近实际战斗，Ferocity 的边际收益从 v2 的 ~1.0% 降至 v3 的 ~0.6%。Ferocity 仍略微优于 FA（~0.45%），但差距已缩小到 ~0.15 个百分点——在模型误差范围内可能不相上下。
+### erps 扫描结论
+
+- Ferocity 收益是 erps 的**倒 U 形函数**，峰值在 ~27 erps，FA 反超阈值在 ~38 erps
+- 当前常规稳态 erps ≈ **18**，离反超阈值差 ~20 erps
+- 在当前版本所有已知的 erps 来源中，**FA 无法实现优势反转**（唯一例外：Essence of the Red 临时激活期）
+
+### 缩放推演
+
+| 变化方向 | 对 Ferocity 影响 | 对 FA 影响 | 结果 |
+|------|:---:|:---:|:---:|
+| 更好 DPS 装备（↑AP） | 不变（erps 不变） | 不变（Bite 占比 ~15% 稳定） | 结论不变 |
+| 更多常驻 erps 来源 | ↓ 稀释（水位更高） | 不变 | 若达 ~38 erps → FA 反超 |
+| 更少 erps（移动战/断 bleed） | ↑ 增强（更饥饿） | 不变 | Fero 优势扩大 |
 
 ### 实践建议
 
-- **木桩型 boss（高 bleed 覆盖率 + Tiger 常驻）：** 两者接近等价，差距在统计噪声级别。可根据个人手感选择。
-- **移动战/转火频繁（bleed 覆盖不完整、Tiger 有断档）：** Ferocity 的实际收益会高于模型估算，更值得满点。
-- **短时间战斗（< 30s）：** FA 的 Bite 增伤因 Bite 次数少而收益更低，Ferocity 优势更明显。
+- **木桩型 boss（高 bleed 覆盖率 + Tiger 常驻）：** Ferocity 微弱优势（~0.15%），信噪比边缘。可根据手感选择。
+- **移动战/转火频繁（bleed 覆盖不完整、Tiger 有断档）：** 实际 erps < 18，Fero 收益更高，明确推荐满点。
+- **短时间战斗（< 30s）：** Bite 次数少 → FA 收益更低，Fero 优势更明显。
+- **未来版本：** 若有常驻 +20 erps 级别的新回能手段（天赋/装备/世界 buff），需重新评估。
