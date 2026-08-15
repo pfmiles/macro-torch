@@ -101,6 +101,11 @@ end
 ---@param a any 要显示的内容（会被 tostring）
 ---@param color string 可选颜色: "white"(默认), "red", "yellow", "blue", "green"
 function macroTorch.log(a, color)
+    -- 防御性守卫：即使 SavedVariables 加载在文件执行之后覆盖了 MACRO_TORCH_LOG，
+    -- 也能保证首次调用 log 时重新初始化（与文件顶部的守卫互为双保险）
+    if not MACRO_TORCH_LOG then
+        MACRO_TORCH_LOG = { messages = {}, maxSize = 500 }
+    end
     macroTorch.show(a, color)
     local messages = MACRO_TORCH_LOG.messages
     while macroTorch.tableLen(messages) >= MACRO_TORCH_LOG.maxSize do
