@@ -139,9 +139,6 @@ function macroTorch.eventHandle()
                 -- clear bridge variable after processing (must clear even if no mismatch)
                 macroTorch.current_casting_spell = nil
             end
-            if spellId and macroTorch.tracingSpells[spellId] then
-                macroTorch.recordCastTable(macroTorch.tracingSpells[spellId])
-            end
         end
     elseif event == "RAW_COMBATLOG" then
         -- DEBUG: print player-related combat log events for hit/miss analysis
@@ -163,12 +160,10 @@ function macroTorch.eventHandle()
             macroTorch.log(string.format("[RAW_COMBATLOG] %s | %s", etype, msg))
         end
     elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
-        -- UNIT_SPELLCAST_SUCCEEDED: arg1=unit, arg2=spellName, arg3=rank, arg4=target
-        -- fires when a unit successfully completes a spell cast
-        -- if arg1 == "player" then
-        --     macroTorch.show(string.format("[UNIT_SPELLCAST_SUCCEEDED] spell=%s, target=%s, rank=%s",
-        --         tostring(arg2), tostring(arg4), tostring(arg3 or "nil")), 'cyan')
-        -- end
+        -- arg1=unit (e.g. "player"), arg2=spellName, arg3=rank, arg4=target
+        if arg1 == "player" and arg2 and macroTorch.tracingSpells[arg2] then
+            macroTorch.recordCastTable(arg2)
+        end
     elseif event == "UI_ERROR_MESSAGE" then
         -- on ui error message
         -- macroTorch.show('Error msg: ' ..
