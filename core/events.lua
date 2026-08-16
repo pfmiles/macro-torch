@@ -144,11 +144,24 @@ function macroTorch.eventHandle()
             end
         end
     elseif event == "RAW_COMBATLOG" then
-        -- DEBUG: print all combat log event info for analysis
-        -- RAW_COMBATLOG (SuperWoW) provides raw combat log parameters
-        macroTorch.show(string.format("[RAW_COMBATLOG] arg1=%s, arg2=%s, arg3=%s, arg4=%s, arg5=%s, arg6=%s, arg7=%s, arg8=%s, arg9=%s",
-            tostring(arg1), tostring(arg2), tostring(arg3), tostring(arg4), tostring(arg5),
-            tostring(arg6), tostring(arg7), tostring(arg8), tostring(arg9)), 'yellow')
+        -- DEBUG: print player-related combat log events for hit/miss analysis
+        -- RAW_COMBATLOG (SuperWoW) surfaces CHAT_MSG_* events as structured args:
+        --   arg1 = event type (e.g. CHAT_MSG_COMBAT_SELF_HITS)
+        --   arg2 = message text
+        -- Filter: keep only events where the player is the source or target.
+        -- _SELF_ events are always player-related; others need text-based check.
+        local etype = tostring(arg1 or "")
+        local msg = tostring(arg2 or "")
+        local isPlayerRelated = false
+        if etype:find("_SELF_") then
+            isPlayerRelated = true
+        elseif msg:find("^You ") or msg:find("^Your ") or msg:find(" your ")
+            or msg:find(" from you") or msg:find(" to you") then
+            isPlayerRelated = true
+        end
+        if isPlayerRelated then
+            macroTorch.log(string.format("[RAW_COMBATLOG] %s | %s", etype, msg))
+        end
     elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
         -- UNIT_SPELLCAST_SUCCEEDED: arg1=unit, arg2=spellName, arg3=rank, arg4=target
         -- fires when a unit successfully completes a spell cast
