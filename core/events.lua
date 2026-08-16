@@ -16,7 +16,7 @@
 
 -- event frame and centralized event handling
 -- extracted from battle_event_queue.lua per D-01/D-03
--- provides independent event frame, 14 event registrations, eventHandle dispatch
+-- provides independent event frame, 15 event registrations, eventHandle dispatch
 
 local frame = CreateFrame("Frame")
 
@@ -37,11 +37,12 @@ frame:RegisterEvent("CHAT_MSG_SPELL_SELF_DAMAGE")
 frame:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE")
 frame:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE")
 frame:RegisterEvent("UI_ERROR_MESSAGE")
+frame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
 
 -- super wow specific
 if SUPERWOW_STRING ~= nil then
     frame:RegisterEvent("UNIT_CASTEVENT")
-    -- frame:RegisterEvent("RAW_COMBATLOG")
+    frame:RegisterEvent("RAW_COMBATLOG")
 end
 
 function macroTorch.eventHandle()
@@ -143,11 +144,17 @@ function macroTorch.eventHandle()
             end
         end
     elseif event == "RAW_COMBATLOG" then
-        -- when player cast a spell
-        -- local args_str = tostring(arg1) ..
-        --     '_' .. tostring(arg2) .. '_' .. tostring(arg3) .. '_' .. tostring(arg4) .. '_' .. tostring(arg5)
-        -- if args_str and string.find(string.lower(args_str), "dodge") then
-        --     macroTorch.show(args_str)
+        -- DEBUG: print all combat log event info for analysis
+        -- RAW_COMBATLOG (SuperWoW) provides raw combat log parameters
+        macroTorch.show(string.format("[RAW_COMBATLOG] arg1=%s, arg2=%s, arg3=%s, arg4=%s, arg5=%s, arg6=%s, arg7=%s, arg8=%s, arg9=%s",
+            tostring(arg1), tostring(arg2), tostring(arg3), tostring(arg4), tostring(arg5),
+            tostring(arg6), tostring(arg7), tostring(arg8), tostring(arg9)), 'yellow')
+    elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
+        -- UNIT_SPELLCAST_SUCCEEDED: arg1=unit, arg2=spellName, arg3=rank, arg4=target
+        -- fires when a unit successfully completes a spell cast
+        -- if arg1 == "player" then
+        --     macroTorch.show(string.format("[UNIT_SPELLCAST_SUCCEEDED] spell=%s, target=%s, rank=%s",
+        --         tostring(arg2), tostring(arg4), tostring(arg3 or "nil")), 'cyan')
         -- end
     elseif event == "UI_ERROR_MESSAGE" then
         -- on ui error message
