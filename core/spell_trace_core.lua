@@ -15,6 +15,8 @@ macroTorch.DEBUFF_LAND_LAG = 0.2
 if not macroTorch.tracingSpells then
     macroTorch.tracingSpells = {}
 end
+-- DEPRECATED: _spellIdMonitored whitelist is no longer used since Phase 24.
+-- Retained for legacy spellId auto-correction compatibility.
 -- whitelist: spells whose spellId should be monitored for dynamic correction
 -- populated automatically by SpellTrace:register when config.spellName is present
 -- and monitorSpellId (defaults to config.land) is true. (per D-02)
@@ -46,6 +48,8 @@ end
 -- [CITED: CONTEXT.md D-06, D-07, D-08; RESEARCH A3/Pitfall 1]
 macroTorch.SpellTrace = {}
 
+-- DEPRECATED: spellId resolution via resolveSpellId is no longer needed for cast recording since Phase 24.
+-- Retained for legacy spellId auto-correction compatibility.
 -- resolve spellId from runtime-corrected map (loginContext.spellIdMap) or static baseline (SPELL_NAME_TO_ID)
 -- returns nil if spell unknown (caller must handle)
 function macroTorch.resolveSpellId(spellName)
@@ -71,6 +75,8 @@ function macroTorch.SpellTrace:register(name, config)
     if config.land then
         macroTorch.setSpellTracing(name)
     end
+    -- DEPRECATED: spellId whitelist maintenance via monitorSpellId is no longer needed since Phase 24.
+    -- Retained for legacy spellId auto-correction compatibility.
     -- [Phase 18 per D-01, D-03] Whitelist maintenance: auto-register
     -- spells whose spellId should be monitored for dynamic correction.
     -- monitorSpellId defaults to config.land (nil treated as false).
