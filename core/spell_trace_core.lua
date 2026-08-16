@@ -21,20 +21,8 @@ end
 if not macroTorch._spellIdMonitored then
     macroTorch._spellIdMonitored = {}
 end
-function macroTorch.setSpellTracing(spellGuid, spellName)
-    if not macroTorch.tracingSpells[spellGuid] then
-        macroTorch.tracingSpells[spellGuid] = spellName
-    else
-        -- [Phase 18 fix] Defensive: detect spellId collision (two spell names
-        -- resolving to the same spellId). The first registration wins;
-        -- the second is silently ignored unless the names differ, which
-        -- indicates a likely data error in SPELL_NAME_TO_ID or spellIdMap.
-        if macroTorch.tracingSpells[spellGuid] ~= spellName then
-            macroTorch.show("[macro-torch] setSpellTracing: spellId " .. spellGuid ..
-                " already mapped to '" .. macroTorch.tracingSpells[spellGuid] ..
-                "', ignoring conflicting name '" .. spellName .. "'", 'yellow')
-        end
-    end
+function macroTorch.setSpellTracing(spellName)
+    macroTorch.tracingSpells[spellName] = true
 end
 -- sets what spells to tracer immune
 if not macroTorch.traceSpellImmunes then
@@ -81,19 +69,7 @@ end
 function macroTorch.SpellTrace:register(name, config)
     -- [CITED: PLAN 03-02 must_haves]
     if config.land then
-        local spellId = nil
-        -- resolve via spellName first (new), then fallback to config.spellId (legacy)
-        if config.spellName then
-            spellId = macroTorch.resolveSpellId(config.spellName)
-        end
-        if not spellId then
-            spellId = config.spellId
-        end
-        if not spellId then
-            macroTorch.show("[macro-torch] SpellTrace:register(" .. name .. "): land=true but no spellId resolved", 'red')
-            return
-        end
-        macroTorch.setSpellTracing(spellId, name)
+        macroTorch.setSpellTracing(name)
     end
     -- [Phase 18 per D-01, D-03] Whitelist maintenance: auto-register
     -- spells whose spellId should be monitored for dynamic correction.
@@ -128,7 +104,7 @@ function macroTorch.maintainLandTables()
     if not macroTorch.tracingSpells or macroTorch.tableLen(macroTorch.tracingSpells) == 0 or not macroTorch.inCombat then
         return
     end
-    for _, spellName in pairs(macroTorch.tracingSpells) do
+    for spellName in pairs(macroTorch.tracingSpells) do
         macroTorch.computeLandTable(spellName)
     end
 end
