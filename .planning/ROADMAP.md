@@ -904,12 +904,12 @@ Plans:
 **Goal:** 将 spell_trace 的 cast 记录从 SuperWoW 专属的 UNIT_CASTEVENT（需要 spellId → spellName 翻译）切换到标准事件 UNIT_SPELLCAST_SUCCEEDED（arg2 直接给 spellName），消除 cast→land→immune 全链路对全局 spellId 的依赖。tracingSpells 改为 name-keyed 集合，移除 current_casting_spell 桥接变量和 _spellIdMonitored 白名单。
 **Requirements**: REQ-24-TRACER, REQ-24-CLEANUP, REQ-24-SELFTEST
 **Depends on:** Phase 23
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 24-01-PLAN.md — tracingSpells name-keyed refactor + UNIT_SPELLCAST_SUCCEEDED handler + recordCastTable dedup (Wave 1)
+- [x] 24-01-PLAN.md — tracingSpells name-keyed refactor + UNIT_SPELLCAST_SUCCEEDED handler + recordCastTable dedup (Wave 1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
