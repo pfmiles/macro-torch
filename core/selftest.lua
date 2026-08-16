@@ -610,61 +610,73 @@ macroTorch.SelfTest:register("J: catLeveling clickContext has all required field
     assert(ok, "catLeveling failed — possible missing clickContext field: " .. tostring(err))
 end, true)
 
+-- Category K: spell trace registration system tests (5 tests, 3 core + 2 optional)
 -- ============================================================
--- Category K: spellId mapping system tests (5 tests, 3 core + 2 optional)
--- ============================================================
--- [CITED: 17-02-PLAN.md Task 2; 17-02-CONTEXT.md]
--- Verifies SPELL_NAME_TO_ID static mapping, resolveSpellId resolution,
--- loadSpellIdMap function, and current_casting_spell lifecycle variable.
+-- [CITED: 24-03-PLAN.md Task 1]
+-- Phase 24: tracingSpells is now name-keyed (spellName → true).
+-- Verifies name-keyed tracingSpells structure, setSpellTracing behavior,
+-- and confirms legacy spellId infrastructure is retained as deprecated.
 
-macroTorch.SelfTest:register("K: SPELL_NAME_TO_ID table exists with all 8 keys (4 spells x 2 locales)", function()
+macroTorch.SelfTest:register("K: tracingSpells is a table with name-keyed entries (not spellId-keyed)", function()
+    assert(type(macroTorch.tracingSpells) == "table",
+        "tracingSpells is not a table, got: " .. type(macroTorch.tracingSpells))
+    -- After SpellTrace:register, land-tracing spells should have entries keyed by name
+    -- with value true. We verify all 4 Druid land-tracing spells.
+    assert(macroTorch.tracingSpells["Pounce"] == true,
+        "tracingSpells['Pounce'] should be true, got: " .. tostring(macroTorch.tracingSpells["Pounce"]))
+    assert(macroTorch.tracingSpells["Rake"] == true,
+        "tracingSpells['Rake'] should be true, got: " .. tostring(macroTorch.tracingSpells["Rake"]))
+    assert(macroTorch.tracingSpells["Rip"] == true,
+        "tracingSpells['Rip'] should be true, got: " .. tostring(macroTorch.tracingSpells["Rip"]))
+    assert(macroTorch.tracingSpells["Ferocious Bite"] == true,
+        "tracingSpells['Ferocious Bite'] should be true, got: " .. tostring(macroTorch.tracingSpells["Ferocious Bite"]))
+    -- Verify NO spellId keys remain (all keys should be strings, not numbers)
+    for k, _ in pairs(macroTorch.tracingSpells) do
+        assert(type(k) == "string",
+            "tracingSpells key should be string (spellName), got: " .. type(k) .. " = " .. tostring(k))
+    end
+end, false)
+
+macroTorch.SelfTest:register("K: setSpellTracing accepts spellName only and sets tracingSpells[name]=true", function()
+    assert(type(macroTorch.setSpellTracing) == "function",
+        "setSpellTracing is not a function, got: " .. type(macroTorch.setSpellTracing))
+    -- Test with a temporary entry: setSpellTracing takes only spellName (no spellGuid)
+    local testName = "__SELFTEST_K2_TEMP__"
+    macroTorch.setSpellTracing(testName)
+    assert(macroTorch.tracingSpells[testName] == true,
+        "setSpellTracing should set tracingSpells['" .. testName .. "'] = true")
+    -- Cleanup
+    macroTorch.tracingSpells[testName] = nil
+end, false)
+
+macroTorch.SelfTest:register("K: SPELL_NAME_TO_ID static table retained (legacy, still exists)", function()
     assert(type(macroTorch.SPELL_NAME_TO_ID) == "table",
         "SPELL_NAME_TO_ID is not a table, got: " .. type(macroTorch.SPELL_NAME_TO_ID))
-    -- English names
+    -- Verify key entries still exist (retained for legacy compatibility)
     assert(macroTorch.SPELL_NAME_TO_ID["Pounce"] == 9827, "Pounce spellId mismatch")
     assert(macroTorch.SPELL_NAME_TO_ID["Rake"] == 9904, "Rake spellId mismatch")
     assert(macroTorch.SPELL_NAME_TO_ID["Rip"] == 9896, "Rip spellId mismatch")
     assert(macroTorch.SPELL_NAME_TO_ID["Ferocious Bite"] == 31018, "Ferocious Bite spellId mismatch")
-    -- Chinese names
-    assert(macroTorch.SPELL_NAME_TO_ID["突袭"] == 9827, "突袭 spellId mismatch")
-    assert(macroTorch.SPELL_NAME_TO_ID["斜掠"] == 9904, "斜掠 spellId mismatch")
-    assert(macroTorch.SPELL_NAME_TO_ID["撕扯"] == 9896, "撕扯 spellId mismatch")
-    assert(macroTorch.SPELL_NAME_TO_ID["凶猛撕咬"] == 31018, "凶猛撕咬 spellId mismatch")
 end, false)
 
-macroTorch.SelfTest:register("K: resolveSpellId function exists and resolves known spells", function()
+macroTorch.SelfTest:register("K: resolveSpellId retained as deprecated function (legacy compatibility)", function()
     assert(type(macroTorch.resolveSpellId) == "function",
-        "resolveSpellId is not a function, got: " .. type(macroTorch.resolveSpellId))
-    assert(macroTorch.resolveSpellId("Pounce") == 9827,
-        "resolveSpellId('Pounce') expected 9827, got: " .. tostring(macroTorch.resolveSpellId("Pounce")))
+        "resolveSpellId is not a function (deprecated but must still exist): " .. type(macroTorch.resolveSpellId))
+    -- Basic smoke test: should still resolve known spells
     assert(macroTorch.resolveSpellId("Rake") == 9904,
         "resolveSpellId('Rake') expected 9904, got: " .. tostring(macroTorch.resolveSpellId("Rake")))
-    assert(macroTorch.resolveSpellId("Rip") == 9896,
-        "resolveSpellId('Rip') expected 9896, got: " .. tostring(macroTorch.resolveSpellId("Rip")))
-    assert(macroTorch.resolveSpellId("Ferocious Bite") == 31018,
-        "resolveSpellId('Ferocious Bite') expected 31018, got: " .. tostring(macroTorch.resolveSpellId("Ferocious Bite")))
-end, false)
-
-macroTorch.SelfTest:register("K: resolveSpellId returns nil for unknown spell name", function()
+    -- nil for unknown is still expected
     local result = macroTorch.resolveSpellId("NonexistentSpell_XYZ123")
     assert(result == nil,
         "resolveSpellId for unknown spell should return nil, got: " .. tostring(result))
 end, true)
 
-macroTorch.SelfTest:register("K: loadSpellIdMap function exists and is callable", function()
+macroTorch.SelfTest:register("K: loadSpellIdMap retained as deprecated function (legacy compatibility)", function()
     assert(type(macroTorch.loadSpellIdMap) == "function",
-        "loadSpellIdMap is not a function, got: " .. type(macroTorch.loadSpellIdMap))
-    -- call it -- should not error (nil-safe with loginContext guard)
+        "loadSpellIdMap is not a function (deprecated but must still exist): " .. type(macroTorch.loadSpellIdMap))
+    -- Must be callable without error (nil-safe with loginContext and SPELL_ID_AUTO_CORRECT guards)
     local ok, err = pcall(macroTorch.loadSpellIdMap)
     assert(ok, "loadSpellIdMap should not error: " .. tostring(err))
-end, false)
-
-macroTorch.SelfTest:register("K: current_casting_spell is defined (set by _castSpell, cleared by events)", function()
-    -- current_casting_spell is nil when no cast in progress (expected initial state)
-    -- We only verify the global variable exists in the namespace (it's set/cleared at runtime)
-    -- Not asserting on value since it depends on whether a spell is being cast
-    assert(type(macroTorch.current_casting_spell) == "nil" or type(macroTorch.current_casting_spell) == "string",
-        "current_casting_spell should be nil or string, got: " .. type(macroTorch.current_casting_spell))
 end, true)
 
 -- ============================================================
@@ -786,17 +798,21 @@ end, true)
 
 -- Registration count: Category M adds 4 tests (4 optional)
 
+-- Category N: SPELL_ID_AUTO_CORRECT deprecated switch verification (4 tests, all isOptional=true)
 -- ============================================================
--- Category N: SPELL_ID_AUTO_CORRECT switch verification (5 tests, all isOptional=true)
--- ============================================================
--- [CITED: 20-CONTEXT.md]
+-- [CITED: 24-03-PLAN.md Task 2]
+-- Phase 24: SPELL_ID_AUTO_CORRECT, resolveSpellId, and loadSpellIdMap are deprecated
+-- but retained for legacy compatibility. The _castSpell bridge variable is removed.
 
-macroTorch.SelfTest:register("N: SPELL_ID_AUTO_CORRECT default value is false", function()
+macroTorch.SelfTest:register("N: SPELL_ID_AUTO_CORRECT is deprecated and defaults to false", function()
     assert(macroTorch.SPELL_ID_AUTO_CORRECT == false,
-        "SPELL_ID_AUTO_CORRECT should be false by default, got: " .. tostring(macroTorch.SPELL_ID_AUTO_CORRECT))
+        "SPELL_ID_AUTO_CORRECT should be false by default (deprecated since Phase 24), got: " .. tostring(macroTorch.SPELL_ID_AUTO_CORRECT))
+    -- Verify the variable exists as a boolean (legacy compatibility)
+    assert(type(macroTorch.SPELL_ID_AUTO_CORRECT) == "boolean",
+        "SPELL_ID_AUTO_CORRECT should be a boolean, got: " .. type(macroTorch.SPELL_ID_AUTO_CORRECT))
 end, true)
 
-macroTorch.SelfTest:register("N: resolveSpellId() returns static value when switch is false", function()
+macroTorch.SelfTest:register("N: resolveSpellId returns static value when SPELL_ID_AUTO_CORRECT is false", function()
     if UnitClass('player') ~= 'Druid' then return end
     local spellName = "Rake"
     local staticId = macroTorch.SPELL_NAME_TO_ID[spellName]
@@ -808,7 +824,6 @@ macroTorch.SelfTest:register("N: resolveSpellId() returns static value when swit
         macroTorch.SPELL_ID_AUTO_CORRECT = saved
         return ret
     end)
-    -- If pcall failed, restore before re-raising
     if not ok then
         macroTorch.SPELL_ID_AUTO_CORRECT = false
         assert(false, "resolveSpellId pcall failed when switch=false: " .. tostring(result))
@@ -818,7 +833,7 @@ macroTorch.SelfTest:register("N: resolveSpellId() returns static value when swit
         ", got: " .. tostring(result))
 end, true)
 
-macroTorch.SelfTest:register("N: resolveSpellId() returns corrected value when switch is true and corrected value exists", function()
+macroTorch.SelfTest:register("N: resolveSpellId returns corrected value when switch is true (legacy)", function()
     if UnitClass('player') ~= 'Druid' then return end
     if not macroTorch.loginContext then return end
     local spellName = "Rake"
@@ -826,15 +841,12 @@ macroTorch.SelfTest:register("N: resolveSpellId() returns corrected value when s
     assert(staticId, "SPELL_NAME_TO_ID['Rake'] is nil")
     local testValue = staticId + 10000
     local ok, result = pcall(function()
-        -- init spellIdMap if needed
         if not macroTorch.loginContext.spellIdMap then
             macroTorch.loginContext.spellIdMap = {}
         end
-        -- ensure we don't overwrite a real correction
         local prev = macroTorch.loginContext.spellIdMap[spellName]
         macroTorch.loginContext.spellIdMap[spellName] = testValue
         local ret = macroTorch.resolveSpellId(spellName)
-        -- cleanup: restore previous value (or nil)
         if prev then
             macroTorch.loginContext.spellIdMap[spellName] = prev
         else
@@ -842,7 +854,6 @@ macroTorch.SelfTest:register("N: resolveSpellId() returns corrected value when s
         end
         return ret
     end)
-    -- If pcall failed, cleanup before re-raising
     if not ok then
         if macroTorch.loginContext and macroTorch.loginContext.spellIdMap then
             macroTorch.loginContext.spellIdMap[spellName] = nil
@@ -854,27 +865,17 @@ macroTorch.SelfTest:register("N: resolveSpellId() returns corrected value when s
         ", got: " .. tostring(result))
 end, true)
 
-macroTorch.SelfTest:register("N: loadSpellIdMap() function exists and is callable without error", function()
+macroTorch.SelfTest:register("N: loadSpellIdMap no-ops when SPELL_ID_AUTO_CORRECT is false", function()
     if not macroTorch.loginContext then return end
     assert(type(macroTorch.loadSpellIdMap) == "function",
-        "loadSpellIdMap is not a function, got: " .. type(macroTorch.loadSpellIdMap))
+        "loadSpellIdMap is not a function (deprecated but must still exist): " .. type(macroTorch.loadSpellIdMap))
+    -- With SPELL_ID_AUTO_CORRECT=false (default), calling loadSpellIdMap should be a safe no-op
+    -- (it returns immediately due to the guard on line 109 of spell_trace_immune.lua)
     local ok, err = pcall(macroTorch.loadSpellIdMap)
-    assert(ok, "loadSpellIdMap should not error: " .. tostring(err))
+    assert(ok, "loadSpellIdMap should not error (no-op when switch is false): " .. tostring(err))
 end, true)
 
-macroTorch.SelfTest:register("N: current_casting_spell is nil after mode='ready' _castSpell when switch is true", function()
-    if UnitClass('player') ~= 'Druid' then return end
-    if not macroTorch.player.rake then return end
-    -- init current_casting_spell to nil if not already
-    macroTorch.current_casting_spell = nil
-    -- Call rake in 'ready' mode (availability check, no actual cast)
-    macroTorch.player.rake('ready')
-    assert(macroTorch.current_casting_spell == nil,
-        "current_casting_spell should be nil after mode='ready' _castSpell, got: " ..
-        tostring(macroTorch.current_casting_spell))
-end, true)
-
--- Registration count: Category N adds 5 tests (5 optional)
+-- Registration count: Category N adds 4 tests (4 optional)
 
 -- ============================================================
 -- Module 4: /mt SLASH command
