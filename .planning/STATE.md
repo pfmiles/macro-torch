@@ -4,14 +4,15 @@ milestone: v1.0
 milestone_name: milestone
 status: in_progress
 stopped_at: Phase 23 Plan 01 complete
-last_updated: "2026-08-08T12:57:29.012Z"
-last_activity: 2026-08-08
+last_updated: "2026-08-16T17:42:09.585Z"
+last_activity: 2026-08-17
 progress:
-  total_phases: 21
+  total_phases: 22
   completed_phases: 18
-  total_plans: 45
+  total_plans: 48
   completed_plans: 45
 last_activity_desc: "Completed Phase 23 Plan 01: idol dance refactor — fix computeNormalRelic + distance bypass + 7 Category O SelfTests"
+current_phase_name: unit-spellcast-succeeded-unit-castevent-cast-spellid
 ---
 
 # Project State
@@ -20,7 +21,7 @@ last_activity_desc: "Completed Phase 23 Plan 01: idol dance refactor — fix com
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 23 — idol dance refactor（Plan 01 complete）
+- **Current Phase**: Phase 24 — UNIT_SPELLCAST_SUCCEEDED 替代 UNIT_CASTEVENT 的 cast 记录链路
 - **Active Branch**: main
 
 ## Phase Progress
@@ -53,6 +54,7 @@ last_activity_desc: "Completed Phase 23 Plan 01: idol dance refactor — fix com
 
 ### Roadmap Evolution
 
+- Phase 24 added: 用 UNIT_SPELLCAST_SUCCEEDED 标准事件替代 UNIT_CASTEVENT 的 cast 记录链路，消除对全局 spellId 的依赖 (2026-08-17)
 - Phase 5 added: Druid技能方法封装改造 - 将player.cast()字符串调用重构为技能对象方法，支持多语言客户端，从Druid试点 (2026-06-13)
 - Phase 6 added: Fix Druid _castSpell isSpellReady nil bug - Player.lua 中 _castSpell/_isInRange/_hasResource 点号定义与 Druid.lua 冒号调用不匹配，导致闭包 self 错误 (2026-06-14)
 - Phase 7 added: Druid 形态判断语义化方法 — 新增 isInCatForm/isInBearForm 等 5 个语义方法替换 isFormActive 硬编码调用 (2026-06-15)
@@ -199,5 +201,5 @@ last_activity_desc: "Completed Phase 23 Plan 01: idol dance refactor — fix com
 ## Session
 
 **Last session:** 2026-07-29T14:16:17.000Z
-**Last activity:** 2026-08-06 - Completed quick task 260806-0y9: 修复 druid 猫/熊形态下法力药水误消耗
+**Last activity:** 2026-08-17
 **Resume file:** .planning/phases/21-catAtk-maintainability/21-03-PLAN.md
