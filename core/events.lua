@@ -153,10 +153,10 @@ function macroTorch.eventHandle()
         local etype = tostring(arg1 or "")
         local msg = tostring(arg2 or "")
         local isPlayerRelated = false
-        if etype:find("_SELF_") then
+        if string.find(etype, "_SELF_") then
             isPlayerRelated = true
-        elseif msg:find("^You ") or msg:find("^Your ") or msg:find(" your ")
-            or msg:find(" from you") or msg:find(" to you") then
+        elseif string.find(msg, "^You ") or string.find(msg, "^Your ") or string.find(msg, " your ")
+            or string.find(msg, " from you") or string.find(msg, " to you") then
             isPlayerRelated = true
         end
         if isPlayerRelated then
