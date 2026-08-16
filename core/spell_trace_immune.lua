@@ -101,6 +101,8 @@ function macroTorch.loadDefiniteBleedingTable()
     end
 end
 
+-- DEPRECATED: spellId map loading via loadSpellIdMap is no longer needed since Phase 24.
+-- Retained for legacy spellId auto-correction compatibility.
 -- load the spellIdMap from SM_EXTEND.spellIdMap persistent var
 -- follows the identical pattern as loadImmuneTable/loadDefiniteBleedingTable
 -- NOTE: binds to loginContext (session-scoped), NOT context (combat-scoped)
