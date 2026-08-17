@@ -50,23 +50,6 @@ function macroTorch.eventHandle()
         -- on player login
     elseif event == 'PLAYER_ENTERING_WORLD' then
         macroTorch.onPlayerEnteringWorld()
-        -- DIAGNOSTIC: dump tracingSpells keys once per session
-        if not macroTorch._diagTracingSpellsDumped then
-            macroTorch._diagTracingSpellsDumped = true
-            local keys = {}
-            for k in pairs(macroTorch.tracingSpells or {}) do
-                table.insert(keys, tostring(k))
-            end
-            macroTorch.log("[DIAG|INIT] tracingSpells keys: " .. table.concat(keys, ", "))
-            -- also dump SPELL_NAME_TO_ID for reverse lookup verification
-            local idEntries = {}
-            for name, id in pairs(macroTorch.SPELL_NAME_TO_ID or {}) do
-                table.insert(idEntries, string.format("%s=%d", name, id))
-            end
-            macroTorch.log("[DIAG|INIT] SPELL_NAME_TO_ID: " .. table.concat(idEntries, ", "))
-            -- log locale info
-            macroTorch.log("[DIAG|INIT] GetLocale()=" .. tostring(GetLocale()))
-        end
         -- Defer selfTest by ~30 frames (~0.5s at 60fps) so UI subsystems
         -- (tooltip, inventory) are fully initialized before tests that depend
         -- on them (e.g. computeReshiftEnergy creates a cached GameTooltip frame;
@@ -124,53 +107,23 @@ function macroTorch.eventHandle()
     elseif event == "UNIT_CASTEVENT" then
         -- when player myself cast a spell
         local unitId, targetId, castType, spellId, timeCost = arg1, arg2, arg3, arg4, arg5
-        -- DIAGNOSTIC: log all CAST events from player to verify event behavior
-        if unitId == macroTorch.player.guid and castType == 'CAST' then
-            -- reverse-lookup spell name from spellId for diagnostic
-            local reverseName = "?"
-            for name, id in pairs(macroTorch.SPELL_NAME_TO_ID or {}) do
-                if id == spellId then
-                    reverseName = name
-                    break
-                end
-            end
-            local traced = macroTorch.tracingSpells[reverseName] and "YES" or "NO"
-            macroTorch.log(string.format(
-                "[DIAG|UNIT_CASTEVENT] spellId=%d reverseName='%s' castType='%s' traced=%s",
-                spellId or 0, reverseName, tostring(castType), traced))
-        end
         -- only CAST events carry spellId data; MAINHAND/OFFHAND are auto-attack swings
         if unitId == macroTorch.player.guid and castType == 'CAST' then
-            -- spellId dynamic correction: compare event spellId with static baseline
-            -- from _castSpell's current_casting_spell, persist mismatches to SM_EXTEND.
-            -- MUST run BEFORE recordCastTable so that tracingSpells is up-to-date
-            -- and the first cast of a corrected spell is not silently lost.
-            if macroTorch.SPELL_ID_AUTO_CORRECT and macroTorch.current_casting_spell then
-                local staticSpellId = macroTorch.resolveSpellId(macroTorch.current_casting_spell)
-                if staticSpellId and staticSpellId ~= spellId then
-                    -- lazy-init SM_EXTEND.spellIdMap (same pattern as loadImmuneTable)
-                    if not SM_EXTEND then SM_EXTEND = {} end
-                    if not SM_EXTEND.spellIdMap then SM_EXTEND.spellIdMap = {} end
-                    local playerCls = macroTorch.player.class
-                    if not SM_EXTEND.spellIdMap[playerCls] then SM_EXTEND.spellIdMap[playerCls] = {} end
-                    -- persist corrected spellId
-                    SM_EXTEND.spellIdMap[playerCls][macroTorch.current_casting_spell] = spellId
-                    -- sync to loginContext if already initialized
-                    if macroTorch.loginContext and macroTorch.loginContext.spellIdMap then
-                        macroTorch.loginContext.spellIdMap[macroTorch.current_casting_spell] = spellId
-                    end
-                    -- migrate tracingSpells key: old static id -> new event id
-                    macroTorch.tracingSpells[spellId] = macroTorch.tracingSpells[staticSpellId]
-                    macroTorch.tracingSpells[staticSpellId] = nil
-                    macroTorch.show(string.format("[macro-torch] spellId corrected: %s %d -> %d",
-                        macroTorch.current_casting_spell, staticSpellId, spellId), 'yellow')
+            -- Bridge-based spell identification: _castSpell sets _pendingCastSpellName
+            -- (always English name) before calling CastSpellByName; UNIT_CASTEVENT
+            -- fires shortly after. This replaces spellId-keyed tracingSpells and
+            -- SPELL_ID_AUTO_CORRECT with zero manual spellId maintenance.
+            -- Also handles instant spells correctly (UNIT_SPELLCAST_SUCCEEDED does
+            -- not fire for instant spells on 1.12.1/SuperWoW).
+            if macroTorch._pendingCastSpellName then
+                if macroTorch.tracingSpells[macroTorch._pendingCastSpellName] then
+                    macroTorch.recordCastTable(macroTorch._pendingCastSpellName)
                 end
-                -- clear bridge variable after processing (must clear even if no mismatch)
-                macroTorch.current_casting_spell = nil
+                macroTorch._pendingCastSpellName = nil
             end
         end
     elseif event == "RAW_COMBATLOG" then
-        -- DEBUG: temporarily disabled for UNIT_SPELLCAST_SUCCEEDED / UNIT_CASTEVENT diagnostic
+        -- DEBUG: print player-related combat log events for hit/miss analysis
         -- RAW_COMBATLOG (SuperWoW) surfaces CHAT_MSG_* events as structured args:
         --   arg1 = event type (e.g. CHAT_MSG_COMBAT_SELF_HITS)
         --   arg2 = message text
@@ -190,13 +143,6 @@ function macroTorch.eventHandle()
         -- end
     elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
         -- arg1=unit (e.g. "player"), arg2=spellName, arg3=rank, arg4=target
-        -- DIAGNOSTIC: log all player spell casts to verify event behavior
-        if arg1 == "player" then
-            local traced = macroTorch.tracingSpells[arg2] and "YES" or "NO"
-            macroTorch.log(string.format(
-                "[DIAG|SPELLCAST_SUCCEEDED] spell='%s' rank='%s' target='%s' traced=%s",
-                tostring(arg2), tostring(arg3), tostring(arg4), traced))
-        end
         if arg1 == "player" and arg2 and macroTorch.tracingSpells[arg2] then
             macroTorch.recordCastTable(arg2)
         end
