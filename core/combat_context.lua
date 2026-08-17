@@ -19,8 +19,8 @@
 -- provides independent macroTorch.* functions for events.lua eventHandle to call
 
 function macroTorch.onCombatExit()
+    macroTorch.inCombat = false
     if macroTorch.context then
-        macroTorch.inCombat = false
         macroTorch.context = {}
     end
     macroTorch.show('Exiting combat!')

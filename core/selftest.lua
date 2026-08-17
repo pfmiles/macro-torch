@@ -720,8 +720,8 @@ macroTorch.SelfTest:register("L: monitorSpellId=false excludes from whitelist ev
     -- Whitelist is keyed by config.spellName, not the registration name.
     assert(macroTorch._spellIdMonitored[testSpellName] == nil,
         "monitorSpellId=false should NOT add to whitelist, but found entry for: " .. testSpellName)
-    -- Cleanup: remove test entry from tracingSpells (fake spellId, no collision risk)
-    macroTorch.tracingSpells[999998] = nil
+    -- Cleanup: remove test entry from tracingSpells (keyed by registration name after Phase 24)
+    macroTorch.tracingSpells[testName] = nil
 end, false)
 
 macroTorch.SelfTest:register("L: monitorSpellId=true includes even with land=false", function()
