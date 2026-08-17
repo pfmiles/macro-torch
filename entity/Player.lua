@@ -79,7 +79,12 @@ function macroTorch.Player:new()
         -- parentheses as rank specifiers, silently failing for spells like
         -- "Barkskin (Feral)" or "Faerie Fire (Feral)".
         -- For self-only spells, CastSpell auto-targets the caster.
+        -- Bridge for UNIT_CASTEVENT: record English spell name so the event handler
+        -- can correlate the cast event with the spell without needing spellId.
+        -- Clears any stale bridge from a previous failed cast first.
+        macroTorch._pendingCastSpellName = nil
         obj.cast(spellName, rank)
+        macroTorch._pendingCastSpellName = localeNames.en
         return true
     end
 
