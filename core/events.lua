@@ -106,13 +106,12 @@ function macroTorch.eventHandle()
 
     elseif event == "UNIT_CASTEVENT" then
         -- when player myself cast a spell
-        local unitId, targetId, castType, spellId, timeCost = arg1, arg2, arg3, arg4, arg5
+        local unitId, _, castType = arg1, arg2, arg3
         -- only CAST events carry spellId data; MAINHAND/OFFHAND are auto-attack swings
         if unitId == macroTorch.player.guid and castType == 'CAST' then
             -- Bridge-based spell identification: _castSpell sets _pendingCastSpellName
             -- (always English name) before calling CastSpellByName; UNIT_CASTEVENT
-            -- fires shortly after. This replaces spellId-keyed tracingSpells and
-            -- SPELL_ID_AUTO_CORRECT with zero manual spellId maintenance.
+            -- fires shortly after. Zero manual spellId maintenance.
             -- Also handles instant spells correctly (UNIT_SPELLCAST_SUCCEEDED does
             -- not fire for instant spells on 1.12.1/SuperWoW).
             if macroTorch._pendingCastSpellName then
