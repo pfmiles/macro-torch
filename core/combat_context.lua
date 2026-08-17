@@ -37,9 +37,4 @@ end
 function macroTorch.onPlayerEnteringWorld()
     macroTorch.player = macroTorch.initPlayer()
     macroTorch.loginContext = {}
-    -- DEPRECATED: spellId map loading only needed for legacy auto-correction since Phase 24.
-    -- No-op when SPELL_ID_AUTO_CORRECT is false (the default).
-    if macroTorch.SPELL_ID_AUTO_CORRECT then
-        macroTorch.loadSpellIdMap()
-    end
 end

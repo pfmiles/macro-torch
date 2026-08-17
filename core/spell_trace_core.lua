@@ -15,14 +15,6 @@ macroTorch.DEBUFF_LAND_LAG = 0.2
 if not macroTorch.tracingSpells then
     macroTorch.tracingSpells = {}
 end
--- DEPRECATED: _spellIdMonitored whitelist is no longer used since Phase 24.
--- Retained for legacy spellId auto-correction compatibility.
--- whitelist: spells whose spellId should be monitored for dynamic correction
--- populated automatically by SpellTrace:register when config.spellName is present
--- and monitorSpellId (defaults to config.land) is true. (per D-02)
-if not macroTorch._spellIdMonitored then
-    macroTorch._spellIdMonitored = {}
-end
 function macroTorch.setSpellTracing(spellName)
     macroTorch.tracingSpells[spellName] = true
 end
@@ -48,55 +40,22 @@ end
 -- [CITED: CONTEXT.md D-06, D-07, D-08; RESEARCH A3/Pitfall 1]
 macroTorch.SpellTrace = {}
 
--- DEPRECATED: spellId resolution via resolveSpellId is no longer needed for cast recording since Phase 24.
--- Retained for legacy spellId auto-correction compatibility.
--- resolve spellId from runtime-corrected map (loginContext.spellIdMap) or static baseline (SPELL_NAME_TO_ID)
--- returns nil if spell unknown (caller must handle)
-function macroTorch.resolveSpellId(spellName)
-    if macroTorch.SPELL_ID_AUTO_CORRECT then
-        if macroTorch.loginContext and macroTorch.loginContext.spellIdMap then
-            local correctedId = macroTorch.loginContext.spellIdMap[spellName]
-            if correctedId then
-                return correctedId
-            end
-        end
-    end
-    return macroTorch.SPELL_NAME_TO_ID[spellName]
-end
-
 -- 声明式 spell trace 注册 API
--- config 字段: {spellId, immune, land, debuffTexture}
--- spellId: 可选，仅当 land=true 时需要（用于 setSpellTracing 的数值 ID）
+-- config 字段: {immune, land, debuffTexture, spellName}
 -- immune (boolean): 为 true 时调用 setTraceSpellImmune
--- land (boolean): 为 true 时调用 setSpellTracing(spellId, name)
+-- land (boolean): 为 true 时调用 setSpellTracing(name)
 -- debuffTexture (string): immune tracing 所需的 debuff 贴图纹理
+-- spellName (string): 可选，应与注册名 name 一致，仅用于 guard invariant 校验
 function macroTorch.SpellTrace:register(name, config)
     -- [CITED: PLAN 03-02 must_haves]
     if config.land then
         macroTorch.setSpellTracing(name)
     end
-    -- DEPRECATED: spellId whitelist maintenance via monitorSpellId is no longer needed since Phase 24.
-    -- Retained for legacy spellId auto-correction compatibility.
-    -- [Phase 18 per D-01, D-03] Whitelist maintenance: auto-register
-    -- spells whose spellId should be monitored for dynamic correction.
-    -- monitorSpellId defaults to config.land (nil treated as false).
-    -- NOTE: This block is OUTSIDE `if config.land then` so that
-    -- monitorSpellId=true works even when land=false (D-03).
-    local shouldMonitor
-    if config.monitorSpellId ~= nil then
-        shouldMonitor = config.monitorSpellId
-    else
-        shouldMonitor = config.land or false
-    end
-    if shouldMonitor and config.spellName then
-        macroTorch._spellIdMonitored[config.spellName] = true
-    end
-    -- [Phase 18 fix] Guard invariant: when config.spellName is set, it must equal
-    -- the registration name. Otherwise the two-key-space system breaks:
-    --   tracingSpells[id] = name   (Key Space B → A, used by recordCastTable)
-    --   _spellIdMonitored[config.spellName] (whitelist, used by _castSpell)
-    --   Chat message parsing → failTable[name] (consumed by spellsImmuneTracing)
-    -- If name ≠ config.spellName, immunity detection through fail events silently breaks.
+    -- Guard invariant: when config.spellName is set, it must equal
+    -- the registration name. Otherwise immunity detection through
+    -- fail events from chat message parsing silently breaks
+    -- (failTable is keyed by the name parsed from chat, which must
+    -- match the registration name).
     if config.spellName and config.spellName ~= name then
         macroTorch.show("[macro-torch] SpellTrace:register(" .. name ..
             "): spellName='" .. tostring(config.spellName) .. "' differs from registration name", 'red')
