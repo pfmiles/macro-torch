@@ -192,6 +192,7 @@ current_phase_name: unit-spellcast-succeeded-unit-castevent-cast-spellid
 | 260806-0y9 | 修复 druid 猫/熊形态下法力药水误消耗 | 2026-08-06 | ac8d30d | [260806-0y9-fix-druid-mana-potion](./quick/260806-0y9-fix-druid-mana-potion/) |
 | 260808-t3w | druid cower otMod guard — hasNearbyGroupMates 附近队友检查 | 2026-08-08 | 601160c | [260808-t3w-druid-cower-otmod-guard-hasnearbygroupma](./quick/260808-t3w-druid-cower-otmod-guard-hasnearbygroupma/) |
 | 260810-fix-cower-raid | otMod guard 同时支持 raid（isInGroup → isInGroup or isInRaid） | 2026-08-10 | e917b88 | [260810-fix-druid-cower-raid-guard](./quick/260810-fix-druid-cower-raid-guard/) |
+| 260817-sg1 | macroTorch.log 持久化格式简化：{msg, color} table → 纯文本 string | 2026-08-17 | 5ff2233 | [260817-sg1-simplify-macrotorch-log-persistence-stor](./quick/260817-sg1-simplify-macrotorch-log-persistence-stor/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
@@ -201,5 +202,5 @@ current_phase_name: unit-spellcast-succeeded-unit-castevent-cast-spellid
 ## Session
 
 **Last session:** 2026-07-29T14:16:17.000Z
-**Last activity:** 2026-08-17
+**Last activity:** 2026-08-17 - Completed quick task 260817-sg1: macroTorch.log 持久化格式简化
 **Resume file:** .planning/phases/21-catAtk-maintainability/21-03-PLAN.md
