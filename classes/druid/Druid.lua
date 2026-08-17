@@ -677,9 +677,7 @@ function macroTorch.computePounce_Erps()
     return energyPerTick / tickInterval
 end
 
--- spellId resolved via macroTorch.resolveSpellId() -> SPELL_NAME_TO_ID static map with runtime correction
--- tracing certain spells and maintain the landTable (declarative style)
--- spell trace + immune registration via SpellTrace:register() API
+-- spell trace + immune registration via SpellTrace:register() API (name-based, no spellId needed)
 macroTorch.SpellTrace:register('Pounce', {
     spellName = 'Pounce', land = true,
     immune = true, debuffTexture = 'Ability_Druid_SupriseAttack'

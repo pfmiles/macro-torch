@@ -100,36 +100,3 @@ function macroTorch.loadDefiniteBleedingTable()
         macroTorch.context.definiteBleedingTable = SM_EXTEND.definiteBleedingTable[playerCls]
     end
 end
-
--- DEPRECATED: spellId map loading via loadSpellIdMap is no longer needed since Phase 24.
--- Retained for legacy spellId auto-correction compatibility.
--- load the spellIdMap from SM_EXTEND.spellIdMap persistent var
--- follows the identical pattern as loadImmuneTable/loadDefiniteBleedingTable
--- NOTE: binds to loginContext (session-scoped), NOT context (combat-scoped)
--- spellId corrections must survive combat exit/re-entry
-function macroTorch.loadSpellIdMap()
-    if not macroTorch.SPELL_ID_AUTO_CORRECT then return end
-    if not macroTorch.loginContext then return end
-    if not SM_EXTEND then SM_EXTEND = {} end
-    if not SM_EXTEND.spellIdMap then SM_EXTEND.spellIdMap = {} end
-    local playerCls = macroTorch.player.class
-    if not SM_EXTEND.spellIdMap[playerCls] then
-        SM_EXTEND.spellIdMap[playerCls] = {}
-    end
-    if not macroTorch.loginContext.spellIdMap then
-        macroTorch.loginContext.spellIdMap = SM_EXTEND.spellIdMap[playerCls]
-    end
-    -- Migrate tracingSpells keys from static SPELL_NAME_TO_ID to persisted corrected IDs.
-    -- SpellTrace:register runs before loginContext exists and uses static IDs.
-    -- Without migration, tracingSpells keys stay at static IDs across sessions
-    -- and UNIT_CASTEVENT lookups silently fail when the event reports the corrected ID.
-    if macroTorch.tracingSpells then
-        for spellName, correctedId in pairs(macroTorch.loginContext.spellIdMap) do
-            local staticId = macroTorch.SPELL_NAME_TO_ID[spellName]
-            if staticId and staticId ~= correctedId and macroTorch.tracingSpells[staticId] then
-                macroTorch.tracingSpells[correctedId] = macroTorch.tracingSpells[staticId]
-                macroTorch.tracingSpells[staticId] = nil
-            end
-        end
-    end
-end
