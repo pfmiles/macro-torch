@@ -111,7 +111,7 @@ function macroTorch.log(a, color)
     while macroTorch.tableLen(messages) >= MACRO_TORCH_LOG.maxSize do
         table.remove(messages, 1)
     end
-    table.insert(messages, { msg = tostring(a), color = color or 'white' })
+    table.insert(messages, tostring(a))
 end
 
 -- DEBUG: init trace step 10 — interface_debug loaded (macroTorch.show defined)
