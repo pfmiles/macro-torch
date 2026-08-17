@@ -50,6 +50,23 @@ function macroTorch.eventHandle()
         -- on player login
     elseif event == 'PLAYER_ENTERING_WORLD' then
         macroTorch.onPlayerEnteringWorld()
+        -- DIAGNOSTIC: dump tracingSpells keys once per session
+        if not macroTorch._diagTracingSpellsDumped then
+            macroTorch._diagTracingSpellsDumped = true
+            local keys = {}
+            for k in pairs(macroTorch.tracingSpells or {}) do
+                table.insert(keys, tostring(k))
+            end
+            macroTorch.log("[DIAG|INIT] tracingSpells keys: " .. table.concat(keys, ", "))
+            -- also dump SPELL_NAME_TO_ID for reverse lookup verification
+            local idEntries = {}
+            for name, id in pairs(macroTorch.SPELL_NAME_TO_ID or {}) do
+                table.insert(idEntries, string.format("%s=%d", name, id))
+            end
+            macroTorch.log("[DIAG|INIT] SPELL_NAME_TO_ID: " .. table.concat(idEntries, ", "))
+            -- log locale info
+            macroTorch.log("[DIAG|INIT] GetLocale()=" .. tostring(GetLocale()))
+        end
         -- Defer selfTest by ~30 frames (~0.5s at 60fps) so UI subsystems
         -- (tooltip, inventory) are fully initialized before tests that depend
         -- on them (e.g. computeReshiftEnergy creates a cached GameTooltip frame;
@@ -107,9 +124,21 @@ function macroTorch.eventHandle()
     elseif event == "UNIT_CASTEVENT" then
         -- when player myself cast a spell
         local unitId, targetId, castType, spellId, timeCost = arg1, arg2, arg3, arg4, arg5
-        -- if unitId and macroTorch.player and macroTorch.player.guid and unitId == macroTorch.player.guid and castType ~= 'MAINHAND' and castType ~= 'OFFHAND' then
-        --     macroTorch.show('unitId=' .. tostring(unitId) .. ', targetId=' .. tostring(targetId) .. ', type=' .. tostring(castType) .. ', spellId=' .. tostring(spellId) .. ', timeCost=' .. tostring(timeCost))
-        -- end
+        -- DIAGNOSTIC: log all CAST events from player to verify event behavior
+        if unitId == macroTorch.player.guid and castType == 'CAST' then
+            -- reverse-lookup spell name from spellId for diagnostic
+            local reverseName = "?"
+            for name, id in pairs(macroTorch.SPELL_NAME_TO_ID or {}) do
+                if id == spellId then
+                    reverseName = name
+                    break
+                end
+            end
+            local traced = macroTorch.tracingSpells[reverseName] and "YES" or "NO"
+            macroTorch.log(string.format(
+                "[DIAG|UNIT_CASTEVENT] spellId=%d reverseName='%s' castType='%s' traced=%s",
+                spellId or 0, reverseName, tostring(castType), traced))
+        end
         -- only CAST events carry spellId data; MAINHAND/OFFHAND are auto-attack swings
         if unitId == macroTorch.player.guid and castType == 'CAST' then
             -- spellId dynamic correction: compare event spellId with static baseline
@@ -141,26 +170,33 @@ function macroTorch.eventHandle()
             end
         end
     elseif event == "RAW_COMBATLOG" then
-        -- DEBUG: print player-related combat log events for hit/miss analysis
+        -- DEBUG: temporarily disabled for UNIT_SPELLCAST_SUCCEEDED / UNIT_CASTEVENT diagnostic
         -- RAW_COMBATLOG (SuperWoW) surfaces CHAT_MSG_* events as structured args:
         --   arg1 = event type (e.g. CHAT_MSG_COMBAT_SELF_HITS)
         --   arg2 = message text
         -- Filter: keep only events where the player is the source or target.
         -- _SELF_ events are always player-related; others need text-based check.
-        local etype = tostring(arg1 or "")
-        local msg = tostring(arg2 or "")
-        local isPlayerRelated = false
-        if string.find(etype, "_SELF_") then
-            isPlayerRelated = true
-        elseif string.find(msg, "^You ") or string.find(msg, "^Your ") or string.find(msg, " your ")
-            or string.find(msg, " from you") or string.find(msg, " to you") then
-            isPlayerRelated = true
-        end
-        if isPlayerRelated then
-            macroTorch.log(string.format("[RAW_COMBATLOG] %s | %s", etype, msg))
-        end
+        -- local etype = tostring(arg1 or "")
+        -- local msg = tostring(arg2 or "")
+        -- local isPlayerRelated = false
+        -- if string.find(etype, "_SELF_") then
+        --     isPlayerRelated = true
+        -- elseif string.find(msg, "^You ") or string.find(msg, "^Your ") or string.find(msg, " your ")
+        --     or string.find(msg, " from you") or string.find(msg, " to you") then
+        --     isPlayerRelated = true
+        -- end
+        -- if isPlayerRelated then
+        --     macroTorch.log(string.format("[RAW_COMBATLOG] %s | %s", etype, msg))
+        -- end
     elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
         -- arg1=unit (e.g. "player"), arg2=spellName, arg3=rank, arg4=target
+        -- DIAGNOSTIC: log all player spell casts to verify event behavior
+        if arg1 == "player" then
+            local traced = macroTorch.tracingSpells[arg2] and "YES" or "NO"
+            macroTorch.log(string.format(
+                "[DIAG|SPELLCAST_SUCCEEDED] spell='%s' rank='%s' target='%s' traced=%s",
+                tostring(arg2), tostring(arg3), tostring(arg4), traced))
+        end
         if arg1 == "player" and arg2 and macroTorch.tracingSpells[arg2] then
             macroTorch.recordCastTable(arg2)
         end
