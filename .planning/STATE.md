@@ -70,6 +70,7 @@ current_phase_name: unit-spellcast-succeeded-unit-castevent-cast-spellid
 - Phase 21 added: catAtk 可维护性清理 — 基于 catAtk-core-principles.md 逆向审视，4 项纯代码改进：注释编号修复、斩杀入口注释、isInfiniteEnergy 集中化、keepRake ATK 爆发分离。来源：`.planning/catAtk-phaseA-maintainability.md` (2026-07-29)
 - Phase 22 added: catAtk 质量保障 — 基于原则的 SelfTest 回归测试 + 原则文档补充（附录 D 可追溯性矩阵）。来源：`.planning/catAtk-phaseB-quality.md` (2026-07-30)
 - Phase 23 added: Idol Dance (神像舞) Refactor — 修复 computeNormalRelic 2 个逻辑 gap + recoverNormalRelic 距离旁路优化 + Category O SelfTest 覆盖。来源：`.planning/phases/23-idol-dance-refactor/23-CONTEXT.md` (2026-08-02)
+- Phase 25 added: 参考druid相关逻辑，仿照代码组织结构，改造hunter职业的代码，构造出hunterAtk宏用于练级过程中的一键输出，包含远程和近战输出；hunterAoe用于范围输出，同样包括远程和近战；hunterDefend用于保命减伤；hunterControl用于控制目标；hunterMobTagging用于抢怪，包含近战和远程抢怪 (2026-08-17)
 
 ## Key Decisions
 

@@ -916,6 +916,17 @@ Plans:
 - [x] 24-02-PLAN.md — Remove current_casting_spell bridge + mark spellId infrastructure deprecated (Wave 2)
 - [x] 24-03-PLAN.md — Update Category K/N selftests for Phase 24 architecture (Wave 2)
 
+### Phase 25: 参考druid相关逻辑，仿照代码组织结构，改造hunter职业的代码，构造出hunterAtk宏用于练级过程中的一键输出，包含远程和近战输出；hunterAoe用于范围输出，同样包括远程和近战；hunterDefend用于保命减伤；hunterControl用于控制目标；hunterMobTagging用于抢怪，包含近战和远程抢怪
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 24
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 25 to break down)
+
 ---
 
 ## Task 统计
