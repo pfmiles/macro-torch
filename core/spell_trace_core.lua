@@ -134,7 +134,7 @@ function macroTorch.recordCastTable(spell)
         macroTorch.loginContext.castTable[spell][mob] = macroTorch.LRUStack:new(100)
     end
     -- dedup: skip if same spell on same mob within 0.2s
-    -- prevents double-recording when both UNIT_CASTEVENT and UNIT_SPELLCAST_SUCCEEDED fire
+    -- prevents double-recording from duplicate event firings (Phase 24+ UNIT_SPELLCAST_SUCCEEDED only)
     local last = macroTorch.loginContext.castTable[spell][mob].top
     if last and (GetTime() - last) < 0.2 then
         return
