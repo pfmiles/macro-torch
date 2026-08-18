@@ -931,7 +931,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 25-02-PLAN.md — combo.lua 创建：5 个一键宏函数（hunterAtk/hunterAoe/hunterDefend/hunterControl/hunterMobTagging）
+- [x] 25-02-PLAN.md — combo.lua 创建：5 个一键宏函数（hunterAtk/hunterAoe/hunterDefend/hunterControl/hunterMobTagging）
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
