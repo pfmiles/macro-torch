@@ -35,8 +35,7 @@ classes/druid/diag.lua
 classes/druid/leveling.lua
 # classes/ — Hunter (Phase 8)
 classes/hunter/Hunter.lua
-classes/hunter/combat.lua
-classes/hunter/utility.lua
+classes/hunter/combo.lua
 # classes/ — Warrior (Phase 8)
 classes/warrior/Warrior.lua
 classes/warrior/combat.lua
