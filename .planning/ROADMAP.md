@@ -927,7 +927,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 25-01-PLAN.md — Hunter.lua 完全重写：25 技能方法 + SpellTrace 注册 + 28 项 SelfTest
+- [x] 25-01-PLAN.md — Hunter.lua 完全重写：25 技能方法 + SpellTrace 注册 + 28 项 SelfTest
 
 **Wave 2** *(blocked on Wave 1 completion)*
 

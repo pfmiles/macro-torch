@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Phase 25 context gathered
-last_updated: "2026-08-18T15:33:49.199Z"
-last_activity: 2026-08-17
-last_activity_desc: "Completed Phase 23 Plan 01: idol dance refactor — fix computeNormalRelic + distance bypass + 7 Category O SelfTests"
+stopped_at: Completed Phase 25 Plan 01 — Hunter.lua rewrite
+last_updated: "2026-08-18T23:59:59.000Z"
+last_activity: 2026-08-18
 progress:
   total_phases: 23
   completed_phases: 19
   total_plans: 51
   completed_plans: 48
-current_phase_name: unit-spellcast-succeeded-unit-castevent-cast-spellid
+current_phase_name: druid-hunter-hunteratk-hunteraoe-hunterdefend-huntercontrol
+last_activity_desc: "Completed Phase 25 Plan 01: Hunter.lua rewrite — 25 skill methods, 2 SpellTrace registrations, 28 SelfTests"
 ---
 
 # Project State
@@ -49,6 +49,7 @@ current_phase_name: unit-spellcast-succeeded-unit-castevent-cast-spellid
 | Phase 21: catAtk 可维护性清理 | ✅ complete | 2026-07-29 | 2026-07-29 | 3/3 plans |
 | Phase 22: catAtk 质量保障 — SelfTest + 文档补充 | ✅ complete | 2026-07-30 | 2026-07-30 | 2/2 plans |
 | Phase 23: idol dance refactor — computeNormalRelic + 距离优化 | 🟡 in_progress | 2026-08-02 | — | 1/1 plan |
+| Phase 25: Hunter 一键宏改造 — Druid 对齐架构 | 🟡 in_progress | 2026-08-18 | — | 1/3 plans |
 
 ## Accumulated Context
 
@@ -143,6 +144,7 @@ current_phase_name: unit-spellcast-succeeded-unit-castevent-cast-spellid
 | Phase 22 P01 | 367 | 2 tasks | 3 files |
 | Phase 22 P02 | 480 | 2 tasks | 1 files |
 | Phase 23 P01 | 55 | 2 tasks | 2 files |
+| Phase 25 P01 | ~15 | 2 tasks | 1 files |
 
 ## Decisions
 
@@ -168,12 +170,13 @@ current_phase_name: unit-spellcast-succeeded-unit-castevent-cast-spellid
 - [Phase 23 P01]: D-02: Non-combat pre-switch to Savagery preserved as first branch fallthrough
 - [Phase 23 P01]: D-03/D-04: Distance bypass (20yd threshold) in recoverNormalRelic inserted before energy check
 - [Phase 23 P01]: O-04 deviation: Plan instructed pendingCasts approach but actual isRipPresent checks clickContext.isRipPresent — fixed by injecting field directly in clickContext
+- [Phase 25 P01]: Hunter.lua complete rewrite — 303 lines, 25 skill methods (10 corrected range params + 15 new), 2 SpellTrace registrations (Serpent Sting + Scorpid Sting with spellName/land/immune/debuffTexture), 28 SelfTest registrations (3 infra + 25 skill methods), aligned with Druid.lua architecture
 
 ## Session
 
-**Last session:** 2026-08-18T11:00:51.004Z
-**Stopped at:** Phase 25 context gathered
-**Resume file:** .planning/phases/25-druid-hunter-hunteratk-hunteraoe-hunterdefend-huntercontrol/25-CONTEXT.md
+**Last session:** 2026-08-18T23:59:59.000Z
+**Stopped at:** Completed Phase 25 Plan 01 — Hunter.lua rewrite
+**Resume file:** .planning/phases/25-druid-hunter-hunteratk-hunteraoe-hunterdefend-huntercontrol/25-02-PLAN.md
 
 ## Quick Tasks Completed
 
@@ -203,5 +206,5 @@ current_phase_name: unit-spellcast-succeeded-unit-castevent-cast-spellid
 ## Session
 
 **Last session:** 2026-07-29T14:16:17.000Z
-**Last activity:** 2026-08-17 - Completed quick task 260817-sg1: macroTorch.log 持久化格式简化
+**Last activity:** 2026-08-18
 **Resume file:** .planning/phases/21-catAtk-maintainability/21-03-PLAN.md
