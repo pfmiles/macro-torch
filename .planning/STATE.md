@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Completed Phase 25 Plan 02 — Hunter combo.lua 5 macro functions
-last_updated: "2026-08-19T00:00:00.000Z"
-last_activity: 2026-08-19
+stopped_at: Completed 25-03-PLAN.md — Phase 25 complete (3/3 plans)
+last_updated: "2026-08-18T16:17:17.644Z"
 progress:
   total_phases: 23
-  completed_phases: 19
+  completed_phases: 20
   total_plans: 51
-  completed_plans: 49
+  completed_plans: 50
 current_phase_name: druid-hunter-hunteratk-hunteraoe-hunterdefend-huntercontrol
-last_activity_desc: "Completed Phase 25 Plan 02: Hunter combo.lua — 5 macro functions (hunterAtk/Aoe/Defend/Control/MobTagging) with distance routing, 5 SelfTests"
+last_activity: 2026-08-19
+last_activity_desc: "Completed Phase 25 (3/3 plans) — Hunter one-button macro refactor: file cleanup, build verification, 25 skill methods + 5 combo functions"
 ---
 
 # Project State
@@ -49,7 +49,7 @@ last_activity_desc: "Completed Phase 25 Plan 02: Hunter combo.lua — 5 macro fu
 | Phase 21: catAtk 可维护性清理 | ✅ complete | 2026-07-29 | 2026-07-29 | 3/3 plans |
 | Phase 22: catAtk 质量保障 — SelfTest + 文档补充 | ✅ complete | 2026-07-30 | 2026-07-30 | 2/2 plans |
 | Phase 23: idol dance refactor — computeNormalRelic + 距离优化 | 🟡 in_progress | 2026-08-02 | — | 1/1 plan |
-| Phase 25: Hunter 一键宏改造 — Druid 对齐架构 | 🟡 in_progress | 2026-08-18 | — | 2/3 plans |
+| Phase 25: Hunter 一键宏改造 — Druid 对齐架构 | ✅ complete | 2026-08-18 | 2026-08-19 | 3/3 plans |
 
 ## Accumulated Context
 
@@ -146,6 +146,7 @@ last_activity_desc: "Completed Phase 25 Plan 02: Hunter combo.lua — 5 macro fu
 | Phase 23 P01 | 55 | 2 tasks | 2 files |
 | Phase 25 P01 | ~15 | 2 tasks | 1 files |
 | Phase 25 P02 | ~8 | 2 tasks | 1 files |
+| Phase 25 P03 | 2 | 2 tasks | 1 files |
 
 ## Decisions
 
@@ -173,12 +174,13 @@ last_activity_desc: "Completed Phase 25 Plan 02: Hunter combo.lua — 5 macro fu
 - [Phase 23 P01]: O-04 deviation: Plan instructed pendingCasts approach but actual isRipPresent checks clickContext.isRipPresent — fixed by injecting field directly in clickContext
 - [Phase 25 P01]: Hunter.lua complete rewrite — 303 lines, 25 skill methods (10 corrected range params + 15 new), 2 SpellTrace registrations (Serpent Sting + Scorpid Sting with spellName/land/immune/debuffTexture), 28 SelfTest registrations (3 infra + 25 skill methods), aligned with Druid.lua architecture
 - [Phase 25 P02]: Hunter combo.lua created — 316 lines, 5 public macro functions (hunterAtk/Aoe/Defend/Control/MobTagging) with distance routing, 2 internal helpers (hunterAtkRanged/Melee), 5 SelfTest registrations, no Aspect/Pet/Trap logic in hunterAtk modules per D-06/D-07/D-08
+- [Phase ?]: [Phase 25 P03]: build_order.txt was already partially restructured (combo.lua in place, combat/utility absent) — adjusted Task 1 from 4-line block replacement to comment-only update, fully achieving plan objective
 
 ## Session
 
-**Last session:** 2026-08-19T00:00:00.000Z
-**Stopped at:** Completed Phase 25 Plan 02 — Hunter combo.lua 5 macro functions
-**Resume file:** .planning/phases/25-druid-hunter-hunteratk-hunteraoe-hunterdefend-huntercontrol/25-03-PLAN.md
+**Last session:** 2026-08-18T16:16:22.647Z
+**Stopped at:** Completed 25-03-PLAN.md — Phase 25 complete (3/3 plans)
+**Resume file:** None
 
 ## Quick Tasks Completed
 

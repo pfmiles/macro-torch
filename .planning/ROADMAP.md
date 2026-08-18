@@ -922,7 +922,7 @@ Plans:
 
 **Requirements**: H-01, H-02, H-03, H-04, H-05, H-06, H-07, H-08, H-09, H-10, H-11, H-12
 **Depends on:** Phase 24
-**Plans:** 3 plans
+**Plans:** 3/3 plans executed
 
 Plans:
 **Wave 1**
@@ -935,7 +935,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 25-03-PLAN.md — 构建清理：build_order.txt 更新 + 废弃文件删除 + 构建验证
+- [x] 25-03-PLAN.md — 构建清理：build_order.txt 更新 + 废弃文件删除 + 构建验证
 
 ---
 
