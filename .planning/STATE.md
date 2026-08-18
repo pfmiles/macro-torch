@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Phase 23 Plan 01 complete
-last_updated: "2026-08-16T17:42:09.585Z"
+stopped_at: Phase 25 context gathered
+last_updated: "2026-08-18T11:00:51.054Z"
 last_activity: 2026-08-17
-progress:
-  total_phases: 22
-  completed_phases: 18
-  total_plans: 48
-  completed_plans: 45
 last_activity_desc: "Completed Phase 23 Plan 01: idol dance refactor — fix computeNormalRelic + distance bypass + 7 Category O SelfTests"
+progress:
+  total_phases: 23
+  completed_phases: 19
+  total_plans: 48
+  completed_plans: 48
 current_phase_name: unit-spellcast-succeeded-unit-castevent-cast-spellid
 ---
 
@@ -171,9 +171,9 @@ current_phase_name: unit-spellcast-succeeded-unit-castevent-cast-spellid
 
 ## Session
 
-**Last session:** 2026-08-03T10:49:58.000Z
-**Stopped at:** Phase 23 Plan 01 complete
-**Resume file:** .planning/phases/23-idol-dance-refactor/23-01-PLAN.md
+**Last session:** 2026-08-18T11:00:51.004Z
+**Stopped at:** Phase 25 context gathered
+**Resume file:** .planning/phases/25-druid-hunter-hunteratk-hunteraoe-hunterdefend-huntercontrol/25-CONTEXT.md
 
 ## Quick Tasks Completed
 
