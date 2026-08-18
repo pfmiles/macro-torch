@@ -4,12 +4,12 @@ milestone: v1.0
 milestone_name: milestone
 status: in_progress
 stopped_at: Completed 25-03-PLAN.md — Phase 25 complete (3/3 plans)
-last_updated: "2026-08-18T16:17:17.644Z"
+last_updated: "2026-08-18T16:35:51.813Z"
 progress:
   total_phases: 23
   completed_phases: 20
   total_plans: 51
-  completed_plans: 50
+  completed_plans: 51
 current_phase_name: druid-hunter-hunteratk-hunteraoe-hunterdefend-huntercontrol
 last_activity: 2026-08-19
 last_activity_desc: "Completed Phase 25 (3/3 plans) — Hunter one-button macro refactor: file cleanup, build verification, 25 skill methods + 5 combo functions"

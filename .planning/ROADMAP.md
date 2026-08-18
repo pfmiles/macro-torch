@@ -922,7 +922,7 @@ Plans:
 
 **Requirements**: H-01, H-02, H-03, H-04, H-05, H-06, H-07, H-08, H-09, H-10, H-11, H-12
 **Depends on:** Phase 24
-**Plans:** 3/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 **Wave 1**
