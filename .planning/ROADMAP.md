@@ -918,14 +918,17 @@ Plans:
 
 ### Phase 25: 参考druid相关逻辑，仿照代码组织结构，改造hunter职业的代码，构造出hunterAtk宏用于练级过程中的一键输出，包含远程和近战输出；hunterAoe用于范围输出，同样包括远程和近战；hunterDefend用于保命减伤；hunterControl用于控制目标；hunterMobTagging用于抢怪，包含近战和远程抢怪
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** 参考 Druid 的一键宏架构（druidAtk/druidAoe/druidDefend/druidControl/druidMobTagging），为 Hunter 职业构建同等的 5 个一键宏：hunterAtk（练级输出，含远程/近战距离路由）、hunterAoe（范围攻击）、hunterDefend（保命—仅 Deterrence）、hunterControl（控制）、hunterMobTagging（抢怪，含远程/近战）。
+
+**Requirements**: H-01, H-02, H-03, H-04, H-05, H-06, H-07, H-08, H-09, H-10, H-11, H-12
 **Depends on:** Phase 24
-**Plans:** 0 plans
+**Plans:** 3 plans
 
 Plans:
 
-- [ ] TBD (run /gsd-plan-phase 25 to break down)
+- [ ] 25-01-PLAN.md — Hunter.lua 完全重写：25 技能方法 + SpellTrace 注册 + 28 项 SelfTest
+- [ ] 25-02-PLAN.md — combo.lua 创建：5 个一键宏函数（hunterAtk/hunterAoe/hunterDefend/hunterControl/hunterMobTagging）
+- [ ] 25-03-PLAN.md — 构建清理：build_order.txt 更新 + 废弃文件删除 + 构建验证
 
 ---
 
