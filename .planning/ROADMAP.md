@@ -925,9 +925,16 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
+**Wave 1**
 
 - [ ] 25-01-PLAN.md — Hunter.lua 完全重写：25 技能方法 + SpellTrace 注册 + 28 项 SelfTest
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 25-02-PLAN.md — combo.lua 创建：5 个一键宏函数（hunterAtk/hunterAoe/hunterDefend/hunterControl/hunterMobTagging）
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 25-03-PLAN.md — 构建清理：build_order.txt 更新 + 废弃文件删除 + 构建验证
 
 ---

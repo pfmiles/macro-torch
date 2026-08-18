@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: in_progress
 stopped_at: Phase 25 context gathered
-last_updated: "2026-08-18T11:00:51.054Z"
+last_updated: "2026-08-18T15:33:49.199Z"
 last_activity: 2026-08-17
 last_activity_desc: "Completed Phase 23 Plan 01: idol dance refactor — fix computeNormalRelic + distance bypass + 7 Category O SelfTests"
 progress:
   total_phases: 23
   completed_phases: 19
-  total_plans: 48
+  total_plans: 51
   completed_plans: 48
 current_phase_name: unit-spellcast-succeeded-unit-castevent-cast-spellid
 ---
