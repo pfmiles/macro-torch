@@ -192,6 +192,105 @@ function macroTorch.hunterDefend()
     end
 end
 
+-- Hunter AoE one-button macro -- distance routing per D-13
+-- Ranged (>=8yd): Multi-Shot -> Volley
+-- Melee (<8yd): Explosive Trap -> Immolation Trap
+function macroTorch.hunterAoe()
+    if not macroTorch.target.isCanAttack then
+        macroTorch.player.targetEnemy()
+        if not macroTorch.target.isCanAttack then return end
+    end
+
+    if macroTorch.target.distance < 8 then
+        -- Melee AoE: traps placed at feet
+        if macroTorch.isSpellExist('Explosive Trap', 'spell')
+                and macroTorch.player.isSpellReady('Explosive Trap') then
+            macroTorch.player.explosive_trap('ready')
+        elseif macroTorch.isSpellExist('Immolation Trap', 'spell')
+                and macroTorch.player.isSpellReady('Immolation Trap') then
+            macroTorch.player.immolation_trap('ready')
+        end
+    else
+        -- Ranged AoE: instant Multi-Shot + channeled Volley
+        macroTorch.player.startAutoShoot()
+        if macroTorch.isSpellExist('Multi-Shot', 'spell') then
+            macroTorch.player.multi_shot('ready')
+        end
+        if macroTorch.isSpellExist('Volley', 'spell')
+                and macroTorch.player.isSpellReady('Volley') then
+            macroTorch.player.volley('ready')
+        end
+    end
+end
+
+-- Hunter control one-button macro -- distance routing per D-15
+-- Melee (<8yd): Wing Clip (slow) + Freezing Trap (freeze)
+-- Ranged (>=8yd): Concussive Shot (slow) + Scatter Shot (confuse, talent-gated)
+function macroTorch.hunterControl()
+    local target = macroTorch.target
+    if not target.isCanAttack then
+        macroTorch.player.targetEnemy()
+        if not target.isCanAttack then return end
+    end
+
+    if target.distance < 8 then
+        -- Melee control: Wing Clip always available, Freeze as secondary option
+        if macroTorch.isSpellExist('Wing Clip', 'spell') then
+            macroTorch.player.wing_clip('ready')
+        end
+        if macroTorch.isSpellExist('Freezing Trap', 'spell')
+                and macroTorch.player.isSpellReady('Freezing Trap') then
+            macroTorch.player.freezing_trap('ready')
+        end
+    else
+        -- Ranged control: Concussive Shot always available, Scatter Shot talent-gated
+        if macroTorch.isSpellExist('Concussive Shot', 'spell') then
+            macroTorch.player.concussive_shot('ready')
+        end
+        if macroTorch.isSpellExist('Scatter Shot', 'spell') then
+            macroTorch.player.scatter_shot('ready')
+        end
+    end
+end
+
+-- Hunter mob-tagging one-button macro -- distance routing + PvP filter + auto-chain per D-16/D-17/D-18/D-19
+-- Ranged tag: Arcane Shot rank 1 (instant, 30yd, lowest mana)
+-- Melee tag: Wing Clip (instant direct damage + slow)
+-- PvP filter: skip player targets via ClearTarget()
+-- Auto-chain: on tag confirmed (target.isAttackingMe), transition to hunterAtk()
+function macroTorch.hunterMobTagging()
+    local player = macroTorch.player
+    local target = macroTorch.target
+
+    -- PvP filter per D-18: skip player targets, refer to druidMobTagging double-check pattern
+    if not target.isCanAttack or target.isPlayerControlled then
+        player.targetEnemy()
+        if target.isCanAttack and target.isPlayerControlled then
+            ClearTarget()
+        end
+        return
+    end
+
+    if target.distance < 8 then
+        -- Melee tag: Wing Clip per D-17 (instant melee damage + slow)
+        if macroTorch.isSpellExist('Wing Clip', 'spell') then
+            player.wing_clip('ready')
+        end
+        player.startAutoAtk()
+    else
+        -- Ranged tag: Arcane Shot rank 1 per D-16 (instant, 30yd, lowest mana)
+        player.startAutoShoot()
+        if macroTorch.isSpellExist('Arcane Shot', 'spell') then
+            player.arcane_shot('ready', 1)  -- rank=1, lowest mana cost
+        end
+    end
+
+    -- Auto-chain to hunterAtk if tag confirmed per D-19
+    if target.isAttackingMe then
+        macroTorch.hunterAtk()
+    end
+end
+
 macroTorch.SelfTest:register("Hunter: combo methods -- hunterAtk exists", function()
     if UnitClass('player') ~= 'Hunter' then return end
     assert(type(macroTorch.hunterAtk) == "function", "hunterAtk not a function")
@@ -200,4 +299,19 @@ end, true)
 macroTorch.SelfTest:register("Hunter: combo methods -- hunterDefend exists", function()
     if UnitClass('player') ~= 'Hunter' then return end
     assert(type(macroTorch.hunterDefend) == "function", "hunterDefend not a function")
+end, true)
+
+macroTorch.SelfTest:register("Hunter: combo methods -- hunterAoe exists", function()
+    if UnitClass('player') ~= 'Hunter' then return end
+    assert(type(macroTorch.hunterAoe) == "function", "hunterAoe not a function")
+end, true)
+
+macroTorch.SelfTest:register("Hunter: combo methods -- hunterControl exists", function()
+    if UnitClass('player') ~= 'Hunter' then return end
+    assert(type(macroTorch.hunterControl) == "function", "hunterControl not a function")
+end, true)
+
+macroTorch.SelfTest:register("Hunter: combo methods -- hunterMobTagging exists", function()
+    if UnitClass('player') ~= 'Hunter' then return end
+    assert(type(macroTorch.hunterMobTagging) == "function", "hunterMobTagging not a function")
 end, true)
