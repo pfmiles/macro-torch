@@ -22,6 +22,8 @@ function macroTorch.Hunter:new()
     setmetatable(obj, macroTorch.classMetatable(self, "HUNTER_FIELD_FUNC_MAP"))
 
     -- Type A skills: enemy target only (onSelf=false)
+
+    -- Melee skills (nil range = no range check, handled by isInRange logic)
     function obj.raptor_strike(mode, rank)
         return obj._castSpell({ en = 'Raptor Strike', zh = '猛禽一击' }, mode, nil, nil, false, rank)
     end
@@ -30,31 +32,49 @@ function macroTorch.Hunter:new()
         return obj._castSpell({ en = 'Mongoose Bite', zh = '猫鼬撕咬' }, mode, nil, nil, false, rank)
     end
 
-    function obj.arcane_shot(mode, rank)
-        return obj._castSpell({ en = 'Arcane Shot', zh = '奥术射击' }, mode, nil, nil, false, rank)
-    end
-
-    function obj.multi_shot(mode, rank)
-        return obj._castSpell({ en = 'Multi-Shot', zh = '多重射击' }, mode, nil, nil, false, rank)
-    end
-
-    function obj.hunters_mark(mode, rank)
-        return obj._castSpell({ en = "Hunter's Mark", zh = '猎人印记' }, mode, nil, nil, false, rank)
-    end
-
-    function obj.serpent_sting(mode, rank)
-        return obj._castSpell({ en = 'Serpent Sting', zh = '毒蛇钉刺' }, mode, nil, nil, false, rank)
-    end
-
     function obj.wing_clip(mode, rank)
         return obj._castSpell({ en = 'Wing Clip', zh = '摔绊' }, mode, nil, nil, false, rank)
     end
 
+    -- Ranged skills (30yd range for standard shots, 15yd for Scatter Shot)
+    function obj.arcane_shot(mode, rank)
+        return obj._castSpell({ en = 'Arcane Shot', zh = '奥术射击' }, mode, 30, nil, false, rank)
+    end
+
+    function obj.multi_shot(mode, rank)
+        return obj._castSpell({ en = 'Multi-Shot', zh = '多重射击' }, mode, 30, nil, false, rank)
+    end
+
+    function obj.hunters_mark(mode, rank)
+        return obj._castSpell({ en = "Hunter's Mark", zh = '猎人印记' }, mode, 30, nil, false, rank)
+    end
+
+    function obj.serpent_sting(mode, rank)
+        return obj._castSpell({ en = 'Serpent Sting', zh = '毒蛇钉刺' }, mode, 30, nil, false, rank)
+    end
+
     function obj.concussive_shot(mode, rank)
-        return obj._castSpell({ en = 'Concussive Shot', zh = '震荡射击' }, mode, nil, nil, false, rank)
+        return obj._castSpell({ en = 'Concussive Shot', zh = '震荡射击' }, mode, 30, nil, false, rank)
+    end
+
+    function obj.aimed_shot(mode, rank)
+        return obj._castSpell({ en = 'Aimed Shot', zh = '瞄准射击' }, mode, 30, nil, false, rank)
+    end
+
+    function obj.scorpid_sting(mode, rank)
+        return obj._castSpell({ en = 'Scorpid Sting', zh = '毒蝎钉刺' }, mode, 30, nil, false, rank)
+    end
+
+    function obj.viper_sting(mode, rank)
+        return obj._castSpell({ en = 'Viper Sting', zh = '蝰蛇钉刺' }, mode, 30, nil, false, rank)
+    end
+
+    function obj.scatter_shot(mode, rank)
+        return obj._castSpell({ en = 'Scatter Shot', zh = '驱散射击' }, mode, 15, nil, false, rank)
     end
 
     -- Type B skills: self target only (onSelf=true)
+
     function obj.disengage(mode, rank)
         return obj._castSpell({ en = 'Disengage', zh = '逃脱' }, mode, nil, nil, true, rank)
     end
@@ -68,13 +88,61 @@ function macroTorch.Hunter:new()
         end
     end
 
+    -- Traps (self-placed at feet, onSelf=true, range=nil)
+    function obj.immolation_trap(mode, rank)
+        return obj._castSpell({ en = 'Immolation Trap', zh = '献祭陷阱' }, mode, nil, nil, true, rank)
+    end
+
+    function obj.explosive_trap(mode, rank)
+        return obj._castSpell({ en = 'Explosive Trap', zh = '爆炸陷阱' }, mode, nil, nil, true, rank)
+    end
+
+    function obj.freezing_trap(mode, rank)
+        return obj._castSpell({ en = 'Freezing Trap', zh = '冰冻陷阱' }, mode, nil, nil, true, rank)
+    end
+
+    -- Volley: channeled AoE, self-targeted (placed on ground)
+    function obj.volley(mode, rank)
+        return obj._castSpell({ en = 'Volley', zh = '乱射' }, mode, nil, nil, true, rank)
+    end
+
+    -- Defensive / utility self-target skills
+    function obj.deterrence(mode, rank)
+        return obj._castSpell({ en = 'Deterrence', zh = '威慑' }, mode, nil, nil, true, rank)
+    end
+
+    function obj.feign_death(mode, rank)
+        return obj._castSpell({ en = 'Feign Death', zh = '假死' }, mode, nil, nil, true, rank)
+    end
+
+    function obj.mend_pet(mode, rank)
+        return obj._castSpell({ en = 'Mend Pet', zh = '治疗宠物' }, mode, nil, nil, true, rank)
+    end
+
+    function obj.revive_pet(mode, rank)
+        return obj._castSpell({ en = 'Revive Pet', zh = '复活宠物' }, mode, nil, nil, true, rank)
+    end
+
+    function obj.rapid_fire(mode, rank)
+        return obj._castSpell({ en = 'Rapid Fire', zh = '急速射击' }, mode, nil, nil, true, rank)
+    end
+
+    -- Aspect self-buffs
+    function obj.aspect_of_the_hawk(mode, rank)
+        return obj._castSpell({ en = 'Aspect of the Hawk', zh = '雄鹰守护' }, mode, nil, nil, true, rank)
+    end
+
+    function obj.aspect_of_the_monkey(mode, rank)
+        return obj._castSpell({ en = 'Aspect of the Monkey', zh = '灵猴守护' }, mode, nil, nil, true, rank)
+    end
+
     return obj
 end
 
 -- player fields to function mapping
 macroTorch.HUNTER_FIELD_FUNC_MAP = {
     -- basic props (none currently needed)
-    -- conditinal props (reserved for future class-specific lazy-computed fields)
+    -- conditional props (reserved for future class-specific lazy-computed fields)
 }
 
 macroTorch.hunter = macroTorch.Hunter:new()
@@ -82,7 +150,12 @@ macroTorch.registerPlayerClass("Hunter", macroTorch.Hunter)
 
 -- tracing spell trace/immune via declarative SpellTrace:register() API
 macroTorch.SpellTrace:register('Serpent Sting', {
+    spellName = 'Serpent Sting', land = true,
     immune = true, debuffTexture = 'Ability_Hunter_SniperShot'
+})
+macroTorch.SpellTrace:register('Scorpid Sting', {
+    spellName = 'Scorpid Sting', land = true,
+    immune = true, debuffTexture = 'INV_Misc_QuestionMark'
 })
 
 -- Hunter class-specific self-test registrations
@@ -104,7 +177,7 @@ macroTorch.SelfTest:register("Hunter: registered in PLAYER_CLASS_REGISTRY", func
     assert(macroTorch.PLAYER_CLASS_REGISTRY["Hunter"] ~= nil, "Hunter not in PLAYER_CLASS_REGISTRY")
 end, true)
 
--- Skill method existence tests (11 methods)
+-- Skill method existence tests (25 methods)
 macroTorch.SelfTest:register("Hunter: skill method raptor_strike exists", function()
     if UnitClass('player') ~= 'Hunter' then return end
     assert(type(macroTorch.hunter.raptor_strike) == "function", "raptor_strike is not a function")
@@ -153,4 +226,79 @@ end, true)
 macroTorch.SelfTest:register("Hunter: skill method call_pet exists", function()
     if UnitClass('player') ~= 'Hunter' then return end
     assert(type(macroTorch.hunter.call_pet) == "function", "call_pet is not a function")
+end, true)
+
+macroTorch.SelfTest:register("Hunter: skill method aimed_shot exists", function()
+    if UnitClass('player') ~= 'Hunter' then return end
+    assert(type(macroTorch.hunter.aimed_shot) == "function", "aimed_shot is not a function")
+end, true)
+
+macroTorch.SelfTest:register("Hunter: skill method scorpid_sting exists", function()
+    if UnitClass('player') ~= 'Hunter' then return end
+    assert(type(macroTorch.hunter.scorpid_sting) == "function", "scorpid_sting is not a function")
+end, true)
+
+macroTorch.SelfTest:register("Hunter: skill method viper_sting exists", function()
+    if UnitClass('player') ~= 'Hunter' then return end
+    assert(type(macroTorch.hunter.viper_sting) == "function", "viper_sting is not a function")
+end, true)
+
+macroTorch.SelfTest:register("Hunter: skill method scatter_shot exists", function()
+    if UnitClass('player') ~= 'Hunter' then return end
+    assert(type(macroTorch.hunter.scatter_shot) == "function", "scatter_shot is not a function")
+end, true)
+
+macroTorch.SelfTest:register("Hunter: skill method volley exists", function()
+    if UnitClass('player') ~= 'Hunter' then return end
+    assert(type(macroTorch.hunter.volley) == "function", "volley is not a function")
+end, true)
+
+macroTorch.SelfTest:register("Hunter: skill method immolation_trap exists", function()
+    if UnitClass('player') ~= 'Hunter' then return end
+    assert(type(macroTorch.hunter.immolation_trap) == "function", "immolation_trap is not a function")
+end, true)
+
+macroTorch.SelfTest:register("Hunter: skill method explosive_trap exists", function()
+    if UnitClass('player') ~= 'Hunter' then return end
+    assert(type(macroTorch.hunter.explosive_trap) == "function", "explosive_trap is not a function")
+end, true)
+
+macroTorch.SelfTest:register("Hunter: skill method freezing_trap exists", function()
+    if UnitClass('player') ~= 'Hunter' then return end
+    assert(type(macroTorch.hunter.freezing_trap) == "function", "freezing_trap is not a function")
+end, true)
+
+macroTorch.SelfTest:register("Hunter: skill method deterrence exists", function()
+    if UnitClass('player') ~= 'Hunter' then return end
+    assert(type(macroTorch.hunter.deterrence) == "function", "deterrence is not a function")
+end, true)
+
+macroTorch.SelfTest:register("Hunter: skill method feign_death exists", function()
+    if UnitClass('player') ~= 'Hunter' then return end
+    assert(type(macroTorch.hunter.feign_death) == "function", "feign_death is not a function")
+end, true)
+
+macroTorch.SelfTest:register("Hunter: skill method mend_pet exists", function()
+    if UnitClass('player') ~= 'Hunter' then return end
+    assert(type(macroTorch.hunter.mend_pet) == "function", "mend_pet is not a function")
+end, true)
+
+macroTorch.SelfTest:register("Hunter: skill method revive_pet exists", function()
+    if UnitClass('player') ~= 'Hunter' then return end
+    assert(type(macroTorch.hunter.revive_pet) == "function", "revive_pet is not a function")
+end, true)
+
+macroTorch.SelfTest:register("Hunter: skill method rapid_fire exists", function()
+    if UnitClass('player') ~= 'Hunter' then return end
+    assert(type(macroTorch.hunter.rapid_fire) == "function", "rapid_fire is not a function")
+end, true)
+
+macroTorch.SelfTest:register("Hunter: skill method aspect_of_the_hawk exists", function()
+    if UnitClass('player') ~= 'Hunter' then return end
+    assert(type(macroTorch.hunter.aspect_of_the_hawk) == "function", "aspect_of_the_hawk is not a function")
+end, true)
+
+macroTorch.SelfTest:register("Hunter: skill method aspect_of_the_monkey exists", function()
+    if UnitClass('player') ~= 'Hunter' then return end
+    assert(type(macroTorch.hunter.aspect_of_the_monkey) == "function", "aspect_of_the_monkey is not a function")
 end, true)
