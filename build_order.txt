@@ -33,7 +33,7 @@ classes/druid/selftest.lua
 # classes/ -- Druid diagnostics (quick task 260623-wrh-druid)
 classes/druid/diag.lua
 classes/druid/leveling.lua
-# classes/ — Hunter (Phase 8)
+# classes/ — Hunter (Phase 8 / Phase 25 combo refactor)
 classes/hunter/Hunter.lua
 classes/hunter/combo.lua
 # classes/ — Warrior (Phase 8)
