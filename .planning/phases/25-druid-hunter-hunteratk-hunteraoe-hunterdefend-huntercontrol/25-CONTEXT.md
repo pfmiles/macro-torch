@@ -2,6 +2,7 @@
 
 **Gathered:** 2026-08-18
 **Status:** Ready for planning
+**Nyquist Validation:** SKIPPED by explicit user decision — VALIDATION.md will not be created for this phase.
 
 <domain>
 ## Phase Boundary

@@ -952,34 +952,36 @@ For SpellTrace and `buffed()` checks, the following textures (ASSUMED, need user
 
 ---
 
-## 14. Open Questions
+## 14. Open Questions (RESOLVED)
 
-1. **Scorpid Sting debuff texture**
+All six questions below were resolved pragmatically by the implementation plans (25-01, 25-02, 25-03), as annotated inline.
+
+1. **Scorpid Sting debuff texture** — RESOLVED: Plan 25-01 uses `INV_Misc_QuestionMark` as placeholder texture for Scorpid Sting SpellTrace. This is a low-risk fallback; the texture is only used for immune detection display and does not affect land-trace correctness.
    - What we know: Serpent Sting uses `Ability_Hunter_SniperShot` (VERIFIED). Scorpid Sting texture unknown.
    - What's unclear: Exact texture for `buffed('Scorpid Sting', texture)` and SpellTrace immune detection.
    - Recommendation: User confirms in-game or planner uses a placeholder texture and flags for verification.
 
-2. **Hunter's Mark debuff texture for `buffed()` check**
+2. **Hunter's Mark debuff texture for `buffed()` check** — RESOLVED: Plan 25-02 openerMod uses `buffed("Hunter's Mark", 'Ability_Hunter_SniperShot')`. While this may share the same texture as Serpent Sting, the `buffed()` check is name-scoped so ambiguity is low risk.
    - What we know: Hunter's Mark is NOT spell-traced (D-12). But for `buffed()` check in openerMod, need texture.
    - What's unclear: Whether Hunter's Mark uses `Ability_Hunter_SniperShot` (same as Serpent Sting) or a different texture.
    - Recommendation: User confirms texture. If same as Serpent Sting, `buffed()` check may be ambiguous -- need to distinguish Hunter's Mark from Serpent Sting.
 
-3. **Scatter Shot availability without Marksmanship talents**
+3. **Scatter Shot availability without Marksmanship talents** — RESOLVED: All plans use `isSpellExist('Scatter Shot', 'spell')` guard (25-02 plan Task 2, hunterControl and hunterAoe functions). This handles talent-gating transparently — if the talent is not taken, the skill simply won't exist and the guard skips it.
    - What we know: Training data says 21pt Marksmanship requirement.
    - What's unclear: Confirm with user about their talent build. If no Marksmanship, Scatter Shot guard (`isSpellExist`) will handle it gracefully.
    - Recommendation: Code with `isSpellExist('Scatter Shot', 'spell')` guard -- handles talent-gating automatically.
 
-4. **Volley minimum range**
+4. **Volley minimum range** — RESOLVED: Volley is only called in the ranged branch (≥8yd) of hunterAoe (25-02 plan Task 2). Minimum range concern is moot by construction.
    - What we know: Volley is channeled AoE, placed at target location.
    - What's unclear: Does Volley have a minimum range in 1.12? If <8yd minimum, can't use at melee range.
    - Recommendation: Volley only called in ranged branch of hunterAoe (≥8yd), so minimum range concern is moot.
 
-5. **Trap shared cooldown**
+5. **Trap shared cooldown** — RESOLVED: All trap calls use `isSpellReady()` checks (25-02 plan Task 2, hunterAoe and hunterControl). CD handling is transparent — if a trap is on cooldown, `isSpellReady()` returns false and the code falls through to the next option.
    - What we know: Training data suggests traps may share a cooldown category.
    - What's unclear: If you place Freezing Trap, does it prevent placing Explosive Trap immediately?
    - Recommendation: Use `isSpellReady()` checks on each trap call -- CD handling is transparent.
 
-6. **hunterAtk melee branch: Raptor Strike vs Mongoose Bite priority**
+6. **hunterAtk melee branch: Raptor Strike vs Mongoose Bite priority** — RESOLVED: Plan 25-02 coreMeleeMod uses Raptor Strike first (always available), Mongoose Bite as fallback (25-02 plan Task 1, module 5 of hunterAtkMelee). `isSpellReady` handles Mongoose Bite's conditional (post-dodge) availability.
    - What we know: Raptor Strike is the primary melee attack (weapon damage + bonus); Mongoose Bite is reactive (only usable after dodge).
    - What's unclear: Should coreMeleeMod try Raptor Strike first, then Mongoose Bite? Or is Mongoose Bite conditional-only?
    - Recommendation: Raptor Strike first (always available), Mongoose Bite as conditional fallback. Check `isSpellReady` handles Mongoose Bite's conditional availability.
