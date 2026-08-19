@@ -151,11 +151,11 @@ macroTorch.registerPlayerClass("Hunter", macroTorch.Hunter)
 -- tracing spell trace/immune via declarative SpellTrace:register() API
 macroTorch.SpellTrace:register('Serpent Sting', {
     spellName = 'Serpent Sting', land = true,
-    immune = true, debuffTexture = 'Ability_Hunter_SniperShot'
+    immune = true, debuffTexture = 'Ability_Hunter_Quickshot'
 })
 macroTorch.SpellTrace:register('Scorpid Sting', {
     spellName = 'Scorpid Sting', land = true,
-    immune = true, debuffTexture = 'INV_Misc_QuestionMark'
+    immune = true, debuffTexture = 'Spell_Nature_CorrosiveBreath'
 })
 
 -- Hunter class-specific self-test registrations
