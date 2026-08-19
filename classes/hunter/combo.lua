@@ -3,8 +3,10 @@
 function macroTorch.hunterAtkRanged()
     local clickContext = {}
     clickContext.PLAYER_URGENT_HP_THRESHOLD = 15
-    clickContext.isTargetDummy = macroTorch.target.isCanAttack
-            and string.find(macroTorch.target.name, 'Training Dummy')
+    clickContext.isTargetDummy = macroTorch.toBoolean(
+            macroTorch.target.isCanAttack
+            and macroTorch.target.name
+            and string.find(macroTorch.target.name, 'Training Dummy'))
 
     local player = macroTorch.player
     local target = macroTorch.target
@@ -28,8 +30,6 @@ function macroTorch.hunterAtkRanged()
         if not macroTorch.context.burstFlags then
             macroTorch.context.burstFlags = {}
         end
-    end
-    if macroTorch.context.burstFlags then
         local flags = macroTorch.context.burstFlags
         -- Rapid Fire first (opens with ranged attack speed boost)
         if not flags.rapidFire then
@@ -51,6 +51,10 @@ function macroTorch.hunterAtkRanged()
         end
         -- All flags consumed, clean up state per T-25-06 mitigation
         macroTorch.context.burstFlags = nil
+    else
+        -- Shift released: purge any stale burst state to prevent Aimed Shot
+        -- from firing without the modifier key held (D-05 compliance)
+        macroTorch.context.burstFlags = nil
     end
 
     -- Module 5: openerMod -- Hunter's Mark on fight start
@@ -66,13 +70,13 @@ function macroTorch.hunterAtkRanged()
     if macroTorch.isFightStarted(clickContext) then
         -- Serpent Sting (damage-over-time sting, priority)
         if macroTorch.isSpellExist('Serpent Sting', 'spell')
-                and not target.buffed('Serpent Sting', 'Ability_Hunter_SniperShot') then
+                and not target.buffed('Serpent Sting', 'Ability_Hunter_Quickshot') then
             player.serpent_sting()
             return
         end
         -- Scorpid Sting (debuff sting, secondary)
         if macroTorch.isSpellExist('Scorpid Sting', 'spell')
-                and not target.buffed('Scorpid Sting', 'INV_Misc_QuestionMark') then
+                and not target.buffed('Scorpid Sting', 'Spell_Nature_CorrosiveBreath') then
             player.scorpid_sting()
             return
         end
@@ -107,8 +111,10 @@ end
 function macroTorch.hunterAtkMelee()
     local clickContext = {}
     clickContext.PLAYER_URGENT_HP_THRESHOLD = 15
-    clickContext.isTargetDummy = macroTorch.target.isCanAttack
-            and string.find(macroTorch.target.name, 'Training Dummy')
+    clickContext.isTargetDummy = macroTorch.toBoolean(
+            macroTorch.target.isCanAttack
+            and macroTorch.target.name
+            and string.find(macroTorch.target.name, 'Training Dummy'))
 
     local player = macroTorch.player
     local target = macroTorch.target
@@ -134,8 +140,6 @@ function macroTorch.hunterAtkMelee()
         if not macroTorch.context.burstFlags then
             macroTorch.context.burstFlags = {}
         end
-    end
-    if macroTorch.context.burstFlags then
         local flags = macroTorch.context.burstFlags
         -- Rapid Fire (ranged attack speed boost, still beneficial for melee+weave)
         if not flags.rapidFireMelee then
@@ -148,6 +152,9 @@ function macroTorch.hunterAtkMelee()
             end
         end
         -- All flags consumed, clean up state
+        macroTorch.context.burstFlags = nil
+    else
+        -- Shift released: purge any stale burst state (D-05 compliance)
         macroTorch.context.burstFlags = nil
     end
 
