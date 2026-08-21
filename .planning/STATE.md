@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 status: in_progress
-stopped_at: Phase 26 context gathered
-last_updated: "2026-08-21T15:18:45.809Z"
-state_head: ba4aca3761703583a6d7726f44bb96b045e6d3b5
+stopped_at: Completed 26-01-PLAN.md
+last_updated: "2026-08-21T16:03:27.043Z"
+state_head: 3b7644737472695c6f145225737479b1c4deae2c
 progress:
-  total_phases: 25
+  total_phases: 26
   completed_phases: 11
   total_plans: 53
-  completed_plans: 51
+  completed_plans: 52
 milestone_name: milestone
 last_activity: 2026-08-19
 current_phase_name: phase-fast
@@ -22,7 +22,7 @@ last_activity_desc: "Completed Phase 25 (3/3 plans) — Hunter one-button macro 
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 24 — UNIT_SPELLCAST_SUCCEEDED 替代 UNIT_CASTEVENT 的 cast 记录链路
+- **Current Phase**: Phase 26 — 猫德 fast 战斗逻辑（isFastBattleNotPvp 纯直伤策略）
 - **Active Branch**: main
 
 ## Phase Progress
@@ -51,6 +51,7 @@ last_activity_desc: "Completed Phase 25 (3/3 plans) — Hunter one-button macro 
 | Phase 22: catAtk 质量保障 — SelfTest + 文档补充 | ✅ complete | 2026-07-30 | 2026-07-30 | 2/2 plans |
 | Phase 23: idol dance refactor — computeNormalRelic + 距离优化 | 🟡 in_progress | 2026-08-02 | — | 1/1 plan |
 | Phase 25: Hunter 一键宏改造 — Druid 对齐架构 | ✅ complete | 2026-08-18 | 2026-08-19 | 3/3 plans |
+| Phase 26: 猫德 fast 战斗逻辑 | 🟡 in_progress | 2026-08-21 | — | 1/2 plans |
 
 ## Accumulated Context
 
@@ -149,6 +150,7 @@ last_activity_desc: "Completed Phase 25 (3/3 plans) — Hunter one-button macro 
 | Phase 25 P01 | ~15 | 2 tasks | 1 files |
 | Phase 25 P02 | ~8 | 2 tasks | 1 files |
 | Phase 25 P03 | 2 | 2 tasks | 1 files |
+| Phase 26 P01 | 175 | 3 tasks | 4 files |
 
 ## Decisions
 
@@ -177,12 +179,14 @@ last_activity_desc: "Completed Phase 25 (3/3 plans) — Hunter one-button macro 
 - [Phase 25 P01]: Hunter.lua complete rewrite — 303 lines, 25 skill methods (10 corrected range params + 15 new), 2 SpellTrace registrations (Serpent Sting + Scorpid Sting with spellName/land/immune/debuffTexture), 28 SelfTest registrations (3 infra + 25 skill methods), aligned with Druid.lua architecture
 - [Phase 25 P02]: Hunter combo.lua created — 316 lines, 5 public macro functions (hunterAtk/Aoe/Defend/Control/MobTagging) with distance routing, 2 internal helpers (hunterAtkRanged/Melee), 5 SelfTest registrations, no Aspect/Pet/Trap logic in hunterAtk modules per D-06/D-07/D-08
 - [Phase ?]: [Phase 25 P03]: build_order.txt was already partially restructured (combo.lua in place, combat/utility absent) — adjusted Task 1 from 4-line block replacement to comment-only update, fully achieving plan objective
+- [Phase ?]: Phase 26-01: isFastBattleNotPvp implemented — 8.5s dual condition (HRPS + health estimate), PvP-first exclusion before lazy per-frame cache; 7 additive guards wired across catAtk (combo.lua 3, cat.lua 3) + definition in Druid.lua (D-01..D-11)
+- [Phase ?]: Phase 26-01: Category P SelfTests P-01/P-02 registered (isOptional=true) — function existence + PvP-exclusion cache ordering; remaining 4 land in 26-02 (D-12)
 
 ## Session
 
-**Last session:** 2026-08-21T13:54:54.251Z
-**Stopped at:** Phase 26 context gathered
-**Resume file:** .planning/phases/26-phase-fast/26-CONTEXT.md
+**Last session:** 2026-08-21T16:03:24.857Z
+**Stopped at:** Completed 26-01-PLAN.md
+**Resume file:** None
 
 ## Quick Tasks Completed
 
