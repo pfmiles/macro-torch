@@ -158,7 +158,9 @@ function macroTorch.energyDischargeBeforeBite(clickContext)
     end
 
     -- If regular attack not possible and no Rake, use Rake
-    if not macroTorch.isRakePresent(clickContext) and macroTorch.player.mana >= clickContext.BITE_E + clickContext.RAKE_E then
+    -- [FAST] D-06: in fast battles discharge energy with Shred/Claw only — the first
+    -- regularAttack branch still runs (energy safety valve), but the Rake fallback is forbidden
+    if not macroTorch.isRakePresent(clickContext) and not macroTorch.isFastBattleNotPvp(clickContext) and macroTorch.player.mana >= clickContext.BITE_E + clickContext.RAKE_E then
         macroTorch.safeRake(clickContext)
     end
 end
@@ -331,7 +333,8 @@ function macroTorch.keepRake(clickContext)
         return
     end
     -- in no condition rake on 5cp
-    if not macroTorch.isFightStarted(clickContext) or clickContext.comboPoints == 5 or macroTorch.isRakePresent(clickContext) or clickContext.isImmuneRake or macroTorch.isKillShotOrLastChance(clickContext) then
+    -- [FAST] D-05: fast battles never apply Rake
+    if not macroTorch.isFightStarted(clickContext) or clickContext.comboPoints == 5 or macroTorch.isRakePresent(clickContext) or clickContext.isImmuneRake or macroTorch.isKillShotOrLastChance(clickContext) or macroTorch.isFastBattleNotPvp(clickContext) then
         return
     end
     -- [SIDE EFFECT] ATK Power burst for Rake on priority targets
