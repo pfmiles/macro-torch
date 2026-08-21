@@ -948,9 +948,12 @@ function macroTorch.shouldCastFFDuringWaitWindow(clickContext)
 end
 
 function macroTorch.getNextAbilityCost(clickContext)
+    -- [FAST] WR-01: in fast battles Rip/Rake can never be cast (D-04/D-05) and the 3-4CP quick-bite branch reports a Bite only tryBiteKillShot casts; skip all three so reshift/FF timing benchmarks real costs (Shred/Claw, Tiger)
+    local fastBattle = macroTorch.isFastBattleNotPvp(clickContext)
+
     -- 1. Ferocious Bite check (highest priority in Term Mod)
     -- Note: Bite has priority over Tiger during kill shot or 5cp with rip
-    if macroTorch.shouldUseBite(clickContext) then
+    if macroTorch.shouldUseBite(clickContext) and not fastBattle then
         return clickContext.BITE_E, 'Bite'
     end
 
@@ -963,12 +966,12 @@ function macroTorch.getNextAbilityCost(clickContext)
     end
 
     -- 3. Rip check (debuff maintenance)
-    if macroTorch.shouldCastRip(clickContext) then
+    if not fastBattle and macroTorch.shouldCastRip(clickContext) then
         return clickContext.RIP_E, 'Rip'
     end
 
     -- 4. Rake check (debuff maintenance)
-    if not macroTorch.isRakePresent(clickContext) and not clickContext.isImmuneRake then
+    if not fastBattle and not macroTorch.isRakePresent(clickContext) and not clickContext.isImmuneRake then
         return clickContext.RAKE_E, 'Rake'
     end
 
