@@ -112,7 +112,9 @@ function macroTorch.termMod(clickContext)
 end
 function macroTorch.cp5Bite(clickContext)
     -- 若目标身上还不存在rip效果，一般5星时是优先rip而非bite的，除非目标本来就免疫流血
-    if clickContext.comboPoints == 5 and (clickContext.isImmuneRip or macroTorch.isRipPresent(clickContext)) then
+    -- [FAST] D-08: in fast battles Rip is never cast, so isRipPresent/isImmuneRip are both false
+    -- and 5 combo points would never bite without this extra clause
+    if clickContext.comboPoints == 5 and (clickContext.isImmuneRip or macroTorch.isRipPresent(clickContext) or macroTorch.isFastBattleNotPvp(clickContext)) then
         -- bite有个机制：会将当前能量扣除使用bite的能量后剩余的能量转化为额外的伤害，若ooc则更是能将当前所有energy都转化为伤害打出
         -- 但经过实测，让bite转换多余能量还不如将多余能量打成其它技能收益来得大；ooc时bite也不如先用其它技能用掉ooc效果再bite，因此这里设置一个“bite之前泄能逻辑”来最大化dps
         -- 需要注意的是，泄能逻辑需要考虑一个特殊情况：bite是会刷新目标身上的流血效果的，因此为了不让rip效果断掉，我仅在目标身上流血效果还剩足够时间时泄能，若rip效果快没了，则需要马上bite刷新rip时间，否则若让rip断掉的话得不偿失；
