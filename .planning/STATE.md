@@ -1,17 +1,18 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-milestone_name: milestone
 status: in_progress
-stopped_at: Completed 25-03-PLAN.md — Phase 25 complete (3/3 plans)
-last_updated: "2026-08-18T16:35:51.813Z"
+stopped_at: Phase 26 context gathered
+last_updated: "2026-08-21T13:54:54.976Z"
+state_head: a4b445b366f1c56f685f6feeaa2aa4ca9d30c693
 progress:
-  total_phases: 23
-  completed_phases: 20
+  total_phases: 25
+  completed_phases: 11
   total_plans: 51
   completed_plans: 51
-current_phase_name: druid-hunter-hunteratk-hunteraoe-hunterdefend-huntercontrol
+milestone_name: milestone
 last_activity: 2026-08-19
+current_phase_name: druid-hunter-hunteratk-hunteraoe-hunterdefend-huntercontrol
 last_activity_desc: "Completed Phase 25 (3/3 plans) — Hunter one-button macro refactor: file cleanup, build verification, 25 skill methods + 5 combo functions"
 ---
 
@@ -72,6 +73,7 @@ last_activity_desc: "Completed Phase 25 (3/3 plans) — Hunter one-button macro 
 - Phase 22 added: catAtk 质量保障 — 基于原则的 SelfTest 回归测试 + 原则文档补充（附录 D 可追溯性矩阵）。来源：`.planning/catAtk-phaseB-quality.md` (2026-07-30)
 - Phase 23 added: Idol Dance (神像舞) Refactor — 修复 computeNormalRelic 2 个逻辑 gap + recoverNormalRelic 距离旁路优化 + Category O SelfTest 覆盖。来源：`.planning/phases/23-idol-dance-refactor/23-CONTEXT.md` (2026-08-02)
 - Phase 25 added: 参考druid相关逻辑，仿照代码组织结构，改造hunter职业的代码，构造出hunterAtk宏用于练级过程中的一键输出，包含远程和近战输出；hunterAoe用于范围输出，同样包括远程和近战；hunterDefend用于保命减伤；hunterControl用于控制目标；hunterMobTagging用于抢怪，包含近战和远程抢怪 (2026-08-17)
+- Phase 26 added: 新增猫德fast战斗逻辑 — isFastBattleNotPvp(8.5s阈值)纯直伤策略，跳过所有流血(Pounce/Rake/Rip)，仅Shred/Claw攒星→5CP Bite/KillShot (2026-08-21)
 
 ## Key Decisions
 
@@ -178,9 +180,9 @@ last_activity_desc: "Completed Phase 25 (3/3 plans) — Hunter one-button macro 
 
 ## Session
 
-**Last session:** 2026-08-18T16:16:22.647Z
-**Stopped at:** Completed 25-03-PLAN.md — Phase 25 complete (3/3 plans)
-**Resume file:** None
+**Last session:** 2026-08-21T13:54:54.251Z
+**Stopped at:** Phase 26 context gathered
+**Resume file:** .planning/phases/26-phase-fast/26-CONTEXT.md
 
 ## Quick Tasks Completed
 
