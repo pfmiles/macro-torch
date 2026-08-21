@@ -804,6 +804,27 @@ function macroTorch.isTrivialBattle(clickContext)
     return clickContext.isTrivialBattle
 end
 
+-- Fast-battle judgment (D-01/D-02): when the target is expected to die within 8.5s and is NOT
+-- player-controlled, bleed skills cannot repay their energy before the target dies — Rake lasts 9s
+-- and Rip 12s, both exceeding the threshold — so every point of energy converts to direct damage
+-- instead: Shred/Claw to 5 combo points, then Bite/KillShot. 8.5s sits below Rake(9s), above the
+-- 2s KillShot line, and 16.5s below the 25s quick-Rip line, forming a clean three-tier ladder.
+function macroTorch.isFastBattleNotPvp(clickContext)
+    -- D-01: exclude PvP first, before the lazy cache, so a player-controlled target can never cache true
+    if macroTorch.target.isPlayerControlled then
+        return false
+    end
+    if clickContext.isFastBattleNotPvp == nil then
+        -- recomputed each frame: catAtk rebuilds clickContext per click (D-11)
+        local localFastDieTime = 8.5
+        clickContext.isFastBattleNotPvp = macroTorch.target.willDieInSeconds(localFastDieTime) or
+                macroTorch.target.healthMax <=
+                        (macroTorch.player.mateNearMyTargetCount + 1) *
+                        macroTorch.estimatePlayerDPS() * localFastDieTime
+    end
+    return clickContext.isFastBattleNotPvp
+end
+
 function macroTorch.combatUrgentHPRestore(clickContext)
     local p = 'player'
     if macroTorch.isItemCooledDown('Healthstone') then

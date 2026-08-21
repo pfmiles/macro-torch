@@ -690,6 +690,38 @@ end, true)
 
 -- Registration count: Category M adds 4 tests (4 optional)
 
+-- ============================================================
+-- Category P — Phase 26 fast-battle judgment (2 tests in this task, 4 more in 26-02-PLAN.md)
+-- ============================================================
+-- [CITED: 26-CONTEXT.md D-12]
+
+macroTorch.SelfTest:register("P: isFastBattleNotPvp is a function", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    assert(type(macroTorch.isFastBattleNotPvp) == "function",
+        "isFastBattleNotPvp is not a function")
+end, true)
+
+macroTorch.SelfTest:register("P: isFastBattleNotPvp returns false for PvP target (player-controlled)", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    -- Stub the plain boolean field to simulate a player-controlled target; restore BEFORE the
+    -- asserts so a stumbled call can never poison later tests (D-01 ordering)
+    local origPvp = macroTorch.target.isPlayerControlled
+    macroTorch.target.isPlayerControlled = true
+    local ok, pcallRes = true, true
+    pcallRes = pcall(function()
+        local ctx = {}
+        local verdict = macroTorch.isFastBattleNotPvp(ctx)
+        -- false verdict proves the PvP exclusion; nil cache proves the PvP-first guard
+        -- fires before the lazy cache (D-01)
+        ok = (verdict == false and ctx.isFastBattleNotPvp == nil)
+    end)
+    macroTorch.target.isPlayerControlled = origPvp
+    assert(pcallRes, "PvP-exclusion test pcall failed")
+    assert(ok, "PvP target should return false without caching")
+end, true)
+
+-- Registration count: Category P adds 2 tests in 26-01; 4 more arrive in 26-02
+
 
 -- ============================================================
 -- Module 4: /mt SLASH command
