@@ -772,7 +772,41 @@ macroTorch.SelfTest:register("P: fast battle verdict implies trivial battle verd
     assert(ok, "fast and trivial verdicts diverged under identical stubs")
 end, true)
 
--- Registration count: Category P adds 2 tests in 26-01; 4 more arrive in 26-02
+-- Phase 26 D-12 item 6 / D-08: 5CP + fast battle must trigger a bite even with no Rip and no immunity
+-- Every cast-chain exit is stubbed so no real spell fires during the login self-test
+macroTorch.SelfTest:register("P: cp5Bite triggers bite at 5CP in fast battle without Rip or immunity", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local origIsRipPresent = macroTorch.isRipPresent
+    local origSafeBite = macroTorch.safeBite
+    local origReadyBite = macroTorch.readyBite
+    local origDischarge = macroTorch.energyDischargeBeforeBite
+    macroTorch.isRipPresent = function(clickContext) return false end
+    local biteCalled = false
+    macroTorch.safeBite = function(clickContext) biteCalled = true end
+    macroTorch.readyBite = function(clickContext) biteCalled = true end
+    macroTorch.energyDischargeBeforeBite = function(clickContext) end
+    local ok, pcallRes = true, true
+    pcallRes = pcall(function()
+        local ctx = {
+            comboPoints = 5,
+            isImmuneRip = false,
+            ooc = false,
+            isPseudoInfiniteEnergy = true,
+            isFastBattleNotPvp = true
+        }
+        biteCalled = false
+        macroTorch.cp5Bite(ctx)
+        ok = (biteCalled == true)
+    end)
+    macroTorch.isRipPresent = origIsRipPresent
+    macroTorch.safeBite = origSafeBite
+    macroTorch.readyBite = origReadyBite
+    macroTorch.energyDischargeBeforeBite = origDischarge
+    assert(pcallRes, "cp5Bite regression test pcall failed")
+    assert(ok, 'cp5Bite did not call bite in fast battle at 5CP')
+end, true)
+
+-- Registration count: Category P adds 6 tests (2 in 26-01, 4 in 26-02)
 
 
 -- ============================================================
