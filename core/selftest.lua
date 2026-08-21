@@ -720,6 +720,58 @@ macroTorch.SelfTest:register("P: isFastBattleNotPvp returns false for PvP target
     assert(ok, "PvP target should return false without caching")
 end, true)
 
+-- Phase 26 D-12 item 3: HRPS arm — willDieInSeconds(8.5)=true alone must drive the verdict true
+macroTorch.SelfTest:register("P: fast battle true when willDieInSeconds(8.5) is true", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    if macroTorch.target.isPlayerControlled then return end
+    local origWillDie = macroTorch.target.willDieInSeconds
+    macroTorch.target.willDieInSeconds = function(self, s) return true end
+    local ok, pcallRes = true, true
+    pcallRes = pcall(function()
+        local ctx = {}
+        ok = macroTorch.isFastBattleNotPvp(ctx) == true
+    end)
+    macroTorch.target.willDieInSeconds = origWillDie
+    assert(pcallRes, "HRPS-path test pcall failed")
+    assert(ok, "8.5s HRPS arm should drive isFastBattleNotPvp to true")
+end, true)
+
+-- Phase 26 D-12 item 4: health-estimate arm — Condition A killed, 1e9 team DPS swamps any real healthMax
+macroTorch.SelfTest:register("P: fast battle true when healthMax below team DPS x 8.5", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    if not macroTorch.target.isCanAttack then return end
+    local origWillDie = macroTorch.target.willDieInSeconds
+    local origEstimate = macroTorch.estimatePlayerDPS
+    macroTorch.target.willDieInSeconds = function(self, s) return false end
+    macroTorch.estimatePlayerDPS = function(level) return 1000000000 end
+    local ok, pcallRes = true, true
+    pcallRes = pcall(function()
+        local ctx = {}
+        ok = macroTorch.isFastBattleNotPvp(ctx) == true
+    end)
+    macroTorch.target.willDieInSeconds = origWillDie
+    macroTorch.estimatePlayerDPS = origEstimate
+    assert(pcallRes, "health-estimate-path test pcall failed")
+    assert(ok, "healthMax <= team DPS x 8.5 should drive isFastBattleNotPvp to true")
+end, true)
+
+-- Phase 26 D-12 item 5: priority relation — identical inputs must yield identical verdicts (8.5 < 25)
+macroTorch.SelfTest:register("P: fast battle verdict implies trivial battle verdict (8.5 is below 25)", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    if macroTorch.target.isPlayerControlled then return end
+    local origWillDie = macroTorch.target.willDieInSeconds
+    macroTorch.target.willDieInSeconds = function(self, s) return true end
+    local ok, pcallRes = true, true
+    pcallRes = pcall(function()
+        local fast = macroTorch.isFastBattleNotPvp({})
+        local trivial = macroTorch.isTrivialBattle({})
+        ok = (fast == trivial)
+    end)
+    macroTorch.target.willDieInSeconds = origWillDie
+    assert(pcallRes, "priority-relation test pcall failed")
+    assert(ok, "fast and trivial verdicts diverged under identical stubs")
+end, true)
+
 -- Registration count: Category P adds 2 tests in 26-01; 4 more arrive in 26-02
 
 
