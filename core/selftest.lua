@@ -703,9 +703,10 @@ end, true)
 
 macroTorch.SelfTest:register("P: isFastBattleNotPvp returns false for PvP target (player-controlled)", function()
     if UnitClass('player') ~= 'Druid' then return end
+    local rawOrigPvp = rawget(macroTorch.target, 'isPlayerControlled')
+    -- normally nil: the field is function-computed via __index, so the raw snapshot reads the own-key state only
     -- Stub the plain boolean field to simulate a player-controlled target; restore BEFORE the
     -- asserts so a stumbled call can never poison later tests (D-01 ordering)
-    local origPvp = macroTorch.target.isPlayerControlled
     macroTorch.target.isPlayerControlled = true
     local ok, pcallRes = true, true
     pcallRes = pcall(function()
@@ -715,7 +716,8 @@ macroTorch.SelfTest:register("P: isFastBattleNotPvp returns false for PvP target
         -- fires before the lazy cache (D-01)
         ok = (verdict == false and ctx.isFastBattleNotPvp == nil)
     end)
-    macroTorch.target.isPlayerControlled = origPvp
+    macroTorch.target.isPlayerControlled = rawOrigPvp
+    -- normally assigns nil, deleting the own-key so the __index accessor is live again; a stale boolean would shadow PvP detection for the whole session (CR-01)
     assert(pcallRes, "PvP-exclusion test pcall failed")
     assert(ok, "PvP target should return false without caching")
 end, true)
@@ -773,26 +775,29 @@ macroTorch.SelfTest:register("P: fast battle verdict implies trivial battle verd
 end, true)
 
 -- Phase 26 D-12 item 6 / D-08: 5CP + fast battle must trigger a bite even with no Rip and no immunity
--- Every cast-chain exit is stubbed so no real spell fires during the login self-test
+-- The judgment function is stubbed like the other collaborators (IN-03), so the test no longer
+-- depends on the lazy-cache field being pre-seeded on the clickContext. Every cast-chain exit is
+-- stubbed so no real spell fires during the login self-test
 macroTorch.SelfTest:register("P: cp5Bite triggers bite at 5CP in fast battle without Rip or immunity", function()
     if UnitClass('player') ~= 'Druid' then return end
     local origIsRipPresent = macroTorch.isRipPresent
     local origSafeBite = macroTorch.safeBite
     local origReadyBite = macroTorch.readyBite
     local origDischarge = macroTorch.energyDischargeBeforeBite
+    local origFastBattle = macroTorch.isFastBattleNotPvp
     macroTorch.isRipPresent = function(clickContext) return false end
     local biteCalled = false
     macroTorch.safeBite = function(clickContext) biteCalled = true end
     macroTorch.readyBite = function(clickContext) biteCalled = true end
     macroTorch.energyDischargeBeforeBite = function(clickContext) end
+    macroTorch.isFastBattleNotPvp = function(clickContext) return true end
     local ok, pcallRes = true, true
     pcallRes = pcall(function()
         local ctx = {
             comboPoints = 5,
             isImmuneRip = false,
             ooc = false,
-            isPseudoInfiniteEnergy = true,
-            isFastBattleNotPvp = true
+            isPseudoInfiniteEnergy = true
         }
         biteCalled = false
         macroTorch.cp5Bite(ctx)
@@ -802,6 +807,7 @@ macroTorch.SelfTest:register("P: cp5Bite triggers bite at 5CP in fast battle wit
     macroTorch.safeBite = origSafeBite
     macroTorch.readyBite = origReadyBite
     macroTorch.energyDischargeBeforeBite = origDischarge
+    macroTorch.isFastBattleNotPvp = origFastBattle
     assert(pcallRes, "cp5Bite regression test pcall failed")
     assert(ok, 'cp5Bite did not call bite in fast battle at 5CP')
 end, true)
