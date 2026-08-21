@@ -806,7 +806,7 @@ end
 
 -- Fast-battle judgment (D-01/D-02): when the target is expected to die within 8.5s and is NOT
 -- player-controlled, bleed skills cannot repay their energy before the target dies — Rake lasts 9s
--- and Rip 12s, both exceeding the threshold — so every point of energy converts to direct damage
+-- and Rip at least 10s (18s at 5 CP), both exceeding the threshold — so every point of energy converts to direct damage
 -- instead: Shred/Claw to 5 combo points, then Bite/KillShot. 8.5s sits below Rake(9s), above the
 -- 2s KillShot line, and 16.5s below the 25s quick-Rip line, forming a clean three-tier ladder.
 function macroTorch.isFastBattleNotPvp(clickContext)
@@ -815,12 +815,18 @@ function macroTorch.isFastBattleNotPvp(clickContext)
         return false
     end
     if clickContext.isFastBattleNotPvp == nil then
-        -- recomputed each frame: catAtk rebuilds clickContext per click (D-11)
-        local localFastDieTime = 8.5
-        clickContext.isFastBattleNotPvp = macroTorch.target.willDieInSeconds(localFastDieTime) or
-                macroTorch.target.healthMax <=
-                        (macroTorch.player.mateNearMyTargetCount + 1) *
-                        macroTorch.estimatePlayerDPS() * localFastDieTime
+        -- no valid attackable target (missing or dead — UnitHealthMax is 0 for both) can ever be a
+        -- fast battle, and the health-estimate arm would otherwise wrongly return true (IN-04)
+        if not macroTorch.target.isCanAttack then
+            clickContext.isFastBattleNotPvp = false
+        else
+            -- recomputed each frame: catAtk rebuilds clickContext per click (D-11)
+            local localFastDieTime = 8.5
+            clickContext.isFastBattleNotPvp = macroTorch.target.willDieInSeconds(localFastDieTime) or
+                    macroTorch.target.healthMax <=
+                            (macroTorch.player.mateNearMyTargetCount + 1) *
+                            macroTorch.estimatePlayerDPS() * localFastDieTime
+        end
     end
     return clickContext.isFastBattleNotPvp
 end
