@@ -691,7 +691,7 @@ end, true)
 -- Registration count: Category M adds 4 tests (4 optional)
 
 -- ============================================================
--- Category P — Phase 26 fast-battle judgment (2 tests in this task, 4 more in 26-02-PLAN.md)
+-- Category P — Phase 26 fast-battle judgment (6 tests, 2 from 26-01 + 4 from 26-02)
 -- ============================================================
 -- [CITED: 26-CONTEXT.md D-12]
 
@@ -726,6 +726,7 @@ end, true)
 macroTorch.SelfTest:register("P: fast battle true when willDieInSeconds(8.5) is true", function()
     if UnitClass('player') ~= 'Druid' then return end
     if macroTorch.target.isPlayerControlled then return end
+    if not macroTorch.target.isCanAttack then return end
     local origWillDie = macroTorch.target.willDieInSeconds
     macroTorch.target.willDieInSeconds = function(self, s) return true end
     local ok, pcallRes = true, true
@@ -761,6 +762,7 @@ end, true)
 macroTorch.SelfTest:register("P: fast battle verdict implies trivial battle verdict (8.5 is below 25)", function()
     if UnitClass('player') ~= 'Druid' then return end
     if macroTorch.target.isPlayerControlled then return end
+    if not macroTorch.target.isCanAttack then return end
     local origWillDie = macroTorch.target.willDieInSeconds
     macroTorch.target.willDieInSeconds = function(self, s) return true end
     local ok, pcallRes = true, true
