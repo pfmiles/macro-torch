@@ -134,7 +134,9 @@ function macroTorch.catAtk()
         local hasPounce = macroTorch.isSpellExist('Pounce', 'spell')
         local hasRavage = macroTorch.isSpellExist('Ravage', 'spell')
         if clickContext.prowling then
-            if hasPounce and not target.isImmune('Pounce') and target.health >= macroTorch.getOpenerHealthThreshold() then
+            -- [FAST] D-03: fast battles skip the Pounce bleed opener — falls through to
+            -- the elseif Ravage branch below for direct damage
+            if hasPounce and not target.isImmune('Pounce') and target.health >= macroTorch.getOpenerHealthThreshold() and not macroTorch.isFastBattleNotPvp(clickContext) then
                 if macroTorch.isGcdOk(clickContext) and macroTorch.isNearBy(clickContext) then
                     macroTorch.show('Pounce!!! bleed idol equipped: ' ..
                             tostring(macroTorch.player.isRelicEquipped('Idol of Savagery')))
@@ -158,19 +160,24 @@ function macroTorch.catAtk()
         -- 9.tiger fury模块，战斗中时刻保持tiger fury buff
         macroTorch.keepTigerFury(clickContext)
         -- 10.debuffMod, including rip, rake and FF
-        if macroTorch.isTrivialBattleOrPvp(clickContext) then
-            -- 如果是pvp或者预判出本次战斗持续时间很短，则无须做5星rip，直接低星rip让claw受益即可，因为rip是持续流血效果，回报周期长，目标坚持不了那么久
-            macroTorch.quickKeepRip(clickContext)
-        else
-            -- 非pvp，且战斗时间相对较长，做5星rip最大化其流血伤害
-            macroTorch.keepRip(clickContext)
+        -- [FAST] D-04: fast battles skip all Rip — neither keepRip nor quickKeepRip runs
+        if not macroTorch.isFastBattleNotPvp(clickContext) then
+            if macroTorch.isTrivialBattleOrPvp(clickContext) then
+                -- 如果是pvp或者预判出本次战斗持续时间很短，则无须做5星rip，直接低星rip让claw受益即可，因为rip是持续流血效果，回报周期长，目标坚持不了那么久
+                macroTorch.quickKeepRip(clickContext)
+            else
+                -- 非pvp，且战斗时间相对较长，做5星rip最大化其流血伤害
+                macroTorch.keepRip(clickContext)
+            end
         end
         -- 保持rake流血效果，如果目标不免疫流血的话
         macroTorch.keepRake(clickContext)
         -- 保持FF(野性精灵之火)效果，如果目标不免疫FF的话; 且由于精灵之火的释放成本很低，无须消耗能量，成本仅仅是1s的GCD，且跟其它攻击技能或普通攻击一样有概率触发ooc，因此我会在"没有别的事情可干"的时候释放一发精灵之火，即使目标身上已有该效果
         macroTorch.keepFF(clickContext)
         -- 11.普通攻击技能模块，攒星的主要技能，主要是claw和shred, 根据实测结果，依据目标身上的流血效果数量和当前自己的站位而灵活选择claw或shred释放
-        if macroTorch.isFightStarted(clickContext) and clickContext.comboPoints < 5 and (macroTorch.isRakePresent(clickContext) or clickContext.isImmuneRake) then
+        -- [FAST] D-07: in fast battles Rake is absent and the target is not immune — without
+        -- this alternative condition the main combo-point builder would never run
+        if macroTorch.isFightStarted(clickContext) and clickContext.comboPoints < 5 and (macroTorch.isRakePresent(clickContext) or clickContext.isImmuneRake or macroTorch.isFastBattleNotPvp(clickContext)) then
             macroTorch.regularAttack(clickContext)
         end
         -- 12.reshift模块，从cat形态变身到cat形态(形态不实际改变的"变身"，乌龟服特有技能)
