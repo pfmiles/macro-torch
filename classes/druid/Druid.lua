@@ -793,13 +793,19 @@ end
 -- determine whether this would be a short battle(the target will die very soon)
 function macroTorch.isTrivialBattle(clickContext)
     if clickContext.isTrivialBattle == nil then
-        local trivialDieTime = 25
-        -- if the target's max health is less than we attack 25s worth of DPS
-        clickContext.isTrivialBattle = macroTorch.target.willDieInSeconds(trivialDieTime) or
-                macroTorch.target.healthMax <=
-                        (macroTorch.player.mateNearMyTargetCount + 1) *
-                        macroTorch.estimatePlayerDPS() * trivialDieTime
-        -- [D-01] Per-player DPS estimate from level-adaptive lookup
+        -- no valid attackable target (missing or dead — UnitHealthMax is 0 for both) can ever be a
+        -- trivial battle, and the health-estimate arm would otherwise wrongly return true (WR-02)
+        if not macroTorch.target.isCanAttack then
+            clickContext.isTrivialBattle = false
+        else
+            local trivialDieTime = 25
+            -- if the target's max health is less than we attack 25s worth of DPS
+            clickContext.isTrivialBattle = macroTorch.target.willDieInSeconds(trivialDieTime) or
+                    macroTorch.target.healthMax <=
+                            (macroTorch.player.mateNearMyTargetCount + 1) *
+                            macroTorch.estimatePlayerDPS() * trivialDieTime
+            -- [D-01] Per-player DPS estimate from level-adaptive lookup
+        end
     end
     return clickContext.isTrivialBattle
 end
