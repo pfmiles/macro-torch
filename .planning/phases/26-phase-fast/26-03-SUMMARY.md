@@ -153,6 +153,12 @@ None — no external service configuration required.
 - Phase 26 is now at 3/3 plans with all six review findings closed; the phase is complete from the code side.
 - Remaining human-verification items (NOT code gaps): per the plan's verification section, truth #10 P-06 in-game behavior (D-08 state transition), the PvP shadow-field observation, and fast-to-normal frame switching require the WoW client and remain open for the user in `26-UAT.md`.
 
+## Self-Check: PASSED
+
+- Files exist: `.planning/phases/26-phase-fast/26-03-SUMMARY.md`, `core/selftest.lua`, `classes/druid/Druid.lua`
+- Commits exist: `306cd1e` (Task 1), `a3559d5` (Task 2), `5d46a78` (Task 3), `0115a80` (SUMMARY)
+- Final `./build.sh` exits 0; working tree clean apart from pre-existing untracked GSD files
+
 ---
 *Phase: 26-phase-fast*
 *Completed: 2026-08-22*

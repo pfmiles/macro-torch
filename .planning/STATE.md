@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v1.0
 status: in_progress
-stopped_at: Completed 26-02-PLAN.md
-last_updated: "2026-08-21T16:10:21.066Z"
-state_head: fdde7c37a2011b2f0cd706ca2fb40bb3f8df7926
+stopped_at: Completed 26-03-PLAN.md
+last_updated: "2026-08-21T18:47:13.327Z"
+state_head: 0115a803bfd6195c2294c0c7adad88f98234ea00
 progress:
-  total_phases: 26
+  total_phases: 25
   completed_phases: 11
-  total_plans: 53
-  completed_plans: 53
+  total_plans: 54
+  completed_plans: 54
 milestone_name: milestone
-last_activity: 2026-08-19
+last_activity: 2026-08-21
 current_phase_name: phase-fast
-last_activity_desc: "Completed Phase 25 (3/3 plans) — Hunter one-button macro refactor: file cleanup, build verification, 25 skill methods + 5 combo functions"
+last_activity_desc: "Completed Phase 26 (3/3 plans) — 猫德 fast 战斗逻辑：isFastBattleNotPvp 纯直伤策略 + 6 Category P SelfTests + gap closure（修复 CR-01 / WR-01 / IN-01..IN-04）"
 ---
 
 # Project State
@@ -51,7 +51,7 @@ last_activity_desc: "Completed Phase 25 (3/3 plans) — Hunter one-button macro 
 | Phase 22: catAtk 质量保障 — SelfTest + 文档补充 | ✅ complete | 2026-07-30 | 2026-07-30 | 2/2 plans |
 | Phase 23: idol dance refactor — computeNormalRelic + 距离优化 | 🟡 in_progress | 2026-08-02 | — | 1/1 plan |
 | Phase 25: Hunter 一键宏改造 — Druid 对齐架构 | ✅ complete | 2026-08-18 | 2026-08-19 | 3/3 plans |
-| Phase 26: 猫德 fast 战斗逻辑 | ✅ complete | 2026-08-21 | 2026-08-22 | 2/2 plans |
+| Phase 26: 猫德 fast 战斗逻辑 | ✅ complete | 2026-08-21 | 2026-08-22 | 3/3 plans |
 
 ## Accumulated Context
 
@@ -152,6 +152,7 @@ last_activity_desc: "Completed Phase 25 (3/3 plans) — Hunter one-button macro 
 | Phase 25 P03 | 2 | 2 tasks | 1 files |
 | Phase 26 P01 | 175 | 3 tasks | 4 files |
 | Phase 26 P02 | 193 | 2 tasks | 1 files |
+| Phase 26 P03 | 3 | 3 tasks | 2 files |
 
 ## Decisions
 
@@ -183,11 +184,14 @@ last_activity_desc: "Completed Phase 25 (3/3 plans) — Hunter one-button macro 
 - [Phase ?]: Phase 26-01: isFastBattleNotPvp implemented — 8.5s dual condition (HRPS + health estimate), PvP-first exclusion before lazy per-frame cache; 7 additive guards wired across catAtk (combo.lua 3, cat.lua 3) + definition in Druid.lua (D-01..D-11)
 - [Phase ?]: Phase 26-01: Category P SelfTests P-01/P-02 registered (isOptional=true) — function existence + PvP-exclusion cache ordering; remaining 4 land in 26-02 (D-12)
 - [Phase ?]: Phase 26-02: remaining 4 Category P SelfTests registered (P-03 HRPS / P-04 health estimate / P-05 priority relation / P-06 cp5Bite regression) with stub/restore discipline; phase-wide verification green — 6/6 registrations, 3+3 call sites, 4-file diff scope, catLeveling untouched (D-12, D-09/D-10/D-13)
+- [Phase ?]: [Phase 26-03]: CR-01 closed — P-02 snapshots with rawget and restores via raw assignment; the nil restore deletes the own-key so the __index accessor (FIELD_FUNC_MAP isPlayerControlled) stays live — running /mt can no longer freeze session-wide PvP detection
+- [Phase ?]: [Phase 26-03]: WR-01 closed — getNextAbilityCost resolves the fast-battle verdict once per click and skips Bite/Rip/Rake in fast battles so reshift/FF consumers benchmark real Shred/Claw/Tiger costs; shouldCastRip/shouldUseBite untouched (D-09/D-13)
+- [Phase ?]: [Phase 26-03]: IN-03/IN-04 closed — P-06 stubs the judgment function instead of pre-seeding the lazy-cache field; isFastBattleNotPvp caches false when macroTorch.target.isCanAttack is false (missing/dead target), with P-03/P-05 gaining the same skip guard as P-04
 
 ## Session
 
-**Last session:** 2026-08-21T16:10:20.444Z
-**Stopped at:** Completed 26-02-PLAN.md
+**Last session:** 2026-08-21T18:47:12.701Z
+**Stopped at:** Completed 26-03-PLAN.md
 **Resume file:** None
 
 ## Quick Tasks Completed

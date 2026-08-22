@@ -942,7 +942,7 @@ Plans:
 **Goal:** 为猫德 catAtk（60 级 DPS 一键宏）新增快速战斗判断 `isFastBattleNotPvp`（8.5s 死亡预测、非 PvP），触发纯直伤策略：跳过所有流血效果（Pounce/Rake/Rip），仅用 Shred（背后）/Claw（正面）攒连击点至 5 星后 Bite 或 KillShot 斩杀。
 **Requirements**: D-01 through D-13 (from 26-CONTEXT.md)
 **Depends on:** Phase 25
-**Plans:** 3 plans (2 executed + 1 gap-closure from code review/verification)
+**Plans:** 3/3 plans executed (2 executed + 1 gap-closure from code review/verification)
 
 Plans:
 **Wave 1**
@@ -955,7 +955,7 @@ Plans:
 
 **Wave 3** *(gap closure on 26-REVIEW.md / 26-VERIFICATION.md)*
 
-- [ ] 26-03-PLAN.md — 修复 CR-01（P-02 影子字段污染会话级 PvP 检测）、WR-01（getNextAbilityCost 快战幻影能耗）、IN-01 至 IN-04（注释修正/测试解耦/isCanAttack 前置）
+- [x] 26-03-PLAN.md — 修复 CR-01（P-02 影子字段污染会话级 PvP 检测）、WR-01（getNextAbilityCost 快战幻影能耗）、IN-01 至 IN-04（注释修正/测试解耦/isCanAttack 前置）
 
 ---
 
