@@ -11,9 +11,9 @@ progress:
   total_plans: 54
   completed_plans: 54
 milestone_name: milestone
-last_activity: 2026-08-21
+last_activity: 2026-08-23
 current_phase_name: phase-fast
-last_activity_desc: "Completed Phase 26 (3/3 plans) — 猫德 fast 战斗逻辑：isFastBattleNotPvp 纯直伤策略 + 6 Category P SelfTests + gap closure（修复 CR-01 / WR-01 / IN-01..IN-04）"
+last_activity_desc: "Completed quick task 260823-gg8: 更新 catAtk-core-principles.md 补充「速战」战斗分层（8.5s，isFastBattleNotPvp 纯直伤策略）"
 ---
 
 # Project State
@@ -213,6 +213,7 @@ last_activity_desc: "Completed Phase 26 (3/3 plans) — 猫德 fast 战斗逻辑
 | 260808-t3w | druid cower otMod guard — hasNearbyGroupMates 附近队友检查 | 2026-08-08 | 601160c | [260808-t3w-druid-cower-otmod-guard-hasnearbygroupma](./quick/260808-t3w-druid-cower-otmod-guard-hasnearbygroupma/) |
 | 260810-fix-cower-raid | otMod guard 同时支持 raid（isInGroup → isInGroup or isInRaid） | 2026-08-10 | e917b88 | [260810-fix-druid-cower-raid-guard](./quick/260810-fix-druid-cower-raid-guard/) |
 | 260817-sg1 | macroTorch.log 持久化格式简化：{msg, color} table → 纯文本 string | 2026-08-17 | 5ff2233 | [260817-sg1-simplify-macrotorch-log-persistence-stor](./quick/260817-sg1-simplify-macrotorch-log-persistence-stor/) |
+| 260823-gg8 | 更新 catAtk-core-principles.md：补充 Phase 26 新增的「速战」(fast battle, 8.5s) 战斗分层，保持精华风格不写实现细节 | 2026-08-23 | 84af982 | [260823-gg8-planning-catatk-core-principles-md-phase](./quick/260823-gg8-planning-catatk-core-principles-md-phase/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
