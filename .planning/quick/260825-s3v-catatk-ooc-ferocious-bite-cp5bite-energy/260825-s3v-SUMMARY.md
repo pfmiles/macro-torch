@@ -96,6 +96,32 @@ None — the locked design (six decisions from planning) was implemented exactly
 
 None of substance — plan executed exactly as written. One cosmetic note: a blank line was added after the Task 2 entry-guard `end` (part of insertion (a)) to keep the function's visual block separation consistent; it changes no existing line and adds no logic.
 
+## Known Limitations
+
+The fix guards the **OoC discharge path only**. The non-OoC high-energy discharge path of
+`energyDischargeBeforeBite` (shred branch at `mana >= BITE_E + SHRED_E`, claw branch at
+`mana >= BITE_E + CLAW_E`) keeps the same attempted-discharge-then-fall-through structure, so
+two homologues of the fixed bug remain there by design:
+
+- **Hole A (Shred behind-verdict flip):** the frame-start `isBehind` sample says behind, the
+  target pivots, `CastSpell('Shred')` is silently rejected by the game — energy unspent, GCD
+  free — and the following `safeBite`/`readyBite` passes every check, biting at high energy
+  without the discharge. Sub-optimal rather than wrong: the overflow energy converts at bite's
+  lower rate instead of being spent as a builder.
+- **Hole B (GCD boundary race):** the same-frame-instant race as the fixed N2 — the discharge
+  cast is rejected milliseconds before the GCD ends, and the bite cast lands just after it.
+
+Deliberately NOT fixed, for these reasons:
+
+- Unlike the OoC path (which wasted the scarce OoC proc), these only cost difference between a
+  builder cast and bite's energy conversion. Trigger probability is the same single-frame edge
+  (target pivot / GCD boundary).
+- The OoC fix mechanism does not transfer: an unconditional `return` after a non-OoC discharge
+  would deadlock the 5CP finisher in the 35-74 energy window (discharge conditions unmet, safeBite
+  never reached). Closing Hole A/B properly needs real cast-success confirmation (cast-event
+  system or non-cached GCD re-check), whose cost outweighs the risk for these edge frames.
+- Revisit if battle logs ever show a measurable frequency of high-energy direct bites.
+
 ## Automotive Verification Summary
 
 - `bash build.sh` → exit 0
