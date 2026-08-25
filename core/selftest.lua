@@ -814,7 +814,44 @@ macroTorch.SelfTest:register("P: cp5Bite triggers bite at 5CP in fast battle wit
     assert(ok, 'cp5Bite did not call bite in fast battle at 5CP')
 end, true)
 
--- Registration count: Category P adds 6 tests (2 in 26-01, 4 in 26-02)
+-- Quick 260825-t86: a true return from energyDischargeBeforeBite (a discharge
+-- attempt was initiated) must make cp5Bite defer the bite — closes the
+-- non-OoC holes A/B. Stubs mirror P-06 so no real spell fires in the login test
+macroTorch.SelfTest:register("P: cp5Bite defers the bite when a discharge is attempted", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local origIsRipPresent = macroTorch.isRipPresent
+    local origSafeBite = macroTorch.safeBite
+    local origReadyBite = macroTorch.readyBite
+    local origDischarge = macroTorch.energyDischargeBeforeBite
+    local origFastBattle = macroTorch.isFastBattleNotPvp
+    macroTorch.isRipPresent = function(clickContext) return false end
+    local biteCalled = false
+    macroTorch.safeBite = function(clickContext) biteCalled = true end
+    macroTorch.readyBite = function(clickContext) biteCalled = true end
+    macroTorch.energyDischargeBeforeBite = function(clickContext) return true end
+    macroTorch.isFastBattleNotPvp = function(clickContext) return true end
+    local ok, pcallRes = true, true
+    pcallRes = pcall(function()
+        local ctx = {
+            comboPoints = 5,
+            isImmuneRip = false,
+            ooc = false,
+            isPseudoInfiniteEnergy = false
+        }
+        biteCalled = false
+        macroTorch.cp5Bite(ctx)
+        ok = (biteCalled == false)
+    end)
+    macroTorch.isRipPresent = origIsRipPresent
+    macroTorch.safeBite = origSafeBite
+    macroTorch.readyBite = origReadyBite
+    macroTorch.energyDischargeBeforeBite = origDischarge
+    macroTorch.isFastBattleNotPvp = origFastBattle
+    assert(pcallRes, "cp5Bite discharge-defer test pcall failed")
+    assert(ok, 'cp5Bite called bite although a discharge was attempted')
+end, true)
+
+-- Registration count: Category P adds 7 tests (2 in 26-01, 4 in 26-02, 1 in quick 260825-t86)
 
 
 -- ============================================================
