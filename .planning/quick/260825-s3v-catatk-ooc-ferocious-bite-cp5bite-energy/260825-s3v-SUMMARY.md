@@ -82,9 +82,9 @@ OoC 5CP frames now discharge-only inside cp5Bite with per-frame discharge dedup,
 
 The plan's locked Task 3 spec requires a single atomic commit for the whole change (not per-task commits):
 
-1. **Tasks 1-3: guard insertions + regression verification + diff-scope gate** — `ebca501` (fix(cat): OoC frames only discharge in cp5Bite; dedup discharge attempts per frame)
+1. **Tasks 1-3: guard insertions + regression verification + diff-scope gate** — `ad093c9` (fix(cat): OoC frames only discharge in cp5Bite; dedup discharge attempts per frame)
 
-**Plan metadata:** `f5abb67` (docs, pre-dispatch — handled by the quick-task orchestrator)
+**Plan metadata:** `dc6bc00` (docs, pre-dispatch — handled by the quick-task orchestrator)
 
 ## Files Created/Modified
 - `classes/druid/cat.lua` — 14-line additive change confined to two functions: OoC guard in cp5Bite's shouldDischarge block, isDischarged dedup in energyDischargeBeforeBite
@@ -137,4 +137,4 @@ Deliberately NOT fixed, for these reasons:
 ## Self-Check: PASSED
 
 - `classes/druid/cat.lua` exists and contains all three guard insertions (verified via sed/grep windows)
-- Commit `ebca501` verified in `git log` with exactly 1 file changed, +14/-0
+- Commit `ad093c9` verified in `git log` with exactly 1 file changed, +14/-0
