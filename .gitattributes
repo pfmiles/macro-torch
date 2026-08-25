@@ -1,0 +1,10 @@
+# Force Unix line endings on checkout for files consumed by POSIX tools.
+# Overrides Windows Git's core.autocrlf=true checkout conversion, which
+# otherwise breaks ./build.sh under Cygwin/MSYS2 bash (CRLF in shell
+# scripts => "$'\r': command not found" and "syntax error near done").
+*.sh text eol=lf
+# build_order.txt lines are used as filenames by build.sh; a trailing \r
+# makes every [ -f "$line" ] lookup fail.
+*.txt text eol=lf
+# Keep the concatenated SM_Extend.lua free of mixed line endings.
+*.lua text eol=lf
