@@ -851,7 +851,57 @@ macroTorch.SelfTest:register("P: cp5Bite defers the bite when a discharge is att
     assert(ok, 'cp5Bite called bite although a discharge was attempted')
 end, true)
 
--- Registration count: Category P adds 7 tests (2 in 26-01, 4 in 26-02, 1 in quick 260825-t86)
+-- Quick 260825-vp9: liveness of the discharge-defer contract (IN-01). With
+-- shouldDischarge == true and the REAL energyDischargeBeforeBite finding no
+-- discharge condition (non-OoC, not behind, energy below BITE_E + CLAW_E,
+-- Rake already present), cp5Bite must still fall through and bite — the
+-- no-condition fall-through the deferral fix relies on. Stub/restore style
+-- mirrors P-06 so no real spell fires in the login self-test. The discharge
+-- helper stays real; mana is pinned via an own-key shadow (macroTorch.player.mana
+-- is a live UnitMana metatable accessor, so rawget/rawset preserves it).
+macroTorch.SelfTest:register("P: cp5Bite still bites when no discharge condition matches", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local origIsRipPresent = macroTorch.isRipPresent
+    local origRipLeft = macroTorch.ripLeft
+    local origIsRakePresent = macroTorch.isRakePresent
+    local origSafeBite = macroTorch.safeBite
+    local origReadyBite = macroTorch.readyBite
+    local origMana = rawget(macroTorch.player, 'mana')
+    macroTorch.isRipPresent = function(clickContext) return true end
+    macroTorch.ripLeft = function(clickContext) return 4 end
+    macroTorch.isRakePresent = function(clickContext) return true end
+    local biteCalled = false
+    macroTorch.safeBite = function(clickContext) biteCalled = true end
+    macroTorch.readyBite = function(clickContext) biteCalled = true end
+    macroTorch.player.mana = 50
+    local ok, pcallRes = true, true
+    pcallRes = pcall(function()
+        local ctx = {
+            comboPoints = 5,
+            isImmuneRip = false,
+            ooc = false,
+            isPseudoInfiniteEnergy = false,
+            isBehind = false,
+            BITE_E = 35,
+            CLAW_E = 45,
+            SHRED_E = 60,
+            RAKE_E = 35
+        }
+        biteCalled = false
+        macroTorch.cp5Bite(ctx)
+        ok = (biteCalled == true)
+    end)
+    macroTorch.isRipPresent = origIsRipPresent
+    macroTorch.ripLeft = origRipLeft
+    macroTorch.isRakePresent = origIsRakePresent
+    macroTorch.safeBite = origSafeBite
+    macroTorch.readyBite = origReadyBite
+    rawset(macroTorch.player, 'mana', origMana)
+    assert(pcallRes, "cp5Bite liveness test pcall failed")
+    assert(ok, 'cp5Bite did not bite when no discharge condition matched')
+end, true)
+
+-- Registration count: Category P adds 8 tests (2 in 26-01, 4 in 26-02, 1 in quick 260825-t86, 1 in quick 260825-vp9)
 
 
 -- ============================================================

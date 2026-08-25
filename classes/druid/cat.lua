@@ -334,7 +334,12 @@ function macroTorch.quickKeepRip(clickContext)
     -- 当然了，打bite之前也要考虑先泄能，为了dps最大化,利用好每一点能量
     -- For cp >= 3: discharge and bite
     if clickContext.comboPoints >= 3 and not macroTorch.isRipPresent(clickContext) and not clickContext.isImmuneRip then
-        macroTorch.energyDischargeBeforeBite(clickContext)
+        -- Discharge attempted -> defer the bite verdict to the next click (WR-01:
+        -- same contract as cp5Bite; re-sampled on the next keystroke so a rejected
+        -- discharge cast is never followed by a same-frame bite at full energy)
+        if macroTorch.energyDischargeBeforeBite(clickContext) then
+            return
+        end
         macroTorch.safeBite(clickContext)
         return
     end
