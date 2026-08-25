@@ -133,6 +133,12 @@ function macroTorch.cp5Bite(clickContext)
 
         if shouldDischarge then
             macroTorch.energyDischargeBeforeBite(clickContext)
+            -- OoC frames discharge only: the bite verdict is re-decided on the next
+            -- click from a fresh player.isOoc sample, so a discharge the game silently
+            -- rejected can never fall through into a free OoC bite.
+            if clickContext.ooc then
+                return
+            end
         end
 
         -- 以是否ooc判断当前该使用ready版本或是safe版本逻辑
@@ -144,6 +150,12 @@ function macroTorch.cp5Bite(clickContext)
     end
 end
 function macroTorch.energyDischargeBeforeBite(clickContext)
+    -- One discharge attempt per frame: cp5Bite can be re-entered in the same click
+    -- via termMod after oocMod; the second entry must not re-attempt the cast.
+    if clickContext.isDischarged then
+        return
+    end
+
     -- Skip discharge when energy regeneration exceeds Shred cost (infinite energy scenario)
     if clickContext.isPseudoInfiniteEnergy then
         return
@@ -154,6 +166,7 @@ function macroTorch.energyDischargeBeforeBite(clickContext)
             or (macroTorch.player.mana >= clickContext.BITE_E + clickContext.SHRED_E and clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed)
             or macroTorch.player.mana >= clickContext.BITE_E + clickContext.CLAW_E then
         macroTorch.regularAttack(clickContext)
+        clickContext.isDischarged = true
         return
     end
 
@@ -162,6 +175,7 @@ function macroTorch.energyDischargeBeforeBite(clickContext)
     -- regularAttack branch still runs (energy safety valve), but the Rake fallback is forbidden
     if not macroTorch.isRakePresent(clickContext) and not macroTorch.isFastBattleNotPvp(clickContext) and macroTorch.player.mana >= clickContext.BITE_E + clickContext.RAKE_E then
         macroTorch.safeRake(clickContext)
+        clickContext.isDischarged = true
     end
 end
 -- oocMod (Omen of Clarity) 模块：节能施法状态下优先用免费技能
