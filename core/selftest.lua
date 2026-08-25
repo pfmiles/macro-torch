@@ -691,7 +691,7 @@ end, true)
 -- Registration count: Category M adds 4 tests (4 optional)
 
 -- ============================================================
--- Category P — Phase 26 fast-battle judgment (6 tests, 2 from 26-01 + 4 from 26-02)
+-- Category P — Phase 26 fast-battle judgment (8 tests, 2 in 26-01 + 4 in 26-02 + 1 in quick 260825-t86 + 1 in quick 260825-vp9)
 -- ============================================================
 -- [CITED: 26-CONTEXT.md D-12]
 
