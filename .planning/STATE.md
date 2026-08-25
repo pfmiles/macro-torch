@@ -214,6 +214,7 @@ last_activity_desc: "Completed quick task 260823-gg8: 更新 catAtk-core-princip
 | 260810-fix-cower-raid | otMod guard 同时支持 raid（isInGroup → isInGroup or isInRaid） | 2026-08-10 | e917b88 | [260810-fix-druid-cower-raid-guard](./quick/260810-fix-druid-cower-raid-guard/) |
 | 260817-sg1 | macroTorch.log 持久化格式简化：{msg, color} table → 纯文本 string | 2026-08-17 | 5ff2233 | [260817-sg1-simplify-macrotorch-log-persistence-stor](./quick/260817-sg1-simplify-macrotorch-log-persistence-stor/) |
 | 260823-gg8 | 更新 catAtk-core-principles.md：补充 Phase 26 新增的「速战」(fast battle, 8.5s) 战斗分层，保持精华风格不写实现细节 | 2026-08-23 | 84af982 | [260823-gg8-planning-catatk-core-principles-md-phase](./quick/260823-gg8-planning-catatk-core-principles-md-phase/) |
+| 260825-s3v | 修复 catAtk OoC 帧绕过泄能直接免费咬的路径：cp5Bite 泄能尝试后 OoC 守卫 return + energyDischargeBeforeBite 帧内 isDischarged 去重 | 2026-08-25 | ebca501 | [260825-s3v-catatk-ooc-ferocious-bite-cp5bite-energy](./quick/260825-s3v-catatk-ooc-ferocious-bite-cp5bite-energy/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
