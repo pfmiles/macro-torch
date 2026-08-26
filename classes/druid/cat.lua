@@ -421,6 +421,9 @@ function macroTorch.safeRip(clickContext)
         macroTorch.player.rip('ready')
         macroTorch.loginContext.lastRipEquippedSavagery = macroTorch.player.isRelicEquipped('Idol of Savagery')
         macroTorch.context.lastRipAtCp = clickContext.comboPoints
+        -- [DIAG catatk-premature-rip-recast] stamp last safeRip cast moment + re-arm one-shot dump
+        macroTorch.context._diagLastSafeRipAt = GetTime()
+        macroTorch.context._diagRipContradictionActive = false
         return true
     end
     return false
