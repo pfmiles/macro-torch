@@ -424,6 +424,14 @@ function macroTorch.safeRip(clickContext)
         -- [DIAG catatk-premature-rip-recast] stamp last safeRip cast moment + re-arm one-shot dump
         macroTorch.context._diagLastSafeRipAt = GetTime()
         macroTorch.context._diagRipContradictionActive = false
+        -- [RAWDIAG catatk-premature-rip-recast] persist the cast-decision context of
+        -- every Rip cast (pure additive; resolves whether a premature Rip while the
+        -- debuff is visible was driven by ripLeft == 0 or by hasBuff == false, e.g.
+        -- the 16-visible-debuff-slot overflow on crowded dummies)
+        macroTorch.log('[RAWDIAG] safeRip fired: hasBuff=' ..
+                tostring(macroTorch.target.hasBuff('Ability_GhoulFrenzy')) ..
+                ', ripLeft=' .. string.format('%.3f', clickContext.ripLeft or -1) ..
+                ', cp=' .. tostring(clickContext.comboPoints), 'green')
         return true
     end
     return false
