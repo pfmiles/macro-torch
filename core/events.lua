@@ -20,6 +20,10 @@
 
 local frame = CreateFrame("Frame")
 
+-- [RAWDIAG catatk-premature-rip-recast] keyword filter for the RAW_COMBATLOG
+-- reconnaissance dump (pure diagnostic addition, see RAW_COMBATLOG branch below)
+local RAWDIAG_KEYWORDS = { 'AURA', 'Rip', 'Rake', 'Bite', 'Pounce' }
+
 -- frame:RegisterEvent("PLAYER_LOGIN")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:RegisterEvent("PLAYER_TARGET_CHANGED")
@@ -122,24 +126,63 @@ function macroTorch.eventHandle()
             end
         end
     elseif event == "RAW_COMBATLOG" then
-        -- DEBUG: print player-related combat log events for hit/miss analysis
-        -- RAW_COMBATLOG (SuperWoW) surfaces CHAT_MSG_* events as structured args:
-        --   arg1 = event type (e.g. CHAT_MSG_COMBAT_SELF_HITS)
-        --   arg2 = message text
-        -- Filter: keep only events where the player is the source or target.
-        -- _SELF_ events are always player-related; others need text-based check.
-        -- local etype = tostring(arg1 or "")
-        -- local msg = tostring(arg2 or "")
-        -- local isPlayerRelated = false
-        -- if string.find(etype, "_SELF_") then
-        --     isPlayerRelated = true
-        -- elseif string.find(msg, "^You ") or string.find(msg, "^Your ") or string.find(msg, " your ")
-        --     or string.find(msg, " from you") or string.find(msg, " to you") then
-        --     isPlayerRelated = true
-        -- end
-        -- if isPlayerRelated then
-        --     macroTorch.log(string.format("[RAW_COMBATLOG] %s | %s", etype, msg))
-        -- end
+        -- [RAWDIAG catatk-premature-rip-recast] reconnaissance dump (pure addition;
+        -- no other handler logic is touched). Purpose: determine direction-3
+        -- feasibility (event-driven land detection) around Rip casts:
+        --   * does this SuperWoW fork emit SPELL_AURA_APPLIED / SPELL_AURA_REFRESH?
+        --   * do events carry caster guid/name (an ownership-auth alternative to
+        --     the ripLeft self-reported clock)?
+        --   * is the column order stable across events?
+        -- SuperWoW RAW_COMBATLOG layout: arg1 = original event name (e.g.
+        -- SPELL_AURA_APPLIED), arg2 = event text with GUIDs. Every arg that is
+        -- present is dumped verbatim so the true layout is visible regardless of
+        -- the running SuperWoW version.
+        --
+        -- Persistence: macroTorch.log writes to MACRO_TORCH_LOG (SavedVariables,
+        -- maxSize 500, flushed to SuperMacro.lua on logout/reload) so the log can
+        -- be copied back from the game machine — chat-frame capture alone is not
+        -- viable at RAW_COMBATLOG volume.
+        -- Arming: recordCastTable('Rip') success sets context._rawScoutActive /
+        -- _rawScoutStart (spell_trace_core.lua, pure additive hook). Auto-disarm
+        -- after a 60s window or once _rawScoutLines reaches the 150-line cap. The
+        -- first 20 events of a fresh window are recorded unconditionally as
+        -- field-layout samples.
+        local scoutActive = macroTorch.context and macroTorch.context._rawScoutActive
+        if scoutActive then
+            local scoutCtx = macroTorch.context
+            if (GetTime() - (scoutCtx._rawScoutStart or GetTime())) > 60 then
+                scoutCtx._rawScoutActive = false
+                macroTorch.log('[RAWDIAG] scout disarmed after 60s window, dumped: ' ..
+                    tostring(scoutCtx._rawScoutLines or 0) .. ' lines', 'yellow')
+            elseif (scoutCtx._rawScoutLines or 0) >= 150 then
+                scoutCtx._rawScoutActive = false
+                macroTorch.log('[RAWDIAG] scout disarmed after 150-line cap, dumped: ' ..
+                    tostring(scoutCtx._rawScoutLines or 0) .. ' lines', 'yellow')
+            else
+                -- serialize every event arg verbatim, nil-safe (Lua 1.12 exposes
+                -- event args as arg1..argN globals; stop at the first nil)
+                local parts = {}
+                local ai = 1
+                while ai <= 12 and _G['arg' .. ai] ~= nil do
+                    parts[#parts + 1] = 'arg' .. ai .. '=' .. tostring(_G['arg' .. ai])
+                    ai = ai + 1
+                end
+                local serialized = table.concat(parts, ' | ')
+                local interesting = false
+                for _, kw in ipairs(RAWDIAG_KEYWORDS) do
+                    if string.find(serialized, kw, 1, true) then
+                        interesting = true
+                        break
+                    end
+                end
+                if interesting or (scoutCtx._rawScoutSamples or 0) < 20 then
+                    scoutCtx._rawScoutLines = (scoutCtx._rawScoutLines or 0) + 1
+                    scoutCtx._rawScoutSamples = (scoutCtx._rawScoutSamples or 0) + 1
+                    macroTorch.log('[RAWDIAG] #' .. scoutCtx._rawScoutLines ..
+                        ' t=' .. string.format('%.3f', GetTime()) .. ' ' .. serialized, 'green')
+                end
+            end
+        end
     elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
         -- arg1=unit (e.g. "player"), arg2=spellName, arg3=rank, arg4=target
         if arg1 == "player" and arg2 and macroTorch.tracingSpells[arg2] then

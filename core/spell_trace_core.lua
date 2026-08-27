@@ -103,6 +103,21 @@ function macroTorch.recordCastTable(spell)
     --     ' cast on ' ..
     --     mob .. ' is recorded/renewed to castTable: ' ..
     --     macroTorch.loginContext.castTable[spell][mob].top)
+    -- [RAWDIAG catatk-premature-rip-recast] arm the RAW_COMBATLOG reconnaissance
+    -- scout on successful Rip cast record (pure additive state recording; no
+    -- existing branch, return value or scheduling is touched). The scout itself
+    -- dumps in events.lua's RAW_COMBATLOG branch. A fresh arm from disarmed
+    -- state resets the per-window line/sample counters; re-arms while active
+    -- only refresh the 60s window start.
+    if spell == 'Rip' and macroTorch.context then
+        if not macroTorch.context._rawScoutActive then
+            macroTorch.context._rawScoutLines = 0
+            macroTorch.context._rawScoutSamples = 0
+            macroTorch.log('[RAWDIAG] scout armed by Rip cast record, 60s / 150-line window', 'green')
+        end
+        macroTorch.context._rawScoutActive = true
+        macroTorch.context._rawScoutStart = GetTime()
+    end
 end
 -- record traced spells' failures, icluding all types of failures: miss, parry, resist, immune
 -- it also computes the final 'landTable' immediately, cauz the cast event must arrived upon the fail event arrive
