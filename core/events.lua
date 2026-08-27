@@ -161,16 +161,20 @@ function macroTorch.eventHandle()
             else
                 -- serialize every event arg verbatim, nil-safe (Lua 1.12 exposes
                 -- event args as arg1..argN globals; stop at the first nil)
+                -- NOTE: WoW 1.12 client runs Lua 5.0 — no '#' length operator,
+                -- use table.insert (repo convention: macroTorch.tableLen exists)
                 local parts = {}
                 local ai = 1
                 while ai <= 12 and _G['arg' .. ai] ~= nil do
-                    parts[#parts + 1] = 'arg' .. ai .. '=' .. tostring(_G['arg' .. ai])
+                    table.insert(parts, 'arg' .. ai .. '=' .. tostring(_G['arg' .. ai]))
                     ai = ai + 1
                 end
                 local serialized = table.concat(parts, ' | ')
                 local interesting = false
                 for _, kw in ipairs(RAWDIAG_KEYWORDS) do
-                    if string.find(serialized, kw, 1, true) then
+                    -- Lua 5.0 string.find has no 'plain' 4th arg; keywords are
+                    -- alphanumeric so pattern semantics already match literal text
+                    if string.find(serialized, kw) then
                         interesting = true
                         break
                     end
