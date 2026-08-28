@@ -678,18 +678,24 @@ function macroTorch.computePounce_Erps()
 end
 
 -- spell trace + immune registration via SpellTrace:register() API (name-based, no spellId needed)
+-- Pounce is an opener bleed whose land evidence is the aura-apply line paired with the cast intent
 macroTorch.SpellTrace:register('Pounce', {
     spellName = 'Pounce', land = true,
+    landSource = 'aura-apply',
     immune = true, debuffTexture = 'Ability_Druid_SupriseAttack'
 })
+-- Rake always produces 'Your Rake hits/crits' lines, so it uses the default 'self-hit' land source
 macroTorch.SpellTrace:register('Rake', {
     spellName = 'Rake', land = true,
     immune = true, debuffTexture = 'Ability_Druid_Disembowel'
 })
+-- Rip has no initial direct damage line, so its land evidence is the aura-apply line paired with the cast intent
 macroTorch.SpellTrace:register('Rip', {
     spellName = 'Rip', land = true,
+    landSource = 'aura-apply',
     immune = true, debuffTexture = 'Ability_GhoulFrenzy'
 })
+-- Ferocious Bite uses the default 'self-hit' source via its 'Your Ferocious Bite hits/crits' lines
 macroTorch.SpellTrace:register('Ferocious Bite', {
     spellName = 'Ferocious Bite', land = true,
     immune = false  -- FB has consumeLandEvent but NO immune tracing in original code
@@ -699,41 +705,26 @@ macroTorch.SpellTrace:register('Faerie Fire (Feral)', {
     immune = true, debuffTexture = 'Spell_Nature_FaerieFire'
 })
 
--- 职业特定的天赋行为需要自己追踪
-function macroTorch.consumeDruidBattleEvents()
-    -- deal with bites landing bleeding renewals
-    macroTorch.consumeLandEvent('Ferocious Bite', function(landEvent)
-        if GetTime() - landEvent > 0.4 or not macroTorch.target.isCanAttack then
-            return
-        end
-        -- 近期有命中过bite，若cp大于0,且本次landed事件还未处理,则刷新rake & rip时间
-        if macroTorch.context.lastProcessedBiteEvent and macroTorch.context.lastProcessedBiteEvent == landEvent then
-            return
-        end
-        -- 撕咬后还剩下cp，才说明刷新了rake & rip时间
-        if GetComboPoints() > 0 then
-            local clickContext = {}
-            if macroTorch.isRakePresent(clickContext) then
-                macroTorch.show('Renewing rake... left: ' ..
-                        tostring(macroTorch.rakeLeft(clickContext)) ..
-                        ', bleed idol: ' .. tostring(macroTorch.loginContext.lastRakeEquippedSavagery))
-                macroTorch.recordCastTable('Rake')
-            end
-            if macroTorch.isRipPresent(clickContext) then
-                macroTorch.show('Renewing rip... left: ' ..
-                        tostring(macroTorch.ripLeft(clickContext)) ..
-                        ', bleed idol: ' .. tostring(macroTorch.loginContext.lastRipEquippedSavagery))
-                macroTorch.recordCastTable('Rip')
-                -- [DIAG catatk-premature-rip-recast] stamp last bite-driven Rip renewal (pure additive record)
-                macroTorch.context._diagLastRenewingRipAt = GetTime()
-            end
-        end
-        macroTorch.context.lastProcessedBiteEvent = landEvent
-    end)
-end
-
-macroTorch.registerPeriodicTask('consumeDruidBattleEvents',
-        { interval = 0.1, task = macroTorch.consumeDruidBattleEvents })
+-- Ferocious Bite land events renew the Rake and Rip land records: the bite
+-- hit itself proves both bleeds carried over, so each self-reported clock
+-- restarts from land = the FB event time (no combo-point condition, debug
+-- decision #3). Renewal is a rewrite, not a cast — no intent pairing occurs
+-- and the Savagery snapshot fields are only read, never written (decision #4).
+macroTorch.onLandEvent('Ferocious Bite', function(landTime)
+    local clickContext = {}
+    if macroTorch.isRakePresent(clickContext) then
+        macroTorch.show('Renewing rake... left: ' ..
+                tostring(macroTorch.rakeLeft(clickContext)) ..
+                ', bleed idol: ' .. tostring(macroTorch.loginContext.lastRakeEquippedSavagery))
+        macroTorch.recordLandEvent('Rake', landTime)
+    end
+    if macroTorch.isRipPresent(clickContext) then
+        macroTorch.show('Renewing rip... left: ' ..
+                tostring(macroTorch.ripLeft(clickContext)) ..
+                ', bleed idol: ' .. tostring(macroTorch.loginContext.lastRipEquippedSavagery))
+        macroTorch.recordLandEvent('Rip', landTime)
+    end
+end)
 
 function macroTorch.shouldUseShred(clickContext)
     -- [NEW GUARD] D-03: Shred not learned -> always prefer Claw
