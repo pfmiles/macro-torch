@@ -963,7 +963,7 @@ Plans:
 
 **Requirements**: none assigned (design decisions locked in `.planning/debug/catatk-premature-rip-recast.md` #1-#8)
 **Depends on:** Phase 26
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans executed
 
 Plans:
 **Wave 1**
@@ -976,7 +976,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2)*
 
-- [ ] 27-03-selftest-verification-cleanup-PLAN.md — Category Q 自测回归（Q-01..Q-09）+ 全阶段静态验证 battery + 收尾 commit
+- [x] 27-03-selftest-verification-cleanup-PLAN.md — Category Q 自测回归（Q-01..Q-09）+ 全阶段静态验证 battery + 收尾 commit
 
 ---
 
