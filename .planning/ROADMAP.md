@@ -957,6 +957,27 @@ Plans:
 
 - [x] 26-03-PLAN.md — 修复 CR-01（P-02 影子字段污染会话级 PvP 检测）、WR-01（getNextAbilityCost 快战幻影能耗）、IN-01 至 IN-04（注释修正/测试解耦/isCanAttack 前置）
 
+### Phase 27: catAtk event-driven land tracing refactor
+
+**Goal:** Replace the polling-based land-event mechanism of the spell trace system with an event-driven one that is immune to machine lag, then integrate it for druid cat skills. Cast bridging stays as-is; each recorded cast registers a 2s-expiring intent (pending → landed/failed/expired); landSource enum on SpellTrace:register ('self-hit' default via `Your <skill> hits/crits`, 'aura-apply' via SuperWoW RAW_COMBATLOG `is afflicted by` + intent pairing); fail is final and revokes intent-produced land. Druid: Rip/Pounce = aura-apply, Rake/Ferocious Bite = self-hit; FB hit event renews Rip+Rake land entries (GetComboPoints condition removed); isRipPresent/ripLeft judgment chain byte-for-byte unchanged.
+
+**Requirements**: none assigned (design decisions locked in `.planning/debug/catatk-premature-rip-recast.md` #1-#8)
+**Depends on:** Phase 26
+**Plans:** 3 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 27-01-core-event-driven-land-framework-PLAN.md — 核心事件驱动 land 框架（intent 状态机 + landSource 契约 + RAW apply handler + fail 撤销 + 旧轮询核心机制删除，含删除范围 checkpoint:decision）
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [ ] 27-02-druid-cat-integration-PLAN.md — 猫德接入（Rip/Pounce aura-apply 注册、FB 事件续期、consumeDruidBattleEvents 与调试诊断删除）+ Hunter Sting landSource 保行为迁移
+
+**Wave 3** *(blocked on Wave 2)*
+
+- [ ] 27-03-selftest-verification-cleanup-PLAN.md — Category Q 自测回归（Q-01..Q-09）+ 全阶段静态验证 battery + 收尾 commit
+
 ---
 
 ## Task 统计
