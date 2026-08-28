@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 status: in_progress
-stopped_at: Completed 27-01 plan
-last_updated: "2026-08-28T17:18:53.767Z"
-state_head: 5edf142c8603d2b3a580508b1c312015e2df2e7e
+stopped_at: Completed 27-02 plan
+last_updated: "2026-08-28T17:25:20.900Z"
+state_head: 671e81abc6f1c009f90e752571d45457bf885b91
 progress:
   total_phases: 26
   completed_phases: 11
   total_plans: 57
-  completed_plans: 55
+  completed_plans: 56
 milestone_name: milestone
 last_activity: 2026-08-25
 current_phase_name: catatk-event-driven-land-tracing-refactor
@@ -22,7 +22,7 @@ last_activity_desc: "Completed quick task 260825-vp9: 修复 code review WR-01/I
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 27 — catAtk event-driven land tracing refactor（27-01 完成：核心事件驱动 land 框架）
+- **Current Phase**: Phase 27 — catAtk event-driven land tracing refactor（27-02 完成：27-01 核心事件驱动 land 框架 + 猫德/Hunter 接入，剩 27-03 自检清理）
 - **Active Branch**: main
 
 ## Phase Progress
@@ -52,7 +52,7 @@ last_activity_desc: "Completed quick task 260825-vp9: 修复 code review WR-01/I
 | Phase 23: idol dance refactor — computeNormalRelic + 距离优化 | 🟡 in_progress | 2026-08-02 | — | 1/1 plan |
 | Phase 25: Hunter 一键宏改造 — Druid 对齐架构 | ✅ complete | 2026-08-18 | 2026-08-19 | 3/3 plans |
 | Phase 26: 猫德 fast 战斗逻辑 | ✅ complete | 2026-08-21 | 2026-08-22 | 3/3 plans |
-| Phase 27: catAtk event-driven land tracing refactor | 🟡 in_progress | 2026-08-28 | — | 1/3 plans |
+| Phase 27: catAtk event-driven land tracing refactor | 🟡 in_progress | 2026-08-28 | — | 2/3 plans |
 
 ## Accumulated Context
 
@@ -156,6 +156,7 @@ last_activity_desc: "Completed quick task 260825-vp9: 修复 code review WR-01/I
 | Phase 26 P02 | 193 | 2 tasks | 1 files |
 | Phase 26 P03 | 3 | 3 tasks | 2 files |
 | Phase 27 P01 | 17 min | 3 tasks | 3 files |
+| Phase 27 P02 | 2 min | 3 tasks | 3 files |
 
 ## Decisions
 
@@ -194,9 +195,9 @@ last_activity_desc: "Completed quick task 260825-vp9: 修复 code review WR-01/I
 
 ## Session
 
-**Last session:** 2026-08-28T17:18:33.208Z
-**Stopped at:** Completed 27-01 plan
-**Resume file:** Next: 27-02-druid-cat-integration
+**Last session:** 2026-08-28T17:25:20.456Z
+**Stopped at:** Completed 27-02 plan
+**Resume file:** Next: 27-03-selftest-verification-cleanup
 
 ## Quick Tasks Completed
 

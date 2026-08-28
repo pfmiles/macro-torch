@@ -963,7 +963,7 @@ Plans:
 
 **Requirements**: none assigned (design decisions locked in `.planning/debug/catatk-premature-rip-recast.md` #1-#8)
 **Depends on:** Phase 26
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 **Wave 1**
@@ -972,7 +972,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1)*
 
-- [ ] 27-02-druid-cat-integration-PLAN.md — 猫德接入（Rip/Pounce aura-apply 注册、FB 事件续期、consumeDruidBattleEvents 与调试诊断删除）+ Hunter Sting landSource 保行为迁移
+- [x] 27-02-druid-cat-integration-PLAN.md — 猫德接入（Rip/Pounce aura-apply 注册、FB 事件续期、consumeDruidBattleEvents 与调试诊断删除）+ Hunter Sting landSource 保行为迁移
 
 **Wave 3** *(blocked on Wave 2)*
 
