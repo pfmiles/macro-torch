@@ -149,12 +149,18 @@ macroTorch.hunter = macroTorch.Hunter:new()
 macroTorch.registerPlayerClass("Hunter", macroTorch.Hunter)
 
 -- tracing spell trace/immune via declarative SpellTrace:register() API
+-- Serpent Sting applies as a periodic DoT with no 'Your X hits' line, so its
+-- land evidence comes from the aura-apply line (RAW pairing preserves the
+-- immune/definite-bleeding tracing that consumed the old blip mechanism)
 macroTorch.SpellTrace:register('Serpent Sting', {
     spellName = 'Serpent Sting', land = true,
+    landSource = 'aura-apply',
     immune = true, debuffTexture = 'Ability_Hunter_Quickshot'
 })
+-- Scorpid Sting likewise applies via aura with no self-damage hit line
 macroTorch.SpellTrace:register('Scorpid Sting', {
     spellName = 'Scorpid Sting', land = true,
+    landSource = 'aura-apply',
     immune = true, debuffTexture = 'Spell_Nature_CorrosiveBreath'
 })
 
