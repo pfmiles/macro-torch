@@ -1117,36 +1117,6 @@ function macroTorch.ripLeft(clickContext)
             clickContext.ripLeft = ripLeft
         end
     end
-    -- [DIAG catatk-premature-rip-recast] one-shot forensic dump on contradiction entry:
-    -- debuff icon visible but self-computed ripLeft reports 0 (evidence-chain break suspected).
-    -- Pure additive logging: no existing branch, return value or scheduling is touched.
-    -- Fires exactly once per contradiction occurrence; re-arms when ripLeft>0 or debuff gone.
-    if macroTorch.context and clickContext.ripLeft == 0 and macroTorch.target.hasBuff('Ability_GhoulFrenzy') then
-        if not macroTorch.context._diagRipContradictionActive then
-            macroTorch.context._diagRipContradictionActive = true
-            macroTorch.context._diagRipContradictionCount = (macroTorch.context._diagRipContradictionCount or 0) + 1
-            local lastCast = macroTorch.peekCastEvent('Rip')
-            local lastLand = macroTorch.peekLandEvent('Rip')
-            local lastFail = macroTorch.peekFailEvent('Rip')
-            local lastFailTime = lastFail and lastFail[1] or nil
-            local lastFailType = lastFail and lastFail[2] or nil
-            macroTorch.log('[DIAG rip-contradiction #' .. tostring(macroTorch.context._diagRipContradictionCount) .. ']' ..
-                ' target=' .. tostring(macroTorch.target.name) ..
-                ', now=' .. string.format('%.3f', GetTime()) ..
-                ', lastCast=' .. (lastCast and string.format('%.3f', lastCast) or 'nil') ..
-                ', lastLand=' .. (lastLand and string.format('%.3f', lastLand) or 'nil') ..
-                ', lastFail=' .. (lastFailTime and (string.format('%.3f', lastFailTime) .. '/' .. tostring(lastFailType)) or 'nil') ..
-                ', lastRipAtCp=' .. tostring(macroTorch.context.lastRipAtCp) ..
-                ', lastRipEquippedSavagery=' .. tostring(macroTorch.loginContext and macroTorch.loginContext.lastRipEquippedSavagery) ..
-                ', lastSafeRipAt=' .. (macroTorch.context._diagLastSafeRipAt and string.format('%.3f', macroTorch.context._diagLastSafeRipAt) or 'nil') ..
-                ', lastRenewingRipAt=' .. (macroTorch.context._diagLastRenewingRipAt and string.format('%.3f', macroTorch.context._diagLastRenewingRipAt) or 'nil') ..
-                ', curCp=' .. tostring(GetComboPoints()), 'red')
-        end
-    else
-        if macroTorch.context then
-            macroTorch.context._diagRipContradictionActive = false
-        end
-    end
     return clickContext.ripLeft
 end
 
