@@ -734,4 +734,207 @@ end, true)
 			"target.distance API not available on this client")
 	end, true)
 
+	-- Category Q: event-driven land-framework regression tests (Phase 27 Q-01..Q-09)
+	-- Every stubbed test (Q-02..Q-07) follows the Phase-26 CR-01 discipline: the fake
+	-- loginContext / target are local tables built before install, framework calls run
+	-- inside a pcall, results are captured into locals, the real globals are restored by
+	-- raw assignment, and only then does any assert run — a failing assert can never
+	-- leave a polluted session. No test writes macroTorch.tracingSpells,
+	-- macroTorch.landSources, macroTorch.landListeners, or any real loginContext sub-table.
+
+	macroTorch.SelfTest:register("Cat Q-01: land-source registry values (aura-apply vs self-hit)", function()
+		assert(macroTorch.landSources['Rip'] == 'aura-apply',
+			"expected Rip landSource 'aura-apply', got " .. tostring(macroTorch.landSources['Rip']))
+		assert(macroTorch.landSources['Pounce'] == 'aura-apply',
+			"expected Pounce landSource 'aura-apply', got " .. tostring(macroTorch.landSources['Pounce']))
+		assert(macroTorch.landSources['Rake'] == 'self-hit',
+			"expected Rake landSource 'self-hit', got " .. tostring(macroTorch.landSources['Rake']))
+		assert(macroTorch.landSources['Ferocious Bite'] == 'self-hit',
+			"expected Ferocious Bite landSource 'self-hit', got " .. tostring(macroTorch.landSources['Ferocious Bite']))
+		assert(macroTorch.landSources['Serpent Sting'] == 'aura-apply',
+			"expected Serpent Sting landSource 'aura-apply', got " .. tostring(macroTorch.landSources['Serpent Sting']))
+		assert(macroTorch.landSources['Scorpid Sting'] == 'aura-apply',
+			"expected Scorpid Sting landSource 'aura-apply', got " .. tostring(macroTorch.landSources['Scorpid Sting']))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat Q-02: aura-apply line pairs the cast intent and lands at apply time", function()
+		local savedLoginContext = macroTorch.loginContext
+		local savedTarget = macroTorch.target
+		local fakeLoginContext = {}
+		local fakeTarget = { isCanAttack = true, name = 'QTestMob', hasBuff = function(self) return false end }
+		macroTorch.loginContext = fakeLoginContext
+		macroTorch.target = fakeTarget
+		local pcallRes = true
+		local intentResult, intentState, intentLandAt, ripLandTop
+		pcallRes = pcall(function()
+			macroTorch.recordCastTable('Rip')
+			-- recordCastTable stamps the intent with the real client clock; align the
+			-- seeded castAt into the fake pair window around the 1000.5 apply time
+			-- (write to the fake context's own intent only)
+			fakeLoginContext.intentTable['Rip']['QTestMob'].top.castAt = 999.0
+			intentResult = macroTorch.processRawAuraApply('Rip',
+				'0xF1300000000000AB is afflicted by Rip.', '0xf1300000000000ab', 1000.5)
+			if intentResult then
+				intentState = intentResult.state
+				intentLandAt = intentResult.landAt
+			end
+			ripLandTop = fakeLoginContext.landTable['Rip']['QTestMob'].top
+		end)
+		macroTorch.loginContext = savedLoginContext
+		macroTorch.target = savedTarget
+		assert(pcallRes, "Q-02 pcall failed")
+		assert(intentResult ~= nil,
+			"expected the aura-apply line to pair the cast intent, got nil")
+		assert(intentState == 'landed',
+			"expected intent state 'landed', got " .. tostring(intentState))
+		assert(intentLandAt == 1000.5,
+			"expected landAt 1000.5, got " .. tostring(intentLandAt))
+		assert(ripLandTop == 1000.5,
+			"expected landTable top 1000.5, got " .. tostring(ripLandTop))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat Q-03: foreign-guid apply line is rejected and the intent stays pending", function()
+		local savedLoginContext = macroTorch.loginContext
+		local savedTarget = macroTorch.target
+		local fakeLoginContext = {}
+		local fakeTarget = { isCanAttack = true, name = 'QTestMob', hasBuff = function(self) return false end }
+		macroTorch.loginContext = fakeLoginContext
+		macroTorch.target = fakeTarget
+		local ok, pcallRes = true, true
+		local intentState, ripLanded
+		pcallRes = pcall(function()
+			macroTorch.recordCastTable('Rip')
+			intentState = fakeLoginContext.intentTable['Rip']['QTestMob'].top.state
+			ripLanded = fakeLoginContext.landTable ~= nil and fakeLoginContext.landTable['Rip'] ~= nil
+			ok = (macroTorch.processRawAuraApply('Rip',
+					'0xF1300000000000AB is afflicted by Rip.', '0xDEADBEEF00000000', 7.0) == nil
+				and intentState == 'pending' and ripLanded == false)
+		end)
+		macroTorch.loginContext = savedLoginContext
+		macroTorch.target = savedTarget
+		assert(pcallRes, "Q-03 pcall failed")
+		assert(ok, "expected the foreign-guid apply to be rejected (nil, pending intent, no land)")
+	end, true)
+
+	macroTorch.SelfTest:register("Cat Q-04: stale pending intent expires past the TTL (lazy purge)", function()
+		local savedLoginContext = macroTorch.loginContext
+		local savedTarget = macroTorch.target
+		local fakeLoginContext = {}
+		local fakeTarget = { isCanAttack = true, name = 'QTestMob', hasBuff = function(self) return false end }
+		fakeLoginContext.intentTable = {}
+		fakeLoginContext.intentTable['Rip'] = {}
+		fakeLoginContext.intentTable['Rip']['QTestMob'] = macroTorch.LRUStack:new(32)
+		local seededIntent = { state = 'pending', castAt = 1.0, landAt = nil }
+		fakeLoginContext.intentTable['Rip']['QTestMob'].push(seededIntent)
+		macroTorch.loginContext = fakeLoginContext
+		macroTorch.target = fakeTarget
+		local ok, pcallRes = true, true
+		local seededState
+		pcallRes = pcall(function()
+			ok = (macroTorch.pairLandIntent('Rip', 5.0) == nil)
+			seededState = seededIntent.state
+			ok = ok and (seededState == 'expired')
+		end)
+		macroTorch.loginContext = savedLoginContext
+		macroTorch.target = savedTarget
+		assert(pcallRes, "Q-04 pcall failed")
+		assert(ok, "expected TTL expiry: 5.0 - 1.0 exceeds LAND_INTENT_TTL")
+	end, true)
+
+	macroTorch.SelfTest:register("Cat Q-05: fail after land revokes the land entry (fail is final)", function()
+		local savedLoginContext = macroTorch.loginContext
+		local savedTarget = macroTorch.target
+		local fakeLoginContext = {}
+		local fakeTarget = { isCanAttack = true, name = 'QTestMob', hasBuff = function(self) return false end }
+		fakeLoginContext.intentTable = {}
+		fakeLoginContext.intentTable['Rip'] = {}
+		fakeLoginContext.intentTable['Rip']['QTestMob'] = macroTorch.LRUStack:new(32)
+		local seededIntent = { state = 'pending', castAt = 9.0, landAt = nil }
+		fakeLoginContext.intentTable['Rip']['QTestMob'].push(seededIntent)
+		macroTorch.loginContext = fakeLoginContext
+		macroTorch.target = fakeTarget
+		local ok, pcallRes = true, true
+		local seededState, landTopAfterFail
+		pcallRes = pcall(function()
+			macroTorch.processRawAuraApply('Rip',
+				'0xF1300000000000AB is afflicted by Rip.', '0xf1300000000000ab', 9.1)
+			local landTopAfterPair = fakeLoginContext.landTable['Rip']['QTestMob'].top
+			macroTorch.finalizeFail('Rip', 9.3)
+			seededState = seededIntent.state
+			landTopAfterFail = fakeLoginContext.landTable['Rip']['QTestMob'].top
+			ok = (landTopAfterPair == 9.1 and landTopAfterFail ~= 9.1 and seededState == 'failed')
+		end)
+		macroTorch.loginContext = savedLoginContext
+		macroTorch.target = savedTarget
+		assert(pcallRes, "Q-05 pcall failed")
+		assert(ok, "expected the fail to revoke the 9.1 land entry and finalize the intent")
+	end, true)
+
+	macroTorch.SelfTest:register("Cat Q-06: fail before apply wins — no late pairing after finalization", function()
+		local savedLoginContext = macroTorch.loginContext
+		local savedTarget = macroTorch.target
+		local fakeLoginContext = {}
+		local fakeTarget = { isCanAttack = true, name = 'QTestMob', hasBuff = function(self) return false end }
+		fakeLoginContext.intentTable = {}
+		fakeLoginContext.intentTable['Rip'] = {}
+		fakeLoginContext.intentTable['Rip']['QTestMob'] = macroTorch.LRUStack:new(32)
+		local seededIntent = { state = 'pending', castAt = 10.0, landAt = nil }
+		fakeLoginContext.intentTable['Rip']['QTestMob'].push(seededIntent)
+		macroTorch.loginContext = fakeLoginContext
+		macroTorch.target = fakeTarget
+		local ok, pcallRes = true, true
+		local seededState, applyResult
+		pcallRes = pcall(function()
+			macroTorch.finalizeFail('Rip', 10.4)
+			seededState = seededIntent.state
+			applyResult = macroTorch.processRawAuraApply('Rip',
+				'0xF1300000000000AB is afflicted by Rip.', '0xf1300000000000ab', 10.5)
+			ok = (applyResult == nil and seededState == 'failed')
+		end)
+		macroTorch.loginContext = savedLoginContext
+		macroTorch.target = savedTarget
+		assert(pcallRes, "Q-06 pcall failed")
+		assert(ok, "expected no pairing after the intent was finalized as failed")
+	end, true)
+
+	macroTorch.SelfTest:register("Cat Q-07: self-hit lands pairing-free and unregistered spells are ignored", function()
+		local savedLoginContext = macroTorch.loginContext
+		local savedTarget = macroTorch.target
+		local fakeLoginContext = {}
+		-- hasBuff is stubbed to false so the real Ferocious Bite renewal listener
+		-- (dispatched by recordLandEvent) finds no present bleeds and stays a no-op
+		local fakeTarget = { isCanAttack = true, name = 'QTestMob', hasBuff = function(self) return false end }
+		macroTorch.loginContext = fakeLoginContext
+		macroTorch.target = fakeTarget
+		local ok, pcallRes = true, true
+		local fbLandTop, autumnLand
+		pcallRes = pcall(function()
+			macroTorch.onSelfDamageLine('Your Ferocious Bite hits QTestMob for 548.', 5.0)
+			fbLandTop = fakeLoginContext.landTable['Ferocious Bite']['QTestMob'].top
+			macroTorch.onSelfDamageLine('Your Autumn Harvest hits QTestMob for 1.', 5.0)
+			autumnLand = fakeLoginContext.landTable['Autumn Harvest']
+			ok = (fbLandTop == 5.0 and autumnLand == nil)
+		end)
+		macroTorch.loginContext = savedLoginContext
+		macroTorch.target = savedTarget
+		assert(pcallRes, "Q-07 pcall failed")
+		assert(ok, "expected a pairing-free Ferocious Bite land at 5.0 and no Autumn Harvest entry")
+	end, true)
+
+	macroTorch.SelfTest:register("Cat Q-08: Ferocious Bite renewal listener present", function()
+		assert(type(macroTorch.landListeners) == 'table',
+			"landListeners is not a table, got " .. type(macroTorch.landListeners))
+		assert(macroTorch.tableLen(macroTorch.landListeners['Ferocious Bite'] or {}) >= 1,
+			"expected at least one Ferocious Bite renewal listener")
+	end, true)
+
+	macroTorch.SelfTest:register("Cat Q-09: deleted polling machinery absent at runtime", function()
+		assert(macroTorch.maintainLandTables == nil,
+			"maintainLandTables should be deleted, got " .. tostring(macroTorch.maintainLandTables))
+		assert(macroTorch.computeLandTable == nil,
+			"computeLandTable should be deleted, got " .. tostring(macroTorch.computeLandTable))
+		assert(macroTorch.consumeDruidBattleEvents == nil,
+			"consumeDruidBattleEvents should be deleted, got " .. tostring(macroTorch.consumeDruidBattleEvents))
+	end, true)
+
 end
