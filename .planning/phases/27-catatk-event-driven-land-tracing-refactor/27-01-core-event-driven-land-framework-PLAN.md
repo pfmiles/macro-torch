@@ -194,6 +194,25 @@ Rework core/events.lua exactly two places; everything else (UNIT_CASTEVENT bridg
 
 </tasks>
 
+## Artifacts this phase produces
+Created (this plan, core layer):
+- macroTorch.LAND_INTENT_TTL = 2 (pending-window constant)
+- macroTorch.landSources (spell -> landSource registry) and macroTorch.auraApplySpellPatterns (spell -> precompiled ' is afflicted by <spell>.' find pattern)
+- SpellTrace:register extension: config.landSource honored (default 'self-hit'; 'aura-apply' precompiles its pattern)
+- loginContext.intentTable[spell][mob] — LRUStack(32) of intent records {state='pending'|'landed'|'failed'|'expired', castAt, landAt}
+- macroTorch.pairLandIntent(spell, landTime) — lazy 2s-TTL purge + newest-pending pairing
+- macroTorch.recordLandEvent(spell, landTime) — landTable push + listener dispatch (no intent side effects)
+- macroTorch.onLandEvent(spell, listener) + macroTorch.landListeners
+- macroTorch.processRawAuraApply(spellName, rawText, targetGuid, now) — guid parse + case-insensitive target match + intent-gated land at apply time
+- macroTorch.onSelfDamageLine(eventMsg, now) — 'Your <spell> hits/crits' parse, pairing-free self-hit land
+- macroTorch.finalizeFail(spell, failTime) — fail-wins intent consumption + land revocation (called from recordFailTable)
+- macroTorch.LRUStack:removeMatch(predicate) — newest-matching element removal (core/periodic.lua, additive)
+- core/events.lua: production RAW_COMBATLOG three-tier handler; onSelfDamageLine dispatch after CheckDodgeParryBlockResist
+Deleted (this plan, core layer — decision #5 half A):
+- macroTorch.maintainLandTables + registerPeriodicTask('maintainLandTables', 0.1s)
+- macroTorch.computeLandTable (blip window (0.02,0.9] logic)
+- RAWDIAG recon scout: RAWDIAG_KEYWORDS table + scout branch body in events.lua + arm hook in recordCastTable (replaced by the production handler)
+
 <threat_model>
 ## Trust Boundaries
 

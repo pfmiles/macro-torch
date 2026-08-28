@@ -166,6 +166,17 @@ In classes/hunter/Hunter.lua, add landSource = 'aura-apply' to the Serpent Sting
 
 </tasks>
 
+## Artifacts this phase produces
+Created (this plan, druid + hunter integration layer):
+- SpellTrace:register('Pounce', { ... landSource='aura-apply' }) and register('Rip', { ... landSource='aura-apply' }) config keys (classes/druid/Druid.lua)
+- onLandEvent('Ferocious Bite', renewalListener) in classes/druid/Druid.lua — FB hit event rewrites Rake/Rip land entries (land = FB event time), presence-gated, snapshot fields never written, no GetComboPoints
+- SpellTrace:register('Serpent Sting'/'Scorpid Sting', { ... landSource='aura-apply' }) config keys (classes/hunter/Hunter.lua, behavior-preserving migration)
+Deleted (this plan — decision #5 half B):
+- macroTorch.consumeDruidBattleEvents + registerPeriodicTask('consumeDruidBattleEvents', 0.1s) — 0.4s bite window + GetComboPoints>0 gate + lastProcessedBiteEvent + pseudo-cast chain (classes/druid/Druid.lua)
+- ripLeft [DIAG rip-contradiction] one-shot dump block + context._diagRipContradictionActive/_diagRipContradictionCount (classes/druid/Druid.lua)
+- context._diagLastRenewingRipAt stamp; context.lastProcessedBiteEvent
+- safeRip [RAWDIAG] persist line + _diagLastSafeRipAt stamp + _diagRipContradictionActive re-arm (classes/druid/cat.lua)
+
 <threat_model>
 ## Trust Boundaries
 

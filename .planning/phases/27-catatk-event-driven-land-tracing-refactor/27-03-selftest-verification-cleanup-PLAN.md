@@ -146,6 +146,16 @@ Run the phase-wide battery in order; fix nothing silently — any failure halts 
 
 </tasks>
 
+## Artifacts this phase produces
+Created (this plan):
+- Category Q selftest registrations Q-01..Q-09 in classes/druid/selftest.lua (all isOptional=true, stub/restore discipline): registry state, aura-apply pairing + TTL, guid mismatch, fail revocation both orders, self-hit land, FB listener presence, legacy machinery absence
+- tools/bbcheck.js under the phase directory (Lua-aware bracket-balance gate used by every plan's automated verify)
+- 27-03-SUMMARY.md (battery report + user-side UAT step)
+Phase-wide symbol inventory (master list — what the phase as a whole produces):
+Created: macroTorch.LAND_INTENT_TTL; macroTorch.landSources; macroTorch.auraApplySpellPatterns; macroTorch.landListeners; loginContext.intentTable (LRUStack of {state, castAt, landAt}); macroTorch.pairLandIntent; macroTorch.recordLandEvent; macroTorch.onLandEvent; macroTorch.processRawAuraApply; macroTorch.onSelfDamageLine; macroTorch.finalizeFail; macroTorch.LRUStack:removeMatch; SpellTrace:register landSource extension (config landsource + aura-apply pattern precompile); onLandEvent('Ferocious Bite') renewal listener; landSource='aura-apply' on Rip, Pounce, Serpent Sting, Scorpid Sting; Category Q selftests; tools/bbcheck.js.
+Deleted: macroTorch.maintainLandTables + its periodic registration; macroTorch.computeLandTable; macroTorch.consumeDruidBattleEvents + its periodic registration; RAWDIAG scout (events.lua branch + RAWDIAG_KEYWORDS) + arm hook (recordCastTable); ripLeft [DIAG rip-contradiction] dump; safeRip [RAWDIAG] persist + _diag stamps; context._rawScout*/_diag* fields; context.lastProcessedBiteEvent; the GetComboPoints()>0 renewal condition; 0.4s bite-consumption window; (0.02,0.9] blip-window landing semantics.
+Unchanged (fidelity commitments): entity/Unit.lua hasBuff internals; isRipPresent/ripLeft duration models; cast bridging (UNIT_CASTEVENT + _pendingCastSpellName, UNIT_SPELLCAST_SUCCEEDED); build_order.txt; spell_trace_immune.lua.
+
 <threat_model>
 ## Trust Boundaries
 
