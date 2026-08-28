@@ -963,12 +963,12 @@ Plans:
 
 **Requirements**: none assigned (design decisions locked in `.planning/debug/catatk-premature-rip-recast.md` #1-#8)
 **Depends on:** Phase 26
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 27-01-core-event-driven-land-framework-PLAN.md — 核心事件驱动 land 框架（intent 状态机 + landSource 契约 + RAW apply handler + fail 撤销 + 旧轮询核心机制删除，含删除范围 checkpoint:decision）
+- [x] 27-01-core-event-driven-land-framework-PLAN.md — 核心事件驱动 land 框架（intent 状态机 + landSource 契约 + RAW apply handler + fail 撤销 + 旧轮询核心机制删除，含删除范围 checkpoint:decision）
 
 **Wave 2** *(blocked on Wave 1)*
 

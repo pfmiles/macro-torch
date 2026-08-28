@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 status: in_progress
-stopped_at: Completed 26-03-PLAN.md
-last_updated: "2026-08-28T16:16:12.023Z"
-state_head: 6864b5619855dd52c8b96dd033faa994f56172f5
+stopped_at: Completed 27-01 plan
+last_updated: "2026-08-28T17:18:53.767Z"
+state_head: 5edf142c8603d2b3a580508b1c312015e2df2e7e
 progress:
   total_phases: 26
   completed_phases: 11
   total_plans: 57
-  completed_plans: 54
+  completed_plans: 55
 milestone_name: milestone
 last_activity: 2026-08-25
 current_phase_name: catatk-event-driven-land-tracing-refactor
@@ -22,7 +22,7 @@ last_activity_desc: "Completed quick task 260825-vp9: 修复 code review WR-01/I
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 26 — 猫德 fast 战斗逻辑（isFastBattleNotPvp 纯直伤策略）
+- **Current Phase**: Phase 27 — catAtk event-driven land tracing refactor（27-01 完成：核心事件驱动 land 框架）
 - **Active Branch**: main
 
 ## Phase Progress
@@ -52,6 +52,7 @@ last_activity_desc: "Completed quick task 260825-vp9: 修复 code review WR-01/I
 | Phase 23: idol dance refactor — computeNormalRelic + 距离优化 | 🟡 in_progress | 2026-08-02 | — | 1/1 plan |
 | Phase 25: Hunter 一键宏改造 — Druid 对齐架构 | ✅ complete | 2026-08-18 | 2026-08-19 | 3/3 plans |
 | Phase 26: 猫德 fast 战斗逻辑 | ✅ complete | 2026-08-21 | 2026-08-22 | 3/3 plans |
+| Phase 27: catAtk event-driven land tracing refactor | 🟡 in_progress | 2026-08-28 | — | 1/3 plans |
 
 ## Accumulated Context
 
@@ -75,6 +76,7 @@ last_activity_desc: "Completed quick task 260825-vp9: 修复 code review WR-01/I
 - Phase 23 added: Idol Dance (神像舞) Refactor — 修复 computeNormalRelic 2 个逻辑 gap + recoverNormalRelic 距离旁路优化 + Category O SelfTest 覆盖。来源：`.planning/phases/23-idol-dance-refactor/23-CONTEXT.md` (2026-08-02)
 - Phase 25 added: 参考druid相关逻辑，仿照代码组织结构，改造hunter职业的代码，构造出hunterAtk宏用于练级过程中的一键输出，包含远程和近战输出；hunterAoe用于范围输出，同样包括远程和近战；hunterDefend用于保命减伤；hunterControl用于控制目标；hunterMobTagging用于抢怪，包含近战和远程抢怪 (2026-08-17)
 - Phase 26 added: 新增猫德fast战斗逻辑 — isFastBattleNotPvp(8.5s阈值)纯直伤策略，跳过所有流血(Pounce/Rake/Rip)，仅Shred/Claw攒星→5CP Bite/KillShot (2026-08-21)
+- Phase 27 added: catAtk event-driven land tracing refactor — 事件驱动 land 机制替代 0.1s 轮询 blip 窗口（卡顿机器上 ripLeft 证据链断裂的根治）：cast 桥不变 + 2s 过期 cast intent + landSource 枚举(self-hit/aura-apply) + fail 终局撤销 + 三层 RAW 过滤器。27-01 已删除核心轮询对与 RAWDIAG 侦察 (2026-08-28)
 
 ## Key Decisions
 
@@ -153,6 +155,7 @@ last_activity_desc: "Completed quick task 260825-vp9: 修复 code review WR-01/I
 | Phase 26 P01 | 175 | 3 tasks | 4 files |
 | Phase 26 P02 | 193 | 2 tasks | 1 files |
 | Phase 26 P03 | 3 | 3 tasks | 2 files |
+| Phase 27 P01 | 17 min | 3 tasks | 3 files |
 
 ## Decisions
 
@@ -187,12 +190,13 @@ last_activity_desc: "Completed quick task 260825-vp9: 修复 code review WR-01/I
 - [Phase ?]: [Phase 26-03]: CR-01 closed — P-02 snapshots with rawget and restores via raw assignment; the nil restore deletes the own-key so the __index accessor (FIELD_FUNC_MAP isPlayerControlled) stays live — running /mt can no longer freeze session-wide PvP detection
 - [Phase ?]: [Phase 26-03]: WR-01 closed — getNextAbilityCost resolves the fast-battle verdict once per click and skips Bite/Rip/Rake in fast battles so reshift/FF consumers benchmark real Shred/Claw/Tiger costs; shouldCastRip/shouldUseBite untouched (D-09/D-13)
 - [Phase ?]: [Phase 26-03]: IN-03/IN-04 closed — P-06 stubs the judgment function instead of pre-seeding the lazy-cache field; isFastBattleNotPvp caches false when macroTorch.target.isCanAttack is false (missing/dead target), with P-03/P-05 gaining the same skip guard as P-04
+- [Phase ?]: Phase 27-01: event-driven land framework replaces polling — checkpoint option-a confirmed (permanent deletion of maintainLandTables/computeLandTable + RAWDIAG scout per debug decision #5); land ownership split: aura-apply lands pair with cast intent + guid match, self-hit lands pairing-free; fail is final via finalizeFail revocation
 
 ## Session
 
-**Last session:** 2026-08-21T18:47:12.701Z
-**Stopped at:** Completed 26-03-PLAN.md
-**Resume file:** None
+**Last session:** 2026-08-28T17:18:33.208Z
+**Stopped at:** Completed 27-01 plan
+**Resume file:** Next: 27-02-druid-cat-integration
 
 ## Quick Tasks Completed
 
