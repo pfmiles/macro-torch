@@ -60,6 +60,17 @@ function macroTorch.LRUStack:new(maxSize)
         return true
     end
 
+    -- removeMatch removes the newest element satisfying predicate; exists for
+    -- land-entry revocation when a cast intent finalizes as failed
+    function obj.removeMatch(predicate)
+        for i = macroTorch.tableLen(obj.elements), 1, -1 do
+            if predicate(obj.elements[i]) then
+                return table.remove(obj.elements, i)
+            end
+        end
+        return nil
+    end
+
     return obj
 end
 
