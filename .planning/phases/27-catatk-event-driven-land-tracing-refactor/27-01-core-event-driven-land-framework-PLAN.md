@@ -184,7 +184,7 @@ Rework core/events.lua exactly two places; everything else (UNIT_CASTEVENT bridg
   <acceptance_criteria>
 1) git grep -n 'RAWDIAG\|_rawScout\|RAWDIAG_KEYWORDS' -- core/events.lua returns nothing.
 2) git grep -n "auraApplySpellPatterns\|processRawAuraApply\|onSelfDamageLine" -- core/events.lua returns the three expected call-site lines (pairs loop, process call, dispatch call).
-3) grep -c "CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE" core/events.lua is 2 (one frame:RegisterEvent, one in the tier-1 whitelist); same for CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE.
+3) grep -c "CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE" core/events.lua is 3 — three sites: the frame:RegisterEvent line 41 (stays), the existing empty elseif branch line 107 (stays byte-for-byte), and the new tier-1 whitelist literal inside the RAW_COMBATLOG handler. Same shape for CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE: register line 42, existing empty elseif branch line 109, tier-1 whitelist — count 3.
 4) git grep -n 'macroTorch%.CheckDodgeParryBlockResist' -- core/events.lua still returns its one call site (fail parse untouched).
 5) The UNIT_CASTEVENT and UNIT_SPELLCAST_SUCCEEDED branch hunks are absent from git diff (bridge stays byte-for-byte).
 6) bbcheck BALANCED on core/events.lua; git diff --check empty; ./build.sh exits 0 and SM_Extend.lua contains 'processRawAuraApply' (build artifact is not committed).
