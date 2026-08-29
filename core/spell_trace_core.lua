@@ -151,7 +151,9 @@ function macroTorch.recordFailTable(spell, failType)
         mob ..
         ' is recorded to failTable: ' ..
         item[1] .. '(' .. item[2] .. '), lag=' .. tostring(lastCast and (item[1] - lastCast) or 'noTracing'), 'red')
-    macroTorch.finalizeFail(spell, item[1])
+    -- failType is threaded through so the revocation branch can name the fail
+    -- type when it cancels a previously announced green landing (fail-wins)
+    macroTorch.finalizeFail(spell, item[1], failType)
 end
 -- pairs a land event with an unconsumed cast intent recorded within
 -- LAND_INTENT_TTL seconds before the land. First runs a purge pass expiring
@@ -253,6 +255,11 @@ function macroTorch.processRawAuraApply(spellName, rawText, targetGuid, now)
     local intent = macroTorch.pairLandIntent(spellName, now)
     if intent then
         macroTorch.recordLandEvent(spellName, now)
+        -- user-visible land feedback (restored per user request 2026-08-30):
+        -- pairing succeeded, so this apply line is a genuine landing (and the
+        -- target-is-attackable / loginContext guards all held for pairing).
+        macroTorch.show(spellName .. ' cast on ' .. macroTorch.target.name ..
+            ' landed: ' .. now, 'green')
     end
     return intent
 end
@@ -260,7 +267,7 @@ end
 -- pending/landed intent within the TTL window, revokes the land entry the
 -- intent produced (if any), and marks it failed. Fail is final regardless of
 -- whether the land or the fail event arrived first.
-function macroTorch.finalizeFail(spell, failTime)
+function macroTorch.finalizeFail(spell, failTime, failType)
     if not spell or not macroTorch.target.isCanAttack then
         return
     end
@@ -289,6 +296,12 @@ function macroTorch.finalizeFail(spell, failTime)
                         return landTime == intent.landAt
                     end)
                 end
+                -- user-visible cancellation notice: the failed cast revokes a
+                -- landing that was previously announced in green (fail-wins);
+                -- name the fail type so the player knows why the green line no
+                -- longer holds (2026-08-30 user request)
+                macroTorch.show(spell .. ' land on ' .. mob .. ' was cancelled by ' ..
+                    tostring(failType or 'fail'), 'red')
             end
             intent.state = 'failed'
             intent.landAt = nil
@@ -319,6 +332,13 @@ function macroTorch.onSelfDamageLine(eventMsg, now)
     end
     macroTorch.pairLandIntent(spell, now)
     macroTorch.recordLandEvent(spell, now)
+    -- user-visible land feedback (restored per user request 2026-08-30): the
+    -- self-hit line IS the landing; print the green confirmation the pre-phase
+    -- polling machinery used to emit. Plain show() — not a DIAG/RAWDIAG marker.
+    if macroTorch.loginContext and macroTorch.target.isCanAttack then
+        macroTorch.show(spell .. ' cast on ' .. macroTorch.target.name ..
+            ' landed: ' .. now, 'green')
+    end
 end
 function macroTorch.consumeLandEvent(spell, logic)
     if not spell or not logic or not macroTorch.target.isCanAttack then
