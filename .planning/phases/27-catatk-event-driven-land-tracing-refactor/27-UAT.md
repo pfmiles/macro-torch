@@ -43,6 +43,7 @@ expected: |
   was cancelled by <failType>` line. No green line may appear for FB-driven
   Rake/Rip renewals (renewals are rewrites, not landings), and no `[DIAG]` /
   `[RAWDIAG]` / `init step` output anywhere.
+  Ordering is also part of the contract: a tracing spell's own green `landed:` line prints BEFORE any listener-driven renewal lines it triggers (FB landed, then Renewing rake, then Renewing rip).
 awaiting: user response (deferred by user: in-game testing postponed until all
 development-side close-out work is complete; UAT runs as the final step)
 
