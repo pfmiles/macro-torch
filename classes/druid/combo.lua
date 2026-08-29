@@ -67,7 +67,6 @@ function macroTorch.catAtk()
     -- durations of certain time lasting spell effects
     clickContext.TIGER_DURATION = macroTorch.computeTiger_Duration()
     clickContext.FF_DURATION = 40
-    clickContext.POUNCE_DURATION = 18
 
     -- erps is short for energy restoration per second, 这里给出了当前游戏阶段猫德拥有的所有回能机制的每秒回能期望
     clickContext.AUTO_TICK_ERPS = 20 / 2
