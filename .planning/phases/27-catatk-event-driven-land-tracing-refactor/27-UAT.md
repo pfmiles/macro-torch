@@ -31,6 +31,11 @@ expected: |
   cast wore the Savagery idol, 18s when it did not — this is the snapshot
   inheritance the user verifies live.
 
+  Cast-log payload (2026-08-30 user request): the `Rip!!!` / `Rake!!!` /
+  `Pounce!!!` cast logs now also print `expDuration: <N>s` computed from LIVE
+  cast-moment state (current CP + currently equipped idol) — what the server
+  snapshots when the fresh cast lands, not the previous cast's snapshot.
+
   Land-feedback restore (2026-08-30, post-review user request): each genuine
   landing of a traced spell prints a green `<spell> cast on <mob> landed:
   <time>` line (Rake/FB via self-hit, Rip/Pounce via aura-apply pairing); a
@@ -48,7 +53,7 @@ expected: All 10 Category Q tests green on /mt (auto-run at world enter); Q-10 g
 result: [pending]
 
 ### 2. Dummy-fight smoke: event-driven land + renewal
-expected: Rip/Pounce land via aura-apply pairing; landed FB hits emit Renewing lines driven by hit events (not polling); clocks restart from FB event time; no Lua arithmetic errors on the catAtk hot path. Renewing lines carry `expDuration: <N>s` from the cast-time snapshot (16.2s with original-cast Savagery at 5cp, else 18s). Additionally, each genuine traced-spell landing prints a green `cast on ... landed:` line, fail-revoked landings print a red `was cancelled by ...` line, and no green line appears for FB-driven renewals.
+expected: Rip/Pounce land via aura-apply pairing; landed FB hits emit Renewing lines driven by hit events (not polling); clocks restart from FB event time; no Lua arithmetic errors on the catAtk hot path. Renewing lines carry `expDuration: <N>s` from the cast-time snapshot (16.2s with original-cast Savagery at 5cp, else 18s). Cast logs (`Rip!!!`/`Rake!!!`/`Pounce!!!`) carry `expDuration: <N>s` from live cast-moment state. Additionally, each genuine traced-spell landing prints a green `cast on ... landed:` line, fail-revoked landings print a red `was cancelled by ...` line, and no green line appears for FB-driven renewals.
 result: [pending]
 
 ## Summary
