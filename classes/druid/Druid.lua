@@ -720,12 +720,14 @@ macroTorch.onLandEvent('Ferocious Bite', function(spell, landTime)
     if macroTorch.isRakePresent(clickContext) then
         macroTorch.show('Renewing rake... left: ' ..
                 tostring(macroTorch.rakeLeft(clickContext)) ..
+                ', expDuration: ' .. tostring(macroTorch.rakeExpectedDuration()) .. 's' ..
                 ', bleed idol: ' .. tostring(macroTorch.loginContext.lastRakeEquippedSavagery))
         macroTorch.recordLandEvent('Rake', landTime)
     end
     if macroTorch.isRipPresent(clickContext) then
         macroTorch.show('Renewing rip... left: ' ..
                 tostring(macroTorch.ripLeft(clickContext)) ..
+                ', expDuration: ' .. tostring(macroTorch.ripExpectedDuration()) .. 's' ..
                 ', bleed idol: ' .. tostring(macroTorch.loginContext.lastRipEquippedSavagery))
         macroTorch.recordLandEvent('Rip', landTime)
     end
@@ -1131,6 +1133,34 @@ function macroTorch.isRakePresent(clickContext)
                 macroTorch.rakeLeft(clickContext) > 0)
     end
     return clickContext.isRakePresent
+end
+
+-- expected full duration of a refreshed Rip bleed, from the cast-time snapshot
+-- only (CP count and Savagery idol state; both are write-once at cast and
+-- read-only at refresh — decision #4). Snapshot semantics: a Rip originally
+-- cast under the Savagery idol keeps its 0.9 penalty on every FB refresh,
+-- so expDuration discriminates 16.2s (Savagery) vs 18s (no idol) at 5cp.
+function macroTorch.ripExpectedDuration()
+    local ripDur = macroTorch.RIP_BASE_DURATION
+    local cp = macroTorch.context and macroTorch.context.lastRipAtCp
+    if cp then
+        ripDur = ripDur + (cp - 1) * 2
+    end
+    if macroTorch.loginContext and macroTorch.loginContext.lastRipEquippedSavagery then
+        ripDur = ripDur * 0.9
+    end
+    return ripDur
+end
+
+-- expected full duration of a refreshed Rake bleed: RAKE_DURATION, with the
+-- same 0.9 Savagery snapshot penalty applied only when the original cast
+-- wore the idol
+function macroTorch.rakeExpectedDuration()
+    local rakeDur = macroTorch.RAKE_DURATION
+    if macroTorch.loginContext and macroTorch.loginContext.lastRakeEquippedSavagery then
+        rakeDur = rakeDur * 0.9
+    end
+    return rakeDur
 end
 
 -- 由于官方api获取buff/debuff剩余时间不准确，因此这里的rakeLeft时间只能自己记录和计算
