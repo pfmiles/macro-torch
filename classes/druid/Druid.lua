@@ -262,10 +262,7 @@ function macroTorch.Druid:new()
         macroTorch.RIP_E = 30
         macroTorch.TIGER_E = macroTorch.computeTiger_E()
 
-        macroTorch.POUNCE_DURATION = 18
         macroTorch.TIGER_DURATION = macroTorch.computeTiger_Duration()
-        macroTorch.RAKE_DURATION = 9
-        macroTorch.RIP_BASE_DURATION = 10
 
         macroTorch.show('POUNCE_E: ' ..
                 macroTorch.POUNCE_E ..
