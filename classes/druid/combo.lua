@@ -138,10 +138,14 @@ function macroTorch.catAtk()
             -- the elseif Ravage branch below for direct damage
             if hasPounce and not target.isImmune('Pounce') and target.health >= macroTorch.getOpenerHealthThreshold() and not macroTorch.isFastBattleNotPvp(clickContext) then
                 if macroTorch.isGcdOk(clickContext) and macroTorch.isNearBy(clickContext) then
-                    macroTorch.show('Pounce!!! bleed idol equipped: ' ..
-                            tostring(macroTorch.player.isRelicEquipped('Idol of Savagery')))
+                    -- live equipped state, queried once: expDuration for a fresh
+                    -- cast uses the live value (what the server snapshots on
+                    -- landing); the same value is frozen below
+                    local savageryNow = macroTorch.player.isRelicEquipped('Idol of Savagery')
+                    macroTorch.show('Pounce!!! bleed idol equipped: ' .. tostring(savageryNow) ..
+                            ', expDuration: ' .. tostring(macroTorch.computePounce_Duration(savageryNow)) .. 's')
                     macroTorch.player.pounce()
-                    macroTorch.loginContext.lastPounceEquippedSavagery = macroTorch.player.isRelicEquipped('Idol of Savagery')
+                    macroTorch.loginContext.lastPounceEquippedSavagery = savageryNow
                 end
             elseif hasRavage then
                 player.ravage('ready')

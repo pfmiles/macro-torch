@@ -400,26 +400,34 @@ function macroTorch.readyReshift(clickContext, nextMove, nextAbilityCost)
 end
 function macroTorch.safeRake(clickContext)
     if macroTorch.player.isSpellReady('Rake') and macroTorch.isGcdOk(clickContext) and macroTorch.player.mana >= clickContext.RAKE_E and macroTorch.isNearBy(clickContext) then
+        -- live equipped state, queried once: it drives both this fresh cast's
+        -- expDuration (live mode, what the server snapshots on landing) and the
+        -- snapshot field written below
+        local savageryNow = macroTorch.player.isRelicEquipped('Idol of Savagery')
         macroTorch.show('Rake!!! Rake present: ' ..
                 tostring(macroTorch.isRakePresent(clickContext)) ..
-                ', bleed idol equipped: ' ..
-                tostring(macroTorch.player.isRelicEquipped('Idol of Savagery')))
+                ', bleed idol equipped: ' .. tostring(savageryNow) ..
+                ', expDuration: ' .. tostring(macroTorch.computeRake_Duration(savageryNow)) .. 's')
         macroTorch.player.rake('ready')
-        macroTorch.loginContext.lastRakeEquippedSavagery = macroTorch.player.isRelicEquipped('Idol of Savagery')
+        macroTorch.loginContext.lastRakeEquippedSavagery = savageryNow
         return true
     end
     return false
 end
 function macroTorch.safeRip(clickContext)
     if macroTorch.player.isSpellReady('Rip') and macroTorch.isGcdOk(clickContext) and macroTorch.player.mana >= clickContext.RIP_E and macroTorch.isNearBy(clickContext) then
+        -- live equipped state, queried once: expDuration for a fresh cast uses
+        -- the live (cp, savagery) pair — what the server snapshots on landing —
+        -- and the same value is frozen into the snapshot fields below
+        local savageryNow = macroTorch.player.isRelicEquipped('Idol of Savagery')
         macroTorch.show('Rip!!! At cp: ' ..
                 tostring(clickContext.comboPoints) ..
                 ', rip present: ' ..
                 tostring(macroTorch.isRipPresent(clickContext)) ..
-                ', bleed idol equipped: ' ..
-                tostring(macroTorch.player.isRelicEquipped('Idol of Savagery')))
+                ', bleed idol equipped: ' .. tostring(savageryNow) ..
+                ', expDuration: ' .. tostring(macroTorch.computeRip_Duration(clickContext.comboPoints, savageryNow)) .. 's')
         macroTorch.player.rip('ready')
-        macroTorch.loginContext.lastRipEquippedSavagery = macroTorch.player.isRelicEquipped('Idol of Savagery')
+        macroTorch.loginContext.lastRipEquippedSavagery = savageryNow
         macroTorch.context.lastRipAtCp = clickContext.comboPoints
         return true
     end
