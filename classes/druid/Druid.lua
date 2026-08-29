@@ -710,7 +710,12 @@ macroTorch.SpellTrace:register('Faerie Fire (Feral)', {
 -- restarts from land = the FB event time (no combo-point condition, debug
 -- decision #3). Renewal is a rewrite, not a cast — no intent pairing occurs
 -- and the Savagery snapshot fields are only read, never written (decision #4).
-macroTorch.onLandEvent('Ferocious Bite', function(landTime)
+-- CR-01 fix (code review 27): the framework dispatches listener(spell,
+-- landTime); the first parameter is the spell name, the second is the event
+-- time. Declaring only (landTime) bound 'Ferocious Bite' into landTime and
+-- pushed a string into the numeric land stacks (arithmetic error in
+-- ripLeft/rakeLeft).
+macroTorch.onLandEvent('Ferocious Bite', function(spell, landTime)
     local clickContext = {}
     if macroTorch.isRakePresent(clickContext) then
         macroTorch.show('Renewing rake... left: ' ..
