@@ -23,6 +23,14 @@ expected: |
   lines and restarts the self-reported clocks (no 0.1s-poll / CP-condition
   involvement). catAtk must not crash (no "attempt to perform arithmetic on a
   string value").
+
+  Land-feedback restore (2026-08-30, post-review user request): each genuine
+  landing of a traced spell prints a green `<spell> cast on <mob> landed:
+  <time>` line (Rake/FB via self-hit, Rip/Pounce via aura-apply pairing); a
+  late fail that revokes such a landing prints a red `<spell> land on <mob>
+  was cancelled by <failType>` line. No green line may appear for FB-driven
+  Rake/Rip renewals (renewals are rewrites, not landings), and no `[DIAG]` /
+  `[RAWDIAG]` / `init step` output anywhere.
 awaiting: user response (deferred by user: in-game testing postponed until all
 development-side close-out work is complete; UAT runs as the final step)
 
@@ -33,7 +41,7 @@ expected: All 10 Category Q tests green on /mt (auto-run at world enter); Q-10 g
 result: [pending]
 
 ### 2. Dummy-fight smoke: event-driven land + renewal
-expected: Rip/Pounce land via aura-apply pairing; landed FB hits emit Renewing lines driven by hit events (not polling); clocks restart from FB event time; no Lua arithmetic errors on the catAtk hot path.
+expected: Rip/Pounce land via aura-apply pairing; landed FB hits emit Renewing lines driven by hit events (not polling); clocks restart from FB event time; no Lua arithmetic errors on the catAtk hot path. Additionally, each genuine traced-spell landing prints a green `cast on ... landed:` line, fail-revoked landings print a red `was cancelled by ...` line, and no green line appears for FB-driven renewals.
 result: [pending]
 
 ## Summary
