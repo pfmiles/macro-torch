@@ -13,9 +13,9 @@ files_reviewed_list:
 findings:
   critical: 0
   warning: 0
-  info: 2
-  total: 2
-status: issues_found
+  info: 0
+  total: 0
+status: clean
 ---
 
 # Phase 27: Code Review Report (Third Incremental Pass)
@@ -78,12 +78,14 @@ Q-02 (765-766, 770, 789), Q-05 (854, 864, 878), and Q-07 (914, 921, 933) snapsho
 **File:** `classes/druid/combo.lua:70`
 **Issue:** The refactor moved Pounce duration to the file-scope `macroTorch.POUNCE_DURATION = 18` (Druid.lua:867), which `computePounce_Duration` reads. `pounceLeft` was the last reader of the per-click field and now goes through `computePounce_Duration()` (Druid.lua:1255). A repo-wide grep confirms `clickContext.POUNCE_DURATION = 18` at combo.lua:70 has no remaining reader anywhere. Two sources of truth for the same constant (per-click field vs file-scope global) invites drift if one is ever changed alone.
 **Fix:** Remove line 70 from `macroTorch.catAtk()` (the clickContext field), leaving `macroTorch.POUNCE_DURATION` as the single source. Keep it only if a future per-click override is planned — in which case a comment stating that intent should be added.
+**Status:** FIXED in commit `cf4f505`.
 
 ### IN-02: `showEnergyUsageSet` now duplicates the file-scope constant (harmless, never called)
 
 **File:** `classes/druid/Druid.lua:265`
 **Issue:** The never-called `showEnergyUsageSet` assigns `macroTorch.POUNCE_DURATION = 18`, which now duplicates the new file-scope assignment at Druid.lua:867 with the same value. Both are 18 today; the duplication is dead code only (the function has no callers in-tree), so no behavioral risk, but it is a second write site for a constant the refactor intended to centralize.
 **Fix:** Optionally drop `macroTorch.POUNCE_DURATION = 18` from `showEnergyUsageSet` (or convert that legacy function to read the file-scope constant) so exactly one write site exists, mirroring how `RIP_BASE_DURATION = 10` / `RAKE_DURATION = 9` were consolidated.
+**Status:** FIXED in commit `4234f3f`.
 
 ## Prior-Pass Findings Re-Verified (not re-broken by this delta)
 
