@@ -941,11 +941,15 @@ end, true)
 		local savedLoginContext = macroTorch.loginContext
 		local savedTarget = macroTorch.target
 		local savedShow = macroTorch.show
+		local savedContext = macroTorch.context
 		local fakeLoginContext = {}
 		local fakeTarget = { isCanAttack = true, name = 'QTestMob', hasBuff = function(self) return true end }
 		macroTorch.loginContext = fakeLoginContext
 		macroTorch.target = fakeTarget
 		macroTorch.show = function() end
+		-- ripLeft reads macroTorch.context.lastRipAtCp; context is nil in a fresh
+		-- out-of-combat session (created onCombatEnter only), so stub it (V-01)
+		macroTorch.context = {}
 		local ok, pcallRes = true, true
 		local rakeTop, ripTop
 		pcallRes = pcall(function()
@@ -961,6 +965,7 @@ end, true)
 		macroTorch.loginContext = savedLoginContext
 		macroTorch.target = savedTarget
 		macroTorch.show = savedShow
+		macroTorch.context = savedContext
 		assert(pcallRes, "Q-10 pcall failed")
 		assert(ok, "expected the FB event time (number) to renew Rake and Rip land entries")
 	end, true)
