@@ -720,14 +720,14 @@ macroTorch.onLandEvent('Ferocious Bite', function(spell, landTime)
     if macroTorch.isRakePresent(clickContext) then
         macroTorch.show('Renewing rake... left: ' ..
                 tostring(macroTorch.rakeLeft(clickContext)) ..
-                ', expDuration: ' .. tostring(macroTorch.rakeExpectedDuration()) .. 's' ..
+                ', expDuration: ' .. tostring(macroTorch.computeRake_Duration()) .. 's' ..
                 ', bleed idol: ' .. tostring(macroTorch.loginContext.lastRakeEquippedSavagery))
         macroTorch.recordLandEvent('Rake', landTime)
     end
     if macroTorch.isRipPresent(clickContext) then
         macroTorch.show('Renewing rip... left: ' ..
                 tostring(macroTorch.ripLeft(clickContext)) ..
-                ', expDuration: ' .. tostring(macroTorch.ripExpectedDuration()) .. 's' ..
+                ', expDuration: ' .. tostring(macroTorch.computeRip_Duration()) .. 's' ..
                 ', bleed idol: ' .. tostring(macroTorch.loginContext.lastRipEquippedSavagery))
         macroTorch.recordLandEvent('Rip', landTime)
     end
@@ -1107,17 +1107,9 @@ function macroTorch.ripLeft(clickContext)
         if not lastLandedRipTime then
             clickContext.ripLeft = 0
         else
-            -- rip的连击点数每增一点，持续时间加2s
-            local ripDur = macroTorch.RIP_BASE_DURATION
-            local cp = macroTorch.context.lastRipAtCp
-            if cp then
-                ripDur = ripDur + (cp - 1) * 2
-            end
-            -- if Savagery idol equipped, reduce rip duration by 10%
-            if macroTorch.loginContext and macroTorch.loginContext.lastRipEquippedSavagery then
-                ripDur = ripDur * 0.9
-            end
-            local ripLeft = ripDur - (GetTime() - lastLandedRipTime)
+            -- full duration comes from computeRip_Duration (single source of
+            -- the snapshot formula, shared with the renewal expDuration print)
+            local ripLeft = macroTorch.computeRip_Duration() - (GetTime() - lastLandedRipTime)
             if ripLeft < 0 then
                 ripLeft = 0
             end
@@ -1135,12 +1127,13 @@ function macroTorch.isRakePresent(clickContext)
     return clickContext.isRakePresent
 end
 
--- expected full duration of a refreshed Rip bleed, from the cast-time snapshot
--- only (CP count and Savagery idol state; both are write-once at cast and
--- read-only at refresh — decision #4). Snapshot semantics: a Rip originally
--- cast under the Savagery idol keeps its 0.9 penalty on every FB refresh,
--- so expDuration discriminates 16.2s (Savagery) vs 18s (no idol) at 5cp.
-function macroTorch.ripExpectedDuration()
+-- Rip bleed full duration from the cast-time snapshot only (CP count and
+-- Savagery idol state; both are write-once at cast and read-only at refresh —
+-- decision #4). Single source of the duration formula, shared by ripLeft and
+-- the FB renewal listener's expDuration print. Snapshot semantics: a Rip
+-- originally cast under the Savagery idol keeps its 0.9 penalty on every FB
+-- refresh, so this discriminates 16.2s (Savagery) vs 18s (no idol) at 5cp.
+function macroTorch.computeRip_Duration()
     local ripDur = macroTorch.RIP_BASE_DURATION
     local cp = macroTorch.context and macroTorch.context.lastRipAtCp
     if cp then
@@ -1152,10 +1145,10 @@ function macroTorch.ripExpectedDuration()
     return ripDur
 end
 
--- expected full duration of a refreshed Rake bleed: RAKE_DURATION, with the
--- same 0.9 Savagery snapshot penalty applied only when the original cast
--- wore the idol
-function macroTorch.rakeExpectedDuration()
+-- Rake bleed full duration: RAKE_DURATION with the same 0.9 Savagery snapshot
+-- penalty applied only when the original cast wore the idol. Single source of
+-- the duration formula, shared by rakeLeft and the renewal listener.
+function macroTorch.computeRake_Duration()
     local rakeDur = macroTorch.RAKE_DURATION
     if macroTorch.loginContext and macroTorch.loginContext.lastRakeEquippedSavagery then
         rakeDur = rakeDur * 0.9
@@ -1170,11 +1163,9 @@ function macroTorch.rakeLeft(clickContext)
         if not lastLandedRakeTime then
             clickContext.rakeLeft = 0
         else
-            local rakeDuration = macroTorch.RAKE_DURATION
-            if macroTorch.loginContext and macroTorch.loginContext.lastRakeEquippedSavagery then
-                rakeDuration = rakeDuration * 0.9
-            end
-            local rakeLeft = rakeDuration - (GetTime() - lastLandedRakeTime)
+            -- full duration comes from computeRake_Duration (single source of
+            -- the snapshot formula, shared with the renewal expDuration print)
+            local rakeLeft = macroTorch.computeRake_Duration() - (GetTime() - lastLandedRakeTime)
             if rakeLeft < 0 then
                 rakeLeft = 0
             end
