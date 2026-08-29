@@ -3,7 +3,7 @@ status: testing
 phase: 27-catatk-event-driven-land-tracing-refactor
 source: [27-VERIFICATION.md]
 started: 2026-08-29T00:00:00Z
-updated: 2026-08-29T00:00:00Z
+updated: 2026-08-29T01:40:00Z
 ---
 
 ## Current Test
@@ -23,7 +23,8 @@ expected: |
   lines and restarts the self-reported clocks (no 0.1s-poll / CP-condition
   involvement). catAtk must not crash (no "attempt to perform arithmetic on a
   string value").
-awaiting: user response
+awaiting: user response (deferred by user: in-game testing postponed until all
+development-side close-out work is complete; UAT runs as the final step)
 
 ## Tests
 
