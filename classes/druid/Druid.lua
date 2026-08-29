@@ -1128,10 +1128,12 @@ function macroTorch.isRakePresent(clickContext)
     return clickContext.isRakePresent
 end
 
--- shared 0.9 duration penalty primitive: the Savagery idol shortens a bleed's
--- duration by 10% when the snapshot that governs it has the idol equipped
--- (live at cast time, or inherited on refresh — the caller decides)
-function macroTorch.applySavageryDurationPenalty(baseDur, savageryEquipped)
+-- shared 0.9 duration compression primitive: the Savagery idol compresses a
+-- bleed's duration by 10% when the snapshot that governs it has the idol
+-- equipped (live at cast time, or inherited on refresh — the caller decides).
+-- This is a BUFF, not a penalty: total tick count is unchanged, so the same
+-- damage lands in 90% of the time (~+10% DPS); only the duration shrinks.
+function macroTorch.applySavageryDurationCompression(baseDur, savageryEquipped)
     if savageryEquipped then
         return baseDur * 0.9
     end
@@ -1143,8 +1145,9 @@ end
 -- Savagery idol state, decision 4); pass (cp, savageryEquipped) explicitly for
 -- a fresh cast, where the caller supplies the live cast-moment state (what the
 -- server will snapshot on landing). Snapshot semantics: a Rip originally cast
--- under the Savagery idol keeps its 0.9 penalty on every FB refresh, so the
--- default mode discriminates 16.2s (Savagery) vs 18s (no idol) at 5cp.
+-- under the Savagery idol keeps its 0.9 duration compression (same tick count,
+-- faster ticks) on every FB refresh, so the default mode discriminates 16.2s
+-- (Savagery) vs 18s (no idol) at 5cp.
 -- INVARIANT: the DEFAULT mode never queries live equipment; explicit args are
 -- the only door for live state, and only cast sites pass them.
 function macroTorch.computeRip_Duration(cp, savageryEquipped)
@@ -1160,7 +1163,7 @@ function macroTorch.computeRip_Duration(cp, savageryEquipped)
     if cpUsed then
         ripDur = ripDur + (cpUsed - 1) * 2
     end
-    return macroTorch.applySavageryDurationPenalty(ripDur, savagery)
+    return macroTorch.applySavageryDurationCompression(ripDur, savagery)
 end
 
 -- Rake bleed full duration. Same dual mode as computeRip_Duration: default
@@ -1171,7 +1174,7 @@ function macroTorch.computeRake_Duration(savageryEquipped)
     if savagery == nil then
         savagery = macroTorch.loginContext and macroTorch.loginContext.lastRakeEquippedSavagery
     end
-    return macroTorch.applySavageryDurationPenalty(macroTorch.RAKE_DURATION, savagery)
+    return macroTorch.applySavageryDurationCompression(macroTorch.RAKE_DURATION, savagery)
 end
 
 -- Pounce bleed full duration (fixed POUNCE_DURATION). Default reads the
@@ -1182,7 +1185,7 @@ function macroTorch.computePounce_Duration(savageryEquipped)
     if savagery == nil then
         savagery = macroTorch.loginContext and macroTorch.loginContext.lastPounceEquippedSavagery
     end
-    return macroTorch.applySavageryDurationPenalty(macroTorch.POUNCE_DURATION, savagery)
+    return macroTorch.applySavageryDurationCompression(macroTorch.POUNCE_DURATION, savagery)
 end
 
 -- 由于官方api获取buff/debuff剩余时间不准确，因此这里的rakeLeft时间只能自己记录和计算
