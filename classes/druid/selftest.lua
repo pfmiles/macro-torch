@@ -760,10 +760,14 @@ end, true)
 	macroTorch.SelfTest:register("Cat Q-02: aura-apply line pairs the cast intent and lands at apply time", function()
 		local savedLoginContext = macroTorch.loginContext
 		local savedTarget = macroTorch.target
+		-- the paired apply now prints a green land line (2026-08-30 feedback
+		-- restore); stub show so the test run leaves no chat noise
+		local savedShow = macroTorch.show
 		local fakeLoginContext = {}
 		local fakeTarget = { isCanAttack = true, name = 'QTestMob', hasBuff = function(self) return false end }
 		macroTorch.loginContext = fakeLoginContext
 		macroTorch.target = fakeTarget
+		macroTorch.show = function() end
 		local pcallRes = true
 		local intentResult, intentState, intentLandAt, ripLandTop
 		pcallRes = pcall(function()
@@ -782,6 +786,7 @@ end, true)
 		end)
 		macroTorch.loginContext = savedLoginContext
 		macroTorch.target = savedTarget
+		macroTorch.show = savedShow
 		assert(pcallRes, "Q-02 pcall failed")
 		assert(intentResult ~= nil,
 			"expected the aura-apply line to pair the cast intent, got nil")
@@ -844,6 +849,9 @@ end, true)
 	macroTorch.SelfTest:register("Cat Q-05: fail after land revokes the land entry (fail is final)", function()
 		local savedLoginContext = macroTorch.loginContext
 		local savedTarget = macroTorch.target
+		-- the paired apply and the fail-revocation both print user-visible
+		-- lines now (2026-08-30); stub show so the test run stays silent
+		local savedShow = macroTorch.show
 		local fakeLoginContext = {}
 		local fakeTarget = { isCanAttack = true, name = 'QTestMob', hasBuff = function(self) return false end }
 		fakeLoginContext.intentTable = {}
@@ -853,6 +861,7 @@ end, true)
 		fakeLoginContext.intentTable['Rip']['QTestMob'].push(seededIntent)
 		macroTorch.loginContext = fakeLoginContext
 		macroTorch.target = fakeTarget
+		macroTorch.show = function() end
 		local ok, pcallRes = true, true
 		local seededState, landTopAfterFail
 		pcallRes = pcall(function()
@@ -866,6 +875,7 @@ end, true)
 		end)
 		macroTorch.loginContext = savedLoginContext
 		macroTorch.target = savedTarget
+		macroTorch.show = savedShow
 		assert(pcallRes, "Q-05 pcall failed")
 		assert(ok, "expected the fail to revoke the 9.1 land entry and finalize the intent")
 	end, true)
@@ -900,12 +910,15 @@ end, true)
 	macroTorch.SelfTest:register("Cat Q-07: self-hit lands pairing-free and unregistered spells are ignored", function()
 		local savedLoginContext = macroTorch.loginContext
 		local savedTarget = macroTorch.target
+		-- the self-hit land now prints a green line (2026-08-30); stub show
+		local savedShow = macroTorch.show
 		local fakeLoginContext = {}
 		-- hasBuff is stubbed to false so the real Ferocious Bite renewal listener
 		-- (dispatched by recordLandEvent) finds no present bleeds and stays a no-op
 		local fakeTarget = { isCanAttack = true, name = 'QTestMob', hasBuff = function(self) return false end }
 		macroTorch.loginContext = fakeLoginContext
 		macroTorch.target = fakeTarget
+		macroTorch.show = function() end
 		local ok, pcallRes = true, true
 		local fbLandTop, autumnLand
 		pcallRes = pcall(function()
@@ -917,6 +930,7 @@ end, true)
 		end)
 		macroTorch.loginContext = savedLoginContext
 		macroTorch.target = savedTarget
+		macroTorch.show = savedShow
 		assert(pcallRes, "Q-07 pcall failed")
 		assert(ok, "expected a pairing-free Ferocious Bite land at 5.0 and no Autumn Harvest entry")
 	end, true)
