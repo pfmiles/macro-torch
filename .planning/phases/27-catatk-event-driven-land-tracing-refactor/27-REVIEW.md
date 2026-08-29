@@ -14,9 +14,9 @@ files_reviewed_list:
 findings:
   critical: 0
   warning: 0
-  info: 1
-  total: 1
-status: issues_found
+  info: 0
+  total: 0
+status: clean
 ---
 
 # Phase 27: Code Review Report (second pass)
@@ -24,11 +24,11 @@ status: issues_found
 **Reviewed:** 2026-08-29T03:56:42Z
 **Depth:** standard
 **Files Reviewed:** 7
-**Status:** issues_found (1 info; zero critical/warning)
+**Status:** clean (0 findings; the one second-pass Info was fixed post-review)
 
 ## Summary
 
-Second review pass of phase 27 after the fix commits. Every prior finding was re-verified against the current tree; all critical/warning items are closed, and one new Info-level finding is raised. The event-driven land-tracing machinery — intent state machine, aura-apply pairing, fail-wins revocation, self-hit dispatch, FB bleed renewal — is now correctly wired end to end in the current tree.
+Second review pass of phase 27 after the fix commits. Every prior finding was re-verified against the current tree; all critical/warning items are closed. The single new Info-level finding raised in this pass (IN-04, left-over init-step debug chat traces) was fixed post-review in commits b030d41 / 30d5c1f and is now also closed. The event-driven land-tracing machinery — intent state machine, aura-apply pairing, fail-wins revocation, self-hit dispatch, FB bleed renewal — is correctly wired end to end in the current tree.
 
 ### Prior-finding dispositions (re-verified in the current tree)
 
@@ -41,6 +41,7 @@ Second review pass of phase 27 after the fix commits. Every prior finding was re
 | IN-01 (info): unescaped pattern metacharacters | CLOSED by documentation | Comment at `core/spell_trace_core.lua:66-68` records the metacharacter-free-name invariant. All four current aura-apply names (Pounce, Rip, Serpent Sting, Scorpid Sting) remain metacharacter-free; latent only. |
 | IN-02 (info): `pairs()` iteration over `auraApplySpellPatterns` vs runtime registration | CLOSED unchanged | Registrations remain load-time only (Druid.lua:682-706, Hunter.lua:155-165); no runtime mutation path exists. Risk is nil; behavior unchanged. |
 | IN-03 (info): Pounce registration lacked `spellName` | MOOT (prior-review false positive) | `classes/druid/Druid.lua:683` carries `spellName = 'Pounce'` in the current tree; the guard-invariant tripwire does cover Pounce. |
+| IN-04 (info, second pass): leftover DEBUG init-trace chat spam in six load-order files | FIXED post-review | Deleted in b030d41 (`core/periodic.lua` steps 5a-5d) and 30d5c1f (`macro_torch.lua` step 1, `entity/Unit.lua` step 6, `entity/Player.lua` steps 7a/7b/8a/8b, `entity/Target.lua` steps 9a/9b, `interface_debug.lua` step 10). `git grep 'init step\|init trace'` now returns nothing; bbcheck BALANCED on all touched files; build.sh exit 0; diff --check clean. |
 
 ### Fresh-eyes re-verification (not covered by the first review's findings)
 
@@ -53,11 +54,11 @@ Second review pass of phase 27 after the fix commits. Every prior finding was re
 
 ## Info
 
-### IN-01: DEBUG init-trace chat spam remains in core/periodic.lua
+### IN-04: leftover DEBUG init-trace chat spam in six load-order files — FIXED
 
-**File:** `core/periodic.lua:99`, `:102`, `:145`, `:158`
-**Issue:** Four `DEFAULT_CHAT_FRAME:AddMessage("[macro-torch] init step 5a..5d ...")` lines (plus their `-- DEBUG:` comments) unconditionally print four chat messages at every addon load. They originate from a June 11 debugging session (commit 0f3d6235, pre-phase) and were never removed. This phase's own polish bar removed its `[RAWDIAG]`/`[DIAG]` diagnostics and the UAT expects "zero [DIAG]/[RAWDIAG] output anywhere" — these init traces are the same class of leftover debug artifact in a ship-ready file, and they produce user-visible chat noise on every `/reload` (which UAT cycles frequently).
-**Fix:** Delete the four AddMessage lines and their comment markers (lines 98-99, 101-102, 144-145, 157-158), or gate them behind a `macroTorch.debugInitTrace` flag defaulting to false.
+**File:** `core/periodic.lua:99`, `:102`, `:145`, `:158`; `macro_torch.lua:22`; `entity/Unit.lua:240`; `entity/Player.lua:17/20/638/641`; `entity/Target.lua:103/106`; `interface_debug.lua:117`
+**Issue (as raised):** Nine `DEFAULT_CHAT_FRAME:AddMessage("[macro-torch] init step ...")` lines (plus their `-- DEBUG:` comment markers) unconditionally print chat messages at every addon load. They originate from a June 11 debugging session (commit 0f3d6235, pre-phase) — steps 1, 5a-5d, 6, 7a/7b, 8a/8b, 9a/9b, 10 of the same numbered trace sequence — and were never removed. This phase's own polish bar removed its `[RAWDIAG]`/`[DIAG]` diagnostics and the UAT expects "zero [DIAG]/[RAWDIAG] output anywhere" — these init traces are the same class of leftover debug artifact in ship-ready files, and they produce user-visible chat noise on every `/reload` (which UAT cycles frequently).
+**Resolution:** FIXED post-review. All nine trace pairs deleted in commits b030d41 (`core/periodic.lua`) and 30d5c1f (the other five files, user-approved scope extension after the orchestrator's residual `git grep` sweep surfaced the full step sequence). Verified: `git grep 'init step\|init trace'` clean across `*.lua`, bbcheck BALANCED on all six touched files, build.sh exit 0, `git diff --check` clean. Trailing-newline normalization applied to `macro_torch.lua` (deletion had left extra blank lines at EOF).
 
 ---
 
