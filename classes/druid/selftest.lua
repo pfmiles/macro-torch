@@ -937,4 +937,32 @@ end, true)
 			"consumeDruidBattleEvents should be deleted, got " .. tostring(macroTorch.consumeDruidBattleEvents))
 	end, true)
 
+	macroTorch.SelfTest:register("Cat Q-10: FB land event renews Rake and Rip with the numeric event time", function()
+		local savedLoginContext = macroTorch.loginContext
+		local savedTarget = macroTorch.target
+		local savedShow = macroTorch.show
+		local fakeLoginContext = {}
+		local fakeTarget = { isCanAttack = true, name = 'QTestMob', hasBuff = function(self) return true end }
+		macroTorch.loginContext = fakeLoginContext
+		macroTorch.target = fakeTarget
+		macroTorch.show = function() end
+		local ok, pcallRes = true, true
+		local rakeTop, ripTop
+		pcallRes = pcall(function()
+			local seedNow = GetTime()
+			macroTorch.recordLandEvent('Rake', seedNow)
+			macroTorch.recordLandEvent('Rip', seedNow)
+			local fbNow = seedNow + 100
+			macroTorch.recordLandEvent('Ferocious Bite', fbNow)
+			rakeTop = fakeLoginContext.landTable['Rake']['QTestMob'].top
+			ripTop = fakeLoginContext.landTable['Rip']['QTestMob'].top
+			ok = (type(rakeTop) == 'number' and rakeTop == fbNow and type(ripTop) == 'number' and ripTop == fbNow)
+		end)
+		macroTorch.loginContext = savedLoginContext
+		macroTorch.target = savedTarget
+		macroTorch.show = savedShow
+		assert(pcallRes, "Q-10 pcall failed")
+		assert(ok, "expected the FB event time (number) to renew Rake and Rip land entries")
+	end, true)
+
 end
