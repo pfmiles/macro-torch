@@ -63,6 +63,9 @@ function macroTorch.SpellTrace:register(name, config)
         macroTorch.setSpellTracing(name)
         macroTorch.landSources[name] = config.landSource or 'self-hit'
         if config.landSource == 'aura-apply' then
+            -- pattern is built by raw concatenation: the registered spell name
+            -- enters a Lua find pattern, so names must stay free of pattern
+            -- metacharacters (all four current aura-apply names qualify)
             macroTorch.auraApplySpellPatterns[name] = ' is afflicted by ' .. name .. '%.'
         end
     end
@@ -242,6 +245,11 @@ function macroTorch.processRawAuraApply(spellName, rawText, targetGuid, now)
     if not targetGuid or string.lower(guid) ~= string.lower(targetGuid) then
         return nil
     end
+    -- accepted residual risk (REVIEW.md WR-02 / SECURITY.md R-04): in a
+    -- multi-feral scenario an allied Rip apply on the same target within our
+    -- pending window can pair with our cast intent (<=2s land offset); fail
+    -- events still resolve in our favor via fail-wins, and the silent
+    -- apply-suppression case is accepted per debug decisions #2/#6
     local intent = macroTorch.pairLandIntent(spellName, now)
     if intent then
         macroTorch.recordLandEvent(spellName, now)
@@ -267,6 +275,10 @@ function macroTorch.finalizeFail(spell, failTime)
     local stack = macroTorch.loginContext.intentTable[spell][mob]
     for i = macroTorch.tableLen(stack.elements), 1, -1 do
         local intent = stack.elements[i]
+        -- deliberately allows failTime slightly before castAt (negative
+        -- window): same-frame arrival order must not flip fail-wins, so
+        -- intent.state == 'pending' or 'landed' and a negative diff is
+        -- still consumed
         if (intent.state == 'pending' or intent.state == 'landed') and
                 (failTime - intent.castAt) <= macroTorch.LAND_INTENT_TTL then
             if intent.state == 'landed' and intent.landAt then
