@@ -1133,6 +1133,9 @@ end
 -- the FB renewal listener's expDuration print. Snapshot semantics: a Rip
 -- originally cast under the Savagery idol keeps its 0.9 penalty on every FB
 -- refresh, so this discriminates 16.2s (Savagery) vs 18s (no idol) at 5cp.
+-- INVARIANT: snapshot-only reads — never query live equipment (isRelicEquipped)
+-- or talent state; the bleed inherits the original cast's snapshot, not the
+-- current gear (renewal happens after swapping back to the Builder idol).
 function macroTorch.computeRip_Duration()
     local ripDur = macroTorch.RIP_BASE_DURATION
     local cp = macroTorch.context and macroTorch.context.lastRipAtCp
@@ -1148,6 +1151,8 @@ end
 -- Rake bleed full duration: RAKE_DURATION with the same 0.9 Savagery snapshot
 -- penalty applied only when the original cast wore the idol. Single source of
 -- the duration formula, shared by rakeLeft and the renewal listener.
+-- INVARIANT: snapshot-only reads — never query live equipment (isRelicEquipped)
+-- here; the bleed inherits the original cast's snapshot (see computeRip_Duration).
 function macroTorch.computeRake_Duration()
     local rakeDur = macroTorch.RAKE_DURATION
     if macroTorch.loginContext and macroTorch.loginContext.lastRakeEquippedSavagery then
