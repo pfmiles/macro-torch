@@ -19,10 +19,17 @@ expected: |
   Zero `[RAWDIAG]` / `[DIAG]` output anywhere.
   Then a dummy-fight smoke run with Rip/Rake/Ferocious Bite: Rip/Pounce land via
   aura-apply (RAW `is afflicted by` pairing), and each landed FB hit immediately
-  prints the event-driven `Renewing rake... left:` / `Renewing rip... left:`
+  prints the event-driven `Renewing rake... left: ...` / `Renewing rip... left: ...`
   lines and restarts the self-reported clocks (no 0.1s-poll / CP-condition
   involvement). catAtk must not crash (no "attempt to perform arithmetic on a
   string value").
+
+  Renewing-line payload (2026-08-30 user request): each Renewing line now also
+  prints `expDuration: <N>s` — the expected full duration of the refreshed bleed
+  computed from the cast-time snapshot only (write-once CP count and Savagery
+  idol state, decision #4). At 5cp the value must be 16.2s when the ORIGINAL
+  cast wore the Savagery idol, 18s when it did not — this is the snapshot
+  inheritance the user verifies live.
 
   Land-feedback restore (2026-08-30, post-review user request): each genuine
   landing of a traced spell prints a green `<spell> cast on <mob> landed:
@@ -41,7 +48,7 @@ expected: All 10 Category Q tests green on /mt (auto-run at world enter); Q-10 g
 result: [pending]
 
 ### 2. Dummy-fight smoke: event-driven land + renewal
-expected: Rip/Pounce land via aura-apply pairing; landed FB hits emit Renewing lines driven by hit events (not polling); clocks restart from FB event time; no Lua arithmetic errors on the catAtk hot path. Additionally, each genuine traced-spell landing prints a green `cast on ... landed:` line, fail-revoked landings print a red `was cancelled by ...` line, and no green line appears for FB-driven renewals.
+expected: Rip/Pounce land via aura-apply pairing; landed FB hits emit Renewing lines driven by hit events (not polling); clocks restart from FB event time; no Lua arithmetic errors on the catAtk hot path. Renewing lines carry `expDuration: <N>s` from the cast-time snapshot (16.2s with original-cast Savagery at 5cp, else 18s). Additionally, each genuine traced-spell landing prints a green `cast on ... landed:` line, fail-revoked landings print a red `was cancelled by ...` line, and no green line appears for FB-driven renewals.
 result: [pending]
 
 ## Summary
