@@ -331,14 +331,18 @@ function macroTorch.onSelfDamageLine(eventMsg, now)
         return
     end
     macroTorch.pairLandIntent(spell, now)
-    macroTorch.recordLandEvent(spell, now)
     -- user-visible land feedback (restored per user request 2026-08-30): the
     -- self-hit line IS the landing; print the green confirmation the pre-phase
     -- polling machinery used to emit. Plain show() — not a DIAG/RAWDIAG marker.
+    -- Announced BEFORE recordLandEvent so the printed order matches
+    -- causality: recordLandEvent dispatches land listeners synchronously,
+    -- and their output (e.g. the Ferocious Bite Renewing lines) is a
+    -- consequence of this hit and must follow the green landed line.
     if macroTorch.loginContext and macroTorch.target.isCanAttack then
         macroTorch.show(spell .. ' cast on ' .. macroTorch.target.name ..
             ' landed: ' .. now, 'green')
     end
+    macroTorch.recordLandEvent(spell, now)
 end
 function macroTorch.consumeLandEvent(spell, logic)
     if not spell or not logic or not macroTorch.target.isCanAttack then
