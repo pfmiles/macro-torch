@@ -254,12 +254,15 @@ function macroTorch.processRawAuraApply(spellName, rawText, targetGuid, now)
     -- apply-suppression case is accepted per debug decisions #2/#6
     local intent = macroTorch.pairLandIntent(spellName, now)
     if intent then
-        macroTorch.recordLandEvent(spellName, now)
         -- user-visible land feedback (restored per user request 2026-08-30):
         -- pairing succeeded, so this apply line is a genuine landing (and the
         -- target-is-attackable / loginContext guards all held for pairing).
+        -- Announced BEFORE recordLandEvent for the same causal-order reason
+        -- as the self-hit path: the announcement precedes listener
+        -- consequences, keeping output order uniform across both sources.
         macroTorch.show(spellName .. ' cast on ' .. macroTorch.target.name ..
             ' landed: ' .. now, 'green')
+        macroTorch.recordLandEvent(spellName, now)
     end
     return intent
 end
