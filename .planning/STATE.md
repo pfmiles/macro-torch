@@ -11,9 +11,9 @@ progress:
   total_plans: 57
   completed_plans: 57
 milestone_name: milestone
-last_activity: 2026-08-30
+last_activity: 2026-08-31
 current_phase_name: catatk-event-driven-land-tracing-refactor
-last_activity_desc: "Phase 27 UAT complete (2/2 passed) — phase marked complete, milestone v1.0 ready to archive"
+last_activity_desc: "Completed quick task 260831-24c: macroTorch.target.clear() — wipe current mob persisted immune/definite records, silent skip when no target"
 ---
 
 # Project State
@@ -224,6 +224,7 @@ last_activity_desc: "Phase 27 UAT complete (2/2 passed) — phase marked complet
 | 260825-t86 | 统一修复泄能绕过 bug（洞 A/B 收尾）：energyDischargeBeforeBite 返回是否发起泄能尝试，cp5Bite 在泄能帧一律延迟咬击判定，新增 P 自测固化 | 2026-08-25 | 96e55d1 | [260825-t86-catatk-bug-a-b-r-locked-energydischargeb](./quick/260825-t86-catatk-bug-a-b-r-locked-energydischargeb/) |
 | 260825-vp9 | 修复 code review WR-01/IN-01：quickKeepRip 接入泄能布尔契约（泄能尝试帧延迟咬击）+ 新增泄能条件未命中落穿活性的 P 自测 | 2026-08-25 | 592284c | [260825-vp9-fix-code-review-findings-wr-01-in-01-qui](./quick/260825-vp9-fix-code-review-findings-wr-01-in-01-qui/) |
 | 260830-45g | Phase 27 UAT 反馈小修复：绿色 landed 确认日志挪到 recordLandEvent 之前，打印顺序符合因果序（FB landed 先于 Renewing rake/rip） | 2026-08-30 | 194d907 | [260830-45g-phase-27-uat-aura-apply-landed-recordlan](./quick/260830-45g-phase-27-uat-aura-apply-landed-recordlan/) |
+| 260831-24c | target 对象新增 clear() 方法：宏随时调用 macroTorch.target.clear() 清空当前目标持久化的 immune/definite 记录，无目标时静默跳过 | 2026-08-31 | 6f22a48 | [260831-24c-target-clear](./quick/260831-24c-target-clear-macrotorch-target-clear-imm/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
