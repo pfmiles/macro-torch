@@ -1,23 +1,27 @@
 ---
 phase: 27-catatk-event-driven-land-tracing-refactor
 verified: 2026-08-29T02:58:09Z
-status: human_needed
+status: passed
 score: 18/20
 behavior_unverified: 2
 overrides_applied: 0
 behavior_unverified_items:
+
   - truth: "Fail is final and wins regardless of arrival order: it consumes the intent, records failTable as before, and revokes any land the intent produced (debug decision #2)"
     test: "In-game: run /mt Category Q after the addon loads (or observe the ~0.5s post-PLAYER_ENTERING_WORLD auto-run); Q-05 (fail after land revokes via removeMatch) and Q-06 (fail before apply — no late pairing) must be green. No Lua interpreter exists locally, so the state-transition invariant could only be verified statically."
     expected: "Q-05 and Q-06 green; finalizeFail consumes exactly the newest pending-or-landed intent within LAND_INTENT_TTL, revokes the exact landAt entry, and marks it failed in both arrival orders."
     why_human: "Order-independent state transitions (fail wins over an earlier land) are runtime semantics; presence + wiring were verified but the repo has no Lua interpreter or CI to execute the transitions."
+
   - truth: "A Ferocious Bite land event immediately rewrites the Rake and Rip land entries with land = FB event time; the GetComboPoints()>0 condition is REMOVED (debug decision #3)"
     test: "In-game: Q-08 (listener presence) and Q-10 (numeric renewal) plus the dummy-fight smoke run — Rip/Rake up, land Ferocious Bite, observe the 'Renewing rake.../rip... left:' lines, then confirm ripLeft/rakeLeft restart from the hit moment (no ~0.4s window lag, no combo-point gate)."
     expected: "Each FB hit/crit line immediately advances the Rake and Rip land stacks with the numeric FB event time when the bleed is present; the renewal contains zero GetComboPoints calls (verified statically) and behaves that way in-game."
     why_human: "Event-driven state rewrites on the live combat stream can only be observed on the game machine; static verification proved the wiring and the absence of the CP condition, not the runtime renewal cadence."
 human_verification:
+
   - test: "End-of-phase UAT on the game machine: pull the phase commits, Cygwin `bash build.sh` (expect exit 0), copy SM_Extend.lua, /reload, run /mt (note: SelfTest auto-runs ~0.5s after entering the world; a later /mt before the next /reload is a silent no-op due to the run-once _selfTestRan guard)."
     expected: "All 9 planned Category Q tests (Q-01..Q-09) green, zero [DIAG]/[RAWDIAG] output anywhere, no Lua errors; then the dummy-fight smoke run: cast Rip (aura-apply land pairs the cast intent within 2s), land Ferocious Bite hits (event-driven 'Renewing rake.../rip... left:' lines restart the 16.2s/18s clocks from the hit moment), and verify no premature Rip recast over a lagged/extended session."
     why_human: "No Lua interpreter and no CI exist in the repo; the phase's behavioral layer was deliberately deferred to in-game Category Q selftests (plan 27-03 design)."
+
   - test: "Developer decision on verification finding V-01: at a fresh out-of-combat /reload, Category Q runs with macroTorch.context == nil (combat_context.lua creates context only on onCombatEnter), so Q-10's renewal drive reaches ripLeft's `macroTorch.context.lastRipAtCp` and the inner pcall fails — the test reports the identical 'Q-10 pcall failed' warning both on the fixed code and on CR-01-broken code, so its regression-discriminator assertion (numeric land tops) is never reached in that flow. Suggested hardening (3 lines, CR-01 pattern already established in the test): snapshot and stub macroTorch.context with a fake table alongside loginContext/target/show, and restore it before the asserts. Decision options: (a) accept as-is and note the transient warning in the UAT runbook, (b) apply the hardening so Q-10 discriminates in every session."
     expected: "Developer picks (a) or (b); if (b), Q-10 then runs green on a fresh session and its `type(rakeTop) == 'number'` assert genuinely fails on any future listener-argument regression."
     why_human: "The failure depends on game-client session state (nil context before first combat entry; WoW 1.12 ReloadUI event re-fire behavior for in-combat reloads is unknowable without the game machine), which static analysis cannot execute; the production code is correct either way."
