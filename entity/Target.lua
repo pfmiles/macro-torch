@@ -73,6 +73,39 @@ function macroTorch.Target:new()
             macroTorch.context.definiteBleedingTable[spellName][obj.name])
     end
 
+    -- clear all persisted immune / definite-bleeding records for the current target name
+    function obj.clear()
+        local name = obj.name
+        -- silent skip when there is no current target (UnitName returns nil)
+        if not name or name == '' then
+            return
+        end
+        if not macroTorch.context then
+            return
+        end
+        macroTorch.loadImmuneTable()
+        macroTorch.loadDefiniteBleedingTable()
+        local immuneCleared = 0
+        local definiteCleared = 0
+        -- scrub the two persisted tables directly (removeImmune would print one line per spell)
+        for spellName, mobTable in pairs(macroTorch.context.immuneTable) do
+            if mobTable[name] then
+                mobTable[name] = nil
+                immuneCleared = immuneCleared + 1
+            end
+        end
+        for spellName, mobTable in pairs(macroTorch.context.definiteBleedingTable) do
+            if mobTable[name] then
+                mobTable[name] = nil
+                definiteCleared = definiteCleared + 1
+            end
+        end
+        -- one aggregate confirmation only when something was actually removed
+        if immuneCleared > 0 or definiteCleared > 0 then
+            macroTorch.show('Target ' .. name .. ': cleared ' .. immuneCleared .. ' immune, ' .. definiteCleared .. ' definite records', 'yellow')
+        end
+    end
+
     -- check if the target is a Beast or Dragonkin (eligible for Hibernate)
     function obj.isBeastOrDragonkin()
         local creatureType = UnitCreatureType(obj.ref)
