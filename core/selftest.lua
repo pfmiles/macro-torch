@@ -903,6 +903,77 @@ end, true)
 
 -- Registration count: Category P adds 8 tests (2 in 26-01, 4 in 26-02, 1 in quick 260825-t86, 1 in quick 260825-vp9)
 
+-- Category R: target clear() wipe verification (quick 260831-24c, 2 tests)
+-- Both tests follow the CR-01 stub discipline: run inside a pcall, capture
+-- results into locals, restore the real state via raw assignment BEFORE any assert, so a failing assert can never leave a polluted session.
+
+macroTorch.SelfTest:register("Cat R-01: target clear() wipes this mob's immune + definite records", function()
+    if not macroTorch.context then return end
+    local target = macroTorch.target
+    local origName = rawget(target, 'name')
+    local origShow = macroTorch.show
+    local fakeMob = '__SELFTEST_CLEAR_MOB__'
+    local otherMob = '__SELFTEST_CLEAR_OTHER__'
+    local fakeSpell = '__SELFTEST_CLEAR_SPELL__'
+    macroTorch.loadImmuneTable()
+    macroTorch.loadDefiniteBleedingTable()
+    local immSnap = rawget(macroTorch.context.immuneTable, fakeSpell)
+    local defSnap = rawget(macroTorch.context.definiteBleedingTable, fakeSpell)
+    macroTorch.context.immuneTable[fakeSpell] = { [fakeMob] = 123, [otherMob] = 456 }
+    macroTorch.context.definiteBleedingTable[fakeSpell] = { [fakeMob] = true, [otherMob] = true }
+    local shown = {}
+    macroTorch.show = function(a, c)
+        table.insert(shown, a)
+    end
+    target.name = fakeMob
+    local pcallRes = pcall(function()
+        target.clear()
+        immLeft = macroTorch.context.immuneTable[fakeSpell] and macroTorch.context.immuneTable[fakeSpell][fakeMob]
+        defLeft = macroTorch.context.definiteBleedingTable[fakeSpell] and macroTorch.context.definiteBleedingTable[fakeSpell][fakeMob]
+        otherImm = macroTorch.context.immuneTable[fakeSpell] and macroTorch.context.immuneTable[fakeSpell][otherMob]
+        otherDef = macroTorch.context.definiteBleedingTable[fakeSpell] and macroTorch.context.definiteBleedingTable[fakeSpell][otherMob]
+        msgCount = macroTorch.tableLen(shown)
+    end)
+    -- restore BEFORE asserts (CR-01): a failing assert must never leave a polluted session
+    rawset(macroTorch.context.immuneTable, fakeSpell, immSnap)
+    rawset(macroTorch.context.definiteBleedingTable, fakeSpell, defSnap)
+    rawset(target, 'name', origName)
+    macroTorch.show = origShow
+    assert(pcallRes, "R-01 pcall failed")
+    assert(immLeft == nil, "R-01 immune record not cleared for the current mob")
+    assert(defLeft == nil, "R-01 definite record not cleared for the current mob")
+    assert(otherImm ~= nil and otherDef ~= nil, "R-01 other mob records must survive clear")
+    assert(msgCount == 1, "R-01 expected exactly one aggregate message")
+end, true)
+
+macroTorch.SelfTest:register("Cat R-02: clear() silently skips when the target name is empty", function()
+    if not macroTorch.context then return end
+    local target = macroTorch.target
+    local origName = rawget(target, 'name')
+    local origShow = macroTorch.show
+    macroTorch.loadImmuneTable()
+    local immSnap = rawget(macroTorch.context.immuneTable, '')
+    macroTorch.context.immuneTable[''] = { ['__SELFTEST_CLEAR_MOB__'] = 1 }
+    local shown = {}
+    macroTorch.show = function(a, c)
+        table.insert(shown, a)
+    end
+    target.name = ''
+    local pcallRes = pcall(function()
+        target.clear()
+        survivor = macroTorch.context.immuneTable[''] and macroTorch.context.immuneTable['']['__SELFTEST_CLEAR_MOB__']
+        msgCount = macroTorch.tableLen(shown)
+    end)
+    -- restore BEFORE asserts (CR-01): a failing assert must never leave a polluted session
+    rawset(macroTorch.context.immuneTable, '', immSnap)
+    rawset(target, 'name', origName)
+    macroTorch.show = origShow
+    assert(pcallRes, "R-02 pcall failed")
+    assert(survivor ~= nil, "R-02 empty-name guard must return before touching the tables")
+    assert(msgCount == 0, "R-02 silent skip must print nothing")
+end, true)
+
+-- Registration count: Category R adds 2 tests (quick 260831-24c)
 
 -- ============================================================
 -- Module 4: /mt SLASH command
