@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v1.0
 status: in_progress
-stopped_at: Completed 27-03 plan — phase 27 execution done, user UAT pending
-last_updated: "2026-08-28T17:33:54.881Z"
-state_head: eaa86c31e5506820c470199faed2968d66cf1457
+stopped_at: Phase 27 complete — all phases complete
+last_updated: "2026-08-30T09:29:47.215Z"
+state_head: b81a6d1807aaa7e6d752040278f81804def7ffc3
 progress:
   total_phases: 26
-  completed_phases: 11
+  completed_phases: 12
   total_plans: 57
   completed_plans: 57
 milestone_name: milestone
 last_activity: 2026-08-30
 current_phase_name: catatk-event-driven-land-tracing-refactor
-last_activity_desc: "Completed quick task 260830-45g: Phase 27 UAT 反馈小修复 — 绿色 landed 确认日志挪到 recordLandEvent 之前，打印顺序符合因果序"
+last_activity_desc: "Phase 27 UAT complete (2/2 passed) — phase marked complete, milestone v1.0 ready to archive"
 ---
 
 # Project State
@@ -22,7 +22,7 @@ last_activity_desc: "Completed quick task 260830-45g: Phase 27 UAT 反馈小修�
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 27 — catAtk event-driven land tracing refactor ✅（3/3 plans 完成：27-01 核心事件驱动 land 框架 + 27-02 猫德/Hunter 接入 + 27-03 Category Q 自测与全阶段 battery；用户端游戏内 UAT 待做）
+- **Current Phase**: Phase 27 — catAtk event-driven land tracing refactor ✅（3/3 plans 完成 + 游戏内 UAT 2/2 通过；里程碑 v1.0 全部 phase 收尾）
 - **Active Branch**: main
 
 ## Phase Progress
@@ -197,7 +197,7 @@ last_activity_desc: "Completed quick task 260830-45g: Phase 27 UAT 反馈小修�
 ## Session
 
 **Last session:** 2026-08-28T17:33:54.435Z
-**Stopped at:** Completed 27-03 plan — phase 27 execution done, user UAT pending
+**Stopped at:** Phase 27 complete — all phases complete
 **Resume file:** None
 
 ## Quick Tasks Completed
@@ -232,6 +232,6 @@ last_activity_desc: "Completed quick task 260830-45g: Phase 27 UAT 反馈小修�
 
 ## Session
 
-**Last session:** 2026-08-19T00:00:00.000Z
-**Stopped at:** Completed Phase 25 Plan 02 — Hunter combo.lua 5 macro functions
-**Resume file:** .planning/phases/25-druid-hunter-hunteratk-hunteraoe-hunterdefend-huntercontrol/25-03-PLAN.md
+**Last session:** 2026-08-30T09:30:00.000Z
+**Stopped at:** Phase 27 UAT complete — phase marked complete, milestone v1.0 ready to archive
+**Resume file:** None

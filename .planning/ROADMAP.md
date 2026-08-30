@@ -963,7 +963,7 @@ Plans:
 
 **Requirements**: none assigned (design decisions locked in `.planning/debug/catatk-premature-rip-recast.md` #1-#8)
 **Depends on:** Phase 26
-**Plans:** 3/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 **Wave 1**
