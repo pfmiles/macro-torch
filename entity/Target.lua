@@ -89,13 +89,13 @@ function macroTorch.Target:new()
         local definiteCleared = 0
         -- scrub the two persisted tables directly (removeImmune would print one line per spell)
         for spellName, mobTable in pairs(macroTorch.context.immuneTable) do
-            if mobTable[name] then
+            if type(mobTable) == 'table' and mobTable[name] then
                 mobTable[name] = nil
                 immuneCleared = immuneCleared + 1
             end
         end
         for spellName, mobTable in pairs(macroTorch.context.definiteBleedingTable) do
-            if mobTable[name] then
+            if type(mobTable) == 'table' and mobTable[name] then
                 mobTable[name] = nil
                 definiteCleared = definiteCleared + 1
             end
