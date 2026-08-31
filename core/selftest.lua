@@ -926,6 +926,7 @@ macroTorch.SelfTest:register("Cat R-01: target clear() wipes this mob's immune +
         table.insert(shown, a)
     end
     target.name = fakeMob
+    local immLeft, defLeft, otherImm, otherDef, msgCount
     local pcallRes = pcall(function()
         target.clear()
         immLeft = macroTorch.context.immuneTable[fakeSpell] and macroTorch.context.immuneTable[fakeSpell][fakeMob]
@@ -959,6 +960,7 @@ macroTorch.SelfTest:register("Cat R-02: clear() silently skips when the target n
         table.insert(shown, a)
     end
     target.name = ''
+    local survivor, msgCount
     local pcallRes = pcall(function()
         target.clear()
         survivor = macroTorch.context.immuneTable[''] and macroTorch.context.immuneTable['']['__SELFTEST_CLEAR_MOB__']
