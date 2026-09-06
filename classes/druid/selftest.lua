@@ -984,9 +984,10 @@ end, true)
 		assert(ok, "expected the FB event time (number) to renew Rake and Rip land entries")
 	end, true)
 
-	-- Category S: cpBuildLog combo-point cast logging (quick 260907-0ya, 3 tests)
-	-- S-03 follows the CR-01 stub discipline: snapshot via rawget, install own-key
-	-- shadows, capture into locals, restore via raw assignment BEFORE any assert.
+	-- Category S: cpBuildLog combo-point cast logging (quick 260907-0ya, 4 tests)
+	-- S-03/S-04 follow the CR-01 stub discipline: snapshot via rawget, install
+	-- own-key shadows, capture into locals, restore via raw assignment BEFORE
+	-- any assert.
 	macroTorch.SelfTest:register("Cat S-01: cpBuildLog switch defaults to false", function()
 		assert(macroTorch.cpBuildLog == false,
 			"cpBuildLog should default to false, got " .. tostring(macroTorch.cpBuildLog))
@@ -1046,5 +1047,39 @@ end, true)
 		assert(nOff == 0, "expected no cpBuild log when the switch is off, got " .. tostring(nOff))
 	end, true)
 
-	-- Registration count: Category S adds 3 tests (quick 260907-0ya)
+	macroTorch.SelfTest:register("Cat S-04: cpBuildLogSample warns once when the GCD probe yields nil", function()
+		local savedShow = macroTorch.show
+		local savedWarned = macroTorch._cpBuildLogProbeWarned
+		local player = macroTorch.player
+		local savedActionCd = rawget(player, 'isActionCooledDown')
+		local warnings = {}
+		macroTorch.show = function(a)
+			table.insert(warnings, tostring(a))
+		end
+		-- WR-01: nil (not false) from the action-slot scan is exactly what a session
+		-- with Rake off every bar produces; the sample must warn exactly once and
+		-- keep gcdOk nil so the measurement does not fabricate GCD-ready rows.
+		player.isActionCooledDown = function()
+			return nil
+		end
+		macroTorch._cpBuildLogProbeWarned = nil
+		local sample1, sample2, ok
+		local pcallRes = pcall(function()
+			sample1 = macroTorch.cpBuildLogSample()
+			sample2 = macroTorch.cpBuildLogSample()
+			ok = (sample1.gcdOk == nil and sample2.gcdOk == nil)
+		end)
+		local warnCount = macroTorch.tableLen(warnings)
+		rawset(player, 'isActionCooledDown', savedActionCd)
+		macroTorch.show = savedShow
+		macroTorch._cpBuildLogProbeWarned = savedWarned
+		assert(pcallRes, "S-04 pcall failed")
+		assert(sample1 ~= nil and sample2 ~= nil, "S-04 cpBuildLogSample should return a table")
+		assert(ok, "S-04 gcdOk should stay nil when the probe fails")
+		assert(warnCount == 1, "expected exactly one GCD probe warning, got " .. tostring(warnCount))
+		assert(string.find(warnings[1], '[cpBuild]', 1, true) == 1,
+			"S-04 warning should carry the [cpBuild] tag: " .. tostring(warnings[1]))
+	end, true)
+
+	-- Registration count: Category S adds 4 tests (quick 260907-0ya + WR-01 fix)
 end
