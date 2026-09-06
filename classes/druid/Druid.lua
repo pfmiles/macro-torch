@@ -330,11 +330,20 @@ end
 -- because casting starts the GCD and would falsify the reading; the probe reuses
 -- the same action-slot 'Ability_Druid_Rake' texture scan as macroTorch.isGcdOk.
 function macroTorch.cpBuildLogSample()
+    local gcdOk = macroTorch.player.isActionCooledDown('Ability_Druid_Rake')
+    -- WR-01: isActionCooledDown returns nil (not false) when the Rake texture is
+    -- absent from all action bars, and the nil silently kills every [cpBuild]
+    -- line with no way to tell "no casts accepted" from "feature dead". Warn once
+    -- per session so a misconfigured bar surfaces instead of a vanishing log.
+    if gcdOk == nil and not macroTorch._cpBuildLogProbeWarned then
+        macroTorch._cpBuildLogProbeWarned = true
+        macroTorch.show('[cpBuild] GCD probe failed: put the Rake spell on an action bar, otherwise no casts will be logged', 'yellow')
+    end
     return {
         t = GetTime(),
         cp = macroTorch.player.comboPoints,
         e = macroTorch.player.mana,
-        gcdOk = macroTorch.player.isActionCooledDown('Ability_Druid_Rake')
+        gcdOk = gcdOk
     }
 end
 

@@ -26,3 +26,7 @@ end
 if macroTorch.cpBuildLog == nil then
     macroTorch.cpBuildLog = false
 end
+-- Per-login re-arm of the one-time GCD-probe diagnostic (WR-01 fix): reset here,
+-- in the addon-load path, so a UI reload surfaces a fresh probe warning instead
+-- of inheriting a stale worn flag from the previous session.
+macroTorch._cpBuildLogProbeWarned = nil
