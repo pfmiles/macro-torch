@@ -984,4 +984,67 @@ end, true)
 		assert(ok, "expected the FB event time (number) to renew Rake and Rip land entries")
 	end, true)
 
+	-- Category S: cpBuildLog combo-point cast logging (quick 260907-0ya, 3 tests)
+	-- S-03 follows the CR-01 stub discipline: snapshot via rawget, install own-key
+	-- shadows, capture into locals, restore via raw assignment BEFORE any assert.
+	macroTorch.SelfTest:register("Cat S-01: cpBuildLog switch defaults to false", function()
+		assert(macroTorch.cpBuildLog == false,
+			"cpBuildLog should default to false, got " .. tostring(macroTorch.cpBuildLog))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat S-02: cpBuildLogEvent emits the fixed [cpBuild] line format", function()
+		local savedLog = macroTorch.log
+		local captured = nil
+		macroTorch.log = function(a)
+			captured = tostring(a)
+		end
+		local pcallRes = pcall(function()
+			macroTorch.cpBuildLogEvent('Claw', { t = 12.34, cp = 3, e = 62 })
+		end)
+		macroTorch.log = savedLog
+		assert(pcallRes, "S-02 pcall failed")
+		assert(captured == '[cpBuild] Claw t=12.34 cp=3 e=62', "S-02 unexpected log line: " .. tostring(captured))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat S-03: claw() logs only when switch on and GCD ready", function()
+		local player = macroTorch.player
+		local savedSwitch = macroTorch.cpBuildLog
+		local savedLog = macroTorch.log
+		local savedCast = rawget(player, '_castSpell')
+		local savedActionCd = rawget(player, 'isActionCooledDown')
+		local captured = {}
+		local nOn, nGcd, nOff = 0, 0, 0
+		macroTorch.log = function(a)
+			table.insert(captured, tostring(a))
+		end
+		player._castSpell = function()
+			return true
+		end
+		player.isActionCooledDown = function()
+			return true
+		end
+		local pcallRes = pcall(function()
+			macroTorch.cpBuildLog = true
+			player.claw('ready')
+			nOn = macroTorch.tableLen(captured)
+			player.isActionCooledDown = function()
+				return false
+			end
+			player.claw('ready')
+			nGcd = macroTorch.tableLen(captured) - nOn
+			macroTorch.cpBuildLog = false
+			player.claw('ready')
+			nOff = macroTorch.tableLen(captured) - nOn - nGcd
+		end)
+		rawset(player, '_castSpell', savedCast)
+		rawset(player, 'isActionCooledDown', savedActionCd)
+		macroTorch.log = savedLog
+		macroTorch.cpBuildLog = savedSwitch
+		assert(pcallRes, "S-03 pcall failed")
+		assert(nOn == 1, "expected exactly one cpBuild log when the switch is on and GCD is ready, got " .. tostring(nOn))
+		assert(nGcd == 0, "expected no cpBuild log when GCD is not ready, got " .. tostring(nGcd))
+		assert(nOff == 0, "expected no cpBuild log when the switch is off, got " .. tostring(nOff))
+	end, true)
+
+	-- Registration count: Category S adds 3 tests (quick 260907-0ya)
 end
