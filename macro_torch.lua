@@ -18,3 +18,11 @@
 if not macroTorch then
     macroTorch = {}
 end
+
+-- combo-point building cast log switch (quick 260907-0ya): false by default, set
+-- macroTorch.cpBuildLog = true in game (SuperMacro body) to record every accepted
+-- Claw/Shred/Rake cast through macroTorch.log for offline interval analysis.
+-- The nil-guard re-arms the default on every login; toggling mid-session needs no reload.
+if macroTorch.cpBuildLog == nil then
+    macroTorch.cpBuildLog = false
+end

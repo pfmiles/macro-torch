@@ -23,15 +23,30 @@ function macroTorch.Druid:new()
 
     -- Cat form skills (Type A: enemy target only)
     function obj.claw(mode, rank)
-        return obj._castSpell({ en = 'Claw', zh = '爪击' }, mode, nil, macroTorch.computeClaw_E, false, rank)
+        local cpLog = macroTorch.cpBuildLog and macroTorch.cpBuildLogSample() or nil
+        local cast = obj._castSpell({ en = 'Claw', zh = '爪击' }, mode, nil, macroTorch.computeClaw_E, false, rank)
+        if cast and cpLog and cpLog.gcdOk then
+            macroTorch.cpBuildLogEvent('Claw', cpLog)
+        end
+        return cast
     end
 
     function obj.shred(mode, rank)
-        return obj._castSpell({ en = 'Shred', zh = '撕碎' }, mode, nil, macroTorch.computeShred_E, false, rank)
+        local cpLog = macroTorch.cpBuildLog and macroTorch.cpBuildLogSample() or nil
+        local cast = obj._castSpell({ en = 'Shred', zh = '撕碎' }, mode, nil, macroTorch.computeShred_E, false, rank)
+        if cast and cpLog and cpLog.gcdOk then
+            macroTorch.cpBuildLogEvent('Shred', cpLog)
+        end
+        return cast
     end
 
     function obj.rake(mode, rank)
-        return obj._castSpell({ en = 'Rake', zh = '斜掠' }, mode, nil, macroTorch.computeRake_E, false, rank)
+        local cpLog = macroTorch.cpBuildLog and macroTorch.cpBuildLogSample() or nil
+        local cast = obj._castSpell({ en = 'Rake', zh = '斜掠' }, mode, nil, macroTorch.computeRake_E, false, rank)
+        if cast and cpLog and cpLog.gcdOk then
+            macroTorch.cpBuildLogEvent('Rake', cpLog)
+        end
+        return cast
     end
 
     function obj.rip(mode, rank)
@@ -308,6 +323,26 @@ function macroTorch.Druid:new()
     -- NOTE: obj.catAtk no longer exists; call macroTorch.catAtk() instead.
 
     return obj
+end
+
+-- Sample the pre-cast state for the cpBuild log (quick 260907-0ya). Only invoked
+-- when macroTorch.cpBuildLog is true. The GCD probe must run BEFORE the cast
+-- because casting starts the GCD and would falsify the reading; the probe reuses
+-- the same action-slot 'Ability_Druid_Rake' texture scan as macroTorch.isGcdOk.
+function macroTorch.cpBuildLogSample()
+    return {
+        t = GetTime(),
+        cp = macroTorch.player.comboPoints,
+        e = macroTorch.player.mana,
+        gcdOk = macroTorch.player.isActionCooledDown('Ability_Druid_Rake')
+    }
+end
+
+-- Emit one persisted [cpBuild] line per accepted Claw/Shred/Rake cast.
+-- The field order skill t cp e is fixed; offline tooling parses it for the
+-- inter-cast interval k and its window distribution (R2 locked).
+function macroTorch.cpBuildLogEvent(skillName, s)
+    macroTorch.log('[cpBuild] ' .. skillName .. ' t=' .. s.t .. ' cp=' .. s.cp .. ' e=' .. s.e)
 end
 
 -- player fields to function mapping
