@@ -906,7 +906,7 @@ end
 macroTorch.RIP_BASE_DURATION = 10
 macroTorch.RAKE_DURATION = 9
 macroTorch.POUNCE_DURATION = 18
-macroTorch.COWER_THREAT_THRESHOLD = 75
+-- Cower worldboss threat threshold (macroTorch.COWER_THREAT_THRESHOLD): nil-guarded default lives in macro_torch.lua (quick 260907-tuh); user-configurable via /run - do not re-assign here
 
 -- 预测判断当前是否只有最后一次机会攻击目标了，目标可能快死了
 function macroTorch.isKillShotOrLastChance(clickContext)
