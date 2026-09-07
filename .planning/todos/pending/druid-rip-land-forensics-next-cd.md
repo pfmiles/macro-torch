@@ -36,8 +36,10 @@ Solnius 战 Jadepaw 正常阶段 9 个 5cp 全部重放 Rip、0 bite。**2026-09
 |---|---|---|
 | 你单人第一撕（干净桩） | `[RAWDIAG2 ctx]` + `[RAWDIAG2 pair] Rip pair-ok` | 阳性对照：必现；缺席 → 插桩自身故障 |
 | 网友第一撕（桩上仍无 rip）落进你已 arm 的窗口 | raw dump 里 `is afflicted by Rip` 行 + `[pair] no-pair:no-intent` | 证明"干净桩"上 apply 行可送达客户端 |
-| 网友后续撕（桩上已有 rip——他自己的或你的） | raw dump 里 apply 行**是否继续出现** | 出现 → 跨施法者抑制**否证**；消失 → 抑制**坐实** |
+| 网友后续撕（桩上已有 rip——他自己的或你的） | raw dump 里 apply 行**是否继续出现**（旁证，见下） | 出现 → 抑制**否证**；消失 → 抑制**坐实** |
 | 你自己第 2+ 撕（桩上已有网友/自己的 rip） | `[ctx]` + `[pair] Rip pair-ok`（你的 intent 在） | pair-ok → 客户端为我方出线，landing 腿健康；无声 → 抑制坐实 |
+
+> **主裁决独立于网友侧行**：combat log 是见证者日志——你的客户端为"你亲眼盯着的桩"上的任何人的技能生成日志行（RAW 流本就含全频道事件，scout 因此在白名单前采样）。但真正的判据链（你的 `ctx` → 你的 intent → 你的 apply 行 → `pair-ok`）100% 发生在你自己的客户端：网友只是设置"桩上有 rip"这一状态，不做被测量的动作。网友侧 apply 行若出现在你的 raw dump 中是旁证加强，缺席不影响主裁决。
 | 任何 ctx 行 | hasBuff / ripLeft / landTop / intentDepth / cp | 木桩上预期 hasBuff=true；意外 false = 视图腿连木桩都坏的额外数据点 |
 
 **替代方案（协调仍困难时）**：按"网友先打、你后进"的原始顺序也可执行——仅损失行 1 的阳性对照；若全程零 `pair-ok` 将无法区分"抑制成立"与"插桩故障"，需下周 boss 战探针复核。网友侧始终无任何复杂动作要求。
