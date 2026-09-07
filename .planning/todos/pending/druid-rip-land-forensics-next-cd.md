@@ -17,20 +17,29 @@ Solnius 战 Jadepaw 正常阶段 9 个 5cp 全部重放 Rip、0 bite。**2026-09
 
 多猫混杂本身解释不了 10/10 重放（WR-02 只是 ≤2s 偏移），但"多猫+服务器同技能容器"是 landing 抑制假设的背景条件。
 
-## 取证步骤（下一场正常模式 boss 战一次完成，省掉了原 raw 行打印步骤）
+## 取证步骤（打桩先行 · 简化版协议；boss 战三探针下周仍为备选复核）
 
-1. **数绿色 landed 行 + 三探针（landing 抑制 vs 视图缺失 分离）**
-   - 每次亲自施放 Rip 后 0.5s~2s 窗口内，观察是否有绿色 `Rip cast on <mob> landed:` 行；对照 Rake 的绿色行（Rake 走 self-hit 通道不受影响，应稳定出现作基线）。
-   - 同一窗口运行探针：
-     - `macroTorch.target.listDebuffs()` —— 已有打印方法，直接列出 UnitDebuff 第 1~60 槽的全部 debuff
-     - `macroTorch.target.hasBuff('<Rip 贴图名>')` —— 与 `isRipPresent` 同源的门
-     - `macroTorch.peekLandEvent('Rip')` —— land 表是否有我的 Rip 落地记录
-   - 判定表：
-     - 绿色行缺席 + peekLandEvent nil + listDebuffs 可见 Rip → **landing 抑制腿坐实**（客户端行级抑制跨施法者扩展），修复方向"tick 活性/状态替代 land 配对"；
-     - 绿色行出现但 hasBuff false → debuff 视图腿坐实，修复方向"tick 活性替代 hasBuff"（事件驱动方向，见 `debug/catatk-premature-rip-recast.md` 的既有设计）；
-     - listDebuffs 看得到 Rip 但 hasBuff false 且绿色行有 → 贴图名不匹配（纹理串问题），查 `texture_map.lua`。
-2. **开启 cpBuildLog 顺带采样**：采集 5cp 时刻的 cp/能量节奏（与 2026-09-07 quick-260907-0ya 的 cpBuildLog 设施一致，无额外成本）。
-3. **tick 活性对照（顺带完成，无需额外操作）**：Rip 跳血期间若步骤 1 判定 hasBuff=false，直接记录该对照即可——tick（SPELL_DMG）在本 boss 稳定下发（es.txt 已证），是替代 hasBuff 的候选信号源。
-4. **回报数据**：探针输出 + cpBuildLog 样本拷回，据实定稿修复（预期落在 isRipPresent 的 hasBuff 门替换；修复动作另行走 GSD 阶段流程）。
+> 2026-09-07 按用户要求简化：不要求网友任何复杂配合——网友只需"接到信号后上来打桩，之后正常打"。证据由 RAWDIAG2（quick-260907-mhh 插桩）自动持久化，无需肉眼数绿色行。
 
-> 已不需要的旧步骤：原方案中的"RAW 行临时打印"（**服务器事件层**已证健康 17/17，但客户端行级抑制只能靠步骤 1 的绿色行计数判）；"木桩先行实验"（用户确认木桩从未复现——新增解释：木桩上 rip 通常单人独享全场，恰好绕过"他人 rip 已激活"的抑制前置条件，所以木桩正常反而与 landing 抑制腿**相容**，但木桩实验仍无判别力）。
+**协议原则**：你打你的标准 catAtk 流程，插桩全自动采集；唯一一句话交代给网友：**"等我先打一轮（约 20~30 秒）再上来打，全程盯着同一只桩。"**
+
+1. **开局（阳性对照）**：你单人先开打，完成一轮 `挂 Rake → 攒星 → 挂 Rip`（≈20~30s）。你的第一撕落在"桩上无 rip"的干净状态 → 应产出 `pair-ok`（证明插桩链路工作正常）。
+2. **网友进场**：网友在同一只桩上挂好 Rake+Rip 并持续正常输出（他们的循环不要求节奏）。此刻桩上已有 rip，后续一切你的撕都变成"重叠撕"——正是待验证场景。
+3. **主循环 1~2 分钟**：你继续标准流程：`挂 Rake → 攒星 → 挂 Rip → 攒星 → Bite`。**Bite 照常（允许且建议）**——本服 bite 会刷新 Rip，恰好维持"桩上始终有 rip"的抑制前置条件。每 5cp 一次决策（撕/咬），循环到结束条件为止。
+4. **结束条件**：你完成 **≥2 次 Rip 施放**、且每次都做出了后续决策（Bite 或再撕），或满 2 分钟，先到为准。
+5. **禁区**：全程勿换目标、勿把桩打死（血量不够就选更高级的桩）；中途勿 `/reload`（flush 会截断窗口）；测试结束 logout 一次即完成 flush。
+6. **回报**：拷回 `WTF/Account/<账号>/SavedVariables/SuperMacro.lua` 中 `MACRO_TORCH_LOG.messages`（500 行环形缓冲），离线仲裁。
+
+**证据覆盖对照与判读（拿回日志即可裁决）：**
+
+| 协议环节 | 日志产出 | 判读 |
+|---|---|---|
+| 你单人第一撕（干净桩） | `[RAWDIAG2 ctx]` + `[RAWDIAG2 pair] Rip pair-ok` | 阳性对照：必现；缺席 → 插桩自身故障 |
+| 网友第一撕（桩上仍无 rip）落进你已 arm 的窗口 | raw dump 里 `is afflicted by Rip` 行 + `[pair] no-pair:no-intent` | 证明"干净桩"上 apply 行可送达客户端 |
+| 网友后续撕（桩上已有 rip——他自己的或你的） | raw dump 里 apply 行**是否继续出现** | 出现 → 跨施法者抑制**否证**；消失 → 抑制**坐实** |
+| 你自己第 2+ 撕（桩上已有网友/自己的 rip） | `[ctx]` + `[pair] Rip pair-ok`（你的 intent 在） | pair-ok → 客户端为我方出线，landing 腿健康；无声 → 抑制坐实 |
+| 任何 ctx 行 | hasBuff / ripLeft / landTop / intentDepth / cp | 木桩上预期 hasBuff=true；意外 false = 视图腿连木桩都坏的额外数据点 |
+
+**替代方案（协调仍困难时）**：按"网友先打、你后进"的原始顺序也可执行——仅损失行 1 的阳性对照；若全程零 `pair-ok` 将无法区分"抑制成立"与"插桩故障"，需下周 boss 战探针复核。网友侧始终无任何复杂动作要求。
+
+> 已不需要的旧步骤：肉眼数绿色行（pair ledger + raw dump 离线重建，无观察负担）；数 Green/`listDebuffs`/`peekLandEvent` 手动探针（ctx 行已含 hasBuff/ripLeft/landTop）；"禁 FB"约束（只对已搁置的 R3 fade 复位轮有效——该轮是次级问题，不影响主裁决）。
