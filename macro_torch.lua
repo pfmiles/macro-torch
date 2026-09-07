@@ -26,6 +26,14 @@ end
 if macroTorch.cpBuildLog == nil then
     macroTorch.cpBuildLog = false
 end
+-- RAWDIAG2 forensics master switch (quick 260907-mhh WR-02 fix): false by default,
+-- set macroTorch.rawdiag2Enabled = true in game (SuperMacro body) to arm the Rip
+-- landing forensics scout on every recorded in-combat Rip cast (and the safeRip ctx
+-- stamp). The nil-guard re-arms the default on every login; toggling mid-session
+-- needs no reload so incidental fights between the test and the log export stay silent.
+if macroTorch.rawdiag2Enabled == nil then
+    macroTorch.rawdiag2Enabled = false
+end
 -- Per-login re-arm of the one-time GCD-probe diagnostic (WR-01 fix): reset here,
 -- in the addon-load path, so a UI reload surfaces a fresh probe warning instead
 -- of inheriting a stale worn flag from the previous session.

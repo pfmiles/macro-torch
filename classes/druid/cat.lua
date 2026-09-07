@@ -428,20 +428,25 @@ function macroTorch.safeRip(clickContext)
                 ', expDuration: ' .. tostring(macroTorch.computeRip_Duration(clickContext.comboPoints, savageryNow)) .. 's')
         -- [RAWDIAG2 quick 260907-mhh] stamp the Rip cast decision inputs BEFORE the
         -- cast fires: the exact state the isRipPresent contradiction is made of
-        -- (hasBuff / ripLeft / last land / pending-intent depth / cp) at the decision
-        -- instant. Pure additive logging, no existing branch, return value or
-        -- scheduling is touched (same one-shot stamp shape as removed commit
-        -- cf5ade7). Only reads: clickContext.ripLeft / clickContext.isRipPresent were
-        -- already computed earlier in this same click (safeRip always runs after
-        -- shouldCastRip), so these reads hit caches and nothing can change any
-        -- later decision in the click.
-        local rawdiag2LandTop = macroTorch.peekLandEvent('Rip')
-        macroTorch.log('[RAWDIAG2 ctx] hasBuff=' .. tostring(macroTorch.target.hasBuff('Ability_GhoulFrenzy')) ..
-            ' ripLeft=' .. string.format('%.3f', macroTorch.ripLeft(clickContext)) ..
-            ' landTop=' .. (rawdiag2LandTop and string.format('%.3f', rawdiag2LandTop) or 'nil') ..
-            ' intentDepth=' .. tostring(macroTorch.rawdiag2IntentDepth('Rip')) ..
-            ' cp=' .. tostring(clickContext.comboPoints) ..
-            ' t=' .. string.format('%.3f', GetTime()), 'yellow')
+        -- (isRipPresent / live hasBuff / ripLeft / last land / pending-intent depth /
+        -- cp) at the decision instant. Pure additive logging, no existing branch,
+        -- return value or scheduling is touched (same one-shot stamp shape as removed
+        -- commit cf5ade7). WR-01 fix: reports the CACHED gate value
+        -- clickContext.isRipPresent (the arbiter field — freshly computed earlier in
+        -- this same click by the show() line above) plus a live UnitDebuff scan
+        -- labeled hasBuffLive so cached-vs-live drift is visible in the evidence.
+        -- WR-02 fix: gated on the rawdiag2Enabled master switch so incidental fights
+        -- cannot flush the rotating log buffer before the copy-back.
+        if macroTorch.rawdiag2Enabled then
+            local rawdiag2LandTop = macroTorch.peekLandEvent('Rip')
+            macroTorch.log('[RAWDIAG2 ctx] isRipPresent=' .. tostring(clickContext.isRipPresent) ..
+                ' hasBuffLive=' .. tostring(macroTorch.target.hasBuff('Ability_GhoulFrenzy')) ..
+                ' ripLeft=' .. string.format('%.3f', macroTorch.ripLeft(clickContext)) ..
+                ' landTop=' .. (rawdiag2LandTop and string.format('%.3f', rawdiag2LandTop) or 'nil') ..
+                ' intentDepth=' .. tostring(macroTorch.rawdiag2IntentDepth('Rip')) ..
+                ' cp=' .. tostring(clickContext.comboPoints) ..
+                ' t=' .. string.format('%.3f', GetTime()), 'yellow')
+        end
         macroTorch.player.rip('ready')
         macroTorch.loginContext.lastRipEquippedSavagery = savageryNow
         macroTorch.context.lastRipAtCp = clickContext.comboPoints
