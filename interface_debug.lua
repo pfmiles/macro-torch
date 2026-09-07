@@ -15,6 +15,9 @@
 ]] --
 
 -- 持久化日志缓冲区（依赖 SuperMacro .toc: ## SavedVariables: MACRO_TORCH_LOG）
+-- Entry cap is controlled by macroTorch.LOG_MAX_SIZE at the log() trim point
+-- (default 500, nil-guarded in macro_torch.lua); maxSize below is only the
+-- SavedVariables schema field and is not the trim limit.
 if not MACRO_TORCH_LOG then
     MACRO_TORCH_LOG = { messages = {}, maxSize = 500 }
 end
@@ -108,7 +111,13 @@ function macroTorch.log(a, color)
     end
     macroTorch.show(a, color)
     local messages = MACRO_TORCH_LOG.messages
-    while macroTorch.tableLen(messages) >= MACRO_TORCH_LOG.maxSize do
+    -- Trim cap follows macroTorch.LOG_MAX_SIZE (nil-guarded to 500 in
+    -- macro_torch.lua). The clamp keeps the bound at 1 or higher so a 0 or
+    -- negative override can never leave the trim loop unbounded; a nil or
+    -- non-numeric value falls back to the 500 default (quick 260907-vve).
+    local n = tonumber(macroTorch.LOG_MAX_SIZE)
+    local limit = n and math.max(1, math.floor(n)) or 500
+    while macroTorch.tableLen(messages) >= limit do
         table.remove(messages, 1)
     end
     table.insert(messages, tostring(a))
