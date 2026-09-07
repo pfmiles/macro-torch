@@ -13,7 +13,7 @@ progress:
 milestone_name: milestone
 last_activity: 2026-09-07
 current_phase_name: catatk-event-driven-land-tracing-refactor
-last_activity_desc: "Completed quick task 260907-tuh: Cower worldboss threat threshold user-configurable (default 75) + config banner entry"
+last_activity_desc: "Completed quick task 260907-vve: macroTorch.LOG_MAX_SIZE persistent-log cap (default 500) + sanitized trim limit + config banner entry"
 ---
 
 # Project State
@@ -229,6 +229,7 @@ last_activity_desc: "Completed quick task 260907-tuh: Cower worldboss threat thr
 | 260907-sz4 | 登录/reload 后 selftest 末尾打印全局配置项横幅（CONFIG_OPTIONS 注册表：cpBuildLog + rawdiag2Enabled，含默认值与设置命令） | 2026-09-07 | 219071a | [260907-sz4-reload-selftest-macro-torch-lua-config-o](./quick/260907-sz4-reload-selftest-macro-torch-lua-config-o/) |
 | 260907-mhh | RAWDIAG2 Rip landing 取证插桩（多猫 landing 抑制就地验证）：RAW_COMBATLOG 白名单前 scout + pair ledger + safeRip 决策戳，纯增量 | 2026-09-07 | 953bd50 | [260907-mhh-rip-landing-rawdiag-forensics-build-1-co](./quick/260907-mhh-rip-landing-rawdiag-forensics-build-1-co/) |
 | 260907-tuh | Cower 世界首领仇恨阈值可配置化：Druid.lua:909 硬编码赋值迁移为 macro_torch.lua nil-guard 默认 75 + CONFIG_OPTIONS 第三项进登录横幅，/run 会话级覆盖 | 2026-09-07 | 1a8bb19 | [260907-tuh-cower-threat-threshold-75](./quick/260907-tuh-cower-threat-threshold-75/) |
+| 260907-vve | macroTorch.log 持久化上限可配置化：新增 macroTorch.LOG_MAX_SIZE nil-guard 默认 500 + CONFIG_OPTIONS 第四项进横幅，裁剪上限改读带 tonumber+clamp 净化的局部值（0/负数钳到 1，非法值回落 500）+ Cat T-01 自测，per-session 语义 | 2026-09-07 | cb0fcd3 | [260907-vve-add-macrotorch-log-max-size-global-confi](./quick/260907-vve-add-macrotorch-log-max-size-global-confi/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
