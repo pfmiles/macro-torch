@@ -96,7 +96,12 @@ function macroTorch.otMod(clickContext)
     if macroTorch.shouldDoReshift(clickContext) then
         return
     end
-    if target.isAttackingMe or (target.classification == 'worldboss' and player.threatPercent >= macroTorch.COWER_THREAT_THRESHOLD) then
+    -- Coerce the /run-settable threshold once: Lua 5.0 raises on mixed-type
+    -- relational comparison, so a quoted '75' typo must not abort the click.
+    -- Numeric strings convert fine; nil/junk makes only the worldboss leg inert.
+    local cowerThreshold = tonumber(macroTorch.COWER_THREAT_THRESHOLD)
+    if target.isAttackingMe or (target.classification == 'worldboss' and cowerThreshold
+            and player.threatPercent >= cowerThreshold) then
         macroTorch.safeCower(clickContext)
     end
 end
