@@ -196,7 +196,7 @@ last_activity_desc: "Completed quick task 260907-0ya: macroTorch.cpBuildLog opt-
 
 ## Session
 
-**Last session:** 2026-08-28T17:33:54.435Z
+**Last session:** 2026-09-07T08:30:00.000Z
 **Stopped at:** Phase 27 complete — all phases complete
 **Resume file:** None
 
@@ -226,6 +226,7 @@ last_activity_desc: "Completed quick task 260907-0ya: macroTorch.cpBuildLog opt-
 | 260830-45g | Phase 27 UAT 反馈小修复：绿色 landed 确认日志挪到 recordLandEvent 之前，打印顺序符合因果序（FB landed 先于 Renewing rake/rip） | 2026-08-30 | 194d907 | [260830-45g-phase-27-uat-aura-apply-landed-recordlan](./quick/260830-45g-phase-27-uat-aura-apply-landed-recordlan/) |
 | 260831-24c | target 对象新增 clear() 方法：宏随时调用 macroTorch.target.clear() 清空当前目标持久化的 immune/definite 记录，无目标时静默跳过 | 2026-08-31 | 6f22a48 | [260831-24c-target-clear](./quick/260831-24c-target-clear-macrotorch-target-clear-imm/) |
 | 260907-0ya | 新增 macroTorch.cpBuildLog 布尔开关(默认 false)：开启后 Claw/Shred/Rake 施放经 macroTorch.log 打点持久化，用于打桩测量攒星攻击间隔辅助双保判据 | 2026-09-07 | 90ef069 | [260907-0ya-macrotorch-false-true-macrotorch-log](./quick/260907-0ya-macrotorch-false-true-macrotorch-log/) |
+| 260907-mhh | RAWDIAG2 Rip landing 取证插桩（多猫 landing 抑制就地验证）：RAW_COMBATLOG 白名单前 scout + pair ledger + safeRip 决策戳，纯增量 | 2026-09-07 | 953bd50 | [260907-mhh-rip-landing-rawdiag-forensics-build-1-co](./quick/260907-mhh-rip-landing-rawdiag-forensics-build-1-co/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
@@ -234,6 +235,6 @@ last_activity_desc: "Completed quick task 260907-0ya: macroTorch.cpBuildLog opt-
 
 ## Session
 
-**Last session:** 2026-08-30T09:30:00.000Z
+**Last session:** 2026-09-07T08:30:00.000Z
 **Stopped at:** Phase 27 UAT complete — phase marked complete, milestone v1.0 ready to archive
 **Resume file:** None
