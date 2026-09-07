@@ -1082,4 +1082,15 @@ end, true)
 	end, true)
 
 	-- Registration count: Category S adds 4 tests (quick 260907-0ya + WR-01 fix)
+	-- Category T: macroTorch.log persistence buffer cap (quick 260907-vve, 1 test)
+	-- T-01 mirrors Cat S-01: pure default-value assert, read-only, no stubs,
+	-- isOptional=true. It passes on a fresh login (the macro_torch.lua nil-guard
+	-- has just re-armed 500); if the session overrode the value the failure is
+	-- expected and informative - the same trade-off Cat S-01 accepted.
+	macroTorch.SelfTest:register("Cat T-01: LOG_MAX_SIZE defaults to 500", function()
+		assert(macroTorch.LOG_MAX_SIZE == 500,
+			"LOG_MAX_SIZE should default to 500, got " .. tostring(macroTorch.LOG_MAX_SIZE))
+	end, true)
+
+	-- Registration count: Category T adds 1 test (quick 260907-vve)
 end
