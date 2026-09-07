@@ -132,7 +132,7 @@ function macroTorch.recordCastTable(spell)
     -- multi-cat overlap evidence is per-cast). State lives only in
     -- macroTorch.context: combat exit wipes it, nothing is persisted, and the
     -- gating shares no state with any other diagnostic switch.
-    if spell == 'Rip' and macroTorch.context and macroTorch.inCombat then
+    if spell == 'Rip' and macroTorch.rawdiag2Enabled and macroTorch.context and macroTorch.inCombat then
         macroTorch.context._rawdiag2Lines = 0
         macroTorch.context._rawdiag2Samples = 0
         macroTorch.context._rawdiag2Active = true
