@@ -989,7 +989,14 @@ SLASH_MT1 = "/mt"
 SlashCmdList["MT"] = function(msg)
     local trimmed = msg and string.gsub(msg, "^%s*(.-)%s*$", "%1") or ""
     if trimmed == "" then
+        -- Snapshot the session flag before run(): when the login selftest has
+        -- already run, run() no-ops, so reprint the config banner to reflect
+        -- any mid-session /run override. Fresh-session /mt still prints once.
+        local alreadyRan = macroTorch._selfTestRan
         macroTorch.SelfTest:run()
+        if alreadyRan then
+            macroTorch.printConfigBanner()
+        end
     else
         macroTorch.show("[macro-torch] /mt: mt-script DSL is reserved for a future phase. Use /mt without arguments to run self-test.", 'yellow')
     end
