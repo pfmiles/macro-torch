@@ -34,6 +34,15 @@ end
 if macroTorch.rawdiag2Enabled == nil then
     macroTorch.rawdiag2Enabled = false
 end
+-- Cower worldboss threat threshold (quick 260907-tuh): 75 percent by default,
+-- set macroTorch.COWER_THREAT_THRESHOLD = 80 in game (SuperMacro body) to tune
+-- the threat percent at which a worldboss catAtk answers with Cower. The
+-- nil-guard re-arms the default on every login; a /run override lasts only
+-- for the current session (no SavedVariables persistence), same as the two
+-- boolean options above.
+if macroTorch.COWER_THREAT_THRESHOLD == nil then
+    macroTorch.COWER_THREAT_THRESHOLD = 75
+end
 -- Per-login re-arm of the one-time GCD-probe diagnostic (WR-01 fix): reset here,
 -- in the addon-load path, so a UI reload surfaces a fresh probe warning instead
 -- of inheriting a stale worn flag from the previous session.
@@ -57,6 +66,13 @@ macroTorch.CONFIG_OPTIONS = {
         desc = 'RAWDIAG2 Rip landing forensics master switch',
         cmd = '/run macroTorch.rawdiag2Enabled=true',
         get = function() return macroTorch.rawdiag2Enabled end,
+    },
+    {
+        name = 'macroTorch.COWER_THREAT_THRESHOLD',
+        default = 75,
+        desc = 'worldboss Cower threat percent trigger threshold (Cower fires when threat is at or above it)',
+        cmd = '/run macroTorch.COWER_THREAT_THRESHOLD=80',
+        get = function() return macroTorch.COWER_THREAT_THRESHOLD end,
     },
 }
 -- prints every registered config option with its current value, default and the
