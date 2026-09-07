@@ -20,6 +20,11 @@
 
 local frame = CreateFrame("Frame")
 
+-- [RAWDIAG2 quick 260907-mhh] keyword filter for the RAW_COMBATLOG forensics
+-- dump. The scout below dumps only while macroTorch.context._rawdiag2Active is
+-- armed; recordCastTable in spell_trace_core.lua arms it on a recorded Rip cast.
+local RAWDIAG2_KEYWORDS = { 'Rip', 'Rake', 'Bite', 'afflicted', 'fades' }
+
 -- frame:RegisterEvent("PLAYER_LOGIN")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:RegisterEvent("PLAYER_TARGET_CHANGED")
@@ -128,6 +133,52 @@ function macroTorch.eventHandle()
             end
         end
     elseif event == "RAW_COMBATLOG" then
+        -- [RAWDIAG2 quick 260907-mhh] forensics scout, placed BEFORE the tier-1 channel
+        -- whitelist so it sees every RAW_COMBATLOG line while armed. Arbitration target:
+        -- does this client suppress raw apply lines when any feral Rip is already
+        -- active on the target (multi-cat)? The scout auto-disarms after a 60s window
+        -- or once _rawdiag2Lines reaches the 150-line cap; the first 20 events of a
+        -- fresh arm are dumped unconditionally as field-layout samples, after that
+        -- only RAWDIAG2_KEYWORDS matches. State lives in macroTorch.context (combat
+        -- exit wipes it, never persisted); output persists via macroTorch.log.
+        local scoutActive = macroTorch.context and macroTorch.context._rawdiag2Active
+        if scoutActive then
+            local scoutCtx = macroTorch.context
+            if (GetTime() - (scoutCtx._rawdiag2Start or GetTime())) > 60 then
+                scoutCtx._rawdiag2Active = false
+                macroTorch.log('[RAWDIAG2] scout disarmed after 60s window, dumped: ' ..
+                    tostring(scoutCtx._rawdiag2Lines or 0) .. ' lines', 'yellow')
+            elseif (scoutCtx._rawdiag2Lines or 0) >= 150 then
+                scoutCtx._rawdiag2Active = false
+                macroTorch.log('[RAWDIAG2] scout disarmed after 150-line cap, dumped: ' ..
+                    tostring(scoutCtx._rawdiag2Lines or 0) .. ' lines', 'yellow')
+            else
+                -- serialize every event arg verbatim, nil-safe: WoW 1.12 exposes event
+                -- args as arg1..argN globals; stop at the first nil. Lua 5.0 has no length
+                -- operator, so the parts list grows through table.insert and a counter.
+                local parts = {}
+                local ai = 1
+                while ai <= 12 and _G['arg' .. ai] ~= nil do
+                    table.insert(parts, 'arg' .. ai .. '=' .. tostring(_G['arg' .. ai]))
+                    ai = ai + 1
+                end
+                local serialized = table.concat(parts, ' | ')
+                local interesting = false
+                for _, kw in ipairs(RAWDIAG2_KEYWORDS) do
+                    if string.find(serialized, kw, 1, true) then
+                        interesting = true
+                        break
+                    end
+                end
+                if interesting or (scoutCtx._rawdiag2Samples or 0) < 20 then
+                    scoutCtx._rawdiag2Lines = (scoutCtx._rawdiag2Lines or 0) + 1
+                    scoutCtx._rawdiag2Samples = (scoutCtx._rawdiag2Samples or 0) + 1
+                    macroTorch.log('[RAWDIAG2] line=' .. tostring(scoutCtx._rawdiag2Lines) ..
+                        ' t=' .. string.format('%.3f', GetTime()) .. ' ' .. serialized, 'green')
+                end
+            end
+        end
+        -- end of RAWDIAG2 scout block (arming hook: spell_trace_core.lua recordCastTable)
         -- production event-driven land handler (three-tier filter, debug
         -- decision #6).
         -- Tier 1 (channel whitelist): only the two periodic-damage channels
