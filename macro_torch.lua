@@ -43,13 +43,23 @@ end
 if macroTorch.COWER_THREAT_THRESHOLD == nil then
     macroTorch.COWER_THREAT_THRESHOLD = 75
 end
+-- macroTorch.log persistence buffer entry cap (quick 260907-vve): 500 by default,
+-- set macroTorch.LOG_MAX_SIZE = 1000 in game (SuperMacro body) to keep more log
+-- lines before the macroTorch.log trim loop drops entries. The nil-guard re-arms
+-- the default on every login; a /run override lasts only for the current session
+-- (no SavedVariables persistence), same as the three options above. The consumer
+-- sanitizes the value (tonumber plus a clamp to at least 1) in macroTorch.log,
+-- so the trim loop can never hang on an odd override.
+if macroTorch.LOG_MAX_SIZE == nil then
+    macroTorch.LOG_MAX_SIZE = 500
+end
 -- Per-login re-arm of the one-time GCD-probe diagnostic (WR-01 fix): reset here,
 -- in the addon-load path, so a UI reload surfaces a fresh probe warning instead
 -- of inheriting a stale worn flag from the previous session.
 macroTorch._cpBuildLogProbeWarned = nil
 
 -- Global config options registry and login banner (quick 260907-sz4). A complete
--- survey of user-tunable globals yields exactly these two entries; a future option
+-- survey of user-tunable globals yields exactly these four entries; a future option
 -- is surfaced by appending one registry entry. The banner only reads values through
 -- the explicit getters below — the nil-guards above stay the only assignments.
 macroTorch.CONFIG_OPTIONS = {
@@ -73,6 +83,13 @@ macroTorch.CONFIG_OPTIONS = {
         desc = 'worldboss Cower threat percent trigger threshold (Cower fires when threat is at or above it)',
         cmd = '/run macroTorch.COWER_THREAT_THRESHOLD=80',
         get = function() return macroTorch.COWER_THREAT_THRESHOLD end,
+    },
+    {
+        name = 'macroTorch.LOG_MAX_SIZE',
+        default = 500,
+        desc = 'macroTorch.log persistence buffer entry cap',
+        cmd = '/run macroTorch.LOG_MAX_SIZE=1000',
+        get = function() return macroTorch.LOG_MAX_SIZE end,
     },
 }
 -- prints every registered config option with its current value, default and the
