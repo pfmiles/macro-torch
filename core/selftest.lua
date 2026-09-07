@@ -93,6 +93,8 @@ function macroTorch.SelfTest:run()
 
     -- Print Druid skill diagnostics after selftest (quick task 260623-wrh-druid)
     macroTorch.printDruidDiag()
+    -- Print global config banner after selftest (quick 260907-sz4)
+    macroTorch.printConfigBanner()
 end
 
 -- ============================================================

@@ -38,3 +38,40 @@ end
 -- in the addon-load path, so a UI reload surfaces a fresh probe warning instead
 -- of inheriting a stale worn flag from the previous session.
 macroTorch._cpBuildLogProbeWarned = nil
+
+-- Global config options registry and login banner (quick 260907-sz4). A complete
+-- survey of user-tunable globals yields exactly these two entries; a future option
+-- is surfaced by appending one registry entry. The banner only reads values through
+-- the explicit getters below — the nil-guards above stay the only assignments.
+macroTorch.CONFIG_OPTIONS = {
+    {
+        name = 'macroTorch.cpBuildLog',
+        default = false,
+        desc = 'combo-point build cast log switch (Claw/Shred/Rake interval samples)',
+        cmd = '/run macroTorch.cpBuildLog=true',
+        get = function() return macroTorch.cpBuildLog end,
+    },
+    {
+        name = 'macroTorch.rawdiag2Enabled',
+        default = false,
+        desc = 'RAWDIAG2 Rip landing forensics master switch',
+        cmd = '/run macroTorch.rawdiag2Enabled=true',
+        get = function() return macroTorch.rawdiag2Enabled end,
+    },
+}
+-- prints every registered config option with its current value, default and the
+-- in-game setter command; read-only, never errors when a getter fails (pcall).
+function macroTorch.printConfigBanner()
+    macroTorch.show('[macro-torch] === Global Config Options ===', 'white')
+    for _, opt in ipairs(macroTorch.CONFIG_OPTIONS) do
+        local current = 'unavailable'
+        local ok, v = pcall(opt.get)
+        if ok then
+            current = tostring(v)
+        end
+        macroTorch.show('[macro-torch] ' .. opt.name .. ' = ' .. current ..
+            ' (default: ' .. tostring(opt.default) .. ') - ' .. opt.desc, 'yellow')
+        macroTorch.show('[macro-torch]    set: ' .. opt.cmd, 'yellow')
+    end
+    macroTorch.show('[macro-torch] === End Config Options ===', 'white')
+end
