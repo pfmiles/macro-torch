@@ -10,8 +10,8 @@
 
 1. **用户体感属实。** 日志（`.planning/samples/es.txt`）证实：Solnius 正常阶段 Jadepaw 的 9 个 5cp 终结技全部打成了 Rip，0 次 5cp bite；每个 re-rip 的上一发 Rip 当时仍在跳血（tick 时间轴证据），提前量 7~11s（本服 5cp Rip ≈ 16.2~18s），每次重放浪费一个 5cp bite 机会，与本服"bite 刷新 Rip"的续杯循环互斥地反复打断。
 2. **代码机制确认：** `cp5Bite`（`classes/druid/cat.lua:117`）要求 `isRipPresent` 为 true 才会在 5cp 打 bite；`isRipPresent` = `hasBuff('Ability_GhoulFrenzy')` **且** `ripLeft > 0`。正常阶段该值恒 false，5cp 全部落入 `keepRip` → 重放 Rip。
-3. **根因候选两条（可叠加，各自独立成立）：**
-   - **(i) hasBuff 腿在 Solnius 上恒 false（本场主要嫌疑，日志可证）：** 整场 6 分钟 Solnius 的 debuff 事件流里 Rip 从未出现（DEBUFF_ADD/REM 0 条），而 Rake(9904)、Hemo 等 debuff 事件正常出现；同一份日志中小怪身上的 Rip debuff-add 正常记录。→ 客户端 `UnitDebuff` 扫描在此 boss 上永远找不到 Rip 图标 → 与门恒 false。debuff 槽位压力中等（7~13 层，未触 16 满），槽位溢出不是必要条件——更可能是此 boss 的 Rip debuff 从不下发/不进入可扫列表。
+3. **根因候选两条（可叠加，各自独立成立）：**（2026-09-07 用户新增疑点的代码对照结论：rip/rake 检测链路为 macroTorch 自实现，`entity/Unit.lua:26` hasBuff + `texture_map.lua:40` 本地贴图映射，**SuperMacro 的方法不在链路上**；失败通道只解析 "Your ..." 自身报文无跨猫污染；land 配对目标 GUID 校验在、施法者不可辨只是 WR-02 已接受的 ≤2s 残差——3 猫混杂解释不了 10/10 重放。）
+   - **(i) hasBuff 腿在 Solnius 上恒 false（头号嫌疑，2026-09-07 三层对照坐实）：** AURA_CAST（应用行）boss 上 rip=17 条且与 Jadepaw 9 次成功施法 1:1（时差 ≤0.5s）→ 事件流健康；DEBUFF_ADD（debuff 状态表）rip 6 分钟仅 1 条（+110.4s，Sevenstar 的），同流 Rake 9 条；且 rip 施法时刻 boss 行数 8~13，**未达 16/32 槽位上限——"超 32 被挤出"的拥挤机制被否定**。→ 客户端 `UnitDebuff` 扫描在此 boss 上几乎找不到 Rip 图标 → 与门恒 false；缺失原因不是槽位挤满，待下 CD 探针（见 todo）判定"占用不满仍不可见"的本地机制（research Q2 追问：raid boss 特异 aura 同步/排序）。
    - **(ii) ripLeft 腿失效：** Rip 的 land 记录依赖 RAW_COMBATLOG "is afflicted by" 行与 cast intent 配对（landSource='aura-apply'）。research pass 已排除 A2（arg1 确实是 `CHAT_MSG_*` 频道名）、A3/A4（行格式 `0x… is afflicted by Rip.` 与 GUID 比对匹配）、A5（正确频道 `CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE`）；**A1（intent 未种子化 / 配对失败 → apply 行静默丢弃）未能排除**，本份 es.txt 无法直接证实/证伪（es.txt 是解析后格式，非 addon 的 RAW 输入）。
 4. **与既有调查的关系：** `.planning/debug/catatk-premature-rip-recast.md` 是木桩场景同族问题（hasBuff=true、ripLeft 窗口丢失），root cause 已定并已实施/在途"事件驱动 land"修复（tick 活性≡我的 rip + fade 事件，绕开 UnitDebuff 槽位与轮询窗口）。**Solnius 新增的价值是 raid/boss 专属的 hasBuff 缺失证据 (i)——事件驱动方案里以 tick 活性替代 hasBuff 的设计恰好覆盖此通道**（Rip 的 SPELL_DMG tick 在本 boss 上照常下发，约 2s 一跳，可作为活性来源）。
 
