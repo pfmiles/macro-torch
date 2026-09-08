@@ -106,8 +106,8 @@
 
 **对计划影响:**
 - 计划文案须把 D-01 的"SPELL_DAMAGE"改写为可执行通道名：**RAW_COMBATLOG 分支内新增 `arg1 == 'CHAT_MSG_SPELL_SELF_DAMAGE'` 通道门**，位置在 rawdiag2 scout 之后、现有 tier-1 提前 return 之前（该 return 只放行两条 PERIODIC 通道，必须重构调度点让两条消费者各见各的通道——推荐按通道分派而非改白名单集合，避免扰动 Phase 27 语义）。
-- 伤害行解析正则（英文客户端实锤样本）：`^Your (.+) (hits|crits) (0x[0-9A-Fa-f]+) for (%d+)%.`——不锚定行尾（容忍 `(M absorbed/blocked)` 尾缀；木桩无此场景但防御性保留）；miss/dodge/parry/resist/immune 行天然不匹配 → D-03 零额外代码。
-- **crit 字段建议写入 true/false**（Claude's Discretion 可检性已正面核实），动词不在 {hits, crits} 白名单时（非英文客户端）写 `null`；分析器对缺失/未知 crit 的桶不受影响（均值统计不依赖 crit，可另列 crit 提示）。
+- 伤害行解析句式（英文客户端实锤样本）——**必须拆成两条 Lua 5.0 合法 pattern，禁用单条组合式**：Lua pattern 魔法字符仅 `^$()%.[]*+-?`，`|` 是字面量（`(hits|crits)` 只会按字面文本 "hits|crits" 匹配），且括号捕获子模式不可接量词。命中行 pattern：`^Your .+ hits (0x[0-9A-Fa-f]+) for (%d+)%.`；暴击行 pattern：`^Your .+ crits (0x[0-9A-Fa-f]+) for (%d+)%.`。均不锚定行尾（容忍 `(M absorbed/blocked)` 尾缀；木桩无此场景但防御性保留）；verb 由命中哪条模式确定（两条模式的字面量 verb 即 {hits, crits} 白名单成员，A3 容错保留）；miss/dodge/parry/resist/immune 行两条均不匹配 → D-03 零额外代码。
+- **crit 字段建议写入 true/false**（Claude's Discretion 可检性已正面核实），verb 由命中的 hits/crits 双模式之一确定（模式字面量即 {hits, crits} 白名单成员）；非英文客户端（A3）两模式均不命中 → 不产条目。分析器对缺失/未知 crit 的桶不受影响（均值统计不依赖 crit，可另列 crit 提示）。
 - RAW_COMBATLOG 注册本身已被 `SUPERWOW_STRING ~= nil` 门保护；cpDamageLog 依赖 SuperWoW（插件未装时静默无事件，intent 自然过期），计划中作为执行前置条件注明，不新增降级链路（D-01 钦定无兜底）。
 
 ## 2. SuperMacro SavedVariables 文件格式

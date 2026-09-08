@@ -148,7 +148,7 @@ end
 
 ### 3. `core/spell_trace_core.lua`（service，解析 + 配对 + 发射，与 land 函数并排）
 
-新增族：`macroTorch.onCpDamageLine(eventMsg, now)`（解析 `^Your (.+) (hits|crits) (0x[0-9A-Fa-f]+) for (%d+)%.`，不锚定行尾）+ `macroTorch.pairCpDamageIntent(guid, now)`（purge + 逆序配对）+ `macroTorch.cpDamageEvent(sample, dmg, crit)`（11 字段 JSON 组装 + `macroTorch.log('[cpDamage] ' .. json)`）。
+新增族：`macroTorch.onCpDamageLine(eventMsg, now)`（解析用两条 Lua 5.0 合法 pattern——hits 线 `^Your .+ hits (0x[0-9A-Fa-f]+) for (%d+)%.`、crits 线 `^Your .+ crits (0x[0-9A-Fa-f]+) for (%d+)%.`，verb 由命中模式确定，均不锚定行尾）+ `macroTorch.pairCpDamageIntent(guid, now)`（purge + 逆序配对）+ `macroTorch.cpDamageEvent(sample, dmg, crit)`（11 字段 JSON 组装 + `macroTorch.log('[cpDamage] ' .. json)`）。
 
 **TTL 常量直接复用（spell_trace_core.lua:15）**：`macroTorch.LAND_INTENT_TTL = 2`（D-02 钦定对齐 2s）。
 
@@ -194,7 +194,7 @@ if not spell then
     _, _, spell = string.find(eventMsg, 'Your (.-) crits ([^%.]+)%.')
 end
 ```
-→ 新正则（RESEARCH §1 钦定）：`^Your (.+) (hits|crits) (0x[0-9A-Fa-f]+) for (%d+)%.`；miss/dodge/parry/resist 行天然不匹配 → D-03 零额外代码（句式全集见 CheckDodgeParryBlockResist，spell_trace_core.lua:468-507）。crit：动词在 `{hits, crits}` 白名单 → true/false；否则写 null。
+→ 新 pattern（RESEARCH §1 钦定，两条 Lua 5.0 合法拆写——Lua pattern 无 `|` 或运算，单条 `(hits|crits)` 组合按字面匹配永不命中）：hits 线 `^Your .+ hits (0x[0-9A-Fa-f]+) for (%d+)%.`、crits 线 `^Your .+ crits (0x[0-9A-Fa-f]+) for (%d+)%.`；miss/dodge/parry/resist 行两条均不匹配 → D-03 零额外代码（句式全集见 CheckDodgeParryBlockResist，spell_trace_core.lua:468-507）。crit：命中哪条模式即定 verb（模式字面量 ∈ `{hits, crits}` 白名单）→ true/false；非英文客户端（A3）两模式均不命中 → 不产条目（由 28-04 UAT 记录客户端语言环境兜底）。
 
 **队列容器 — LRUStack（core/periodic.lua:21-75）**：
 ```lua
