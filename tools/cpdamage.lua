@@ -911,6 +911,353 @@ function buildPerBatchStats(entries)
     return out
 end
 
+-- output section (D-16/D-21/D-15): terminal report, decision lines, json
+-- archive and the full self-test.
+
+-- rendering helpers: nil averages render as '-', damage at two decimals,
+-- efficiencies and slopes at four (RESEARCH 6 cross-version alignment)
+local function fmtDmg(v)
+    if v == nil then
+        return '-'
+    end
+    return string.format('%.2f', v)
+end
+
+local function fmtEff(v)
+    if v == nil then
+        return '-'
+    end
+    return string.format('%.4f', v)
+end
+
+-- three families of ready-to-use catAtk tuning lines (D-21):
+--   1. per bleedCount tier: which builder wins on avg dmg/e
+--   2. per OOC tier (behind-position samples only): which skill wins on
+--      single-cast average damage
+--   3. bite marginal b vs the best builder efficiency anywhere in the
+--      claw/shred tier tables (the source tier is named): decides whether
+--      to discharge extra energy before biting
+function decisionLines(stats)
+    local lines = {}
+    local cs = stats.clawShred
+    local spells = { 'claw', 'shred' }
+    local bestEff = nil
+    local bestEffSource = nil
+    for tier = 0, 3 do
+        local head = 'Tier ' .. tostring(tier) .. ' (bleedCount ' .. tostring(tier) .. '): '
+        local cn = cs.buckets.claw[tier].n
+        local sn = cs.buckets.shred[tier].n
+        if cn == 0 or sn == 0 then
+            table.insert(lines, head .. 'no samples')
+        elseif cs.buckets.shred[tier].avgEff > cs.buckets.claw[tier].avgEff then
+            table.insert(lines, head .. 'SHRED is more efficient (' ..
+                fmtEff(cs.buckets.shred[tier].avgEff) .. ' dmg/energy vs CLAW ' ..
+                fmtEff(cs.buckets.claw[tier].avgEff) .. ') - use Shred')
+        else
+            table.insert(lines, head .. 'CLAW is more efficient (' ..
+                fmtEff(cs.buckets.claw[tier].avgEff) .. ' dmg/energy vs SHRED ' ..
+                fmtEff(cs.buckets.shred[tier].avgEff) .. ') - use Claw')
+        end
+        for si = 1, 2 do
+            local sp = spells[si]
+            local b = cs.buckets[sp][tier]
+            if b.n > 0 and (bestEff == nil or b.avgEff > bestEff) then
+                bestEff = b.avgEff
+                bestEffSource = sp .. ' tier ' .. tostring(tier)
+            end
+        end
+    end
+    local oc = stats.oocTiers
+    for tier = 0, 3 do
+        local head = 'OOC tier ' .. tostring(tier) .. ' (behind): '
+        local cn = oc.buckets.claw[tier].n
+        local sn = oc.buckets.shred[tier].n
+        if cn == 0 or sn == 0 then
+            table.insert(lines, head .. 'no samples')
+        elseif oc.buckets.shred[tier].avgDmg > oc.buckets.claw[tier].avgDmg then
+            table.insert(lines, head .. 'use SHRED (single-cast avg ' ..
+                fmtDmg(oc.buckets.shred[tier].avgDmg) .. ' vs CLAW ' ..
+                fmtDmg(oc.buckets.claw[tier].avgDmg) .. ')')
+        else
+            table.insert(lines, head .. 'use CLAW (single-cast avg ' ..
+                fmtDmg(oc.buckets.claw[tier].avgDmg) .. ' vs SHRED ' ..
+                fmtDmg(oc.buckets.shred[tier].avgDmg) .. ')')
+        end
+    end
+    local reg = stats.biteRegression
+    if reg.usable then
+        if reg.b < 0 then
+            table.insert(lines, 'bite at 5cp: b=' .. fmtEff(reg.b) ..
+                ' - no positive marginal bite damage - check sample mix')
+        elseif bestEff == nil then
+            table.insert(lines, 'bite at 5cp: b=' .. fmtEff(reg.b) ..
+                ' - no builder samples to compare against')
+        elseif reg.b > bestEff then
+            table.insert(lines, 'bite at 5cp: b=' .. fmtEff(reg.b) ..
+                ' vs best builder ' .. fmtEff(bestEff) .. ' dmg/energy (' .. bestEffSource ..
+                '): b > builder - bite at 35 without discharge (prefer saving energy for bite conversion)')
+        else
+            table.insert(lines, 'bite at 5cp: b=' .. fmtEff(reg.b) ..
+                ' vs best builder ' .. fmtEff(bestEff) .. ' dmg/energy (' .. bestEffSource ..
+                '): b <= builder - discharge extra energy with the best builder before biting')
+        end
+    else
+        local line = 'bite at 5cp: ' .. reg.reason .. ' (n=' .. tostring(reg.n)
+        if reg.avgDmg ~= nil then
+            line = line .. ', avg dmg ' .. fmtDmg(reg.avgDmg)
+        end
+        table.insert(lines, line .. ')')
+    end
+    return lines
+end
+
+-- one claw/shred tier table: header plus two rows per bleedCount tier
+-- (claw, shred); columns n / avg dmg / avg dmg / e / single-cast avg, an
+-- explicit 0..3 loop and a (low n) tag on thin tiers (0 < n < 10, D-18)
+local function printClawShredTable(cs)
+    io.write('  bleed  spell   n  avg dmg   avg dmg/e  single-cast avg\n')
+    local spells = { 'claw', 'shred' }
+    for tier = 0, 3 do
+        for si = 1, 2 do
+            local sp = spells[si]
+            local b = cs.buckets[sp][tier]
+            local tag = ''
+            if b.n > 0 and b.n < 10 then
+                tag = ' (low n)'
+            end
+            io.write(string.format('  %d     %-6s %3d  %8s  %10s  %8s%s\n',
+                tier, sp, b.n, fmtDmg(b.avgDmg), fmtEff(b.avgEff), fmtDmg(b.avgRaw), tag))
+        end
+    end
+end
+
+-- OOC tier table (behind-position samples only, D-19): single-cast average
+-- damage per tier
+local function printOocTable(oc)
+    io.write('  OOC (behind): bleed  spell   n  single-cast avg dmg\n')
+    local spells = { 'claw', 'shred' }
+    for tier = 0, 3 do
+        for si = 1, 2 do
+            local sp = spells[si]
+            local b = oc.buckets[sp][tier]
+            io.write(string.format('  %13d  %-6s %3d  %8s\n',
+                tier, sp, b.n, fmtDmg(b.avgDmg)))
+        end
+    end
+end
+
+-- bite regression section (D-20): usable fits print n / a / b / x range
+-- plus the two x formulas; guarded fits print the reason and skip the
+-- slope output
+local function printBiteLine(reg)
+    if reg.usable then
+        io.write('  bite regression (5cp): n=' .. tostring(reg.n) ..
+            '  dmg = ' .. fmtDmg(reg.a) .. ' + ' .. fmtEff(reg.b) ..
+            ' * x  x in [' .. fmtDmg(reg.xRange.min) .. ' .. ' ..
+            fmtDmg(reg.xRange.max) .. ']\n')
+        io.write('  model: x = energyPool - 35 (regular) or energyPool - 0 (OOC)\n')
+    elseif reg.reason == 'n<3' then
+        io.write('  bite regression (5cp): ' .. reg.reason .. ' (n=' .. tostring(reg.n) .. ')')
+        if reg.avgDmg ~= nil then
+            io.write('  avg dmg ' .. fmtDmg(reg.avgDmg))
+        end
+        io.write('\n')
+    else
+        io.write('  bite regression (5cp): ' .. reg.reason .. ' (n=' .. tostring(reg.n) .. ')\n')
+    end
+end
+
+-- terminal report (D-16/D-17): one section per batch (claw/shred tier
+-- table, OOC tier table, bite line), an aggregate section over the whole
+-- sample, the decision lines and a tail with the drop counters. All loops
+-- iterate bleedCount 0..3 and batches in ascending order explicitly.
+function printReport(res)
+    local sep = string.rep('=', 64)
+    local batches = res.batches
+    for bi = 1, countList(batches) do
+        local b = batches[bi]
+        io.write(sep .. '\n')
+        io.write('batch ' .. tostring(b.batch) .. ' (' .. tostring(b.n) .. ' samples)\n')
+        printClawShredTable(b.clawShred)
+        printOocTable(b.oocTiers)
+        printBiteLine(b.bite)
+    end
+    io.write(sep .. '\n')
+    io.write('aggregate (all batches)\n')
+    printClawShredTable(res.aggregate.clawShred)
+    printOocTable(res.aggregate.oocTiers)
+    printBiteLine(res.aggregate.biteRegression)
+    io.write('decisions:\n')
+    for i = 1, countList(res.decisions) do
+        io.write('  ' .. res.decisions[i] .. '\n')
+    end
+    if res.dropped.badLines > 0 then
+        io.write('warning: ' .. tostring(res.dropped.badLines) ..
+            ' malformed [cpDamage] lines skipped\n')
+    end
+    if res.dropped.invalidFields > 0 then
+        io.write('warning: ' .. tostring(res.dropped.invalidFields) ..
+            ' entries dropped for invalid fields\n')
+    end
+    if res.truncated then
+        io.write('warning: entry cap ' .. tostring(MAX_ENTRIES) ..
+            ' reached, remaining lines ignored\n')
+    end
+end
+
+-- json result archive (D-16): encodeValue builds the whole document from
+-- the res table through encodeScalar (the same scalar contract as the
+-- in-game encoder). An io.open failure prints the error and exits 1.
+function writeJsonOut(path, res)
+    local file = io.open(path, 'w')
+    if not file then
+        io.write('cannot open json output file for writing: ' .. tostring(path) .. '\n')
+        os.exit(1)
+    end
+    file:write(encodeValue(res), '\n')
+    file:close()
+end
+
+-- full self-test battery (D-15 runtime carrier): one SV-form fixture built
+-- entirely inside this script (no external file reads or writes, no
+-- .planning/samples references), rounded through extract / getMessages /
+-- parseEntries, plus direct unit tests on the decoder, the bucket math,
+-- the regression constants and the decision lines. Any failure prints a
+-- FAIL line and exits 1; a clean run prints the ALL PASSED banner and
+-- exits 0. The fixture serializes double quotes through string.char(34)
+-- so no bare quote byte can confuse the bracket gate's strip order.
+function runSelftest()
+    local passed = 0
+    local function check(cond, label)
+        if cond then
+            passed = passed + 1
+        else
+            io.write('selftest: FAIL - ' .. label .. '\n')
+            os.exit(1)
+        end
+    end
+    local DQ = string.char(34)
+    local function ntext(v)
+        if v == math.floor(v) then
+            return string.format('%.0f', v)
+        end
+        return tostring(v)
+    end
+    local function btext(v)
+        if v then
+            return 'true'
+        end
+        return 'false'
+    end
+    -- fixed 11-field JSON body in the U-03 emitter order
+    -- (spell dmg crit e energyPool bleedCount isOoc isBehind cp t batch)
+    local function body(spell, dmg, crit, e, pool, bleed, ooc, behind, cp, t, batch)
+        return '{"spell":"' .. spell .. '","dmg":' .. ntext(dmg) ..
+            ',"crit":' .. btext(crit) .. ',"e":' .. ntext(e) ..
+            ',"energyPool":' .. ntext(pool) .. ',"bleedCount":' .. ntext(bleed) ..
+            ',"isOoc":' .. btext(ooc) .. ',"isBehind":' .. btext(behind) ..
+            ',"cp":' .. ntext(cp) .. ',"t":' .. ntext(t) ..
+            ',"batch":' .. ntext(batch) .. '}'
+    end
+    -- one messages ring line the way the client writes it: [N] = "body"
+    -- with the inner double quotes backslash-escaped
+    local function line(n, raw)
+        local escaped = string.gsub(raw, DQ, '\\' .. DQ)
+        return '\t\t[' .. tostring(n) .. '] = ' .. DQ .. escaped .. DQ .. ',\n'
+    end
+    local fix = 'MACRO_TORCH_LOG = {\n' ..
+        '\t["messages"] = {\n'
+    fix = fix .. line(1, '[cpDamage] ' .. body('claw', 210, false, 45, 60, 0, false, true, 2, 100.1, 1000))
+    fix = fix .. line(2, '[cpDamage] ' .. body('claw', 262, false, 45, 55, 1, false, true, 1, 103.4, 1000))
+    fix = fix .. line(3, '[cpDamage] ' .. body('claw', 318, true, 45, 70, 2, false, true, 3, 106.7, 1000))
+    fix = fix .. line(4, '[cpDamage] ' .. body('shred', 390, false, 60, 80, 1, false, true, 2, 110.0, 2000))
+    fix = fix .. line(5, '[cpDamage] ' .. body('shred', 410, true, 60, 90, 3, false, true, 4, 112.5, 2000))
+    fix = fix .. line(6, '[cpDamage] ' .. body('bite', 415, false, 35, 45, 1, false, true, 5, 115.0, 2000))
+    fix = fix .. line(7, '[cpDamage] ' .. body('bite', 430, true, 35, 60, 2, false, true, 5, 118.2, 2000))
+    fix = fix .. line(8, '[cpDamage] ' .. body('bite', 445, false, 35, 85, 1, true, true, 5, 121.0, 3000))
+    fix = fix .. line(9, '[cpDamage] {"spell":"claw","dmg":210,')
+    fix = fix .. line(10, '[cpBuild] Claw t=1.0 cp=2 e=55')
+    fix = fix .. '\t},\n}\n'
+    local EXPECT_LINE1 = '[cpDamage] {\\"spell\\":\\"claw\\",\\"dmg\\":210,\\"crit\\":false,\\"e\\":45,\\"energyPool\\":60,\\"bleedCount\\":0,\\"isOoc\\":false,\\"isBehind\\":true,\\"cp\\":2,\\"t\\":100.1,\\"batch\\":1000}'
+    check(string.find(fix, EXPECT_LINE1, 1, true) ~= nil,
+        'fixture line 1 carries the hand-written 11-field literal byte for byte')
+    local block, extractErr = extractMacroTorchLog(fix)
+    check(block ~= nil, 'fixture extraction succeeds (' .. tostring(extractErr) .. ')')
+    local pack, packErr = getMessages(block)
+    check(pack ~= nil and pack.ok, 'fixture sandbox run succeeds (' .. tostring(packErr) .. ')')
+    check(pack ~= nil and pack.ok and countList(pack.messages) == 10,
+        'fixture message count is 10')
+    local pr = parseEntries(pack.messages)
+    check(countList(pr.entries) == 8, 'fixture yields 8 valid entries')
+    check(pr.badLines == 1, 'fixture yields exactly 1 bad line')
+    check(pr.invalidFields == 0, 'fixture yields 0 invalid-field drops')
+    check(pr.truncated == false, 'fixture does not truncate')
+    local cs = buildClawShredBuckets(pr.entries)
+    check(cs.buckets.claw[0].n == 1 and cs.buckets.claw[1].n == 1 and
+        cs.buckets.claw[2].n == 1 and cs.buckets.claw[3].n == 0,
+        'claw tier sample counts are 1/1/1/0')
+    check(cs.buckets.shred[0].n == 0 and cs.buckets.shred[1].n == 1 and
+        cs.buckets.shred[2].n == 0 and cs.buckets.shred[3].n == 1,
+        'shred tier sample counts are 0/1/0/1')
+    check(cs.aggregate.n == 5, 'claw/shred aggregate count is 5')
+    check(math.abs(cs.buckets.claw[0].avgEff - 210 / 45) < 0.001,
+        'claw tier 0 avgEff equals 210 / 45')
+    check(math.abs(cs.buckets.claw[1].avgEff - 262 / 45) < 0.001,
+        'claw tier 1 avgEff equals 262 / 45')
+    check(math.abs(cs.buckets.claw[2].avgEff - 318 / 45) < 0.001,
+        'claw tier 2 avgEff equals 318 / 45')
+    check(math.abs(cs.buckets.shred[1].avgEff - 390 / 60) < 0.001,
+        'shred tier 1 avgEff equals 390 / 60')
+    check(math.abs(cs.buckets.shred[3].avgEff - 410 / 60) < 0.001,
+        'shred tier 3 avgEff equals 410 / 60')
+    check(cs.buckets.claw[0].avgDmg == 210 and cs.buckets.claw[0].avgRaw == 210,
+        'claw tier 0 avgDmg and avgRaw are both 210')
+    local oc = buildOocTiers(pr.entries)
+    check(oc.buckets.claw[0].n == 0 and oc.buckets.shred[3].n == 0,
+        'OOC tier table stays empty for non-OOC claw/shred samples')
+    local fr = computeBiteRegression(pr.entries)
+    check(fr.usable and fr.n == 3, 'fixture bite regression is usable with 3 pooled samples')
+    local ctrl = {
+        { spell = 'bite', dmg = 100, cp = 5, energyPool = 35, isOoc = false },
+        { spell = 'bite', dmg = 120, cp = 5, energyPool = 45, isOoc = false },
+        { spell = 'bite', dmg = 140, cp = 5, energyPool = 55, isOoc = false },
+    }
+    local rc = computeBiteRegression(ctrl)
+    check(rc.usable and math.abs(rc.b - 2) < 0.001 and math.abs(rc.a - 100) < 0.001,
+        'controlled regression fits b=2 and a=100')
+    check(rc.xRange.min == 0 and rc.xRange.max == 20,
+        'controlled regression x range is 0..20')
+    local mObj = decodeJson('{"s":"a\\nb","n":12.5,"neg":-3,"t":true,"f":false,"z":null}')
+    check(type(mObj) == 'table' and mObj['s'] == 'a' .. '\n' .. 'b',
+        'decoder object and string escape round trip')
+    check(mObj['n'] == 12.5 and mObj['neg'] == -3, 'decoder number forms')
+    check(mObj['t'] == true and mObj['f'] == false, 'decoder boolean forms')
+    check(mObj['z'] == nil, 'decoder null form yields a nil value')
+    local mArr = decodeJson('[1,"two",false]')
+    check(type(mArr) == 'table' and mArr[1] == 1 and mArr[2] == 'two' and mArr[3] == false,
+        'decoder array form')
+    local mSci = decodeJson('1.5e2')
+    check(mSci == 150, 'decoder scientific number form')
+    local mSlash = decodeJson('{"p":"a\\/b"}')
+    check(mSlash['p'] == 'a/b', 'decoder forward slash escape')
+    local mUni = decodeJson('{"u":"\\u0041"}')
+    check(mUni['u'] == 'A', 'decoder unicode escape')
+    local bad1, badErr1 = decodeJson('{"a":')
+    check(bad1 == nil and badErr1 ~= nil, 'malformed JSON returns nil plus an error')
+    local bad2, badErr2 = decodeJson('nope')
+    check(bad2 == nil and badErr2 ~= nil, 'non-JSON token returns nil plus an error')
+    local statsRef = {
+        clawShred = cs,
+        oocTiers = oc,
+        biteRegression = fr,
+    }
+    local decs = decisionLines(statsRef)
+    check(countList(decs) > 0, 'decision lines are generated')
+    check(string.sub(decs[1], 1, 6) == 'Tier 0', 'first decision line opens with the tier 0 bucket')
+    io.write('selftest: ALL ' .. tostring(passed) .. ' PASSED\n')
+    os.exit(0)
+end
+
 -- usage text with the three subcommand forms
 function printUsage()
     io.write('usage: lua tools/cpdamage.lua <path/to/SuperMacro.lua>\n')
@@ -919,11 +1266,11 @@ function printUsage()
     io.write('usage: lua tools/cpdamage.lua ' .. FLAG_SELFTEST .. '\n')
 end
 
--- CLI entry: parse the arguments, then read -> extract -> sandbox ->
--- messages -> validated entries. The first non-flag argument is the
+-- CLI entry: parse the arguments, then either run the self-test battery or
+-- the full read -> extract -> sandbox -> decode -> stats -> report chain
+-- with the optional json archive. The first non-flag argument is the
 -- SavedVariables path; the json-out target and the selftest mode ride the
--- flag constants. Task 4 replaces the selftest placeholder with the full
--- battery and wires the statistics/report chain behind this point.
+-- flag constants. The self-test path touches no external files.
 function main(args)
     if not args or not args[1] then
         printUsage()
@@ -957,8 +1304,8 @@ function main(args)
         end
     end
     if selftestMode then
-        io.write('full selftest lands in Task 4\n')
-        os.exit(0)
+        runSelftest()
+        return
     end
     if svPath == nil then
         printUsage()
@@ -987,16 +1334,29 @@ function main(args)
         io.write(pack.reason .. '\n')
         os.exit(0)
     end
-    io.write('macrotorch log: ' .. tostring(countList(pack.messages)) .. ' messages loaded\n')
     local parsed = parseEntries(pack.messages)
-    io.write('entries: ' .. tostring(countList(parsed.entries)) .. '\n')
-    if parsed.badLines > 0 then
-        io.write('warning: ' .. tostring(parsed.badLines) ..
-            ' malformed [cpDamage] lines skipped\n')
-    end
-    if parsed.invalidFields > 0 then
-        io.write('warning: ' .. tostring(parsed.invalidFields) ..
-            ' entries dropped for invalid fields\n')
+    local statsRef = {
+        clawShred = buildClawShredBuckets(parsed.entries),
+        oocTiers = buildOocTiers(parsed.entries),
+        biteRegression = computeBiteRegression(parsed.entries),
+    }
+    local res = {
+        generatedAt = os.date('!%Y-%m-%dT%H:%M:%SZ'),
+        source = svPath,
+        batches = buildPerBatchStats(parsed.entries),
+        aggregate = {
+            clawShred = statsRef.clawShred,
+            oocTiers = statsRef.oocTiers,
+            biteRegression = statsRef.biteRegression,
+        },
+        decisions = decisionLines(statsRef),
+        dropped = { badLines = parsed.badLines, invalidFields = parsed.invalidFields },
+        truncated = parsed.truncated,
+    }
+    printReport(res)
+    if jsonOutPath ~= nil then
+        writeJsonOut(jsonOutPath, res)
+        io.write('json result written to ' .. jsonOutPath .. '\n')
     end
     os.exit(0)
 end
