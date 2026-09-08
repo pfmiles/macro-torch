@@ -11,9 +11,9 @@ progress:
   total_plans: 61
   completed_plans: 61
 milestone_name: milestone
-last_activity: 2026-09-07
+last_activity: 2026-09-09
 current_phase_name: catAtk claw/shred/bite damage instrumentation — opt-in combat log + offline analyzer
-last_activity_desc: "Completed quick task 260907-vve: macroTorch.LOG_MAX_SIZE persistent-log cap (default 500) + sanitized trim limit + config banner entry"
+last_activity_desc: "Completed quick task 260909-2kd: rawdiag2 scout 150-line cap removed — disarms only on the 60s window (fades noise had been tripping the cap in ~24s and wasting a CD forensics run)"
 ---
 
 # Project State
@@ -246,6 +246,7 @@ last_activity_desc: "Completed quick task 260907-vve: macroTorch.LOG_MAX_SIZE pe
 | 260907-mhh | RAWDIAG2 Rip landing 取证插桩（多猫 landing 抑制就地验证）：RAW_COMBATLOG 白名单前 scout + pair ledger + safeRip 决策戳，纯增量 | 2026-09-07 | 953bd50 | [260907-mhh-rip-landing-rawdiag-forensics-build-1-co](./quick/260907-mhh-rip-landing-rawdiag-forensics-build-1-co/) |
 | 260907-tuh | Cower 世界首领仇恨阈值可配置化：Druid.lua:909 硬编码赋值迁移为 macro_torch.lua nil-guard 默认 75 + CONFIG_OPTIONS 第三项进登录横幅，/run 会话级覆盖 | 2026-09-07 | 1a8bb19 | [260907-tuh-cower-threat-threshold-75](./quick/260907-tuh-cower-threat-threshold-75/) |
 | 260907-vve | macroTorch.log 持久化上限可配置化：新增 macroTorch.LOG_MAX_SIZE nil-guard 默认 500 + CONFIG_OPTIONS 第四项进横幅，裁剪上限改读带 tonumber+clamp 净化的局部值（0/负数钳到 1，非法值回落 500）+ Cat T-01 自测，per-session 语义 | 2026-09-07 | cb0fcd3 | [260907-vve-add-macrotorch-log-max-size-global-confi](./quick/260907-vve-add-macrotorch-log-max-size-global-confi/) |
+| 260909-2kd | 移除 RAWDIAG2 侦察器 150 行采集上限：只保留 60s 时间窗口 disarm（混战中 'fades' 噪声 ~24s 即触顶、浪费 CD 取证机会；LOG_MAX_SIZE 已上调 2000 兜底音量），_rawdiag2Lines 计数保留用于 dump 统计 | 2026-09-09 | 139250b | [260909-2kd-rawdiag2-forensics-scout-150-150-24-fade](./quick/260909-2kd-rawdiag2-forensics-scout-150-150-24-fade/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
