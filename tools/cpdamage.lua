@@ -718,6 +718,199 @@ function parseEntries(messages)
         truncated = truncated, minBatch = minBatch, maxBatch = maxBatch }
 end
 
+-- stats section (D-17..D-20): three pure functions plus the per-batch
+-- grouping. Every function reads entries as-is, never mutates them, and
+-- builds fresh result tables (idempotent). All iteration is explicit - the
+-- report path never relies on pairs ordering.
+
+-- one bucket per spell and bleedCount tier for claw/shred (4 tiers per
+-- spell plus an aggregate bucket). Column semantics locked here to avoid
+-- execution ambiguity:
+--   avgDmg  = per-tier damage mean, sumDmg / n                     (D-18 avg dmg)
+--   avgEff  = mean of the per-sample dmg/e ratios: each sample is
+--             divided first, summed, then divided by n              (D-18 avg dmg / e)
+--   avgRaw  = raw single-cast damage mean, sumDmg / n with no
+--             energy division at all                                (D-18 per-tier single avg)
+-- Buckets with zero samples keep nil average fields; the report layer
+-- renders those as '-' (Task 4).
+function buildClawShredBuckets(entries)
+    local spells = { 'claw', 'shred' }
+    local acc = {}
+    for si = 1, 2 do
+        local sp = spells[si]
+        acc[sp] = {}
+        for tier = 0, 3 do
+            acc[sp][tier] = { n = 0, sumDmg = 0, sumEff = 0 }
+        end
+    end
+    local agg = { n = 0, sumDmg = 0, sumEff = 0 }
+    local total = countList(entries)
+    for i = 1, total do
+        local e = entries[i]
+        if e.spell == 'claw' or e.spell == 'shred' then
+            local b = acc[e.spell][e.bleedCount]
+            b.n = b.n + 1
+            b.sumDmg = b.sumDmg + e.dmg
+            b.sumEff = b.sumEff + e.dmg / e.e
+            agg.n = agg.n + 1
+            agg.sumDmg = agg.sumDmg + e.dmg
+            agg.sumEff = agg.sumEff + e.dmg / e.e
+        end
+    end
+    local function finalize(b)
+        if b.n == 0 then
+            return { n = 0, avgDmg = nil, avgEff = nil, avgRaw = nil }
+        end
+        return {
+            n = b.n,
+            avgDmg = b.sumDmg / b.n,
+            avgEff = b.sumEff / b.n,
+            avgRaw = b.sumDmg / b.n,
+        }
+    end
+    local buckets = {}
+    for si = 1, 2 do
+        local sp = spells[si]
+        local ob = {}
+        for tier = 0, 3 do
+            ob[tier] = finalize(acc[sp][tier])
+        end
+        buckets[sp] = ob
+    end
+    return { buckets = buckets, aggregate = finalize(agg) }
+end
+
+-- OOC tier table (D-19): only samples with isOoc == true AND isBehind ==
+-- true enter this table (front-position shred is unusable, so face samples
+-- never vote). Bucketed by bleedCount 0..3 per spell; the metric is the
+-- single-cast average damage and the sample count.
+function buildOocTiers(entries)
+    local spells = { 'claw', 'shred' }
+    local acc = {}
+    for si = 1, 2 do
+        local sp = spells[si]
+        acc[sp] = {}
+        for tier = 0, 3 do
+            acc[sp][tier] = { n = 0, sumDmg = 0 }
+        end
+    end
+    local total = countList(entries)
+    for i = 1, total do
+        local e = entries[i]
+        if (e.spell == 'claw' or e.spell == 'shred') and e.isOoc and e.isBehind then
+            local b = acc[e.spell][e.bleedCount]
+            b.n = b.n + 1
+            b.sumDmg = b.sumDmg + e.dmg
+        end
+    end
+    local buckets = {}
+    for si = 1, 2 do
+        local sp = spells[si]
+        local ob = {}
+        for tier = 0, 3 do
+            local b = acc[sp][tier]
+            if b.n == 0 then
+                ob[tier] = { n = 0, avgDmg = nil }
+            else
+                ob[tier] = { n = b.n, avgDmg = b.sumDmg / b.n }
+            end
+        end
+        buckets[sp] = ob
+    end
+    return { buckets = buckets }
+end
+
+-- bite marginal-conversion least squares (D-20): 5cp bite samples only.
+-- x uses the two locked formulas: regular samples x = energyPool - 35, OOC
+-- samples x = energyPool - 0 (the full pool converts). Single-pass
+-- accumulation of n/sx/sy/sxx/sxy (all doubles, Lua 5.0), then
+-- b = (n*sxy - sx*sy) / den with den = n*sxx - sx*sx, a = (sy - b*sx) / n.
+-- Guards: n < 3 yields the mean only with a warning; a zero denominator
+-- (all x equal) declares no slope. dmg/energyPool hygiene was already
+-- enforced at parse time, so no re-checking here.
+function computeBiteRegression(entries)
+    local n = 0
+    local sx = 0
+    local sy = 0
+    local sxx = 0
+    local sxy = 0
+    local sumDmg = 0
+    local xMin = nil
+    local xMax = nil
+    local total = countList(entries)
+    for i = 1, total do
+        local e = entries[i]
+        if e.spell == 'bite' and e.cp == 5 then
+            local x = e.energyPool
+            if not e.isOoc then
+                x = e.energyPool - 35
+            end
+            n = n + 1
+            sx = sx + x
+            sy = sy + e.dmg
+            sxx = sxx + x * x
+            sxy = sxy + x * e.dmg
+            sumDmg = sumDmg + e.dmg
+            if xMin == nil or x < xMin then
+                xMin = x
+            end
+            if xMax == nil or x > xMax then
+                xMax = x
+            end
+        end
+    end
+    if n < 3 then
+        if n == 0 then
+            return { usable = false, reason = 'n<3', n = 0, avgDmg = nil }
+        end
+        return { usable = false, reason = 'n<3', n = n, avgDmg = sumDmg / n }
+    end
+    local den = n * sxx - sx * sx
+    if den == 0 then
+        return { usable = false, reason = 'zero denominator (all x equal)', n = n }
+    end
+    local b = (n * sxy - sx * sy) / den
+    local a = (sy - b * sx) / n
+    return { usable = true, n = n, a = a, b = b, xRange = { min = xMin, max = xMax } }
+end
+
+-- D-17 first layer: group entries by numeric batch key, iterate the batches
+-- ascending via an explicit sort (no pairs ordering), and run the three
+-- stat passes per batch. Returns an array of per-batch tables; the caller
+-- re-runs the same passes over the whole list for the aggregate layer.
+function buildPerBatchStats(entries)
+    local byBatch = {}
+    local total = countList(entries)
+    for i = 1, total do
+        local e = entries[i]
+        local list = byBatch[e.batch]
+        if list == nil then
+            list = {}
+            byBatch[e.batch] = list
+        end
+        table.insert(list, e)
+    end
+    local keys = {}
+    for k, _ in pairs(byBatch) do
+        table.insert(keys, k)
+    end
+    table.sort(keys, function(a, b)
+        return a < b
+    end)
+    local out = {}
+    for i = 1, countList(keys) do
+        local batchEntries = byBatch[keys[i]]
+        table.insert(out, {
+            batch = keys[i],
+            n = countList(batchEntries),
+            clawShred = buildClawShredBuckets(batchEntries),
+            oocTiers = buildOocTiers(batchEntries),
+            bite = computeBiteRegression(batchEntries),
+        })
+    end
+    return out
+end
+
 -- usage text with the three subcommand forms
 function printUsage()
     io.write('usage: lua tools/cpdamage.lua <path/to/SuperMacro.lua>\n')
