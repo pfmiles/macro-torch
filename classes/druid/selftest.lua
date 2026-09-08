@@ -1257,11 +1257,20 @@ end, true)
 				isOoc = false, isBehind = false, e = 42, batch = 1000 } })
 		macroTorch.loginContext = fakeLoginContext
 		local remaining = -1
+		local remainingAfterRake = -1
 		local pcallRes = pcall(function()
 			macroTorch.onCpDamageLine('Your Claw was dodged by 0xf1300000cafe0001.', GetTime())
 			remaining = 0
 			for _ in ipairs(fakeLoginContext.cpDamageIntents.elements) do
 				remaining = remaining + 1
+			end
+			-- WR-02: a Rake damage line (Rake is not cpDamage-sampled) is
+			-- dropped by the spell whitelist and must NOT consume the pending
+			-- claw intent the dodge line left behind.
+			macroTorch.onCpDamageLine('Your Rake hits 0xf1300000cafe0001 for 150.', GetTime())
+			remainingAfterRake = 0
+			for _ in ipairs(fakeLoginContext.cpDamageIntents.elements) do
+				remainingAfterRake = remainingAfterRake + 1
 			end
 		end)
 		macroTorch.loginContext = savedLoginContext
@@ -1271,6 +1280,8 @@ end, true)
 		assert(macroTorch.tableLen(captured) == 0,
 			"U-07 expected zero emitted lines for a dodge, got " .. tostring(macroTorch.tableLen(captured)))
 		assert(remaining == 1, "U-07 expected the dodge NOT to consume the intent, got " .. tostring(remaining))
+		assert(remainingAfterRake == 1,
+			"U-07 expected the Rake line NOT to consume the claw intent (WR-02), got " .. tostring(remainingAfterRake))
 	end, true)
 
 	macroTorch.SelfTest:register("Cat U-08: crits damage line marks crit true in the [cpDamage] JSON", function()
