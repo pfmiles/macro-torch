@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 status: in_progress
-stopped_at: Completed 28-03-PLAN.md (full cpdamage.lua offline analyzer)
-last_updated: "2026-09-08T13:52:16.420Z"
-state_head: a163fff03eaf76d07640eafbc237fe1ead0f7591
+stopped_at: Completed 28-04-PLAN.md (user-machine UAT script + closing battery)
+last_updated: "2026-09-08T14:01:17.717Z"
+state_head: 32407334c4a81f773add896c69ba7dc782220f71
 progress:
   total_phases: 27
   completed_phases: 12
   total_plans: 61
-  completed_plans: 60
+  completed_plans: 61
 milestone_name: milestone
 last_activity: 2026-09-07
 current_phase_name: catAtk claw/shred/bite damage instrumentation — opt-in combat log + offline analyzer
@@ -22,7 +22,7 @@ last_activity_desc: "Completed quick task 260907-vve: macroTorch.LOG_MAX_SIZE pe
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 28 — catAtk claw/shred/bite damage instrumentation（3/4 plans：28-03 离线分析器完整版完成）
+- **Current Phase**: Phase 28 — catAtk claw/shred/bite damage instrumentation（4/4 plans：28-04 UAT 脚本 + 收尾电池完成，剩 verifier 阶段末 UAT）
 - **Active Branch**: main
 
 ## Phase Progress
@@ -53,7 +53,7 @@ last_activity_desc: "Completed quick task 260907-vve: macroTorch.LOG_MAX_SIZE pe
 | Phase 25: Hunter 一键宏改造 — Druid 对齐架构 | ✅ complete | 2026-08-18 | 2026-08-19 | 3/3 plans |
 | Phase 26: 猫德 fast 战斗逻辑 | ✅ complete | 2026-08-21 | 2026-08-22 | 3/3 plans |
 | Phase 27: catAtk event-driven land tracing refactor | ✅ complete | 2026-08-28 | 2026-08-29 | 3/3 plans |
-| Phase 28: catAtk claw/shred/bite damage instrumentation | 🟡 in_progress | 2026-09-08 | — | 3/4 plans |
+| Phase 28: catAtk claw/shred/bite damage instrumentation | ✅ complete | 2026-09-08 | 2026-09-08 | 4/4 plans |
 
 ## Accumulated Context
 
@@ -163,6 +163,7 @@ last_activity_desc: "Completed quick task 260907-vve: macroTorch.LOG_MAX_SIZE pe
 | Phase 28 P01 | 12 | 3 tasks | 7 files |
 | Phase 28-cat-druid-claw-shred-bite-claw-shred-bite-catatk-catatk-mac P02 | 345 | 2 tasks | 2 files |
 | Phase 28 P03 | 18 | 4 tasks | 1 files |
+| Phase 28 P04 | 3 | 2 tasks | 2 files |
 
 ## Decisions
 
@@ -205,11 +206,14 @@ last_activity_desc: "Completed quick task 260907-vve: macroTorch.LOG_MAX_SIZE pe
 - [Phase ?]: Phase 28-02: Category U U-01..U-09 (isOptional=true) pin D-03/D-05/D-06/D-07; U-09 stubs the full gate chain incl. context batch with CR-01 snapshot/restore
 - [Phase ?]: Phase 28-03: analyzer double-quote bytes inside source strings spelled via string.char(34) — bbcheck's quote-first strip order mis-pairs bare quotes across the decoder (proven with a mirror replace-pipeline debugger; impl_util's encoder block is the proven-safe raw-quote exception)
 - [Phase ?]: Phase 28-03: avgDmg/avgEff/avgRaw bucket semantics locked verbatim (avgEff = per-sample dmg/e mean, avgRaw = no energy division); bite regression x = energyPool−35 (regular) / energyPool−0 (OOC); json-out numbers integral-or-%.4f for cross-version stable archives
+- [Phase ?]: Phase 28-04: R8 anchor corrected to the real symbol name shouldDoReshift (stale canDoReshift from docs commit 10db348) rather than renaming decision-file code
+- [Phase ?]: Phase 28-04: HUMAN-UAT.md gains a 6-section Phase 28 user-machine acceptance script; the 4-item closed-loop human-check rides human_verify_mode=end-of-phase into the verifier's 28-UAT.md (no mid-plan checkpoints)
+- [Phase ?]: Phase 28-04: closing battery BATTERY_FAIL=0 with the corrected R8 anchor — 8-file bbcheck + build.sh + 6 product counts + R7 zero-path audit + Phase 27 pairLandIntent coexistence
 
 ## Session
 
-**Last session:** 2026-09-08T13:52:15.766Z
-**Stopped at:** Completed 28-03-PLAN.md (full cpdamage.lua offline analyzer)
+**Last session:** 2026-09-08T14:01:17.067Z
+**Stopped at:** Completed 28-04-PLAN.md (user-machine UAT script + closing battery)
 **Resume file:** None
 
 ## Quick Tasks Completed
