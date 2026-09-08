@@ -1,8 +1,8 @@
 ---
 phase: 28-cat-druid-claw-shred-bite-claw-shred-bite-catatk-catatk-mac
-reviewed: 2026-09-08T14:20:00Z
+reviewed: 2026-09-08T16:30:00Z
 depth: standard
-files_reviewed: 9
+files_reviewed: 10
 files_reviewed_list:
   - classes/druid/Druid.lua
   - classes/druid/HUMAN-UAT.md
@@ -10,113 +10,102 @@ files_reviewed_list:
   - core/combat_context.lua
   - core/events.lua
   - core/spell_trace_core.lua
+  - .gitignore
   - impl_util.lua
   - macro_torch.lua
   - tools/cpdamage.lua
 findings:
   critical: 0
-  warning: 2
-  info: 2
-  total: 4
+  warning: 1
+  info: 4
+  total: 5
 status: issues_found
 ---
 
-# Phase 28: Code Review Report
+# Phase 28: Code Review Report (Re-run after fixes)
 
 **Reviewed:** 2026-09-08
 **Depth:** standard
-**Files Reviewed:** 9
-**Status:** issues_found (2 warnings, 2 info; no critical)
+**Files Reviewed:** 10
+**Status:** issues_found (1 warning, 4 info; no critical)
 
 ## Summary
 
-Phase 28 delivers the claw/shred/bite damage-instrumentation chain: in-game sampling + intent pairing + fixed 11-field `[cpDamage]` JSON emission, and a standalone offline analyzer (`tools/cpdamage.lua`) with sandboxed SavedVariables extraction, strict JSON decode, bucket/regression stats, decision lines, and a self-contained 33-assertion selftest. The wiring holds up well under adversarial review; the notable verified positives are listed first, then four findings.
+This is the re-run of the phase-28 review after the fix iteration (commits 58735b4, c94af69). Both prior in-scope findings were verified as fixed in the working tree and are not re-opened:
 
-**Verified positives (evidence-driven, not just inspected):**
+- **Prior WR-01 (accessor shadowing in R6 selftests) — verified fixed.** `classes/druid/selftest.lua:393-401` (R6-01), `421-429` (R6-02), `451-459` (R6-03) now use the CR-01 discipline: `rawget` snapshot, own-key shadow, `pcall` around `shouldUseShred`, `rawset` restore BEFORE any assert. `rawset(player, 'isBehindAttackJustFailed', nil)` correctly removes the shadow and re-exposes the `PLAYER_FIELD_FUNC_MAP` `__index` accessor.
+- **Prior WR-02 (stale-intent spell mislabeling) — verified fixed.** `core/spell_trace_core.lua:269-297`: `onCpDamageLine` captures the spell name and whitelists Claw/Shred/Ferocious Bite BEFORE pairing; `pairCpDamageIntent(guid, now, want)` puts the spell gate inside the match condition (line 251), so a guid match with a spell mismatch consumes nothing and leaves the intent pending. The Cat U-07 selftest extends the dodge scenario with a Rake line (`selftest.lua:1267-1274`) and pins the invariant (`remainingAfterRake == 1`, zero emissions). Registration count `SelfTest:register("Cat U-0` == 9 preserved.
 
-1. **Cross-version claim empirically confirmed.** I downloaded and compiled Lua 5.0.3, 5.1.5 and 5.4.7 in the sandbox and ran the actual tool. `--selftest` passes on all three (`selftest: ALL 33 PASSED`, exit 0), and the real analysis mode (`lua tools/cpdamamage.lua <sv-file> --json-out ...`) produces identical bucket/regression output on all three versions. The `arg`-table layout difference across interpreter generations (a known trap) turns out to be a non-issue here: empirically `arg[0]` = script name and `arg[1]` = first CLI argument on 5.0, 5.1 and 5.4 alike, so `main(arg)` reads the right values everywhere.
-2. **Threat-model caps implemented as planned** (`tools/cpdamage.lua`): 32MB file cap (`MAX_FILE_BYTES`, readAll:51-65), 50k entry cap (`MAX_ENTRIES`, parseEntries:688-695), pcall-wrapped compile/execute/decode, and the exact-`[cpDamage] `-prefix + decode-success dual gate — all present.
-3. **GCD-probe nil discipline holds.** `interface_debug.lua:27-36` `isActionCooledDown` returns nil (not false) when the Rake texture is absent from all 172 slots; `cpBuildLogSample`/`cpDamageSample` warn once per login and refuse to fabricate GCD-ready rows (`Druid.lua:349-364, 379-418`), with per-login re-arm in `macro_torch.lua:67-71`. Selftest S-04 pins this.
-4. **`LOG_MAX_SIZE` clamp is real** (`interface_debug.lua:118-121`): `math.max(1, math.floor(n))` with 500 fallback — the trim loop can never hang on a 0/negative override, matching the `macro_torch.lua:51-55` comment.
-5. **No-SuperWoW degradation is coherent**: `entity/Unit.lua:103-110` makes `guid` nil without SuperWoW, `cpDamageCast` (Druid.lua:426-431) then plants nothing, and the RAW stream (the only cpDamage feed) does not exist either.
-6. **The Training Dummy gate is verbatim** `combo.lua:104-106`'s `isTargetDummy` expression (D-05), and `LRUStack.push` (periodic.lua:31-36) evicts the oldest element when full, so the 8-slot `cpDamageIntents` stack stays bounded.
-7. Category U selftests (9 tests) follow the CR-01 stub discipline (snapshot → shadow → capture → restore-before-assert), including the subtle `rawget/rawset` pairing for metatable-backed methods.
+The one new warning (WR-01 below) is a disabled-state inertness violation found by applying the special-focus mandate to the cast wrappers; the info items carry the two still-unfixed prior info findings plus two documentation items.
 
-Remaining findings below; none of them blocks the data-collection loop, but WR-02 corrupts the very dataset the tuning decisions are built on and WR-01 silently degrades live combat behavior for every druid.
+## Special Focus: Disabled-State Inertness Verification (cpDamageLog = false)
+
+The production default is `macroTorch.cpDamageLog = false` (nil-guard at `macro_torch.lua:61-63`). This section states the evidence per hook point.
+
+1. **`cpDamageSample` (Druid.lua:379-418)** — PASS with a caller-side caveat. The flag check is the first statement (`Druid.lua:380-382`), ahead of the Training Dummy gate, the batch lookup, the GCD probe (whose only mutation is the one-time `_cpDamageProbeWarned`), the bleed-count snapshot, and the table allocation at 405-417. When off, exactly one boolean test runs; no allocation, no GetTime, no counter mutation. **Caveat:** Lua evaluates call arguments before entering the function, so the caller-side argument expressions in `claw()`/`shred()` still execute when off — that is WR-01, the one finding below.
+2. **`cpBuildLogSample`** — PASS. Call sites use `macroTorch.cpBuildLog and macroTorch.cpBuildLogSample() or nil` (Druid.lua:26, 39, 52), short-circuiting the call entirely when off.
+3. **`cpDamageCast` (Druid.lua:425-436)** — PASS. Reachable only through `cast and cpDmg and cpDmg.gcdOk`; `cpDmg` is nil when the flag is off, so the function is never entered in the disabled state. Its internal guards (loginContext, guid, lazy stack allocation) run only in the enabled state.
+4. **Emission path (`cpDamageEvent`, spell_trace_core.lua:301-314)** — PASS. `cpDamageEvent` has no flag gate of its own, but a grep of all production call sites shows the only caller is `onCpDamageLine` (gated at line 270); the U-03 selftest call runs against a stubbed `macroTorch.log`. The `macroTorch.log` trim loop is bounded by the sanitized `LOG_MAX_SIZE` (`interface_debug.lua:118-119`); its cost profile is unchanged by phase 28.
+5. **RAW capture hook (events.lua:189-191)** — PASS. The flag is the FIRST operand of the `and` chain, ahead of the channel comparison, so when off there is no `GetTime()`, no string work, and zero allocation per RAW_COMBATLOG event. The event itself is only registered under SuperWoW (`events.lua:48-51`).
+6. **`onCpDamageLine` (spell_trace_core.lua:269-270)** — PASS. Internal flag gate first; none of the two `string.find` patterns runs when off. This is the double gate with hook 5.
+7. **`pairCpDamageIntent`** — PASS. Unreachable from production code when the flag is off (only callers: gated `onCpDamageLine` and selftests).
+
+**Per-frame/per-event state mutation while off:** none. The single unconditional phase-28 write is `macroTorch.context._cpDamageBatch = GetTime()` in `onCombatEnter` (`core/combat_context.lua:39`): one `GetTime()` plus one table store per combat ENTER (once per fight), not per frame or per event. Identified, quantified (negligible), and justified — the stamp is required for a mid-combat toggle-on to produce entries, and `onCombatExit`'s `context = {}` rebuild already clears it.
+
+**Verdict:** the disabled state is inert at every hook point except the caller-side argument evaluation documented as WR-01.
 
 ## Warnings
 
-### WR-01: Selftests permanently shadow `isBehindAttackJustFailed` on the live player, disabling the behind-fail suppression for the whole session
+### WR-01: claw()/shred() eagerly evaluate the energy-cost functions on every cast even when cpDamageLog is false — the disabled state is not free
 
-**File:** `classes/druid/selftest.lua:387` (also 409, 432)
-**Issue:** R6-01, R6-02 and R6-03 each run `macroTorch.player.isBehindAttackJustFailed = false` unconditionally. That key is not a plain field — it is a FIELD_FUNC_MAP accessor (`entity/Player.lua:598-601`, computed from `macroTorch.context.behindAttackFailedTime` with a 0.5s window). The metatable produced by `macroTorch.classMetatable` (`core/class.lua:21-33`) defines only `__index` (no `__newindex`), and Lua only consults `__index` when the raw key is absent — so the assignment writes a raw instance field on the session singleton that **shadows the accessor permanently**. Nothing restores it: the deferred post-login `SelfTest:run()` (events.lua:63-76) runs once after `onPlayerEnteringWorld()`, which is the last point at which the player object would be rebuilt, so every druid session auto-runs these tests about 30 frames after login and pins the value to `false` for the remainder of play (or until a reload). Consequences: `shouldUseShred` (Druid.lua:883, 889, 900, 903) and `leveling.lua:194, 207` never see `isBehindAttackJustFailed`, so immediately after a "You must be behind your target" failure the macro retries front-position Shred instead of suppressing for the 0.5s window — UI error spam plus slightly-worse builder decisions in real combat.
+**File:** `classes/druid/Druid.lua:27` and `40`
+**Issue:** `local cpDmg = macroTorch.cpDamageSample('claw', macroTorch.computeClaw_E())` evaluates `macroTorch.computeClaw_E()` as a function argument BEFORE `cpDamageSample` is called, so the flag gate inside `cpDamageSample` (line 380) can never suppress it. The same pattern repeats for shred (`computeShred_E()` at line 40). At the review baseline (`9287c3f^`), `claw()` passed `macroTorch.computeClaw_E` as a function reference, and `_castSpell` dereferences `resourceCost` only in the `mode ~= 'ready' and mode ~= 'raw'` branch (`entity/Player.lua` `_castSpell`), so the catAtk path `player.claw('ready')` (`combo.lua:398`) never evaluated it at all. The phase-28 instrumentation therefore added new per-cast work that runs with the switch OFF.
 
-This is pre-existing behavior of the R6 batch (Phase 22 era), but the file is in this phase's change set and the pollution affects live gameplay state, not just test reliability.
+Quantified cost per call while disabled:
+- `computeClaw_E()` = `isItemEquipped('Idol of Ferocity')` → `getEquippedItemSlot` (`biz_util.lua:344-352`, a 1..18 loop issuing `GetInventoryItemLink` per slot) + `talentRank('Ferocity')` → `getTalentRank` (`biz_util.lua:305-318`, a full GetNumTalentTabs × GetNumTalents scan of `GetTalentInfo` ≈ 50 WoW API calls).
+- `computeShred_E()` = one more full `getTalentRank('Improved Shred')` scan.
+So roughly 70-120 WoW API calls per accepted cast, once per GCD, that did not exist before phase 28 when the switch is off. In catAtk, `clickContext.CLAW_E`/`SHRED_E` are already computed per click (`combo.lua:59-60`), so this is a duplicate scan of the same deterministic value; for manual `/run macroTorch.player.claw('ready')` calls (the HUMAN-UAT protocol) it is entirely new cost. Logical output is unchanged (both functions are pure), so this violates the ZERO-performance-impact mandate but not ZERO-logical.
 
-**Fix:** Apply the same snapshot/restore discipline the Q/U batches use, or avoid touching the accessor entirely:
-
-```lua
-macroTorch.SelfTest:register("Principle R6-01: 0 bleeds OoC behind — use Shred", function()
-    local saved = rawget(macroTorch.player, 'isBehindAttackJustFailed')
-    macroTorch.player.isBehindAttackJustFailed = false
-    local ok, res = pcall(function()
-        -- ... existing ctx setup and assert logic (assert moved inside pcall) ...
-    end)
-    rawset(macroTorch.player, 'isBehindAttackJustFailed', saved) -- nil removes the shadow
-    assert(ok and res, "R6-01 failed")
-end, true)
-```
-
-Better still: since the accessor only reads `macroTorch.context.behindAttackFailedTime`, have the three tests write `macroTorch.context.behindAttackFailedTime = nil` inside a saved/restored `macroTorch.context` instead of assigning the player field at all.
-
-### WR-02: `onCpDamageLine` discards the parsed spell name — a stale intent can be consumed by a different skill's damage line, mislabeling [cpDamage] entries
-
-**File:** `core/spell_trace_core.lua:263-280` (pairing at 228-251)
-**Issue:** Both patterns capture only `guid` and `dmgStr`; the spell name sitting on the line is parsed and thrown away. `pairCpDamageIntent` matches on GUID + 2s window only, justified by the "exactly one intent per cast frame" comment (225-227) — but that invariant covers only sampled skills. Any `Your <spell> hits/crits <guid>` line on the RAW self-damage channel can consume a still-pending intent from a different skill. The concrete, rotation-reachable leak is **Rake**: `obj.rake` (Druid.lua:51-58) does not call `cpDamageSample` (per the D-06 range lock), yet Rake always produces "Your Rake hits/crits" lines, which arrive on `CHAT_MSG_SPELL_SELF_DAMAGE` — the exact channel gated at `events.lua:189-191`. Sequence: Claw or Bite is dodged (intent stays pending, by design U-07), catAtk then refreshes Rake within the 2s window, the Rake hits line pairs with the stale Claw/Bite intent (newest-intent rule), and the entry is emitted as `{"spell":"claw"|"bite","dmg":<rake damage>}`. The analyzer (`validateEntry`) accepts it — it only rejects unknown spell tokens, not mismatches, and the GUID genuinely matches the dummy. Result: mislabeled rows silently pollute the claw/shred efficiency tiers and the 5cp bite regression, i.e., the exact numbers the D-21 decision lines turn into tuning advice.
-
-**Fix:** Capture the spell name and gate the pair on it (whitelist + token match):
+**Fix:** mirror the cpBuildLog short-circuit idiom already used two lines above, so the whole expression (including argument evaluation) is suppressed when off:
 
 ```lua
-local _, _, spellName, guid, dmgStr =
-    string.find(eventMsg, '^Your (.-) hits (0x[0-9A-Fa-f]+) for (%d+)%.')
-local crit = false
-if not guid then
-    _, _, spellName, guid, dmgStr =
-        string.find(eventMsg, '^Your (.-) crits (0x[0-9A-Fa-f]+) for (%d+)%.')
-    crit = true
-end
-if not guid then return end
-local want
-if spellName == 'Claw' then want = 'claw'
-elseif spellName == 'Shred' then want = 'shred'
-elseif spellName == 'Ferocious Bite' then want = 'bite' end
-if not want then return end  -- drop Rake / any unsampled skill's line
-local sample = macroTorch.pairCpDamageIntent(guid, now)
-if not sample or sample.spell ~= want then
-    return  -- mismatch: leave the intent pending for its own line
-end
+local cpDmg = macroTorch.cpDamageLog and
+    macroTorch.cpDamageSample('claw', macroTorch.computeClaw_E()) or nil
+-- shred:
+local cpDmg = macroTorch.cpDamageLog and
+    macroTorch.cpDamageSample('shred', macroTorch.computeShred_E()) or nil
 ```
 
-The `sample.spell ~= want` arm also protects the future case where unsampled casts get instrumented. A mismatch must NOT consume the intent — dropping only the line keeps U-07's semantics intuitive.
+`ferocious_bite` (line 68) already passes the literal 35 and needs no change.
 
 ## Info
 
-### IN-01: `avgDmg` and `avgRaw` are the same formula, so the report prints two always-identical columns
+### IN-01 (carried, unfixed): avgDmg and avgRaw are the same formula — two always-identical report columns
 
 **File:** `tools/cpdamage.lua:760-770` (rendered at 1017-1032)
-**Issue:** `finalize(b)` returns `avgDmg = b.sumDmg / b.n` and `avgRaw = b.sumDmg / b.n` — numerically identical for every bucket, so `printClawShredTable` shows two columns ("avg dmg" and "single-cast avg") that can never differ. This mirrors the locked 28-RESEARCH D-18 wording (both defined as `sumDmg / n`), so it is spec-level redundancy rather than an implementation slip, but readers of the report will look for a difference that does not exist and the decision layer (D-21) uses only `avgEff` and the OOC `avgDmg`, never `avgRaw`.
+**Issue:** `finalize(b)` sets `avgDmg = b.sumDmg / b.n` and `avgRaw = b.sumDmg / b.n`, so `printClawShredTable` prints two columns ("avg dmg" and "single-cast avg") that can never differ. This mirrors the locked D-18 wording (spec-level redundancy), and the decision layer reads only `avgEff` plus the OOC `avgDmg`.
+**Fix:** Drop one column, or give `avgRaw` distinct semantics via a plan/context tweak.
 
-**Fix:** Either drop one column from the table, or give `avgRaw` a distinct semantics (e.g., the per-tier mean rescaled to a fixed 45-energy claw baseline) — decide in a plan/context tweak and re-lock the U-03-style contract if the JSON archive carries it.
+### IN-02 (carried, unfixed): `load_chunk` is assigned but the sandbox branches test `loadstring` directly
 
-### IN-02: `load_chunk` is assigned but the sandbox branches test `loadstring` directly
+**File:** `tools/cpdamage.lua:205` (guard at 208-210, branches at 213 and 224)
+**Issue:** `local load_chunk = loadstring or load` only backs the existence guard; the branch conditions test `loadstring ~= nil`, so the variable carries no load-bearing logic and invites drift between the guard and the branches.
+**Fix:** Branch on `load_chunk` inside `loadBlockSandboxed` (with `load_chunk == load` as the 5.2+ discriminator), or delete the variable and guard with `if not loadstring and not load then`.
 
-**File:** `tools/cpdamage.lua:205`
-**Issue:** `local load_chunk = loadstring or load` only backs the existence guard at 208-210; the actual branch conditions at 213 and 224 test `loadstring ~= nil`, so the variable carries no load-bearing logic and invites a future drift where the guard and the branches disagree.
+### IN-03: HUMAN-UAT troubleshooting omits the Training-Dummy-name localization as a zero-sample cause
 
-**Fix:** Either branch on `load_chunk` inside `loadBlockSandboxed` (with `load_chunk == load` as the 5.2+ discriminator), or delete the variable and guard with `if not loadstring and not load then`.
+**File:** `classes/druid/HUMAN-UAT.md:218-222` (gate at `classes/druid/Druid.lua:383`)
+**Issue:** The D-05 dummy gate hard-codes the English substring `'Training Dummy'`. On a localized client (e.g. zhCN 训练假人) the gate never matches, so the phase-28 chain silently collects zero entries — a cause distinct from the documented A3 hits/crits-sentence localization (which section 6 already lists). The gate itself is the locked verbatim D-05 expression and should not be changed without a plan/context decision; the gap is the missing troubleshooting step.
+**Fix:** Add a fourth step to the section-6 troubleshooting chain (① .toc ② switch ③ GCD probe → ④ verify the dummy name matches `'Training Dummy'` in the client locale), noting that non-English clients need the gate localized in a follow-up decision.
+
+### IN-04: workflow file list carries a typo for the offline analyzer path
+
+**File:** review scope (workflow config), real file `tools/cpdamage.lua`
+**Issue:** The `files:` config for this review listed `tools/cpdamamage.lua` (double "ama"), which does not exist in the repository (only `tools/cpdamage.lua`). Downstream consumers keying on the config list would look for a nonexistent file.
+**Fix:** Correct the config to `tools/cpdamage.lua`; `files_reviewed_list` above already records the real path reviewed.
 
 ---
 
-_Reviewed: 2026-09-08T14:20:00Z_
+_Reviewed: 2026-09-08T16:30:00Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
