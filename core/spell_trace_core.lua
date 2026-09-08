@@ -222,10 +222,12 @@ function macroTorch.rawdiag2IntentDepth(spell)
 end
 -- cpDamage pairing (phase 28): purge/pair skeleton copied from pairLandIntent
 -- but without state/landAt - damage pairing carries no fail-wins semantics.
--- The spell-name dimension is guaranteed by the "exactly one intent per cast
--- frame" invariant (one action per press red line), so the pairing key is
--- guid + TTL window. Reuses macroTorch.LAND_INTENT_TTL (2s, D-02).
-function macroTorch.pairCpDamageIntent(guid, now)
+-- The pairing key is guid + TTL window by default; when `want` is given the
+-- paired intent's sample.spell must also equal it (WR-02: a stale intent must
+-- never be consumed by a different skill's damage line). A guid match whose
+-- spell mismatches matches nothing and consumes nothing, leaving the intent
+-- pending for its own line. Reuses macroTorch.LAND_INTENT_TTL (2s, D-02).
+function macroTorch.pairCpDamageIntent(guid, now, want)
     if not guid or not macroTorch.loginContext or not macroTorch.loginContext.cpDamageIntents then
         return nil
     end
@@ -237,12 +239,16 @@ function macroTorch.pairCpDamageIntent(guid, now)
             table.remove(stack.elements, i)
         end
     end
-    -- pair pass: newest intent whose guid matches inside the window
+    -- pair pass: newest intent whose guid (and, when given, spell) matches
+    -- inside the window. The spell gate lives inside the match condition on
+    -- purpose: a guid match with a spell mismatch must not consume the
+    -- intent, so the gate can never run after a table.remove.
     for i = macroTorch.tableLen(stack.elements), 1, -1 do
         local intent = stack.elements[i]
         if intent.guid ~= nil and intent.castAt <= now and
                 (now - intent.castAt) <= macroTorch.LAND_INTENT_TTL and
-                string.lower(intent.guid) == string.lower(guid) then
+                string.lower(intent.guid) == string.lower(guid) and
+                (want == nil or (intent.sample and intent.sample.spell == want)) then
             table.remove(stack.elements, i)
             return intent.sample
         end
@@ -264,16 +270,26 @@ function macroTorch.onCpDamageLine(eventMsg, now)
     if not macroTorch.cpDamageLog or not eventMsg then
         return
     end
-    local _, _, guid, dmgStr = string.find(eventMsg, '^Your .+ hits (0x[0-9A-Fa-f]+) for (%d+)%.')
+    local _, _, spellName, guid, dmgStr = string.find(eventMsg, '^Your (.-) hits (0x[0-9A-Fa-f]+) for (%d+)%.')
     local crit = false
     if not guid then
-        _, _, guid, dmgStr = string.find(eventMsg, '^Your .+ crits (0x[0-9A-Fa-f]+) for (%d+)%.')
+        _, _, spellName, guid, dmgStr = string.find(eventMsg, '^Your (.-) crits (0x[0-9A-Fa-f]+) for (%d+)%.')
         crit = true
     end
     if not guid then
         return
     end
-    local sample = macroTorch.pairCpDamageIntent(guid, now)
+    -- spell whitelist (WR-02): only sampled skills may consume a pending
+    -- intent. Any other spell's damage line (Rake in particular) is dropped
+    -- here, BEFORE pairing, so it can never touch the intent stack.
+    local want
+    if spellName == 'Claw' then want = 'claw'
+    elseif spellName == 'Shred' then want = 'shred'
+    elseif spellName == 'Ferocious Bite' then want = 'bite' end
+    if not want then
+        return
+    end
+    local sample = macroTorch.pairCpDamageIntent(guid, now, want)
     if not sample then
         return
     end
@@ -365,7 +381,7 @@ function macroTorch.processRawAuraApply(spellName, rawText, targetGuid, now)
     -- multi-feral scenario an allied Rip apply on the same target within our
     -- pending window can pair with our cast intent (<=2s land offset); fail
     -- events still resolve in our favor via fail-wins, and the silent
-    -- apply-suppression case is accepted per debug decisions #2/#6
+    -- apply-suppression case is accepted per debug decisions 2 and 6
     local intent = macroTorch.pairLandIntent(spellName, now)
     if intent then
         -- user-visible land feedback (restored per user request 2026-08-30):
