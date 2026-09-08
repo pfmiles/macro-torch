@@ -127,9 +127,11 @@ function macroTorch.recordCastTable(spell)
     -- recorded in-combat Rip cast (pure additive state recording; no existing
     -- branch, return value or scheduling is touched). The scout itself dumps in
     -- events.lua's RAW_COMBATLOG branch, before the channel whitelist. Every arm
-    -- resets the per-window line/sample counters and restarts the 60s window, so
-    -- in a repeat-cast fight each cast anchors a fresh full window (the decisive
-    -- multi-cat overlap evidence is per-cast). State lives only in
+    -- resets the line/sample counters and the capture runs until combat exit —
+    -- nothing disarms it before leaving combat. The rotation casts Rip once per
+    -- fight (refreshes come from Ferocious Bite, not a recast), so each fight
+    -- anchors one full capture (the decisive multi-cat overlap evidence is
+    -- per-fight). State lives only in
     -- macroTorch.context: combat exit wipes it, nothing is persisted, and the
     -- gating shares no state with any other diagnostic switch.
     if spell == 'Rip' and macroTorch.rawdiag2Enabled and macroTorch.context and macroTorch.inCombat then
@@ -137,7 +139,7 @@ function macroTorch.recordCastTable(spell)
         macroTorch.context._rawdiag2Samples = 0
         macroTorch.context._rawdiag2Active = true
         macroTorch.context._rawdiag2Start = GetTime()
-        macroTorch.log('[RAWDIAG2] scout armed by Rip cast record, 60s window', 'green')
+        macroTorch.log('[RAWDIAG2] scout armed by Rip cast record, until combat exit', 'green')
     end
 end
 -- record traced spells' failures, icluding all types of failures: miss, parry, resist, immune
