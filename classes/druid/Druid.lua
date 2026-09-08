@@ -37,9 +37,13 @@ function macroTorch.Druid:new()
 
     function obj.shred(mode, rank)
         local cpLog = macroTorch.cpBuildLog and macroTorch.cpBuildLogSample() or nil
+        local cpDmg = macroTorch.cpDamageSample('shred', macroTorch.computeShred_E())
         local cast = obj._castSpell({ en = 'Shred', zh = '撕碎' }, mode, nil, macroTorch.computeShred_E, false, rank)
         if cast and cpLog and cpLog.gcdOk then
             macroTorch.cpBuildLogEvent('Shred', cpLog)
+        end
+        if cast and cpDmg and cpDmg.gcdOk then
+            macroTorch.cpDamageCast(cpDmg)
         end
         return cast
     end
@@ -58,7 +62,15 @@ function macroTorch.Druid:new()
     end
 
     function obj.ferocious_bite(mode, rank)
-        return obj._castSpell({ en = 'Ferocious Bite', zh = '凶猛撕咬' }, mode, nil, 35, false, rank)
+        -- cpDamage only here: the cpBuild log range stays Claw/Shred/Rake forever
+        -- (D-06 range lock), while the 35 is the hardcoded BITE_E threshold
+        -- constant (combo.lua:62), passed as a literal with no function reference.
+        local cpDmg = macroTorch.cpDamageSample('bite', 35)
+        local cast = obj._castSpell({ en = 'Ferocious Bite', zh = '凶猛撕咬' }, mode, nil, 35, false, rank)
+        if cast and cpDmg and cpDmg.gcdOk then
+            macroTorch.cpDamageCast(cpDmg)
+        end
+        return cast
     end
 
     function obj.pounce(mode, rank)
