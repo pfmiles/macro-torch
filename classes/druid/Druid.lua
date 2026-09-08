@@ -24,7 +24,7 @@ function macroTorch.Druid:new()
     -- Cat form skills (Type A: enemy target only)
     function obj.claw(mode, rank)
         local cpLog = macroTorch.cpBuildLog and macroTorch.cpBuildLogSample() or nil
-        local cpDmg = macroTorch.cpDamageSample('claw', macroTorch.computeClaw_E())
+        local cpDmg = macroTorch.cpDamageLog and macroTorch.cpDamageSample('claw', macroTorch.computeClaw_E()) or nil
         local cast = obj._castSpell({ en = 'Claw', zh = '爪击' }, mode, nil, macroTorch.computeClaw_E, false, rank)
         if cast and cpLog and cpLog.gcdOk then
             macroTorch.cpBuildLogEvent('Claw', cpLog)
@@ -37,7 +37,7 @@ function macroTorch.Druid:new()
 
     function obj.shred(mode, rank)
         local cpLog = macroTorch.cpBuildLog and macroTorch.cpBuildLogSample() or nil
-        local cpDmg = macroTorch.cpDamageSample('shred', macroTorch.computeShred_E())
+        local cpDmg = macroTorch.cpDamageLog and macroTorch.cpDamageSample('shred', macroTorch.computeShred_E()) or nil
         local cast = obj._castSpell({ en = 'Shred', zh = '撕碎' }, mode, nil, macroTorch.computeShred_E, false, rank)
         if cast and cpLog and cpLog.gcdOk then
             macroTorch.cpBuildLogEvent('Shred', cpLog)
