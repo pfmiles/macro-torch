@@ -1093,4 +1093,246 @@ end, true)
 	end, true)
 
 	-- Registration count: Category T adds 1 test (quick 260907-vve)
+	-- Category U: cpDamage cast/damage log instrumentation (phase 28, 9 tests)
+	-- U-04/U-05/U-06/U-07/U-08/U-09 follow the CR-01 stub discipline: snapshot via
+	-- rawget, install own-key shadows, capture into locals, restore via raw
+	-- assignment BEFORE any assert (Cat S-03 precedent).
+	macroTorch.SelfTest:register("Cat U-01: cpDamageLog defaults to false", function()
+		-- U-01 mirrors Cat T-01's trade-off: pure default-value assert, read-only,
+		-- no stubs. It passes on a fresh login (the macro_torch.lua nil-guard has
+		-- just re-armed false); a mid-session /run override makes it fail, which is
+		-- expected and informative - the same trade-off Cat T-01 accepted.
+		assert(macroTorch.cpDamageLog == false,
+			"cpDamageLog should default to false, got " .. tostring(macroTorch.cpDamageLog))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat U-02: jsonEncodeScalar emits strict JSON literals", function()
+		local enc = macroTorch.jsonEncodeScalar
+		assert(enc(nil) == 'null', "U-02 expected null, got " .. tostring(enc(nil)))
+		assert(enc(true) == 'true', "U-02 expected true, got " .. tostring(enc(true)))
+		assert(enc(42) == '42', "U-02 expected 42, got " .. tostring(enc(42)))
+		-- the tricky string carries both a double quote and a backslash; the
+		-- expected literal below is hand-written from the 28-01 encoder contract
+		-- (quotes become \" and backslashes become \\)
+		assert(enc('he said "hi"\\path') == '"he said \\"hi\\"\\\\path"',
+			"U-02 string escaping mismatch: " .. tostring(enc('he said "hi"\\path')))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat U-03: cpDamageEvent emits the fixed 11-field [cpDamage] JSON line", function()
+		local savedLog = macroTorch.log
+		local captured = {}
+		macroTorch.log = function(a)
+			table.insert(captured, tostring(a))
+		end
+		local pcallRes = pcall(function()
+			local fixedSample = { spell = 'claw', t = 1234.5, cp = 2, energyPool = 60,
+				bleedCount = 1, isOoc = false, isBehind = true, e = 42, batch = 1000 }
+			macroTorch.cpDamageEvent(fixedSample, 210, false)
+		end)
+		macroTorch.log = savedLog
+		assert(pcallRes, "U-03 pcall failed")
+		assert(macroTorch.tableLen(captured) == 1,
+			"U-03 expected exactly one emitted line, got " .. tostring(macroTorch.tableLen(captured)))
+		-- the expected literal pins the fixed 11-field order spell dmg crit e
+		-- energyPool bleedCount isOoc isBehind cp t batch - the verbatim encode/
+		-- decode interop contract that the 28-03 decoder is checked against
+		assert(captured[1] == '[cpDamage] {"spell":"claw","dmg":210,"crit":false,"e":42,"energyPool":60,' ..
+			'"bleedCount":1,"isOoc":false,"isBehind":true,"cp":2,"t":1234.5,"batch":1000}',
+			"U-03 JSON literal mismatch: " .. tostring(captured[1]))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat U-04: pairCpDamageIntent pairs the newest in-window guid intent", function()
+		local savedLoginContext = macroTorch.loginContext
+		local fakeLoginContext = {}
+		fakeLoginContext.cpDamageIntents = macroTorch.LRUStack:new(8)
+		local seedSample = { spell = 'claw' }
+		fakeLoginContext.cpDamageIntents.push({ spell = 'claw', guid = '0xF1300000CAFE0001',
+			castAt = 1.0, sample = seedSample })
+		macroTorch.loginContext = fakeLoginContext
+		local paired, remaining = nil, -1
+		local pcallRes = pcall(function()
+			-- the lowercase guid on the damage line exercises the case-insensitive pair
+			paired = macroTorch.pairCpDamageIntent('0xf1300000cafe0001', 1.5)
+			remaining = 0
+			for _ in ipairs(fakeLoginContext.cpDamageIntents.elements) do
+				remaining = remaining + 1
+			end
+		end)
+		macroTorch.loginContext = savedLoginContext
+		assert(pcallRes, "U-04 pcall failed")
+		assert(paired == seedSample, "U-04 expected the seeded sample back (reference equality)")
+		assert(remaining == 0, "U-04 expected the stack drained after the pair, got " .. tostring(remaining))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat U-05: stale cpDamage intent expires past the TTL (lazy purge)", function()
+		local savedLoginContext = macroTorch.loginContext
+		local fakeLoginContext = {}
+		fakeLoginContext.cpDamageIntents = macroTorch.LRUStack:new(8)
+		fakeLoginContext.cpDamageIntents.push({ spell = 'claw', guid = '0xF1300000CAFE0001',
+			castAt = 1.0, sample = {} })
+		macroTorch.loginContext = fakeLoginContext
+		local paired, remaining = nil, -1
+		local pcallRes = pcall(function()
+			paired = macroTorch.pairCpDamageIntent('0xf1300000cafe0001', 5.0)
+			remaining = 0
+			for _ in ipairs(fakeLoginContext.cpDamageIntents.elements) do
+				remaining = remaining + 1
+			end
+		end)
+		macroTorch.loginContext = savedLoginContext
+		assert(pcallRes, "U-05 pcall failed")
+		assert(paired == nil, "U-05 expected nil beyond the 2s LAND_INTENT_TTL window")
+		assert(remaining == 0, "U-05 expected the purge to drain the stack, got " .. tostring(remaining))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat U-06: hits damage line pairs and emits one [cpDamage] entry (crit false)", function()
+		local savedLoginContext = macroTorch.loginContext
+		local savedSwitch = macroTorch.cpDamageLog
+		local savedLog = macroTorch.log
+		local fakeLoginContext = {}
+		fakeLoginContext.cpDamageIntents = macroTorch.LRUStack:new(8)
+		local captured = {}
+		macroTorch.log = function(a)
+			table.insert(captured, tostring(a))
+		end
+		macroTorch.cpDamageLog = true
+		local seedTime = GetTime()
+		fakeLoginContext.cpDamageIntents.push({ spell = 'claw', guid = '0xF1300000CAFE0001', castAt = seedTime,
+			sample = { spell = 'claw', t = seedTime, cp = 2, energyPool = 60, bleedCount = 0,
+				isOoc = false, isBehind = false, e = 42, batch = 1000 } })
+		macroTorch.loginContext = fakeLoginContext
+		local pcallRes = pcall(function()
+			macroTorch.onCpDamageLine('Your Claw hits 0xf1300000cafe0001 for 200.', GetTime())
+		end)
+		macroTorch.loginContext = savedLoginContext
+		macroTorch.log = savedLog
+		macroTorch.cpDamageLog = savedSwitch
+		assert(pcallRes, "U-06 pcall failed")
+		assert(macroTorch.tableLen(captured) == 1,
+			"U-06 expected exactly one emitted line, got " .. tostring(macroTorch.tableLen(captured)))
+		assert(string.find(captured[1], '"crit":false', 1, true) ~= nil,
+			"U-06 expected crit false in: " .. tostring(captured[1]))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat U-07: miss line emits nothing and never consumes the intent (D-03)", function()
+		local savedLoginContext = macroTorch.loginContext
+		local savedSwitch = macroTorch.cpDamageLog
+		local savedLog = macroTorch.log
+		local fakeLoginContext = {}
+		fakeLoginContext.cpDamageIntents = macroTorch.LRUStack:new(8)
+		local captured = {}
+		macroTorch.log = function(a)
+			table.insert(captured, tostring(a))
+		end
+		macroTorch.cpDamageLog = true
+		local seedTime = GetTime()
+		fakeLoginContext.cpDamageIntents.push({ spell = 'claw', guid = '0xF1300000CAFE0001', castAt = seedTime,
+			sample = { spell = 'claw', t = seedTime, cp = 2, energyPool = 60, bleedCount = 0,
+				isOoc = false, isBehind = false, e = 42, batch = 1000 } })
+		macroTorch.loginContext = fakeLoginContext
+		local remaining = -1
+		local pcallRes = pcall(function()
+			macroTorch.onCpDamageLine('Your Claw was dodged by 0xf1300000cafe0001.', GetTime())
+			remaining = 0
+			for _ in ipairs(fakeLoginContext.cpDamageIntents.elements) do
+				remaining = remaining + 1
+			end
+		end)
+		macroTorch.loginContext = savedLoginContext
+		macroTorch.log = savedLog
+		macroTorch.cpDamageLog = savedSwitch
+		assert(pcallRes, "U-07 pcall failed")
+		assert(macroTorch.tableLen(captured) == 0,
+			"U-07 expected zero emitted lines for a dodge, got " .. tostring(macroTorch.tableLen(captured)))
+		assert(remaining == 1, "U-07 expected the dodge NOT to consume the intent, got " .. tostring(remaining))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat U-08: crits damage line marks crit true in the [cpDamage] JSON", function()
+		local savedLoginContext = macroTorch.loginContext
+		local savedSwitch = macroTorch.cpDamageLog
+		local savedLog = macroTorch.log
+		local fakeLoginContext = {}
+		fakeLoginContext.cpDamageIntents = macroTorch.LRUStack:new(8)
+		local captured = {}
+		macroTorch.log = function(a)
+			table.insert(captured, tostring(a))
+		end
+		macroTorch.cpDamageLog = true
+		local seedTime = GetTime()
+		fakeLoginContext.cpDamageIntents.push({ spell = 'claw', guid = '0xF1300000CAFE0001', castAt = seedTime,
+			sample = { spell = 'claw', t = seedTime, cp = 2, energyPool = 60, bleedCount = 0,
+				isOoc = false, isBehind = false, e = 42, batch = 1000 } })
+		macroTorch.loginContext = fakeLoginContext
+		local pcallRes = pcall(function()
+			macroTorch.onCpDamageLine('Your Claw crits 0xf1300000cafe0001 for 300.', GetTime())
+		end)
+		macroTorch.loginContext = savedLoginContext
+		macroTorch.log = savedLog
+		macroTorch.cpDamageLog = savedSwitch
+		assert(pcallRes, "U-08 pcall failed")
+		assert(macroTorch.tableLen(captured) == 1,
+			"U-08 expected exactly one emitted line, got " .. tostring(macroTorch.tableLen(captured)))
+		assert(string.find(captured[1], '"crit":true', 1, true) ~= nil,
+			"U-08 expected crit true in: " .. tostring(captured[1]))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat U-09: claw() plants a cpDamage intent on the Training Dummy only (D-05)", function()
+		local player = macroTorch.player
+		local savedSwitch = macroTorch.cpDamageLog
+		local savedBuildLog = macroTorch.cpBuildLog
+		local savedContext = macroTorch.context
+		local savedLoginContext = macroTorch.loginContext
+		local savedTarget = macroTorch.target
+		local savedLog = macroTorch.log
+		local savedCast = rawget(player, '_castSpell')
+		local savedActionCd = rawget(player, 'isActionCooledDown')
+		macroTorch.log = function() end
+		macroTorch.cpDamageLog = true
+		macroTorch.cpBuildLog = false
+		macroTorch.context = { _cpDamageBatch = GetTime() }
+		local fakeLoginContext = {}
+		macroTorch.loginContext = fakeLoginContext
+		player._castSpell = function()
+			return true
+		end
+		player.isActionCooledDown = function()
+			return true
+		end
+		local dummyTarget = { name = 'Training Dummy', isCanAttack = true, guid = '0xTEST',
+			hasBuff = function(self) return false end }
+		local mobTarget = { name = 'QTestMob', isCanAttack = true, guid = '0xTEST',
+			hasBuff = function(self) return false end }
+		local nDummy, nMob = -1, -1
+		local pcallRes = pcall(function()
+			macroTorch.target = dummyTarget
+			player.claw('ready')
+			nDummy = 0
+			if fakeLoginContext.cpDamageIntents then
+				for _ in ipairs(fakeLoginContext.cpDamageIntents.elements) do
+					nDummy = nDummy + 1
+				end
+			end
+			macroTorch.target = mobTarget
+			player.claw('ready')
+			nMob = 0
+			if fakeLoginContext.cpDamageIntents then
+				for _ in ipairs(fakeLoginContext.cpDamageIntents.elements) do
+					nMob = nMob + 1
+				end
+			end
+		end)
+		rawset(player, '_castSpell', savedCast)
+		rawset(player, 'isActionCooledDown', savedActionCd)
+		macroTorch.log = savedLog
+		macroTorch.target = savedTarget
+		macroTorch.loginContext = savedLoginContext
+		macroTorch.context = savedContext
+		macroTorch.cpDamageLog = savedSwitch
+		macroTorch.cpBuildLog = savedBuildLog
+		assert(pcallRes, "U-09 pcall failed")
+		assert(nDummy == 1, "U-09 expected one planted intent on the dummy, got " .. tostring(nDummy))
+		assert(nMob == 1, "U-09 expected no growth on a non-dummy target, got " .. tostring(nMob))
+	end, true)
+
+	-- Registration count: Category U adds 9 tests (phase 28-02)
 end
