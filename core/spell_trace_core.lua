@@ -137,7 +137,7 @@ function macroTorch.recordCastTable(spell)
         macroTorch.context._rawdiag2Samples = 0
         macroTorch.context._rawdiag2Active = true
         macroTorch.context._rawdiag2Start = GetTime()
-        macroTorch.log('[RAWDIAG2] scout armed by Rip cast record, 60s / 150-line window', 'green')
+        macroTorch.log('[RAWDIAG2] scout armed by Rip cast record, 60s window', 'green')
     end
 end
 -- record traced spells' failures, icluding all types of failures: miss, parry, resist, immune
