@@ -124,3 +124,43 @@ function macroTorch.getItemNameFromLink(itemLink)
     local name = string.gsub(itemLink, ".*%[(.-)%].*", "%1")
     return name ~= itemLink and name or nil
 end
+
+-- strict JSON scalar encoder (phase 28): turns one Lua scalar into its JSON
+-- literal as part of the fixed emit contract with the decoder side in
+-- tools/cpdamage.lua; only the scalar forms flow through here (the 11-field
+-- [cpDamage] payload is spelled out field by field by the caller). Lua 5.0
+-- notes: the %q format is forbidden (it emits the Lua \ddd quote form, which
+-- is invalid JSON) and the gsub replacement must be a function (Lua 5.0 has
+-- no table form).
+function macroTorch.jsonEncodeScalar(v)
+    if v == nil then
+        return 'null'
+    end
+    local tv = type(v)
+    if tv == 'boolean' then
+        if v then
+            return 'true'
+        end
+        return 'false'
+    end
+    if tv == 'number' then
+        return tostring(v)
+    end
+    if tv == 'string' then
+        -- escape backslash, double quote and every control byte below 32 as
+        -- the four-char uppercase \u00XX hex form so JSON-illegal bytes never
+        -- leak into the emitted literal
+        local escaped = string.gsub(v, '[\1-\31\\"]', function(c)
+            local byte = string.byte(c)
+            if byte == 92 then
+                return '\\\\'
+            end
+            if byte == 34 then
+                return '\\"'
+            end
+            return string.format('\\u00%02X', byte)
+        end)
+        return '"' .. escaped .. '"'
+    end
+    return tostring(v)
+end

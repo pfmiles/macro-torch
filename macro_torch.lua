@@ -53,13 +53,25 @@ end
 if macroTorch.LOG_MAX_SIZE == nil then
     macroTorch.LOG_MAX_SIZE = 500
 end
+-- cat claw/shred/bite damage sample log switch (phase 28): false by default,
+-- set macroTorch.cpDamageLog = true in game (SuperMacro body) to record every
+-- Training-Dummy claw/shred/bite hit as a [cpDamage] JSON line through
+-- macroTorch.log for the offline analyzer (tools/cpdamage.lua). The nil-guard
+-- re-arms the default on every login; toggling mid-session needs no reload.
+if macroTorch.cpDamageLog == nil then
+    macroTorch.cpDamageLog = false
+end
 -- Per-login re-arm of the one-time GCD-probe diagnostic (WR-01 fix): reset here,
 -- in the addon-load path, so a UI reload surfaces a fresh probe warning instead
 -- of inheriting a stale worn flag from the previous session.
 macroTorch._cpBuildLogProbeWarned = nil
+-- Per-login re-arm of the one-time cpDamage GCD-probe diagnostic (phase 28):
+-- same pattern as the cpBuildLog flag above, so a UI reload surfaces a fresh
+-- probe warning instead of inheriting a stale worn flag.
+macroTorch._cpDamageProbeWarned = nil
 
 -- Global config options registry and login banner (quick 260907-sz4). A complete
--- survey of user-tunable globals yields exactly these four entries; a future option
+-- survey of user-tunable globals yields exactly these five entries; a future option
 -- is surfaced by appending one registry entry. The banner only reads values through
 -- the explicit getters below — the nil-guards above stay the only assignments.
 macroTorch.CONFIG_OPTIONS = {
@@ -90,6 +102,13 @@ macroTorch.CONFIG_OPTIONS = {
         desc = 'macroTorch.log persistence buffer entry cap',
         cmd = '/run macroTorch.LOG_MAX_SIZE=1000',
         get = function() return macroTorch.LOG_MAX_SIZE end,
+    },
+    {
+        name = 'macroTorch.cpDamageLog',
+        default = false,
+        desc = 'cat claw/shred/bite damage sample log switch ([cpDamage] entries for the offline analyzer)',
+        cmd = '/run macroTorch.cpDamageLog=true',
+        get = function() return macroTorch.cpDamageLog end,
     },
 }
 -- prints every registered config option with its current value, default and the

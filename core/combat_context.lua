@@ -32,6 +32,11 @@ function macroTorch.onCombatEnter()
     end
     macroTorch.inCombat = true
     macroTorch.show('Entering combat!')
+    -- batch stamp for [cpDamage] entries (phase 28): combat-entry time is the
+    -- batch field of every entry sampled during this combat; combat exit
+    -- rebuilds the context table so the next combat takes a fresh stamp with
+    -- zero extra clearing logic.
+    macroTorch.context._cpDamageBatch = GetTime()
 end
 
 function macroTorch.onPlayerEnteringWorld()
