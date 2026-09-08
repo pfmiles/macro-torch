@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 status: in_progress
-stopped_at: Completed 28-02-PLAN.md (three-skill cpDamage coverage + Category U selftests)
-last_updated: "2026-09-08T12:51:34.964Z"
-state_head: 817ebc9a9786a7fe774b5fb3f9bbb3b5c77a8f3d
+stopped_at: Completed 28-03-PLAN.md (full cpdamage.lua offline analyzer)
+last_updated: "2026-09-08T13:52:16.420Z"
+state_head: a163fff03eaf76d07640eafbc237fe1ead0f7591
 progress:
   total_phases: 27
   completed_phases: 12
   total_plans: 61
-  completed_plans: 59
+  completed_plans: 60
 milestone_name: milestone
 last_activity: 2026-09-07
 current_phase_name: catAtk claw/shred/bite damage instrumentation — opt-in combat log + offline analyzer
@@ -22,7 +22,7 @@ last_activity_desc: "Completed quick task 260907-vve: macroTorch.LOG_MAX_SIZE pe
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 28 — catAtk claw/shred/bite damage instrumentation（1/4 plans：28-01 cpDamage tracer 切片完成）
+- **Current Phase**: Phase 28 — catAtk claw/shred/bite damage instrumentation（3/4 plans：28-03 离线分析器完整版完成）
 - **Active Branch**: main
 
 ## Phase Progress
@@ -53,7 +53,7 @@ last_activity_desc: "Completed quick task 260907-vve: macroTorch.LOG_MAX_SIZE pe
 | Phase 25: Hunter 一键宏改造 — Druid 对齐架构 | ✅ complete | 2026-08-18 | 2026-08-19 | 3/3 plans |
 | Phase 26: 猫德 fast 战斗逻辑 | ✅ complete | 2026-08-21 | 2026-08-22 | 3/3 plans |
 | Phase 27: catAtk event-driven land tracing refactor | ✅ complete | 2026-08-28 | 2026-08-29 | 3/3 plans |
-| Phase 28: catAtk claw/shred/bite damage instrumentation | 🟡 in_progress | 2026-09-08 | — | 2/4 plans |
+| Phase 28: catAtk claw/shred/bite damage instrumentation | 🟡 in_progress | 2026-09-08 | — | 3/4 plans |
 
 ## Accumulated Context
 
@@ -162,6 +162,7 @@ last_activity_desc: "Completed quick task 260907-vve: macroTorch.LOG_MAX_SIZE pe
 | Phase 27 P03 | 13 min | 2 tasks | 1 files |
 | Phase 28 P01 | 12 | 3 tasks | 7 files |
 | Phase 28-cat-druid-claw-shred-bite-claw-shred-bite-catatk-catatk-mac P02 | 345 | 2 tasks | 2 files |
+| Phase 28 P03 | 18 | 4 tasks | 1 files |
 
 ## Decisions
 
@@ -202,11 +203,13 @@ last_activity_desc: "Completed quick task 260907-vve: macroTorch.LOG_MAX_SIZE pe
 - [Phase ?]: Phase 28-02: U-02/U-03 contract literals hand-derived from the 28-01 encoder/emitter and byte-verified via node simulation (no local Lua)
 - [Phase ?]: Phase 28-02: three-skill cpDamage hook triple ('claw', computeClaw_E()) / ('shred', computeShred_E()) / ('bite', 35); bite cpDamage-only, cpBuild range lock kept
 - [Phase ?]: Phase 28-02: Category U U-01..U-09 (isOptional=true) pin D-03/D-05/D-06/D-07; U-09 stubs the full gate chain incl. context batch with CR-01 snapshot/restore
+- [Phase ?]: Phase 28-03: analyzer double-quote bytes inside source strings spelled via string.char(34) — bbcheck's quote-first strip order mis-pairs bare quotes across the decoder (proven with a mirror replace-pipeline debugger; impl_util's encoder block is the proven-safe raw-quote exception)
+- [Phase ?]: Phase 28-03: avgDmg/avgEff/avgRaw bucket semantics locked verbatim (avgEff = per-sample dmg/e mean, avgRaw = no energy division); bite regression x = energyPool−35 (regular) / energyPool−0 (OOC); json-out numbers integral-or-%.4f for cross-version stable archives
 
 ## Session
 
-**Last session:** 2026-09-08T12:51:18.230Z
-**Stopped at:** Completed 28-02-PLAN.md (three-skill cpDamage coverage + Category U selftests)
+**Last session:** 2026-09-08T13:52:15.766Z
+**Stopped at:** Completed 28-03-PLAN.md (full cpdamage.lua offline analyzer)
 **Resume file:** None
 
 ## Quick Tasks Completed

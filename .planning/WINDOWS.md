@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 4
+open_count: 2
 waived_count: 0
-fixed_count: 0
+fixed_count: 2
 total_count: 4
-last_updated: 2026-09-08T12:37:50.446Z
+last_updated: 2026-09-08T13:49:44.997Z
 ---
 
 # Broken Windows Ledger
@@ -17,8 +17,8 @@ last_updated: 2026-09-08T12:37:50.446Z
 |----|-------|------|------|------|-------------|--------|--------|-------------|-------------|
 | 1 | 21 | stub | classes/druid/cat.lua |  | No stubs introduced — pure comment addition only | open |  | 2026-07-29T14:37:47.097Z |  |
 | 2 | 22 | stub | classes/druid/selftest.lua | 108 | Batch 2 end marker: placeholder for plan 22-02 expansion tests | open |  | 2026-07-30T15:31:25.495Z |  |
-| 3 | 28 | stub | tools/cpdamage.lua | 542 | selftest branch placeholder prints placeholder text; full selftest lands in 28-03 | open |  | 2026-09-08T12:37:50.223Z |  |
-| 4 | 28 | stub | tools/cpdamage.lua | 546 | json-out branch placeholder prints placeholder text; result-file output lands in 28-03 | open |  | 2026-09-08T12:37:50.446Z |  |
+| 3 | 28 | stub | tools/cpdamage.lua | 542 | selftest branch placeholder prints placeholder text; full selftest lands in 28-03 | fixed |  | 2026-09-08T12:37:50.223Z | 2026-09-08T13:49:44.744Z |
+| 4 | 28 | stub | tools/cpdamage.lua | 546 | json-out branch placeholder prints placeholder text; result-file output lands in 28-03 | fixed |  | 2026-09-08T12:37:50.446Z | 2026-09-08T13:49:44.997Z |
 
 ````json
 [
@@ -53,10 +53,10 @@ last_updated: 2026-09-08T12:37:50.446Z
     "file": "tools/cpdamage.lua",
     "line": 542,
     "description": "selftest branch placeholder prints placeholder text; full selftest lands in 28-03",
-    "status": "open",
+    "status": "fixed",
     "reason": "",
     "recorded_at": "2026-09-08T12:37:50.223Z",
-    "resolved_at": null
+    "resolved_at": "2026-09-08T13:49:44.744Z"
   },
   {
     "id": 4,
@@ -65,10 +65,10 @@ last_updated: 2026-09-08T12:37:50.446Z
     "file": "tools/cpdamage.lua",
     "line": 546,
     "description": "json-out branch placeholder prints placeholder text; result-file output lands in 28-03",
-    "status": "open",
+    "status": "fixed",
     "reason": "",
     "recorded_at": "2026-09-08T12:37:50.446Z",
-    "resolved_at": null
+    "resolved_at": "2026-09-08T13:49:44.997Z"
   }
 ]
 ````
