@@ -35,3 +35,4 @@ opencode.json
 .gsd
 .planning/milestone.lock
 .planning/samples
+.planning/state.json
