@@ -137,8 +137,10 @@ function macroTorch.eventHandle()
         -- whitelist so it sees every RAW_COMBATLOG line while armed. Arbitration target:
         -- does this client suppress raw apply lines when any feral Rip is already
         -- active on the target (multi-cat)? The scout auto-disarms after a 60s window
-        -- or once _rawdiag2Lines reaches the 150-line cap; the first 20 events of a
-        -- fresh arm are dumped unconditionally as field-layout samples, after that
+        -- only — quick 260909-2kd removed the former line-count cap, which melee-scrum
+        -- 'fades' noise could trip inside the window and end the sample early. The
+        -- first 20 events of a fresh arm are dumped unconditionally as field-layout
+        -- samples, after that
         -- only RAWDIAG2_KEYWORDS matches. State lives in macroTorch.context (combat
         -- exit wipes it, never persisted); output persists via macroTorch.log.
         local scoutActive = macroTorch.context and macroTorch.context._rawdiag2Active
@@ -147,10 +149,6 @@ function macroTorch.eventHandle()
             if (GetTime() - (scoutCtx._rawdiag2Start or GetTime())) > 60 then
                 scoutCtx._rawdiag2Active = false
                 macroTorch.log('[RAWDIAG2] scout disarmed after 60s window, dumped: ' ..
-                    tostring(scoutCtx._rawdiag2Lines or 0) .. ' lines', 'yellow')
-            elseif (scoutCtx._rawdiag2Lines or 0) >= 150 then
-                scoutCtx._rawdiag2Active = false
-                macroTorch.log('[RAWDIAG2] scout disarmed after 150-line cap, dumped: ' ..
                     tostring(scoutCtx._rawdiag2Lines or 0) .. ' lines', 'yellow')
             else
                 -- serialize every event arg verbatim, nil-safe: WoW 1.12 exposes event
