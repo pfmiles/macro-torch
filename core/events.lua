@@ -179,6 +179,16 @@ function macroTorch.eventHandle()
             end
         end
         -- end of RAWDIAG2 scout block (arming hook: spell_trace_core.lua recordCastTable)
+        -- [cpDamage] phase 28 channel gate: dispatch SELF_DAMAGE raw lines to
+        -- the cpDamage parser before the tier-1 whitelist returns below. The
+        -- gate consumes the line here and the tier-1 set stays untouched, so
+        -- land consumers keep seeing only the two periodic channels - the two
+        -- consumers stay fully disjoint per channel. The existing
+        -- CHAT_MSG_SPELL_SELF_DAMAGE chat-filter branch earlier in this
+        -- handler is not touched; this gate only serves the RAW stream.
+        if macroTorch.cpDamageLog and arg1 == 'CHAT_MSG_SPELL_SELF_DAMAGE' and arg2 then
+            macroTorch.onCpDamageLine(arg2, GetTime())
+        end
         -- production event-driven land handler (three-tier filter, debug
         -- decision #6).
         -- Tier 1 (channel whitelist): only the two periodic-damage channels

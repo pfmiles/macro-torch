@@ -220,6 +220,82 @@ function macroTorch.rawdiag2IntentDepth(spell)
     end
     return 0
 end
+-- cpDamage pairing (phase 28): purge/pair skeleton copied from pairLandIntent
+-- but without state/landAt - damage pairing carries no fail-wins semantics.
+-- The spell-name dimension is guaranteed by the "exactly one intent per cast
+-- frame" invariant (one action per press red line), so the pairing key is
+-- guid + TTL window. Reuses macroTorch.LAND_INTENT_TTL (2s, D-02).
+function macroTorch.pairCpDamageIntent(guid, now)
+    if not guid or not macroTorch.loginContext or not macroTorch.loginContext.cpDamageIntents then
+        return nil
+    end
+    local stack = macroTorch.loginContext.cpDamageIntents
+    -- purge pass: drop intents older than the TTL window
+    for i = macroTorch.tableLen(stack.elements), 1, -1 do
+        local intent = stack.elements[i]
+        if (now - intent.castAt) > macroTorch.LAND_INTENT_TTL then
+            table.remove(stack.elements, i)
+        end
+    end
+    -- pair pass: newest intent whose guid matches inside the window
+    for i = macroTorch.tableLen(stack.elements), 1, -1 do
+        local intent = stack.elements[i]
+        if intent.guid ~= nil and intent.castAt <= now and
+                (now - intent.castAt) <= macroTorch.LAND_INTENT_TTL and
+                string.lower(intent.guid) == string.lower(guid) then
+            table.remove(stack.elements, i)
+            return intent.sample
+        end
+    end
+    return nil
+end
+-- cpDamage line parser (phase 28): two Lua 5.0-legal string.find attempts in
+-- order, never one combined pattern. Lua patterns have no | alternation and
+-- captured subpatterns cannot take quantifiers, so a combined (hits|crits)
+-- pattern would only ever match the literal text and never reach a real
+-- damage line, silencing the whole collection chain. The verb is defined by
+-- whichever pattern matched (the literal verb is itself the {hits, crits}
+-- whitelist member, kept as the A3 tolerance). Neither pattern anchors the
+-- line end, so "(N absorbed/blocked)" suffixes are tolerated. miss/dodge/
+-- parry lines match neither pattern and are dropped with zero extra code
+-- (D-03); a damage line that pairs with no intent (e.g. a plain white hit)
+-- is dropped the same way.
+function macroTorch.onCpDamageLine(eventMsg, now)
+    if not macroTorch.cpDamageLog or not eventMsg then
+        return
+    end
+    local _, _, guid, dmgStr = string.find(eventMsg, '^Your .+ hits (0x[0-9A-Fa-f]+) for (%d+)%.')
+    local crit = false
+    if not guid then
+        _, _, guid, dmgStr = string.find(eventMsg, '^Your .+ crits (0x[0-9A-Fa-f]+) for (%d+)%.')
+        crit = true
+    end
+    if not guid then
+        return
+    end
+    local sample = macroTorch.pairCpDamageIntent(guid, now)
+    if not sample then
+        return
+    end
+    macroTorch.cpDamageEvent(sample, tonumber(dmgStr), crit)
+end
+-- assemble one [cpDamage] JSON line (phase 28). The fixed 11-field order
+-- spell dmg crit e energyPool bleedCount isOoc isBehind cp t batch is part of
+-- the encode/decode interop contract with tools/cpdamage.lua (RESEARCH 3).
+function macroTorch.cpDamageEvent(sample, dmg, crit)
+    local json = '{"spell":' .. macroTorch.jsonEncodeScalar(sample.spell) ..
+        ',"dmg":' .. macroTorch.jsonEncodeScalar(dmg) ..
+        ',"crit":' .. macroTorch.jsonEncodeScalar(crit) ..
+        ',"e":' .. macroTorch.jsonEncodeScalar(sample.e) ..
+        ',"energyPool":' .. macroTorch.jsonEncodeScalar(sample.energyPool) ..
+        ',"bleedCount":' .. macroTorch.jsonEncodeScalar(sample.bleedCount) ..
+        ',"isOoc":' .. macroTorch.jsonEncodeScalar(sample.isOoc) ..
+        ',"isBehind":' .. macroTorch.jsonEncodeScalar(sample.isBehind) ..
+        ',"cp":' .. macroTorch.jsonEncodeScalar(sample.cp) ..
+        ',"t":' .. macroTorch.jsonEncodeScalar(sample.t) ..
+        ',"batch":' .. macroTorch.jsonEncodeScalar(sample.batch) .. '}'
+    macroTorch.log('[cpDamage] ' .. json)
+end
 -- records a land event on the landTable and dispatches registered listeners.
 -- Does NOT touch intent state: pairing is the caller's job (aura-apply pairs
 -- first and drops the land on no intent; self-hit pairs best-effort; the
