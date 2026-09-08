@@ -113,7 +113,7 @@ classes/  — Druid (含 Druid/cat, Druid/bear, Druid/utility), Hunter, Mage, Pr
 所有现有的 cat 形态战斗逻辑（catAtk, keepRip, keepRake, keepFF, regularAttack, reshift 等）保持功能完全不变。
 
 **验收标准**:
-- [ ] `grep -c "function macroTorch.\(catAtk\|regularAttack\|keepRip\|keepRake\|keepFF\|shouldUseShred\|shouldCastRip\|shouldUseBite\|canDoReshift\)" SM_Extend.lua` 返回 ≥ 9
+- [ ] `grep -c "function macroTorch.\(catAtk\|regularAttack\|keepRip\|keepRake\|keepFF\|shouldUseShred\|shouldCastRip\|shouldUseBite\|shouldDoReshift\)" SM_Extend.lua` 返回 ≥ 9
 - [ ] 能量常量（CLAW_E, SHRED_E, RAKE_E 等）初始化逻辑不变
 - [ ] DRUID_FIELD_FUNC_MAP 所有字段不变
 - [ ] 模块执行顺序不变（recoverNormalRelic → combatUrgentHPRestore → targetEnemy → startAutoAtk → burstMod → openerMod(Pounce/Ravage) → oocMod → termMod → otMod → keepTigerFury → keepRip/quickKeepRip+keepRake+keepFF → regularAttack → reshiftMod）
