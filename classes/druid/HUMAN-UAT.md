@@ -165,3 +165,60 @@
 - [ ] No Lua errors during any test
 - [ ] UAT completed by: _______________
 - [ ] Date: _______________
+
+---
+
+## Phase 28: catAtk claw/shred/bite 伤害打桩 -- 实机 UAT 闭环
+
+**Phase:** 28 -- catAtk claw/shred/bite damage instrumentation（打点开关 + 离线分析器）
+**Date:** 2026-09-08
+**目标:** 在游戏机完成一次完整闭环：开开关 → 打骷髅木桩约 1 分钟 → 脱战 → ReloadUI → 拷回 SuperMacro.lua → `tools/cpdamage.lua` 出两层统计报表与决策建议行。
+
+### 1. Prerequisites（前提）
+
+- [ ] WoW 1.12.1（Turtle WoW）+ SuperWoW 客户端（RAW_COMBATLOG 采集依赖 SuperWoW）
+- [ ] `./build.sh` 构建成功（SM_Extend.lua 重建无报错）
+- [ ] 至少一个可运行的 lua 解释器（理想：Lua 5.0 一个 + 5.1 以上一个，Cygwin 环境即有）
+- [ ] 可攻击的 Training Dummy（骷髅级即可）
+- [ ] 建议游戏内先执行 `/run macroTorch.LOG_MAX_SIZE=3000`（本次记录量增大，防止 500 条默认环被顶掉，D-10）
+
+### 2. Pre-Test（自测预检）
+
+- [ ] 在两个解释器上各跑一次 `lua tools/cpdamage.lua --selftest`，期望末行 `selftest: ALL N PASSED`（无任何 FAIL 行）
+- [ ] 游戏内 `/mt`：期望自检汇总无红色 FAIL；Category U 9 条全过（非 U 条目的黄色 warnings 可容忍）
+- [ ] 登录横幅含第 5 项 `macroTorch.cpDamageLog = false`（D-06 开关可见性确认）
+
+### 3. SavedVariables 声明确认（RESEARCH A2）
+
+游戏机端实际部署的 SuperMacro 变体 .toc 必须含 `MACRO_TORCH_LOG` 声明，否则打点静默零持久化：
+
+- [ ] 打开 `WTF/Account/<账号>/SavedVariables/SuperMacro.lua`，确认存在 `MACRO_TORCH_LOG` 段
+- [ ] 缺失的修复：在该变体 SuperMacro.toc 的 `## SavedVariables:` 行末补一个空格加 `MACRO_TORCH_LOG`，然后**完全退出游戏**重进（仅 /reload 不够），再回到本清单第 4 节重测
+
+### 4. 打桩协议（实机采集）
+
+1. `/run macroTorch.cpDamageLog=true`
+2. 用 catAtk 正常循环打骷髅级 Training Dummy 约 1 分钟（claw/shred/bite 都会自然出现）
+3. 可补手动命令确保三技能都有样本：`/run macroTorch.player.claw('ready')` / `/run macroTorch.player.shred('ready')` / `/run macroTorch.player.ferocious_bite('ready')`
+4. 停手等待脱战（木桩场景约 5s 自动脱战 = 批次结束，D-11）
+5. `/reload`
+6. 从 `WTF/Account/<账号>/SavedVariables/SuperMacro.lua` 拷出文件
+- [ ] 提醒：`macroTorch.cpDamageLog` 与 `macroTorch.rawdiag2Enabled` 勿同开（环容量争抢，T-28-05 / D-10）
+
+### 5. 分析运行
+
+`lua tools/cpdamage.lua <拷出的 SuperMacro.lua 路径> --json-out <归档 json 路径>`
+
+- [ ] 每批次（batch）节 + 聚合（aggregate）节出现 claw/shred 四档表（bleedCount 0/1/2/3）
+- [ ] OOC 背位分档表（isOoc 且 isBehind 样本）
+- [ ] bite 回归节（a / b / n 三值）
+- [ ] 三类决策建议行：每档 builder 选择 / OOC 技能选择 / bite 泄能与否
+- [ ] 条目 ≥ 30 且 claw/shred/bite 三技能齐；坏行计数 0（或极小）
+
+### 6. Expected Outcomes / Troubleshooting（期望结果与排查）
+
+- [ ] 条目 11 字段数值合理：dmg 为正值；e 约在 42/54/35 附近（claw = 45 − Idol of Ferocity − Ferocity 天赋；shred = 60 − Improved Shred×6；bite = 门槛常量 35）
+- [ ] 无 `[cpDamage]` 行时按序排查：① 先查 .toc 声明（第 3 节）② 查开关在 /reload 前是否仍为 true（每次 login/reload 复位默认 false，D-06）③ 查 GCD probe 黄色警告（Rake 法术必须在动作条上，否则不采集）
+- [ ] crit 全 false 或缺 crit 时：记录客户端语言环境（非英文客户端 hits/crits 句式不同，A3 假设）
+
+**完成信号:** 四项闭环全部达成（或按 Troubleshooting 修复后达成）；将第一张真实统计表的批量打印（或 --json-out 归档路径）回复给 verifier，由 verifier 汇入阶段末 28-UAT.md。
