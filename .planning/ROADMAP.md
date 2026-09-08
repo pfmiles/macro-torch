@@ -983,7 +983,7 @@ Plans:
 **Goal:** 对于cat druid的输出循环来讲，有两个非常重要的核心决策就是“当前用claw还是shred更划算？”，以及“当前多余能量全部用作bite转换为伤害更划算，还是先用claw/shred泄能再bite更划算？”；这两个核心决策对catAtk的一键输出逻辑有重大影响，直接决定了catAtk中的主线逻辑。我须要你帮我设计并实现一套以macroTorch.log为记录方式的打桩测试逻辑，同样通过macroTorch命名空间中的一个bool全局变量控制其开闭，默认false即关闭。当打开时，战斗中的claw，shred和bite的本次伤害及一些必要的状态信息会被记录在log中，以便于我可以把持久化的log拿给你或者一个分析程序给我回答基于现状的上述2个决策的答案。之所以做成一个可开关的、可多次复用的功能，而不是一个一次性数据实验，是因为装备和天赋情况可能会变化，需要在不同的阶段多次测试并采纳当时的结果。我讲下这里面的关键机制：所谓“划算”的判定标准，就是“耗费同样能量的情况下，谁造成的平均伤害更高”，即“伤害/能量消耗”，也可以叫作技能的“energy efficiency”。claw和shred之间需要比较的其实就是这个energy efficiency；但不能笼统比较，这里需要分情况：claw伤害跟目标身上的流血效果个数有关，目标身上无流血效果、有一个、有两个、有三个流血效果(最多可能有rake/rip/pounce三种)时，claw的伤害差异很大；因此得出的结论也需要分这三种情况来与shred相比，这个结论可以辅助我在catAtk中决策：多少个流血效果该用哪个cp builder技能。此外，claw和shred除了对比energy efficiency之外，还需要对比“单次伤害”，即不考虑能量，只考虑释放一次造成的伤害，平均而言，哪个高？之所以比较这个，是因为有ooc状态的存在，ooc触发时，下一个技能是不耗费能量的，因此ooc时就应该使用单次伤害更高的技能而不用考虑其能量消耗。至于bite，则需要计算其“多余能量的伤害转化效果”，来判断在bite之前是否应该打一发claw或者shred来泄掉超出35点之外的额外能量之后再bite，这取决于这些多出来的能量到底是打成claw/shred、或是让bite清空转换成伤害，哪一种策略在当前平均来讲能造成更多伤害，这个结果同样会影响我在catAtk中设置的一些输出策略。bite的“多余能量的伤害转化效果”的计算应该会依赖前面的claw/shred的一些测试结果。最后，我希望能帮我生成一个独立可运行的lua脚本，来帮我自动化分析macroTorch.log记录到持久化文件中的json array形式的日志记录，并输出分析结果，避免我每次都拿着输出log来问你
 **Requirements**: D-01..D-21 (28-CONTEXT.md), R7, R8
 **Depends on:** Phase 27
-**Plans:** 1/4 plans executed
+**Plans:** 2/4 plans executed
 
 Plans:
 **Wave 1**
@@ -992,7 +992,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1)*
 
-- [ ] 28-02-PLAN.md — shred/bite 采样同构挂接 + Category U SelfTest 9 条（U-01..U-09） (Wave 2)
+- [x] 28-02-PLAN.md — shred/bite 采样同构挂接 + Category U SelfTest 9 条（U-01..U-09） (Wave 2)
 - [ ] 28-03-PLAN.md — 完整离线分析器：提取/沙箱 + 解码校验 + 四档桶/OOC/bite 最小二乘 + 报表/决策建议/--json-out/--selftest (Wave 2)
 
 **Wave 3** *(blocked on Wave 2)*
