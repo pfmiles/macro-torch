@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 milestone: v1.0
 status: in_progress
 stopped_at: Phase 28 context gathered
-last_updated: "2026-09-08T10:18:33.307Z"
-state_head: 9287c3f936b24b72aa3ff64156d6b77feaf63651
+last_updated: "2026-09-08T12:09:43.853Z"
+state_head: 8423b98965fcaf32fb4c037ebf05da7e94bd6b12
 progress:
   total_phases: 27
   completed_phases: 12
-  total_plans: 57
+  total_plans: 61
   completed_plans: 57
 milestone_name: milestone
 last_activity: 2026-09-07
-current_phase_name: catatk-event-driven-land-tracing-refactor
+current_phase_name: catAtk claw/shred/bite damage instrumentation — opt-in combat log + offline analyzer
 last_activity_desc: "Completed quick task 260907-vve: macroTorch.LOG_MAX_SIZE persistent-log cap (default 500) + sanitized trim limit + config banner entry"
 ---
 
