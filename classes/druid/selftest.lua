@@ -384,9 +384,21 @@ end, true)
 			hasEssenceOfTheRed = false,
 			isTigerPresent = false,
 		}
-		macroTorch.player.isBehindAttackJustFailed = false
-		assert(macroTorch.shouldUseShred(ctx) == true,
-			"expected true: 0 bleeds OoC behind should use Shred")
+		-- R6-01 follows the CR-01 stub discipline (Cat U batch precedent):
+		-- isBehindAttackJustFailed is a PLAYER_FIELD_FUNC_MAP accessor and the
+		-- class metatable has no __newindex, so a bare assignment would shadow
+		-- the accessor on the live player for the entire session. Snapshot via
+		-- rawget, install the own-key shadow, restore via rawset BEFORE any
+		-- assert.
+		local player = macroTorch.player
+		local saved = rawget(player, 'isBehindAttackJustFailed')
+		player.isBehindAttackJustFailed = false
+		local ok, res = pcall(function()
+			return macroTorch.shouldUseShred(ctx) == true
+		end)
+		rawset(player, 'isBehindAttackJustFailed', saved)
+		assert(ok, "R6-01 errored: " .. tostring(res))
+		assert(res, "expected true: 0 bleeds OoC behind should use Shred")
 	end, true)
 
 	macroTorch.SelfTest:register("Principle R6-02: 0 bleeds infinite energy behind — use Shred", function()
@@ -406,9 +418,16 @@ end, true)
 			hasEssenceOfTheRed = false,
 			isTigerPresent = false,
 		}
-		macroTorch.player.isBehindAttackJustFailed = false
-		assert(macroTorch.shouldUseShred(ctx) == true,
-			"expected true: 0 bleeds infinite energy behind should use Shred")
+		-- R6-02: same snapshot/shadow/restore discipline as R6-01.
+		local player = macroTorch.player
+		local saved = rawget(player, 'isBehindAttackJustFailed')
+		player.isBehindAttackJustFailed = false
+		local ok, res = pcall(function()
+			return macroTorch.shouldUseShred(ctx) == true
+		end)
+		rawset(player, 'isBehindAttackJustFailed', saved)
+		assert(ok, "R6-02 errored: " .. tostring(res))
+		assert(res, "expected true: 0 bleeds infinite energy behind should use Shred")
 	end, true)
 
 	macroTorch.SelfTest:register("Principle R6-03: 2 bleeds OoC behind — use Shred", function()
@@ -429,9 +448,16 @@ end, true)
 			hasEssenceOfTheRed = false,
 			isTigerPresent = false,
 		}
-		macroTorch.player.isBehindAttackJustFailed = false
-		assert(macroTorch.shouldUseShred(ctx) == true,
-			"expected true: 2 bleeds OoC behind should use Shred")
+		-- R6-03: same snapshot/shadow/restore discipline as R6-01.
+		local player = macroTorch.player
+		local saved = rawget(player, 'isBehindAttackJustFailed')
+		player.isBehindAttackJustFailed = false
+		local ok, res = pcall(function()
+			return macroTorch.shouldUseShred(ctx) == true
+		end)
+		rawset(player, 'isBehindAttackJustFailed', saved)
+		assert(ok, "R6-03 errored: " .. tostring(res))
+		assert(res, "expected true: 2 bleeds OoC behind should use Shred")
 	end, true)
 
 	macroTorch.SelfTest:register("Principle R6-04: 2 bleeds no OoC no infinite — use Claw", function()
