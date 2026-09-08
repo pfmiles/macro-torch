@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.0
 status: in_progress
-stopped_at: Phase 27 complete — all phases complete
-last_updated: "2026-08-30T09:29:47.215Z"
-state_head: b81a6d1807aaa7e6d752040278f81804def7ffc3
+stopped_at: Phase 28 context gathered
+last_updated: "2026-09-08T10:18:33.307Z"
+state_head: 9287c3f936b24b72aa3ff64156d6b77feaf63651
 progress:
-  total_phases: 26
+  total_phases: 27
   completed_phases: 12
   total_plans: 57
   completed_plans: 57
@@ -77,6 +77,7 @@ last_activity_desc: "Completed quick task 260907-vve: macroTorch.LOG_MAX_SIZE pe
 - Phase 25 added: 参考druid相关逻辑，仿照代码组织结构，改造hunter职业的代码，构造出hunterAtk宏用于练级过程中的一键输出，包含远程和近战输出；hunterAoe用于范围输出，同样包括远程和近战；hunterDefend用于保命减伤；hunterControl用于控制目标；hunterMobTagging用于抢怪，包含近战和远程抢怪 (2026-08-17)
 - Phase 26 added: 新增猫德fast战斗逻辑 — isFastBattleNotPvp(8.5s阈值)纯直伤策略，跳过所有流血(Pounce/Rake/Rip)，仅Shred/Claw攒星→5CP Bite/KillShot (2026-08-21)
 - Phase 27 added: catAtk event-driven land tracing refactor — 事件驱动 land 机制替代 0.1s 轮询 blip 窗口（卡顿机器上 ripLeft 证据链断裂的根治）：cast 桥不变 + 2s 过期 cast intent + landSource 枚举(self-hit/aura-apply) + fail 终局撤销 + 三层 RAW 过滤器。27-01 已删除核心轮询对与 RAWDIAG 侦察 (2026-08-28)
+- Phase 28 added: cat druid claw/shred/bite 伤害统计打桩 — macroTorch bool 开关控制的 log 采集（claw/shred 的 energy efficiency 按流血效果数分档 + 单次伤害对比，bite 多余能量伤害转化），配套独立 lua 离线分析脚本解析持久化 json array log，支撑 catAtk 两个核心输出决策，支持装备/天赋变化后多次复用测试 (2026-09-08)
 
 ## Key Decisions
 
@@ -196,9 +197,9 @@ last_activity_desc: "Completed quick task 260907-vve: macroTorch.LOG_MAX_SIZE pe
 
 ## Session
 
-**Last session:** 2026-09-07T08:30:00.000Z
-**Stopped at:** Phase 27 complete — all phases complete
-**Resume file:** None
+**Last session:** 2026-09-08T10:18:32.550Z
+**Stopped at:** Phase 28 context gathered
+**Resume file:** .planning/phases/28-cat-druid-claw-shred-bite-claw-shred-bite-catatk-catatk-mac/28-CONTEXT.md
 
 ## Quick Tasks Completed
 
