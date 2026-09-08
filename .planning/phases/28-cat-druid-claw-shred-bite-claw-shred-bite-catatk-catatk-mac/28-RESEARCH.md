@@ -363,7 +363,7 @@
 | A5 | SV 文件中数组行以 `-- [1]` 注释尾缀或 `[1] =` 两种之一（样本只见后者） | 2 | 无风险：loadstring 吃两种语法 |
 | A6 | 最小二乘公式为教科书标准实现无版本坑 | 6 | 低（双精度一致） |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **SPELL_DAMAGE 语义名 vs 实际通道名的最终确认**
    - 我们知道：无 SPELL_DAMAGE 事件名，SELF_DAMAGE 通道 + hits/crits 句式经 6 文件实锤。
