@@ -24,9 +24,13 @@ function macroTorch.Druid:new()
     -- Cat form skills (Type A: enemy target only)
     function obj.claw(mode, rank)
         local cpLog = macroTorch.cpBuildLog and macroTorch.cpBuildLogSample() or nil
+        local cpDmg = macroTorch.cpDamageSample('claw', macroTorch.computeClaw_E())
         local cast = obj._castSpell({ en = 'Claw', zh = '爪击' }, mode, nil, macroTorch.computeClaw_E, false, rank)
         if cast and cpLog and cpLog.gcdOk then
             macroTorch.cpBuildLogEvent('Claw', cpLog)
+        end
+        if cast and cpDmg and cpDmg.gcdOk then
+            macroTorch.cpDamageCast(cpDmg)
         end
         return cast
     end
@@ -352,6 +356,71 @@ end
 -- inter-cast interval k and its window distribution (R2 locked).
 function macroTorch.cpBuildLogEvent(skillName, s)
     macroTorch.log('[cpBuild] ' .. skillName .. ' t=' .. s.t .. ' cp=' .. s.cp .. ' e=' .. s.e)
+end
+
+-- Pre-cast snapshot for one [cpDamage] entry (phase 28). Gates run in cheap-
+-- first order: (a) switch off = zero cost; (b) Training Dummy hard gate
+-- (verbatim the combo.lua clickContext.isTargetDummy expression); (c) batch
+-- gate (no combat = no sample); (d) GCD probe; (e) bleedCount snapshot. The
+-- WR-01 constraint holds: the probe must run BEFORE the cast because casting
+-- starts the GCD and would falsify the reading.
+function macroTorch.cpDamageSample(skillToken, energyCost)
+    if not macroTorch.cpDamageLog then
+        return nil
+    end
+    if not macroTorch.toBoolean(macroTorch.target.isCanAttack and string.find(macroTorch.target.name, 'Training Dummy')) then
+        return nil
+    end
+    local batch = macroTorch.context and macroTorch.context._cpDamageBatch
+    if batch == nil then
+        return nil
+    end
+    local gcdOk = macroTorch.player.isActionCooledDown('Ability_Druid_Rake')
+    if gcdOk == nil and not macroTorch._cpDamageProbeWarned then
+        macroTorch._cpDamageProbeWarned = true
+        macroTorch.show('[cpDamage] GCD probe failed: put the Rake spell on an action bar, otherwise no casts will be logged', 'yellow')
+    end
+    local bleedCount = 0
+    if macroTorch.toBoolean(macroTorch.target.hasBuff('Ability_Druid_Disembowel')) then
+        bleedCount = bleedCount + 1
+    end
+    if macroTorch.toBoolean(macroTorch.target.hasBuff('Ability_GhoulFrenzy')) then
+        bleedCount = bleedCount + 1
+    end
+    if macroTorch.toBoolean(macroTorch.target.hasBuff('Ability_Druid_SupriseAttack')) then
+        bleedCount = bleedCount + 1
+    end
+    return {
+        spell = skillToken,
+        guid = macroTorch.target.guid,
+        t = GetTime(),
+        cp = macroTorch.player.comboPoints,
+        energyPool = macroTorch.player.mana,
+        bleedCount = bleedCount,
+        isOoc = macroTorch.player.isOoc,
+        isBehind = macroTorch.player.isBehindTarget,
+        e = energyCost,
+        batch = batch,
+        gcdOk = gcdOk
+    }
+end
+
+-- Plant one independent cpDamage intent (phase 28). Red line: this queue is
+-- fully parallel to intentTable/pairLandIntent - Ferocious Bite is already
+-- consumed by land pairing and its fail-wins semantics would collide here
+-- (D-02). Without SuperWoW the guid is nil and the RAW stream does not exist
+-- either, so planting nothing is the correct degradation.
+function macroTorch.cpDamageCast(sample)
+    if not macroTorch.loginContext then
+        return
+    end
+    if sample.guid == nil then
+        return
+    end
+    if not macroTorch.loginContext.cpDamageIntents then
+        macroTorch.loginContext.cpDamageIntents = macroTorch.LRUStack:new(8)
+    end
+    macroTorch.loginContext.cpDamageIntents.push({ spell = sample.spell, guid = sample.guid, castAt = sample.t, sample = sample })
 end
 
 -- player fields to function mapping
