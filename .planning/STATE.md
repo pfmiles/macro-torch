@@ -59,6 +59,7 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 
 ### Roadmap Evolution
 
+- Phase 29 added: 统一 landing 判定重构 — 去 landSource 参数、OR 三通道 + 反推兜底、cast 谓词去重、可配 intentTtl（默认 0.9s/猎人钉刺 ~2s）、FB 续期豁免 (2026-09-09)
 - Phase 24 added: 用 UNIT_SPELLCAST_SUCCEEDED 标准事件替代 UNIT_CASTEVENT 的 cast 记录链路，消除对全局 spellId 的依赖 (2026-08-17)
 - Phase 5 added: Druid技能方法封装改造 - 将player.cast()字符串调用重构为技能对象方法，支持多语言客户端，从Druid试点 (2026-06-13)
 - Phase 6 added: Fix Druid _castSpell isSpellReady nil bug - Player.lua 中 _castSpell/_isInRange/_hasResource 点号定义与 Druid.lua 冒号调用不匹配，导致闭包 self 错误 (2026-06-14)
