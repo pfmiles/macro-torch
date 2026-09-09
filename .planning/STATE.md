@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 milestone: v1.0
 status: in_progress
 stopped_at: Phase 29 context gathered
-last_updated: "2026-09-09T16:31:00.241Z"
-state_head: a5ccc6d7a720a67cc18f7e10f46824d758cb7710
+last_updated: "2026-09-09T18:26:39.565Z"
+state_head: 172237f39cd309974a0de7799730b0cd2f2b0cf8
 progress:
   total_phases: 28
   completed_phases: 12
-  total_plans: 61
+  total_plans: 64
   completed_plans: 61
 milestone_name: milestone
 last_activity: 2026-09-09
-current_phase_name: catAtk claw/shred/bite damage instrumentation — opt-in combat log + offline analyzer
+current_phase_name: 统一 landing 判定重构
 last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrumentation fully removed (scout, ctx stamp, pair ledger, master switch) — the multi-cat arbitration is resolved by the upcoming unified landing design instead"
 ---
 
