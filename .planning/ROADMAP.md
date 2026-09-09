@@ -1004,11 +1004,20 @@ Plans:
 **Goal:** 重构 landing 判定机制：去掉 `landSource` 参数，所有 `land = true` 注册技能统一采用三通道证据（self-hit / apply / fail）OR 语义 + cast 后 `intentTtl` 窗口静默到期反推兜底；cast 维度谓词去重（同 cast 单条、同质量保留最早）；fail-wins 保留；`intentTtl` 成为 register 可选参数（默认 0.9s，猎人钉刺 ~2s 覆盖弹道）；FB 续期 push 豁免去重。设计锁定细节见 `.planning/phases/29-landing/DESIGN-CONTEXT.md`（2026-09-09 讨论收敛，RAWDIAG2 取证插桩已移除）
 **Requirements**: TBD
 **Depends on:** Phase 28
-**Plans:** 0 plans
+**Plans:** 3 plans
 
 Plans:
+**Wave 1**
 
-- [ ] TBD (run /gsd-plan-phase 29 to break down)
+- [ ] 29-01-PLAN.md — 统一 OR 证据链 tracer：register 改签名（去 per-spell 来源字段 + 新增 intentTtl + ttl 注册表 + 自然属性 pattern 驱动）、intent.ttl 贯通配对/否决双窗、cast 维去重谓词、续期豁免入口 recordLandEventRenewal、self-hit 门拆除、Druid/Hunter 注册点迁移、Q-01/Q-02 基线重对齐（含 D-01 costly 决策检查点，autonomous=false）
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [ ] 29-02-PLAN.md — 反推兜底层复活：maintainLandTables + computeLandTable 窗口化推断（蓝色 (inferred) 通告、静默窗 ttl 触发、窗口化 fail 否决）+ Q-09 复活断言 + Q-11/Q-13 边界用例
+
+**Wave 3** *(blocked on Wave 2)*
+
+- [ ] 29-03-PLAN.md — 边界用例后半程 Q-12/Q-14/Q-15/Q-16 + HUMAN-UAT.md Phase 29 实机验收协议（含 D-17/D-18 注记）+ 全阶段静态收尾电池
 
 ---
 
