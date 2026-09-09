@@ -123,24 +123,6 @@ function macroTorch.recordCastTable(spell)
         macroTorch.loginContext.intentTable[spell][mob] = macroTorch.LRUStack:new(32)
     end
     macroTorch.loginContext.intentTable[spell][mob].push({ state = 'pending', castAt = GetTime(), landAt = nil })
-    -- [RAWDIAG2 quick 260907-mhh] arm the RAW_COMBATLOG forensics scout on a
-    -- recorded in-combat Rip cast (pure additive state recording; no existing
-    -- branch, return value or scheduling is touched). The scout itself dumps in
-    -- events.lua's RAW_COMBATLOG branch, before the channel whitelist. Every arm
-    -- resets the line/sample counters and the capture runs until combat exit —
-    -- nothing disarms it before leaving combat. The rotation casts Rip once per
-    -- fight (refreshes come from Ferocious Bite, not a recast), so each fight
-    -- anchors one full capture (the decisive multi-cat overlap evidence is
-    -- per-fight). State lives only in
-    -- macroTorch.context: combat exit wipes it, nothing is persisted, and the
-    -- gating shares no state with any other diagnostic switch.
-    if spell == 'Rip' and macroTorch.rawdiag2Enabled and macroTorch.context and macroTorch.inCombat then
-        macroTorch.context._rawdiag2Lines = 0
-        macroTorch.context._rawdiag2Samples = 0
-        macroTorch.context._rawdiag2Active = true
-        macroTorch.context._rawdiag2Start = GetTime()
-        macroTorch.log('[RAWDIAG2] scout armed by Rip cast record, until combat exit', 'green')
-    end
 end
 -- record traced spells' failures, icluding all types of failures: miss, parry, resist, immune
 -- it also computes the final 'landTable' immediately, cauz the cast event must arrived upon the fail event arrive
@@ -209,18 +191,6 @@ function macroTorch.pairLandIntent(spell, landTime)
         end
     end
     return nil
-end
--- [RAWDIAG2 quick 260907-mhh] read-only pending-intent stack depth for a spell
--- on the current target (feeds the safeRip ctx stamp's intentDepth field).
--- Pure forensics utility: zero writes, defined next to the intentTable it reads.
-function macroTorch.rawdiag2IntentDepth(spell)
-    local mob = macroTorch.target.name
-    if macroTorch.loginContext and macroTorch.loginContext.intentTable and
-            macroTorch.loginContext.intentTable[spell] and
-            macroTorch.loginContext.intentTable[spell][mob] then
-        return macroTorch.tableLen(macroTorch.loginContext.intentTable[spell][mob].elements)
-    end
-    return 0
 end
 -- cpDamage pairing (phase 28): purge/pair skeleton copied from pairLandIntent
 -- but without state/landAt - damage pairing carries no fail-wins semantics.
@@ -361,22 +331,12 @@ function macroTorch.processRawAuraApply(spellName, rawText, targetGuid, now)
     if not spellName or not rawText then
         return nil
     end
-    -- [RAWDIAG2 quick 260907-mhh] pair ledger armed only inside a live scout window.
-    -- Combat exit wipes macroTorch.context, so the armed flag cannot leak into a
-    -- later fight or into a selftest run (out-of-combat /mt never arms it).
-    local armed = macroTorch.context and macroTorch.context._rawdiag2Active
     local markerPos = string.find(rawText, ' is afflicted by ')
     if not markerPos then
-        if armed then
-            macroTorch.log('[RAWDIAG2 pair] ' .. spellName .. ' no-pair:no-apply-marker', 'yellow')
-        end
         return nil
     end
     local guid = string.sub(rawText, 1, markerPos - 1)
     if not targetGuid or string.lower(guid) ~= string.lower(targetGuid) then
-        if armed then
-            macroTorch.log('[RAWDIAG2 pair] ' .. spellName .. ' no-pair:guid-mismatch target=' .. tostring(targetGuid) .. ' line=' .. guid, 'yellow')
-        end
         return nil
     end
     -- accepted residual risk (REVIEW.md WR-02 / SECURITY.md R-04): in a
@@ -395,14 +355,6 @@ function macroTorch.processRawAuraApply(spellName, rawText, targetGuid, now)
         macroTorch.show(spellName .. ' cast on ' .. macroTorch.target.name ..
             ' landed: ' .. now, 'green')
         macroTorch.recordLandEvent(spellName, now)
-    end
-    if armed and intent then
-        macroTorch.log('[RAWDIAG2 pair] ' .. spellName .. ' pair-ok guid=' .. guid ..
-            ' t=' .. string.format('%.3f', now), 'green')
-    end
-    if armed and not intent then
-        macroTorch.log('[RAWDIAG2 pair] ' .. spellName .. ' no-pair:no-intent t=' ..
-            string.format('%.3f', now), 'yellow')
     end
     return intent
 end
