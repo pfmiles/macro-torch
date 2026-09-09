@@ -13,7 +13,7 @@ progress:
 milestone_name: milestone
 last_activity: 2026-09-09
 current_phase_name: catAtk claw/shred/bite damage instrumentation — opt-in combat log + offline analyzer
-last_activity_desc: "Completed quick task 260909-4ep: rawdiag2 scout timed disarm removed — stays armed from the fight's Rip cast until combat exit (one Rip cast per fight via FB refresh, so a 60s gate silently cut long fights short)"
+last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrumentation fully removed (scout, ctx stamp, pair ledger, master switch) — the multi-cat arbitration is resolved by the upcoming unified landing design instead"
 ---
 
 # Project State
@@ -248,6 +248,7 @@ last_activity_desc: "Completed quick task 260909-4ep: rawdiag2 scout timed disar
 | 260907-vve | macroTorch.log 持久化上限可配置化：新增 macroTorch.LOG_MAX_SIZE nil-guard 默认 500 + CONFIG_OPTIONS 第四项进横幅，裁剪上限改读带 tonumber+clamp 净化的局部值（0/负数钳到 1，非法值回落 500）+ Cat T-01 自测，per-session 语义 | 2026-09-07 | cb0fcd3 | [260907-vve-add-macrotorch-log-max-size-global-confi](./quick/260907-vve-add-macrotorch-log-max-size-global-confi/) |
 | 260909-2kd | 移除 RAWDIAG2 侦察器 150 行采集上限：只保留 60s 时间窗口 disarm（混战中 'fades' 噪声 ~24s 即触顶、浪费 CD 取证机会；LOG_MAX_SIZE 已上调 2000 兜底音量），_rawdiag2Lines 计数保留用于 dump 统计 | 2026-09-09 | 139250b | [260909-2kd-rawdiag2-forensics-scout-150-150-24-fade](./quick/260909-2kd-rawdiag2-forensics-scout-150-150-24-fade/) |
 | 260909-4ep | 删除 RAWDIAG2 scout 的 60s 时间窗 disarm 门：窗口从玩家 Rip 施放（arm）持续到 combat exit（context 出战斗清空、每场战斗一个窗口）；rotation 每场只放一次 Rip（其余靠 FB 刷新），时间门会静默截断长战斗的后续取证 | 2026-09-09 | 69a0954 | [260909-4ep-rawdiag2-scout-60s-disarm-rip-arm-combat](./quick/260909-4ep-rawdiag2-scout-60s-disarm-rip-arm-combat/) |
+| 260909-w3r | 移除 RAWDIAG2 取证插桩：主开关与横幅条目（5→4 项）、safeRip 决策戳、combat-log scout、arming hook、intent-depth 助手、pair 账本全部删除；多猫仲裁改由统一 landing 方案在两种假设下自洽，取证装置失去存在必要 | 2026-09-09 | c383f34 | [260909-w3r-rawdiag2-forensics-instrumentation-remov](./quick/260909-w3r-rawdiag2-forensics-instrumentation-remov/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
