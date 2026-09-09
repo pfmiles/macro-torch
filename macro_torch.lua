@@ -26,20 +26,12 @@ end
 if macroTorch.cpBuildLog == nil then
     macroTorch.cpBuildLog = false
 end
--- RAWDIAG2 forensics master switch (quick 260907-mhh WR-02 fix): false by default,
--- set macroTorch.rawdiag2Enabled = true in game (SuperMacro body) to arm the Rip
--- landing forensics scout on every recorded in-combat Rip cast (and the safeRip ctx
--- stamp). The nil-guard re-arms the default on every login; toggling mid-session
--- needs no reload so incidental fights between the test and the log export stay silent.
-if macroTorch.rawdiag2Enabled == nil then
-    macroTorch.rawdiag2Enabled = false
-end
 -- Cower worldboss threat threshold (quick 260907-tuh): 75 percent by default,
 -- set macroTorch.COWER_THREAT_THRESHOLD = 80 in game (SuperMacro body) to tune
 -- the threat percent at which a worldboss catAtk answers with Cower. The
 -- nil-guard re-arms the default on every login; a /run override lasts only
--- for the current session (no SavedVariables persistence), same as the two
--- boolean options above.
+-- for the current session (no SavedVariables persistence), same as the one
+-- boolean option above.
 if macroTorch.COWER_THREAT_THRESHOLD == nil then
     macroTorch.COWER_THREAT_THRESHOLD = 75
 end
@@ -47,7 +39,7 @@ end
 -- set macroTorch.LOG_MAX_SIZE = 1000 in game (SuperMacro body) to keep more log
 -- lines before the macroTorch.log trim loop drops entries. The nil-guard re-arms
 -- the default on every login; a /run override lasts only for the current session
--- (no SavedVariables persistence), same as the three options above. The consumer
+-- (no SavedVariables persistence), same as the two options above. The consumer
 -- sanitizes the value (tonumber plus a clamp to at least 1) in macroTorch.log,
 -- so the trim loop can never hang on an odd override.
 if macroTorch.LOG_MAX_SIZE == nil then
@@ -71,7 +63,7 @@ macroTorch._cpBuildLogProbeWarned = nil
 macroTorch._cpDamageProbeWarned = nil
 
 -- Global config options registry and login banner (quick 260907-sz4). A complete
--- survey of user-tunable globals yields exactly these five entries; a future option
+-- survey of user-tunable globals yields exactly these four entries; a future option
 -- is surfaced by appending one registry entry. The banner only reads values through
 -- the explicit getters below — the nil-guards above stay the only assignments.
 macroTorch.CONFIG_OPTIONS = {
@@ -81,13 +73,6 @@ macroTorch.CONFIG_OPTIONS = {
         desc = 'combo-point build cast log switch (Claw/Shred/Rake interval samples)',
         cmd = '/run macroTorch.cpBuildLog=true',
         get = function() return macroTorch.cpBuildLog end,
-    },
-    {
-        name = 'macroTorch.rawdiag2Enabled',
-        default = false,
-        desc = 'RAWDIAG2 Rip landing forensics master switch',
-        cmd = '/run macroTorch.rawdiag2Enabled=true',
-        get = function() return macroTorch.rawdiag2Enabled end,
     },
     {
         name = 'macroTorch.COWER_THREAT_THRESHOLD',
