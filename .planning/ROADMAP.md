@@ -999,6 +999,17 @@ Plans:
 
 - [x] 28-04-PLAN.md — HUMAN-UAT.md Phase 28 段 + 全阶段验证电池（R7/R8 审计）+ 实机验收协议 (Wave 3)
 
+### Phase 29: 统一 landing 判定重构
+
+**Goal:** 重构 landing 判定机制：去掉 `landSource` 参数，所有 `land = true` 注册技能统一采用三通道证据（self-hit / apply / fail）OR 语义 + cast 后 `intentTtl` 窗口静默到期反推兜底；cast 维度谓词去重（同 cast 单条、同质量保留最早）；fail-wins 保留；`intentTtl` 成为 register 可选参数（默认 0.9s，猎人钉刺 ~2s 覆盖弹道）；FB 续期 push 豁免去重。设计锁定细节见 `.planning/phases/29-landing/DESIGN-CONTEXT.md`（2026-09-09 讨论收敛，RAWDIAG2 取证插桩已移除）
+**Requirements**: TBD
+**Depends on:** Phase 28
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 29 to break down)
+
 ---
 
 ## Task 统计
