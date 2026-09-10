@@ -1,11 +1,11 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-current_plan: 2
+current_plan: 3
 status: in_progress
-stopped_at: Completed 30-01-PLAN.md
-last_updated: "2026-09-10T14:30:18.948Z"
-state_head: a47a5caa74748678105b4962e65c18c9460549a5
+stopped_at: Completed 30-03-PLAN.md
+last_updated: "2026-09-10T14:57:13.592Z"
+state_head: 11689f22bb08192350228de2802b37f364140143
 progress:
   total_phases: 29
   completed_phases: 12
@@ -24,7 +24,7 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
 - **Current Phase**: Phase 29 — 统一 landing 判定重构（3/3 plans executed；实机验证待办，见 29-UAT.md）
-- **Current Plan:** 2
+- **Current Plan:** 3
 - **Total Plans in Phase:** 3
 - **Active Branch**: main
 
@@ -174,6 +174,7 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 | Phase 29 P02 | 6 | 2 tasks | 2 files |
 | Phase 29 P03 | 9 | 3 tasks | 2 files |
 | Phase 30-cpbuild P01 | 2 | 2 tasks | 2 files |
+| Phase 30-cpbuild P03 | 19 | 3 tasks | 1 files |
 
 ## Decisions
 
@@ -225,11 +226,14 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 - [Phase 30-cpbuild]: all [cpBuildT] persistence flows through macroTorch.log and is gated by macroTorch.cpBuildLog; switch off = the 0.1s poll tick returns before GetComboPoints, zero client API calls (D-01)
 - [Phase 30-cpbuild]: locked D-04 transition table implemented verbatim: BUILDING cp>=5 checked before the down-jump branch; mid-window down-jump counts the fail denominator and re-anchors; kill-shot-on-dying-target logs one fail line but does not re-anchor; DONE silent until next down-jump
 - [Phase 30-cpbuild]: cp=0 back-look via macroTorch.toBoolean(macroTorch.target.isCanAttack), short-circuit-evaluated only when a down-jump lands on 0
+- [Phase ?]: T histogram edges { 4, 6, 8, 10, 12 } live as header-local constants T_BUCKET_EDGES / T_BUCKET_LABELS (planner-chosen, user-tunable)
+- [Phase ?]: Savagery pass-rate row carries d = drake * 0.9 with cutoff = d - 1 alongside the raw rakeDur row (cutoff d - 1); both rows always reported
+- [Phase ?]: cpbuild.lua selftest battery carries 26 hand-derived checks; tokenNumber key-length bug (cp= dropped all cast lines) caught on first LuaJIT battery pass and fixed
 
 ## Session
 
-**Last session:** 2026-09-10T14:30:03.621Z
-**Stopped at:** Completed 30-01-PLAN.md
+**Last session:** 2026-09-10T14:57:12.752Z
+**Stopped at:** Completed 30-03-PLAN.md
 **Resume file:** None
 
 ## Quick Tasks Completed
