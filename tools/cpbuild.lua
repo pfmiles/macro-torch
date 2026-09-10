@@ -60,6 +60,17 @@ local FLAG_SELFTEST = '-' .. '-selftest'
 local FLAG_JSON_OUT = '-' .. '-json-out'
 local FLAG_RAKE_DUR = '-' .. '-rake-dur'
 
+-- k histogram buckets (D-08 locked intervals): label count is edge count
+-- plus one, and the 1.5s edge is the judgment line. Chain-broken intervals
+-- never reach these buckets.
+local K_BUCKET_EDGES = { 1.5, 2, 3, 5, 10 }
+local K_BUCKET_LABELS = { '[<1.5)', '[1.5,2)', '[2,3)', '[3,5)', '[5,10)', '[>=10)' }
+
+-- T histogram buckets: planner-chosen edges surrounding the 8s / 7.1s
+-- pass cutoffs; retune here if the client thresholds ever move.
+local T_BUCKET_EDGES = { 4, 6, 8, 10, 12 }
+local T_BUCKET_LABELS = { '[<4)', '[4,6)', '[6,8)', '[8,10)', '[10,12)', '[>=12)' }
+
 -- count a contiguous 1..n array with ipairs (Lua 5.0 has no length
 -- operator; the message ring and the entry lists are always contiguous
 -- because the client trims them with table.remove)
@@ -772,3 +783,351 @@ function parseSamples(messages)
     return { casts = casts, okTs = okTs, failCount = failCount,
         badLines = badLines, truncated = truncated }
 end
+
+-- statistics layer (D-08): four pure functions. Every function reads its
+-- inputs as-is, never mutates them, builds fresh result tables and
+-- iterates explicitly - the report path never relies on pairs ordering.
+
+-- index of the first bucket whose edge is above v; edges are ascending
+-- and the result is 1..edgeCount+1
+local function bucketIndex(edges, v)
+    local total = countList(edges)
+    for i = 1, total do
+        if v < edges[i] then
+            return i
+        end
+    end
+    return total + 1
+end
+
+-- fresh label/count bucket list for one label set
+local function emptyBuckets(labels)
+    local buckets = {}
+    for i = 1, countList(labels) do
+        buckets[i] = { label = labels[i], count = 0 }
+    end
+    return buckets
+end
+
+-- k = inter-cast interval between adjacent [cpBuild] casts (D-08). The
+-- chain-break rule: a gap over BREAK_THRESHOLD or not positive spans
+-- combat boundaries or a relog, counts as one break and the interval is
+-- EXCLUDED from every k statistic. Returns { samples, mean, breaks,
+-- below15, buckets = list of { label, count } }; mean stays nil when no
+-- interval is counted.
+function buildKStats(casts)
+    local buckets = emptyBuckets(K_BUCKET_LABELS)
+    local samples = 0
+    local sum = 0
+    local breaks = 0
+    local below15 = 0
+    local total = countList(casts)
+    for i = 1, total - 1 do
+        local k = casts[i + 1].t - casts[i].t
+        if k > BREAK_THRESHOLD or k <= 0 then
+            breaks = breaks + 1
+        else
+            samples = samples + 1
+            sum = sum + k
+            if k < 1.5 then
+                below15 = below15 + 1
+            end
+            local idx = bucketIndex(K_BUCKET_EDGES, k)
+            buckets[idx].count = buckets[idx].count + 1
+        end
+    end
+    local mean = nil
+    if samples > 0 then
+        mean = sum / samples
+    end
+    return { samples = samples, mean = mean, breaks = breaks,
+        below15 = below15, buckets = buckets }
+end
+
+-- T = bite-to-full-build window seconds (D-08): the mean over the ok
+-- samples, the sample count and a distribution histogram over the
+-- T_BUCKET_EDGES bands.
+function buildTStats(okTs)
+    local buckets = emptyBuckets(T_BUCKET_LABELS)
+    local samples = 0
+    local sum = 0
+    local total = countList(okTs)
+    for i = 1, total do
+        local t = okTs[i]
+        samples = samples + 1
+        sum = sum + t
+        local idx = bucketIndex(T_BUCKET_EDGES, t)
+        buckets[idx].count = buckets[idx].count + 1
+    end
+    local mean = nil
+    if samples > 0 then
+        mean = sum / samples
+    end
+    return { samples = samples, mean = mean, buckets = buckets }
+end
+
+-- dual pass rates (D-08): P(T <= D_rake - 1) on the rakeDur row and the
+-- Savagery-adjusted P(T <= 0.9 * D_rake - 1) on the savagery row. Every ok
+-- window at or below the cutoff passes; fail windows count as not attained
+-- (D-04 bypass 1), so the denominator is the ok count plus the fail count.
+-- rate stays nil when the denominator is zero. drake falls back to
+-- DRAKE_DEFAULT when tonumber fails; both rows are always computed and
+-- reported.
+function calculatePassRates(okTs, failCount, drake)
+    local d = tonumber(drake)
+    if d == nil then
+        d = DRAKE_DEFAULT
+    end
+    local denominator = countList(okTs) + failCount
+    local function tally(cutoff)
+        local passed = 0
+        local total = countList(okTs)
+        for i = 1, total do
+            if okTs[i] <= cutoff then
+                passed = passed + 1
+            end
+        end
+        local rate = nil
+        if denominator > 0 then
+            rate = passed / denominator
+        end
+        return { passed = passed, denominator = denominator, rate = rate }
+    end
+    local rakeRow = tally(d - 1)
+    local savRow = tally(d * SAVAGERY_FACTOR - 1)
+    return {
+        rakeDur = { d = d, cutoff = d - 1, passed = rakeRow.passed,
+            denominator = rakeRow.denominator, rate = rakeRow.rate },
+        savagery = { d = d * SAVAGERY_FACTOR, cutoff = d * SAVAGERY_FACTOR - 1,
+            passed = savRow.passed, denominator = savRow.denominator,
+            rate = savRow.rate },
+    }
+end
+
+-- per-skill cast counts: a fresh table keyed by the lowercased skill token
+-- (the client emits Claw / Shred / Rake; any other token is counted too,
+-- never discarded) plus the grand total.
+function perSkillCasts(casts)
+    local skills = {}
+    local total = 0
+    local n = countList(casts)
+    for i = 1, n do
+        local name = string.lower(casts[i].skill)
+        if skills[name] == nil then
+            skills[name] = 1
+        else
+            skills[name] = skills[name] + 1
+        end
+        total = total + 1
+    end
+    return { skills = skills, total = total }
+end
+
+-- output section (D-08): terminal report, json archive, usage and the CLI
+-- entry.
+
+-- rendering helper: nil pass rates render as '-', rates as percentages
+local function fmtRate(row)
+    if row.rate == nil then
+        return '-'
+    end
+    return string.format('%.1f%%', row.rate * 100)
+end
+
+-- terminal report: source line, per-skill cast counts, the k statistics
+-- (mean, samples, breaks, below-1.5 share, six bucket lines), the T
+-- statistics (mean, sample count, six bucket lines), the dual pass-rate
+-- lines (both cutoffs always printed, D-08), the ok/fail window matrix and
+-- the dropped-line / truncation warnings.
+function printReport(res)
+    local sep = string.rep('=', 64)
+    io.write(sep .. '\n')
+    io.write('cpBuild report\n')
+    io.write('source: ' .. tostring(res.source) .. '\n')
+    local cc = res.castCounts
+    io.write('cast counts:\n')
+    io.write('  claw  ' .. tostring(cc.claw) .. '\n')
+    io.write('  shred ' .. tostring(cc.shred) .. '\n')
+    io.write('  rake  ' .. tostring(cc.rake) .. '\n')
+    io.write('  total ' .. tostring(cc.total) .. '\n')
+    local ks = res.kStats
+    io.write('k stats (inter-cast interval):\n')
+    if ks.samples == 0 then
+        io.write('  no intervals (need 2 or more chained casts)\n')
+    else
+        io.write(string.format('  mean %.2f s over %d intervals, %d chain breaks, %d below 1.5s (%.0f%%)\n',
+            ks.mean, ks.samples, ks.breaks, ks.below15, 100 * ks.below15 / ks.samples))
+    end
+    io.write('  buckets: ')
+    for i = 1, countList(ks.buckets) do
+        io.write(ks.buckets[i].label .. ' ' .. tostring(ks.buckets[i].count) .. '  ')
+    end
+    io.write('\n')
+    local ts = res.tStats
+    io.write('T stats (bite to full build window):\n')
+    if ts.samples == 0 then
+        io.write('  no ok windows\n')
+    else
+        io.write(string.format('  mean T = %.2f s over %d windows\n', ts.mean, ts.samples))
+    end
+    io.write('  buckets: ')
+    for i = 1, countList(ts.buckets) do
+        io.write(ts.buckets[i].label .. ' ' .. tostring(ts.buckets[i].count) .. '  ')
+    end
+    io.write('\n')
+    local pr = res.passRates
+    io.write('pass rates:\n')
+    io.write(string.format('  rakeDur  d=%.1f cutoff=%.1f: %s (%d / %d)\n',
+        pr.rakeDur.d, pr.rakeDur.cutoff, fmtRate(pr.rakeDur),
+        pr.rakeDur.passed, pr.rakeDur.denominator))
+    io.write(string.format('  savagery d=%.1f cutoff=%.1f: %s (%d / %d)\n',
+        pr.savagery.d, pr.savagery.cutoff, fmtRate(pr.savagery),
+        pr.savagery.passed, pr.savagery.denominator))
+    local wm = res.windowMatrix
+    io.write(string.format('window matrix: ok %d / fail %d\n', wm.ok, wm.fail))
+    if res.dropped.badLines > 0 then
+        io.write('warning: ' .. tostring(res.dropped.badLines) ..
+            ' malformed [cpBuild] / [cpBuildT] lines skipped\n')
+    end
+    if res.truncated then
+        io.write('warning: entry cap ' .. tostring(MAX_ENTRIES) ..
+            ' reached, remaining lines ignored\n')
+    end
+end
+
+-- json result archive (D-08): encodeValue builds the whole document from
+-- the res table through encodeScalar (the same scalar contract as the
+-- in-game encoder). An io.open failure prints the error and exits 1.
+function writeJsonOut(path, res)
+    local file = io.open(path, 'w')
+    if not file then
+        io.write('cannot open json output file for writing: ' .. tostring(path) .. '\n')
+        os.exit(1)
+    end
+    file:write(encodeValue(res), '\n')
+    file:close()
+end
+
+-- usage text with the three subcommand forms; any form may also carry the
+-- rake duration override flag plus a number of seconds
+function printUsage()
+    io.write('usage: lua tools/cpbuild.lua <path/to/SuperMacro.lua>\n')
+    io.write('usage: lua tools/cpbuild.lua <path/to/SuperMacro.lua> ' ..
+        FLAG_JSON_OUT .. ' <file>\n')
+    io.write('usage: lua tools/cpbuild.lua ' .. FLAG_SELFTEST .. '\n')
+    io.write('any form may also carry ' .. FLAG_RAKE_DUR ..
+        ' <seconds> to override the rake duration (default ' .. tostring(DRAKE_DEFAULT) .. ')\n')
+end
+
+-- CLI entry: parse the arguments, then either run the self-test battery or
+-- the full read -> extract -> sandbox -> parse -> stats -> report chain
+-- with the optional json archive. The first non-flag argument is the
+-- SavedVariables path; the json-out target, the rake duration override and
+-- the selftest mode ride the flag constants. The self-test path touches no
+-- external files.
+function main(args)
+    if not args or not args[1] then
+        printUsage()
+        os.exit(1)
+    end
+    local selftestMode = false
+    local jsonOutPath = nil
+    local svPath = nil
+    local drake = DRAKE_DEFAULT
+    local i = 1
+    while args[i] ~= nil do
+        local a = args[i]
+        if a == FLAG_SELFTEST then
+            selftestMode = true
+            i = i + 1
+        elseif a == FLAG_JSON_OUT then
+            if args[i + 1] == nil then
+                io.write('error: ' .. FLAG_JSON_OUT .. ' requires a file path\n')
+                printUsage()
+                os.exit(1)
+            end
+            jsonOutPath = args[i + 1]
+            i = i + 2
+        elseif a == FLAG_RAKE_DUR then
+            if args[i + 1] == nil then
+                io.write('error: ' .. FLAG_RAKE_DUR .. ' requires a number of seconds\n')
+                printUsage()
+                os.exit(1)
+            end
+            local dur = tonumber(args[i + 1])
+            if dur == nil then
+                io.write('error: ' .. FLAG_RAKE_DUR .. ' expects a numeric value, got: ' ..
+                    tostring(args[i + 1]) .. '\n')
+                printUsage()
+                os.exit(1)
+            end
+            drake = dur
+            i = i + 2
+        else
+            if svPath ~= nil then
+                io.write('error: unexpected extra argument: ' .. tostring(a) .. '\n')
+                printUsage()
+                os.exit(1)
+            end
+            svPath = a
+            i = i + 1
+        end
+    end
+    if selftestMode then
+        runSelftest()
+        return
+    end
+    if svPath == nil then
+        printUsage()
+        os.exit(1)
+    end
+    local text = readAll(svPath)
+    if not text then
+        io.write('cannot read file (missing or over 32MB): ' .. tostring(svPath) .. '\n')
+        os.exit(1)
+    end
+    local block, extractErr = extractMacroTorchLog(text)
+    if not block then
+        if extractErr == 'empty log declared' then
+            io.write(extractErr .. '\n')
+            os.exit(0)
+        end
+        io.write('extract failed: ' .. tostring(extractErr) .. '\n')
+        os.exit(1)
+    end
+    local pack, sandboxErr = getMessages(block)
+    if not pack then
+        io.write('cannot execute extracted SV block: ' .. tostring(sandboxErr) .. '\n')
+        os.exit(1)
+    end
+    if not pack.ok then
+        io.write(pack.reason .. '\n')
+        os.exit(0)
+    end
+    local parsed = parseSamples(pack.messages)
+    local castCounts = perSkillCasts(parsed.casts)
+    local res = {
+        generatedAt = os.date('!%Y-%m-%dT%H:%M:%SZ'),
+        source = svPath,
+        castCounts = {
+            claw = castCounts.skills.claw or 0,
+            shred = castCounts.skills.shred or 0,
+            rake = castCounts.skills.rake or 0,
+            total = castCounts.total,
+        },
+        kStats = buildKStats(parsed.casts),
+        tStats = buildTStats(parsed.okTs),
+        passRates = calculatePassRates(parsed.okTs, parsed.failCount, drake),
+        windowMatrix = { ok = countList(parsed.okTs), fail = parsed.failCount },
+        dropped = { badLines = parsed.badLines },
+        truncated = parsed.truncated,
+    }
+    printReport(res)
+    if jsonOutPath ~= nil then
+        writeJsonOut(jsonOutPath, res)
+        io.write('json result written to ' .. jsonOutPath .. '\n')
+    end
+    os.exit(0)
+end
+
+main(arg)
