@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 current_plan: 3
 status: in_progress
-stopped_at: Completed 30-03-PLAN.md
-last_updated: "2026-09-10T14:57:13.592Z"
-state_head: 11689f22bb08192350228de2802b37f364140143
+stopped_at: Completed 30-02-PLAN.md
+last_updated: "2026-09-10T15:10:09.119Z"
+state_head: b3d86d3252cc4e864370ae3077d549fe2afc2565
 progress:
   total_phases: 29
   completed_phases: 12
   total_plans: 67
-  completed_plans: 65
+  completed_plans: 67
 milestone_name: milestone
 last_activity: 2026-09-09
 current_phase_name: cpBuild 双保判定改造
@@ -175,6 +175,7 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 | Phase 29 P03 | 9 | 3 tasks | 2 files |
 | Phase 30-cpbuild P01 | 2 | 2 tasks | 2 files |
 | Phase 30-cpbuild P03 | 19 | 3 tasks | 1 files |
+| Phase 30 P02 | 4 | 2 tasks | 3 files |
 
 ## Decisions
 
@@ -229,11 +230,13 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 - [Phase ?]: T histogram edges { 4, 6, 8, 10, 12 } live as header-local constants T_BUCKET_EDGES / T_BUCKET_LABELS (planner-chosen, user-tunable)
 - [Phase ?]: Savagery pass-rate row carries d = drake * 0.9 with cutoff = d - 1 alongside the raw rakeDur row (cutoff d - 1); both rows always reported
 - [Phase ?]: cpbuild.lua selftest battery carries 26 hand-derived checks; tokenNumber key-length bug (cp= dropped all cast lines) caught on first LuaJIT battery pass and fixed
+- [Phase 30]: S-09 pin conflict resolved toward the plan's pinned contract: kill-shot returns now fully reset to a pristine WAIT_ANCHOR (t0 cleared) instead of weakening the pin to the shipped stale-t0 behavior (Rule 2, commit d78d6a2)
+- [Phase 30]: runtime evidence stays user-side per D-14: the eight S-05..S-12 pins and the Phase 30 UAT protocol execute on Windows+Cygwin; static gates are the executor-certifiable subset, in-game battery tracked as unrun-verify in the windows ledger
 
 ## Session
 
-**Last session:** 2026-09-10T14:57:12.752Z
-**Stopped at:** Completed 30-03-PLAN.md
+**Last session:** 2026-09-10T15:10:08.275Z
+**Stopped at:** Completed 30-02-PLAN.md
 **Resume file:** None
 
 ## Quick Tasks Completed

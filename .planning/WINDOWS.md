@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 3
+open_count: 4
 waived_count: 0
 fixed_count: 2
-total_count: 5
-last_updated: 2026-09-10T02:39:33.873Z
+total_count: 6
+last_updated: 2026-09-10T15:09:51.784Z
 ---
 
 # Broken Windows Ledger
@@ -20,6 +20,7 @@ last_updated: 2026-09-10T02:39:33.873Z
 | 3 | 28 | stub | tools/cpdamage.lua | 542 | selftest branch placeholder prints placeholder text; full selftest lands in 28-03 | fixed |  | 2026-09-08T12:37:50.223Z | 2026-09-08T13:49:44.744Z |
 | 4 | 28 | stub | tools/cpdamage.lua | 546 | json-out branch placeholder prints placeholder text; result-file output lands in 28-03 | fixed |  | 2026-09-08T12:37:50.446Z | 2026-09-08T13:49:44.997Z |
 | 5 | 29 | deviation | classes/druid/Druid.lua |  | Task-2 token-gate grep prints 2: pre-existing '#' comment glyphs ('decision #3'/'decision #4') preserved verbatim per plan instruction; no Lua 5.0 code token introduced | open |  | 2026-09-10T02:39:33.873Z |  |
+| 6 | 30 | unrun-verify | classes/druid/selftest.lua |  | S-05..S-12 stubbed DKI pins: in-game /mt battery not runnable on this host (D-14) - execute on Windows+Cygwin per HUMAN-UAT.md Phase 30 protocol | open |  | 2026-09-10T15:09:51.784Z |  |
 
 ````json
 [
@@ -81,6 +82,18 @@ last_updated: 2026-09-10T02:39:33.873Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-10T02:39:33.873Z",
+    "resolved_at": null
+  },
+  {
+    "id": 6,
+    "kind": "unrun-verify",
+    "phase": "30",
+    "file": "classes/druid/selftest.lua",
+    "line": null,
+    "description": "S-05..S-12 stubbed DKI pins: in-game /mt battery not runnable on this host (D-14) - execute on Windows+Cygwin per HUMAN-UAT.md Phase 30 protocol",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-10T15:09:51.784Z",
     "resolved_at": null
   }
 ]
