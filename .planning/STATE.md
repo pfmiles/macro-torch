@@ -1,14 +1,14 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-current_plan: 3
+current_plan: Not started
 status: in_progress
-stopped_at: Completed 30-02-PLAN.md
-last_updated: "2026-09-10T15:10:09.119Z"
-state_head: b3d86d3252cc4e864370ae3077d549fe2afc2565
+stopped_at: Phase 30 complete — all phases complete
+last_updated: "2026-09-10T17:49:27.950Z"
+state_head: ee87279adce488a26f6983e022e295af2ea5933d
 progress:
   total_phases: 29
-  completed_phases: 12
+  completed_phases: 13
   total_plans: 67
   completed_plans: 67
 milestone_name: milestone
@@ -23,8 +23,8 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 29 — 统一 landing 判定重构（3/3 plans executed；实机验证待办，见 29-UAT.md）
-- **Current Plan:** 3
+- **Current Phase**: Phase 30 — cpBuild 双保判定改造（3/3 plans complete；UAT 5/5 全绿，2026-09-11）。Phase 29 实机验证仍待办（见 29-UAT.md）
+- **Current Plan:** Not started
 - **Total Plans in Phase:** 3
 - **Active Branch**: main
 
@@ -58,6 +58,7 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 | Phase 27: catAtk event-driven land tracing refactor | ✅ complete | 2026-08-28 | 2026-08-29 | 3/3 plans |
 | Phase 28: catAtk claw/shred/bite damage instrumentation | ✅ complete | 2026-09-08 | 2026-09-08 | 4/4 plans |
 | Phase 29: 统一 landing 判定重构 | 🟡 in_progress | 2026-09-10 | — | 2/3 plans |
+| Phase 30: cpBuild 双保判定改造 | ✅ complete | 2026-09-10 | 2026-09-11 | 3/3 plans |
 
 ## Accumulated Context
 
@@ -232,11 +233,13 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 - [Phase ?]: cpbuild.lua selftest battery carries 26 hand-derived checks; tokenNumber key-length bug (cp= dropped all cast lines) caught on first LuaJIT battery pass and fixed
 - [Phase 30]: S-09 pin conflict resolved toward the plan's pinned contract: kill-shot returns now fully reset to a pristine WAIT_ANCHOR (t0 cleared) instead of weakening the pin to the shipped stale-t0 behavior (Rule 2, commit d78d6a2)
 - [Phase 30]: runtime evidence stays user-side per D-14: the eight S-05..S-12 pins and the Phase 30 UAT protocol execute on Windows+Cygwin; static gates are the executor-certifiable subset, in-game battery tracked as unrun-verify in the windows ledger
+- [Phase 30]: UAT 5/5 全绿 — 实机目标态循环 32 窗口 T̄=5.61s（≪ 8.0s 截点），rakeDur 达标率 87.5% / savagery 75.0%、0 截断窗口；双保判据在实机成立，样本存档 .planning/samples/cpBuild.txt（132 施法 257s 连续会话 0 断链，交叉核验 100% 吻合）
+- [Phase 30]: 复审 fix 收口（e34c510/5f03a82/7f85576）— WR-01 下跳锚协议内 by-design（HUMAN-UAT 强化 D-09 终点技纪律），WR-02 双通道排障口径拆分，WR-03 events.lua resetCpBuildDki 存在性守卫
 
 ## Session
 
-**Last session:** 2026-09-10T15:10:08.275Z
-**Stopped at:** Completed 30-02-PLAN.md
+**Last session:** 2026-09-10T17:49:27.950Z
+**Stopped at:** Phase 30 complete — all phases complete
 **Resume file:** None
 
 ## Quick Tasks Completed
