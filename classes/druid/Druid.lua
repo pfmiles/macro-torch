@@ -440,8 +440,10 @@ function macroTorch.cpBuildDkiTick()
                 -- mutually exclusive, so the machine stays BUILDING.
                 macroTorch.cpBuildDki.t0 = GetTime()
             else
-                -- Kill-shot bite on a dying target: no re-anchor. The target
-                -- is dead and the combat-exit reset owns the follow-up.
+                -- Kill-shot bite on a dying target: no re-anchor, full local
+                -- reset to a pristine WAIT_ANCHOR (S-09 pins t0 = nil). The
+                -- target is dead and the combat-exit reset owns the follow-up.
+                macroTorch.cpBuildDki.t0 = nil
                 macroTorch.cpBuildDki.state = 'WAIT_ANCHOR'
             end
         end
@@ -460,7 +462,9 @@ function macroTorch.cpBuildDkiTick()
                 macroTorch.cpBuildDki.t0 = GetTime()
                 macroTorch.cpBuildDki.state = 'BUILDING'
             else
-                -- target dead or gone: back to WAIT_ANCHOR, no anchor, no line
+                -- target dead or gone: full local reset to a pristine
+                -- WAIT_ANCHOR, no anchor, no line
+                macroTorch.cpBuildDki.t0 = nil
                 macroTorch.cpBuildDki.state = 'WAIT_ANCHOR'
             end
         end
