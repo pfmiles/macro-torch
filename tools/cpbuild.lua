@@ -663,16 +663,18 @@ local function splitSpaces(body)
     return parts
 end
 
--- tokenNumber(token, key): the token must start with the two-char key
--- ('t=', 'cp=' or 'e=') and the rest must be a Lua 5.0-legal decimal
+-- tokenNumber(token, key): the token must start with the key ('t=',
+-- 'cp=' or 'e=') and the rest must be a Lua 5.0-legal decimal
 -- number (plain or scientific form, the same pre-check pattern discipline
 -- as decodeJson) with tonumber under pcall as the final gate. Returns the
--- number or nil.
+-- number or nil. The key length is read off the key itself: cp= is three
+-- characters while t= and e= are two.
 local function tokenNumber(token, key)
-    if string.sub(token, 1, 2) ~= key then
+    local keyLen = string.len(key)
+    if string.sub(token, 1, keyLen) ~= key then
         return nil
     end
-    local val = string.sub(token, 3)
+    local val = string.sub(token, keyLen + 1)
     local plainOk = string.find(val, '^%d+%.?%d*$')
     local sciOk = string.find(val, '^%d+%.?%d*[eE][+-]?%d+$')
     if not plainOk and not sciOk then
@@ -1006,6 +1008,140 @@ function writeJsonOut(path, res)
     end
     file:write(encodeValue(res), '\n')
     file:close()
+end
+
+-- full self-test battery (the D-14 runtime carrier): one SV-form fixture
+-- built entirely inside this script, rounded through extract / getMessages
+-- / parseSamples, plus direct checks on the k / T / pass-rate math and a
+-- json archive round-trip through a temporary file that is removed again
+-- before the banner. Any failure prints a FAIL line and exits 1; a clean
+-- run prints the ALL PASSED banner and exits 0. The live run of this
+-- battery belongs to the user's Windows+Cygwin Lua (HUMAN-UAT.md phase 30
+-- part 5); this box only certifies the structure statically (no local Lua
+-- interpreter, D-14).
+function runSelftest()
+    local passed = 0
+    local function check(cond, label)
+        if cond then
+            passed = passed + 1
+        else
+            io.write('selftest: FAIL - ' .. label .. '\n')
+            os.exit(1)
+        end
+    end
+    local DQ = string.char(34)
+    -- one messages ring line the way the client writes it: [N] = "body"
+    -- with the inner double quotes backslash-escaped
+    local function line(n, raw)
+        local escaped = string.gsub(raw, DQ, '\\' .. DQ)
+        return '\t\t[' .. tostring(n) .. '] = ' .. DQ .. escaped .. DQ .. ',\n'
+    end
+    -- fixture: chain A carries 4 chained casts (gaps 1.0 / 2.5 / 3.5 across
+    -- three buckets incl. one below 1.5), the 48.0 line breaks the chain
+    -- (31.0s over BREAK_THRESHOLD), chain B adds 5.0 / 11.0 gaps, two ok
+    -- windows straddle the 7.1 / 8.0 cutoffs, one fail window, one bad
+    -- line per family and two unrelated lines.
+    local fix = 'MACRO_TORCH_LOG = {\n' ..
+        '\t["messages"] = {\n'
+    fix = fix .. line(1, 'combat started')
+    fix = fix .. line(2, '[cpBuild] Claw t=10.000 cp=1 e=45')
+    fix = fix .. line(3, '[cpBuild] Claw t=11.000 cp=2 e=42')
+    fix = fix .. line(4, '[cpBuild] Shred t=13.500 cp=3 e=20')
+    fix = fix .. line(5, '[cpBuild] Rake t=17.000 cp=4 e=15')
+    fix = fix .. line(6, '[cpBuild] Claw t=48.000 cp=1 e=50')
+    fix = fix .. line(7, '[cpBuild] Shred t=53.000 cp=2 e=30')
+    fix = fix .. line(8, '[cpBuild] Claw t=64.000 cp=3 e=25')
+    fix = fix .. line(9, '[cpBuildT] ok t=6.500')
+    fix = fix .. line(10, '[cpBuildT] ok t=7.500')
+    fix = fix .. line(11, '[cpBuildT] fail')
+    fix = fix .. line(12, 'gear swap at 80s')
+    fix = fix .. line(13, '[cpBuildT] ok t=abc')
+    fix = fix .. line(14, '[cpBuild] Claw t=2.000 cp=xx e=55')
+    fix = fix .. '\t},\n}\n'
+    local block, extractErr = extractMacroTorchLog(fix)
+    check(block ~= nil, 'fixture extraction succeeds (' .. tostring(extractErr) .. ')')
+    local pack, packErr = getMessages(block)
+    check(pack ~= nil and pack.ok, 'fixture sandbox run succeeds (' .. tostring(packErr) .. ')')
+    check(pack ~= nil and pack.ok and countList(pack.messages) == 14,
+        'fixture message count is 14')
+    local pr = parseSamples(pack.messages)
+    check(countList(pr.casts) == 7, 'fixture yields 7 valid cast samples')
+    check(countList(pr.okTs) == 2, 'fixture yields 2 ok window samples')
+    check(pr.failCount == 1, 'fixture yields exactly 1 fail window')
+    check(pr.badLines == 2, 'fixture rejects exactly 2 badLines')
+    check(pr.truncated == false, 'fixture does not truncate')
+    local ks = buildKStats(pr.casts)
+    check(ks.breaks == 1, 'k stats find exactly 1 chain break (the 31s gap)')
+    check(ks.samples == 5, 'k stats count 5 intervals across the two chains')
+    check(ks.below15 == 1, 'k stats below15 is exactly the 1.0s gap')
+    check(ks.mean ~= nil and math.abs(ks.mean - 4.6) < 0.001, 'k stats mean is 4.6')
+    check(ks.buckets[1].count == 1 and ks.buckets[2].count == 0 and
+        ks.buckets[3].count == 1 and ks.buckets[4].count == 1 and
+        ks.buckets[5].count == 1 and ks.buckets[6].count == 1,
+        'k buckets occupancy equals the hand-computed 1/0/1/1/1/1')
+    local ts = buildTStats(pr.okTs)
+    check(ts.samples == 2, 'T stats count 2 ok samples')
+    check(ts.mean ~= nil and math.abs(ts.mean - 7.0) < 0.001, 'T stats mean is 7.0')
+    check(ts.buckets[3].count == 2 and ts.buckets[1].count == 0 and
+        ts.buckets[2].count == 0 and ts.buckets[4].count == 0 and
+        ts.buckets[5].count == 0 and ts.buckets[6].count == 0,
+        'T buckets put both ok samples in [6,8)')
+    local rates9 = calculatePassRates(pr.okTs, pr.failCount, 9)
+    check(rates9.rakeDur.denominator == 3 and rates9.savagery.denominator == 3,
+        'passRates denominator sums ok plus fail windows (3)')
+    check(rates9.rakeDur.passed == 2 and rates9.savagery.passed == 1,
+        'passRates differ: rakeDur passes both ok windows, one passes on savagery')
+    check(math.abs(rates9.rakeDur.cutoff - 8) < 0.0001 and
+        math.abs(rates9.savagery.cutoff - 7.1) < 0.0001,
+        'passRates cutoffs are 8 and 7.1 at drake 9')
+    local rates10 = calculatePassRates(pr.okTs, pr.failCount, 10)
+    check(math.abs(rates10.rakeDur.cutoff - 9) < 0.0001 and
+        math.abs(rates10.savagery.cutoff - 8) < 0.0001,
+        'drake 10 recomputes both cutoffs (9 and 0.9-streaked 8)')
+    check(rates10.rakeDur.passed == 2 and rates10.savagery.passed == 2,
+        'drake 10 savagery row passes both ok windows (passed shifts 1 to 2)')
+    local castCounts = perSkillCasts(pr.casts)
+    check(castCounts.skills.claw == 4 and castCounts.skills.shred == 2 and
+        castCounts.skills.rake == 1 and castCounts.total == 7,
+        'per-skill cast counts are claw 4 / shred 2 / rake 1 / total 7')
+    local res = {
+        generatedAt = os.date('!%Y-%m-%dT%H:%M:%SZ'),
+        source = 'selftest fixture',
+        castCounts = {
+            claw = castCounts.skills.claw or 0,
+            shred = castCounts.skills.shred or 0,
+            rake = castCounts.skills.rake or 0,
+            total = castCounts.total,
+        },
+        kStats = ks,
+        tStats = ts,
+        passRates = rates9,
+        windowMatrix = { ok = countList(pr.okTs), fail = pr.failCount },
+        dropped = { badLines = pr.badLines },
+        truncated = pr.truncated,
+    }
+    check(res.windowMatrix.ok == 2 and res.windowMatrix.fail == 1,
+        'windowMatrix counts ok 2 / fail 1')
+    local tmpPath = 'cpbuild_selftest_json_roundtrip.tmp'
+    writeJsonOut(tmpPath, res)
+    local jsonText = readAll(tmpPath)
+    os.remove(tmpPath)
+    check(jsonText ~= nil, 'json archive writes and reads back (round-trip)')
+    check(jsonText ~= nil and string.find(jsonText, 'passRates', 1, true) ~= nil,
+        'json archive carries the passRates key literal')
+    local tail = string.len(jsonText or '')
+    while tail >= 1 do
+        local byte = string.byte(jsonText, tail)
+        if byte == 10 or byte == 13 or byte == 32 or byte == 9 then
+            tail = tail - 1
+        else
+            break
+        end
+    end
+    check(tail >= 1 and string.byte(jsonText, tail) == 125,
+        'json archive ends with the closing brace')
+    io.write('selftest: ALL ' .. tostring(passed) .. ' PASSED\n')
+    os.exit(0)
 end
 
 -- usage text with the three subcommand forms; any form may also carry the
