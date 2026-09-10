@@ -1024,13 +1024,13 @@ Plans:
 **Goal:** 改造 cpBuild 测量系统为双保判定实证 instrumentation：保留 macroTorch.cpBuildLog 开关门控（关闭时零 API 调用），新增 0.1s 轮询的 bite→满5星耗时 live 状态机（[cpBuildT] ok/fail 行，D-04 三态+双旁路协议），新增自包含离线分析器 tools/cpbuild.lua（k 间隔分桶 + 30s 断链切分 + T̄ + 双档达标率 + ok/fail 窗口矩阵），Category S-05..S-12 CR-01 stubbed 单测。设计锁定于 30-CONTEXT.md D-01..D-14。
 **Requirements**: —（无 req ID；reqs 覆盖门由编排器跳过）
 **Depends on:** Phase 29
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 **Wave 1**
 
 - [x] 30-01-PLAN.md — DKI live 计时器 tracer 切片：三态状态机 + 0.1s 轮询 + [cpBuildT] 发射 + 全局重置双钩子 (Wave 1)
-- [ ] 30-03-PLAN.md — tools/cpbuild.lua 自包含离线分析器（harness 复制 + terse 解析 + 统计 + --selftest/--json-out/--rake-dur）(Wave 1)
+- [x] 30-03-PLAN.md — tools/cpbuild.lua 自包含离线分析器（harness 复制 + terse 解析 + 统计 + --selftest/--json-out/--rake-dur）(Wave 1)
 
 **Wave 2** *(blocked on Wave 1)*
 
