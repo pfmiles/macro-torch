@@ -762,8 +762,12 @@ end, true)
 
 	-- Category Q: event-driven land-framework regression tests (Phase 27 Q-01..Q-09,
 	-- Phase 29 unified OR rewrite; 29-02 revives Q-09 as the inference-core
-	-- assertion and adds Q-11/Q-13 — the sequence is now Q-01..Q-11 + Q-13;
-	-- Q-12/Q-14..Q-16 land in 29-03)
+	-- assertion and adds Q-11/Q-13; 29-03 closes D-16 with Q-12/Q-14/Q-15/Q-16.
+	-- The full sequence Q-01..Q-16 covers: unified registration / apply pairing /
+	-- foreign-guid rejection / expiry / fail finality / late-pairing block /
+	-- pairing-free self-hit / listener presence / inference revival / renewal
+	-- numeric time / silent-window inference / dedup late evidence / windowed
+	-- fail veto / ttl boundary / renewal exemption / remote late arrival.
 	-- Every stubbed test (Q-02..Q-16) follows the Phase-26 CR-01 discipline: the fake
 	-- loginContext / target are local tables built before install, framework calls run
 	-- inside a pcall, results are captured into locals, the real globals are restored by
@@ -1100,6 +1104,50 @@ end, true)
 			"expected a blue announcement, got " .. tostring(capColor))
 	end, true)
 
+	macroTorch.SelfTest:register("Cat Q-12: late evidence for an already-landed cast is rejected (cast-dimension dedup)", function()
+		local savedLoginContext = macroTorch.loginContext
+		local savedTarget = macroTorch.target
+		local savedShow = macroTorch.show
+		local fakeLoginContext = {}
+		local fakeTarget = { isCanAttack = true, name = 'QTestMob', hasBuff = function(self) return false end }
+		macroTorch.loginContext = fakeLoginContext
+		macroTorch.target = fakeTarget
+		macroTorch.show = function() end
+		local pcallRes = true
+		local intentResult, ripLandTop, ripLandSize
+		pcallRes = pcall(function()
+			-- seed the cast and its pending intent with a fixed clock (no real
+			-- GetTime dependency); the intent enters the 0.9 default window
+			local seedCast = 5.0
+			fakeLoginContext.castTable = {}
+			fakeLoginContext.castTable['Rip'] = {}
+			fakeLoginContext.castTable['Rip']['QTestMob'] = macroTorch.LRUStack:new(100)
+			fakeLoginContext.castTable['Rip']['QTestMob'].push(seedCast)
+			fakeLoginContext.intentTable = {}
+			fakeLoginContext.intentTable['Rip'] = {}
+			fakeLoginContext.intentTable['Rip']['QTestMob'] = macroTorch.LRUStack:new(32)
+			fakeLoginContext.intentTable['Rip']['QTestMob'].push({ state = 'pending', castAt = seedCast, landAt = nil, ttl = macroTorch.LAND_INTENT_TTL })
+			-- the apply pairs the intent and lands at 5.1; the second evidence
+			-- channel then reports 5.4 for the same cast, which the cast-dimension
+			-- dedup must drop (one land per cast, earliest arrival wins)
+			intentResult = macroTorch.processRawAuraApply('Rip',
+				'0xF1300000000000AB is afflicted by Rip.', '0xf1300000000000ab', 5.1)
+			macroTorch.recordLandEvent('Rip', 5.4)
+			ripLandTop = fakeLoginContext.landTable['Rip']['QTestMob'].top
+			ripLandSize = macroTorch.tableLen(fakeLoginContext.landTable['Rip']['QTestMob'].elements)
+		end)
+		macroTorch.loginContext = savedLoginContext
+		macroTorch.target = savedTarget
+		macroTorch.show = savedShow
+		assert(pcallRes, "Q-12 pcall failed")
+		assert(intentResult ~= nil and intentResult.state == 'landed',
+			"expected the 5.1 apply to pair and land the seeded intent, got " .. tostring(intentResult and intentResult.state))
+		assert(ripLandTop == 5.1,
+			"expected landTable top 5.1 (5.4 late evidence dropped), got " .. tostring(ripLandTop))
+		assert(ripLandSize == 1,
+			"expected one land per cast, got " .. tostring(ripLandSize))
+	end, true)
+
 	macroTorch.SelfTest:register("Cat Q-13: windowed fail veto — inside vetoes inference, outside does not", function()
 		local savedLoginContext = macroTorch.loginContext
 		local savedTarget = macroTorch.target
@@ -1168,6 +1216,111 @@ end, true)
 			"expected the (inferred) suffix in phase B, got " .. tostring(capMsg))
 		assert(capColor == 'blue',
 			"expected a blue phase B announcement, got " .. tostring(capColor))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat Q-14: per-intent ttl boundary — 2s window pairs, 0.9 expires at a 1.5s delta", function()
+		local savedLoginContext = macroTorch.loginContext
+		local savedTarget = macroTorch.target
+		local fakeLoginContext = {}
+		local fakeTarget = { isCanAttack = true, name = 'QTestMob', hasBuff = function(self) return false end }
+		macroTorch.loginContext = fakeLoginContext
+		macroTorch.target = fakeTarget
+		local pcallRes = true
+		local serpentRes, rakeRes, rakeSeededState
+		pcallRes = pcall(function()
+			fakeLoginContext.intentTable = {}
+			fakeLoginContext.intentTable['Serpent Sting'] = {}
+			fakeLoginContext.intentTable['Serpent Sting']['QTestMob'] = macroTorch.LRUStack:new(32)
+			fakeLoginContext.intentTable['Serpent Sting']['QTestMob'].push({ state = 'pending', castAt = 999.0, landAt = nil, ttl = 2 })
+			fakeLoginContext.intentTable['Rake'] = {}
+			fakeLoginContext.intentTable['Rake']['QTestMob'] = macroTorch.LRUStack:new(32)
+			fakeLoginContext.intentTable['Rake']['QTestMob'].push({ state = 'pending', castAt = 999.0, landAt = nil, ttl = 0.9 })
+			-- the same 1.5s delta reads differently against each intent's own
+			-- ttl: 1.5 <= 2 pairs the sting, 1.5 > 0.9 purges the rake intent
+			serpentRes = macroTorch.pairLandIntent('Serpent Sting', 1000.5)
+			rakeRes = macroTorch.pairLandIntent('Rake', 1000.5)
+			rakeSeededState = fakeLoginContext.intentTable['Rake']['QTestMob'].top.state
+		end)
+		macroTorch.loginContext = savedLoginContext
+		macroTorch.target = savedTarget
+		assert(pcallRes, "Q-14 pcall failed")
+		assert(serpentRes ~= nil and serpentRes.state == 'landed' and serpentRes.landAt == 1000.5,
+			"expected the 2s serpent window to pair at 1000.5, got " .. tostring(serpentRes and (serpentRes.state .. '/' .. tostring(serpentRes.landAt))))
+		assert(rakeRes == nil,
+			"expected the 0.9 rake window to refuse the 1.5s delta, got " .. tostring(rakeRes))
+		assert(rakeSeededState == 'expired',
+			"expected the stale rake intent purged to expired, got " .. tostring(rakeSeededState))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat Q-15: renewal entry bypasses the cast-dimension dedup", function()
+		local savedLoginContext = macroTorch.loginContext
+		local savedTarget = macroTorch.target
+		local savedShow = macroTorch.show
+		local fakeLoginContext = {}
+		local fakeTarget = { isCanAttack = true, name = 'QTestMob', hasBuff = function(self) return false end }
+		macroTorch.loginContext = fakeLoginContext
+		macroTorch.target = fakeTarget
+		macroTorch.show = function() end
+		local pcallRes = true
+		local rakeLandTop, rakeLandSize
+		pcallRes = pcall(function()
+			local seedCast = 5.0
+			fakeLoginContext.castTable = {}
+			fakeLoginContext.castTable['Rake'] = {}
+			fakeLoginContext.castTable['Rake']['QTestMob'] = macroTorch.LRUStack:new(100)
+			fakeLoginContext.castTable['Rake']['QTestMob'].push(seedCast)
+			fakeLoginContext.landTable = {}
+			fakeLoginContext.landTable['Rake'] = {}
+			fakeLoginContext.landTable['Rake']['QTestMob'] = macroTorch.LRUStack:new(100)
+			fakeLoginContext.landTable['Rake']['QTestMob'].push(5.3)
+			-- the ordinary entry drops the 5.6 rewrite (the cast is already
+			-- covered by the 5.3 land); the exempt renewal entry must push it
+			macroTorch.recordLandEvent('Rake', 5.6)
+			macroTorch.recordLandEventRenewal('Rake', 5.6)
+			rakeLandTop = fakeLoginContext.landTable['Rake']['QTestMob'].top
+			rakeLandSize = macroTorch.tableLen(fakeLoginContext.landTable['Rake']['QTestMob'].elements)
+		end)
+		macroTorch.loginContext = savedLoginContext
+		macroTorch.target = savedTarget
+		macroTorch.show = savedShow
+		assert(pcallRes, "Q-15 pcall failed")
+		assert(rakeLandTop == 5.6,
+			"expected the renewal entry to land the 5.6 rewrite, got " .. tostring(rakeLandTop))
+		assert(rakeLandSize == 2,
+			"expected the 5.3 evidence kept plus the 5.6 rewrite, got " .. tostring(rakeLandSize))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat Q-16: remote late arrival — apply 1s after cast pairs under the 2s sting window", function()
+		local savedLoginContext = macroTorch.loginContext
+		local savedTarget = macroTorch.target
+		local savedShow = macroTorch.show
+		local fakeLoginContext = {}
+		local fakeTarget = { isCanAttack = true, name = 'QTestMob', hasBuff = function(self) return false end }
+		macroTorch.loginContext = fakeLoginContext
+		macroTorch.target = fakeTarget
+		macroTorch.show = function() end
+		local pcallRes = true
+		local intentResult, stingLandTop
+		pcallRes = pcall(function()
+			-- no castTable seeded on purpose: the 1.0s delta exceeds the 0.9
+			-- default but fits the 2s ballistic sting window, and the absent
+			-- cast record proves the dedup predicate never blocks this land
+			fakeLoginContext.intentTable = {}
+			fakeLoginContext.intentTable['Serpent Sting'] = {}
+			fakeLoginContext.intentTable['Serpent Sting']['QTestMob'] = macroTorch.LRUStack:new(32)
+			fakeLoginContext.intentTable['Serpent Sting']['QTestMob'].push({ state = 'pending', castAt = 999.0, landAt = nil, ttl = 2 })
+			intentResult = macroTorch.processRawAuraApply('Serpent Sting',
+				'0xF1300000000000AB is afflicted by Serpent Sting.', '0xf1300000000000ab', 1000.0)
+			stingLandTop = fakeLoginContext.landTable['Serpent Sting']['QTestMob'].top
+		end)
+		macroTorch.loginContext = savedLoginContext
+		macroTorch.target = savedTarget
+		macroTorch.show = savedShow
+		assert(pcallRes, "Q-16 pcall failed")
+		assert(intentResult ~= nil and intentResult.state == 'landed' and intentResult.landAt == 1000.0,
+			"expected the 2s sting window to pair the 1s-late apply at 1000.0, got " .. tostring(intentResult and (intentResult.state .. '/' .. tostring(intentResult.landAt))))
+		assert(stingLandTop == 1000.0,
+			"expected the sting land top 1000.0, got " .. tostring(stingLandTop))
 	end, true)
 
 	-- Category S: cpBuildLog combo-point cast logging (quick 260907-0ya, 4 tests)
