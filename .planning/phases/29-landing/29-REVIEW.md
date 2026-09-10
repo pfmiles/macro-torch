@@ -1,272 +1,198 @@
 ---
 phase: 29-landing
-reviewed: 2026-09-10T06:30:00Z
+reviewed: 2026-09-11T03:30:00Z
 depth: standard
-files_reviewed: 5
+files_reviewed: 8
 files_reviewed_list:
   - classes/druid/Druid.lua
   - classes/druid/HUMAN-UAT.md
   - classes/druid/selftest.lua
   - classes/hunter/Hunter.lua
+  - core/events.lua
   - core/spell_trace_core.lua
+  - interface_debug.lua
+  - tools/cpbuild.lua
 findings:
   critical: 0
-  warning: 5
-  info: 4
-  total: 9
+  warning: 1
+  info: 5
+  total: 6
 status: issues_found
 ---
 
-# Phase 29: Code Review Report (Second Pass)
+# Phase 29: Code Review Report (29-04 Gap-Closure Delta + Range Superset)
 
-**Reviewed:** 2026-09-10T06:30:00Z
+**Reviewed:** 2026-09-11T03:30:00Z
 **Depth:** standard
-**Files Reviewed:** 5
+**Files Reviewed:** 8
 **Status:** issues_found
 
 ## Summary
 
-Second adversarial pass over the phase-29 unified landing refactor (D-01..D-18), per the user-mandated
-focus areas: (1) landing-refactor re-verification, (2) cpDamage regression vs the LAND_INTENT_TTL 2s -> 0.9
-change, (3) cast-to-cast interval computation regression, (4) standard phase-diff review of all five
-scoped files. Supporting facts were re-verified against the current tree: `LRUStack` (core/periodic.lua:
-push evicts oldest at cap, `top` = `elements[len]` accessor, `removeMatch` removes newest match),
-`macroTorch.inCombat` set by combat_context.lua:22/33 (PLAYER_REGEN events), `toBoolean`/`tableLen`/
-`jsonEncodeScalar` (impl_util.lua), the events.lua dispatch tiers (onSelfDamageLine at 101, RAW tier-1/2
-at 139/155-164, UNIT_CASTEVENT bridge at 121-129), and the full git diff of the phase
-(`LAND_INTENT_TTL 2->0.9`; `landSources` table removed; `recordCastTable` intent seeding now carries
-`intent.ttl`; `finalizeFail` gained the D-04 lower bound `>= 0`; `recordLandEvent` gained the
-cast-dimension dedup; `recordLandEventRenewal` added; `maintainLandTables`/`computeLandTable` revived;
-register points migrated in Druid.lua/Hunter.lua). No CRITICAL defects are provable — the decision-facing
-consumers (`ripLeft`/`rakeLeft`/`pounceLeft` clamping, `isRipPresent`/`isRakePresent` debuff AND)
-neutralize the worst ledger corruptions.
+This pass covers the diff range `08ed9055^..HEAD`, with review rigor prioritized on the two
+29-04 gap-closure deliverables — the `macroTorch.show` green/blue hue arms in
+`interface_debug.lua` (commit 403116d) and the Category T-02 render-hue regression in
+`classes/druid/selftest.lua` (commit 6bd0015) — plus a regression sweep over the other six
+scoped files (phase 29 landing core, phase 30 DKI/cpBuild instrumentation, `tools/cpbuild.lua`).
 
-**Carried forward from the first pass (all 7 still valid, none dropped):** WR-01 (unconditional green
-announce despite dedup drop), WR-02 (stale-cast inference has no epoch guard), WR-03 (stale "2s"
-comments), WR-04 (HUMAN-UAT branch (b) describes impossible output), IN-01 (no exact ttl-boundary
-fixture), IN-02 (Q-02 fixture overstatement), IN-03 (expired intents never removed). Anchors re-verified
-against the current on-disk files; none moved.
+**Verdict on the 29-04 focus:** the hue fix is correct. The pre-fix tree had the green arm
+carrying a blue-dominant literal and the blue arm carrying `ChatTypeInfo["OFFICER"]` (green in
+vanilla 1.12) — the exact inversion UAT gap G-29-3 diagnosed. The new literals
+(`blue = {0, 0.5, 0.9}`, `green = {0, 1, 0}`) are hue-dominant per the D-14 contract, and the
+label usage across the range is consistent: `'blue'` only from the inference announcer
+(`spell_trace_core.lua:451`), `'green'` only from the two real-evidence announcers
+(`:498`, `:598`), `'red'` for fail/cancel lines, `'yellow'` for probe warnings — a grep
+inventory found no mismatched arms. T-02 drives the REAL `macroTorch.show` with planted
+downstream consumers only, which is the right architecture.
 
-**New this pass:** WR-05 (self-hit channel has no target-ownership check — asymmetric with the apply
-channel's guid check) and IN-04 (name-keyed storage granularity vs guid ownership granularity).
+**Prior-review provenance (not duplicated as new findings).** All five warnings of the phase-29
+second-pass review (this file's previous revision, 2026-09-10) are verified fixed in the tree,
+per `.planning/phases/29-landing/29-REVIEW-FIX.md` iteration 1:
+- WR-01 (dedup-vs-announce asymmetry): the self-hit announce is now gated on `isCastCovered`
+  (`core/spell_trace_core.lua:596-600`).
+- WR-02 (no inference epoch guard): the `blip > ttl * 6` upper bound is in place (`:431`).
+- WR-03 (stale "2s" comments): rewritten to 0.9s semantics (`:214`, `:481`).
+- WR-04 (impossible HUMAN-UAT branch b): rewritten to green-then-red (`classes/druid/HUMAN-UAT.md:266`).
+- WR-05 (self-hit channel ownership): target-name ownership check after absorb/damage suffix
+  stripping (`:578-581`).
 
-**User regression question 1 — cpDamage impact of the 2s -> 0.9 window: MINOR (instrumentation-only).**
-`pairCpDamageIntent` was not structurally changed this phase (diff-confirmed); only the shared constant
-it reads changed. Both the purge (spell_trace_core.lua:223) and pair (234) windows are now 0.9s. Concrete
-timing: `castAt` is the pre-cast sample `GetTime()` (Druid.lua cpDamageSample), so the delta to the
-damage line's process time is RTT + one frame + client event-batch delay — on healthy CN->EU paths
-(~200-500ms RTT) the window holds. Because 0.9 < the 1.0s cat GCD, the design's "cross-cast intersection
-is mathematically impossible" argument holds: at most one live intent can be in-window at any time, so
-cast chains can never mispair; the only failure mode is a row silently dropped when total latency
-exceeds 0.9s (lag spike, client soft-freeze, degraded route). That loses the occasional [cpDamage] row
-from the offline stats tool — it never alters combat behavior. D-17 explicitly locks this trade-off, so
-this is a documented, minor, edge-case regression; the stale "(2s, D-02)" comment at line 214 makes it
-look unintended (WR-03).
+Phase-30 review fixes from commits 6272e90 / 7f85576 / 5f03a82 are likewise present:
+`resetCpBuildDki` existence guards on both event joins (`core/events.lua:79-81`, `:104-106`)
+and the GCD-probe troubleshooting split by channel (`classes/druid/HUMAN-UAT.md:318-319`).
+The `.planning/WINDOWS.md` unrun-verify ledger already tracks items 6 (S-05..S-12 DKI pins) and
+7 (T-02 render-hue asserts) as in-game `/mt` runs pending on the Windows+Cygwin client; WR-01
+below overlaps item 7's coverage domain and is reported with that provenance noted.
 
-**User regression question 2 — cast-to-cast interval computation impact: NONE.** The only live
-cast-to-cast delta in the addon is `recordCastTable`'s 0.2s same-spell dedup
-(spell_trace_core.lua:116-119) and its `GetTime()` timestamp sourcing — the phase-29 diff touches only
-its comment and adds intent seeding beside it; both the 0.2s threshold and the clock are unchanged. The
-`[cpBuild]` inter-cast interval k (Druid.lua `cpBuildLogSample` `t = GetTime()`, computed offline by the
-phase-28 tooling) is untouched. `recordFailTable`'s cast-to-fail lag print (160-165) is unchanged and
-purely diagnostic. The TTL change, the dedup predicate, and the inference fallback do not feed cast
-timestamps or intervals.
+**Scoping note:** the review-config file list contained `tools/c/cpbuild.lua`; the actual file
+is `tools/cpbuild.lua` (no `c/` subdirectory), which was reviewed. Same class of config-typo the
+previous revision recorded for `core/spell_trace_core.l.lua`.
 
-**Project constraints:** no `#` length operator on tables, no `goto`, no `::label::` in any of the five
-files (grep-verified); English comments/commits respected; SM_EXTEND.lua untouched.
+No CRITICAL defects are provable. Decision-facing consumers (`isRipPresent`/`isRakePresent`/
+`isPouncePresent` debuff AND checks, `ripLeft`/`rakeLeft` clamping) still neutralize the worst
+ledger corruptions identified in earlier passes.
 
 ## Warnings
 
-### WR-01 (carried, still valid): Self-hit path announces green even when the cast-dimension dedup drops the land
+### WR-01: T-02's red/yellow arms are structurally indistinguishable — a channel swap or a yellow-to-green inversion passes
 
-**File:** `core/spell_trace_core.lua:550-554` (dedup predicate at 325-329)
+**File:** `classes/druid/selftest.lua:1865-1874` (planted ChatTypeInfo at 1843-1849; yellow
+assert at 1869-1870)
 
-**Issue:** Unchanged since the first pass. `onSelfDamageLine` prints the green `landed` line
-unconditionally and only afterwards calls `recordLandEvent`, whose dedup may silently drop the write.
-This is asymmetric with `processRawAuraApply` (470-473), which announces only when an intent paired. For
-the deliberately dual-channel spells — Rake and Pounce (self-hit line plus aura-apply line, per
-Druid.lua:806-818) — when the apply line pairs first (intent consumed, land pushed) and the self-hit
-arrives afterwards, the self-hit prints a second green `landed` line for the same cast while the ledger
-write was deduped (`lastLand >= lastCast`): two green landings in chat, one entry in the land table. This
-is the exact observable layer the HUMAN-UAT Phase-29 section 3 uses to judge correctness ("Rake /
-Ferocious Bite 恒绿『landed』"), so the verifier sees confusing double confirmations.
+**Issue:** The test header claims "a hue inverted in any arm turns this test red/yellow," but
+the oracle only discriminates the blue/green pair (the actual G-29-3 defect). Two of the five
+arms are blind:
+- The red arm asserts `r >= g and r >= b` and the yellow arm asserts `r >= b and g >= b`, but
+  both real arms dereference planted `ChatTypeInfo` entries that are themselves warm-dominant
+  (`YELL = {1, 0.5, 0}` is red-dominant; `SYSTEM = {1, 1, 0}`). If `show()` swapped `'red'` and
+  `'yellow'`, cap2 would render the planted SYSTEM hue (1 >= 1 and 1 >= 0 both hold) and cap3
+  the planted YELL hue (1 >= 0 and 0.5 >= 0 both hold) — every assertion still passes.
+- The yellow assertion accepts any hue dominant in r OR g, including pure green: a yellow arm
+  mapped to the green literal `{0, 1, 0}` yields `r >= b` (0 >= 0) and `g >= b` (1 >= 0) — pass.
+- Unlike cap1, no assertion pins `cap2.id` / `cap3.id`, which would catch any swap at the
+  channel level regardless of hue.
 
-**Fix:** Make the announcement follow the dedup outcome — have `recordLandEvent` return whether it
-pushed, and gate the announce on the return:
+The comment's "any arm" guarantee is therefore overstated. The in-game execution of T-02,
+including whether these arms ever see adversarial input, is also still an open unrun-verify
+item (`.planning/WINDOWS.md` ledger item 7) — so the blind spot has not been exercised yet.
 
-```lua
--- in onSelfDamageLine:
-local pushed = macroTorch.recordLandEvent(spell, now)
-if pushed and macroTorch.loginContext and macroTorch.target.isCanAttack then
-    macroTorch.show(spell .. ' cast on ' .. macroTorch.target.name .. ' landed: ' .. now, 'green')
-end
-```
-
-(or move the green line inside `recordLandEvent` after the dedup `return`; apply the same to the
-announce-before-write in `processRawAuraApply` 470-472, which has the same theoretical ordering gap).
-
-### WR-02 (carried, still valid): Stale-cast inference has no epoch guard — cross-combat / retarget pollution
-
-**File:** `core/spell_trace_core.lua:378-427` (trigger edge 406-408, coverage 412-414, veto 419-421,
-push 423)
-
-**Issue:** Re-verified with stronger evidence. `loginContext` and its cast/fail/land tables persist for
-the whole login session (combat_context.lua: `onPlayerEnteringWorld` is the only reset; `onCombatExit`
-clears only `macroTorch.context`). `maintainLandTables` is gated on `macroTorch.inCombat` (line 367),
-which is exactly why a cast whose 0.9s silence window straddles a combat exit survives: the window
-never elapses while out of combat, and `computeLandTable` bounds the silence only from below
-(`blip <= ttl`). Concrete failure, with the HUMAN-UAT's own fixture: cast Rip on a "Training Dummy" at
-t=10; it dies within 0.4s (killshot rotation) before any evidence/fail; combat ends; the next combat on
-a same-named dummy records nothing yet — the 0.1s tick finds `lastCast = 10`, `blip` huge, no land, no
-in-window fail, and pushes the ancient anchor with a blue `Rip cast on Training Dummy landed: 10
-(inferred)` line. Consequences: misleading chat, a ghost land-stack entry, and transient `lastLand`
-pollution. Combat decisions stay correct only because `ripLeft` clamps to 0 and `isRipPresent`
-requires the real target debuff.
-
-**Fix:** Add an upper bound on the inference window — after the `blip <= ttl` return, treat a cast
-older than a grace period (e.g. `blip > ttl * 6`) as abandoned and skip; or clear the per-mob
-cast/fail/land spell tables in `onCombatExit`.
-
-### WR-03 (carried, still valid): Stale "2s" comments contradict D-05/D-17 and misstate the live cpDamage window
-
-**File:** `core/spell_trace_core.lua:214` ("`Reuses macroTorch.LAND_INTENT_TTL (2s, D-02).`") and
-`core/spell_trace_core.lua:457-461` ("`(<=2s land offset)`")
-
-**Issue:** `LAND_INTENT_TTL` is now 0.9. DESIGN-CONTEXT locked decision 5 explicitly requires the 2s
-legacy wording to be updated with the refactor ("其 2s 旧值说明需随重构更新"); the cleanup clause was
-deferred across 29-01/29-02/29-03 and has still not been performed (grep over the scoped files finds
-only these two stale sites — all other "2s" references correctly describe the hunter sting ttl or
-killshot timing). A maintainer reading line 214 believes the cpDamage pairing window is 2s when it is
-0.9 — and the real consequence of the 0.9 window (a [cpDamage] sample whose damage line lags the cast
-by more than 0.9s is silently purged unpaired, e.g. on >900ms RTT spikes or client freezes) is
-documented nowhere at that site. Behavior itself is locked by D-17; only the comments are wrong, and
-they actively mislead.
-
-**Fix:** Rewrite both comments to the current constant semantics, e.g. line 214:
-`-- Reuses macroTorch.LAND_INTENT_TTL (0.9s default, D-17); samples whose damage line lags the cast by
-more than the window are purged unpaired,` and line 459: `-- pending window can pair with our cast intent
-(<= 0.9s default land offset); fail`.
-
-### WR-04 (carried, still valid): HUMAN-UAT troubleshooting branch (b) describes output the implemented machinery cannot produce
-
-**File:** `classes/druid/HUMAN-UAT.md:266`
-
-**Issue:** Unchanged. Branch (b) lists "蓝色推断后紧跟红色『was cancelled by ...』" (blue `(inferred)`
-line followed by a red cancel line) as an expected fail-wins observation. With the shipped code this
-sequence is impossible: `finalizeFail` revokes a land only when the intent is in state `'landed'`
-(spell_trace_core.lua:494-520), and an intent becomes `'landed'` only through pairing — the inference
-push (`computeLandTable` push at 423) never marks any intent landed, so nothing ties a blue line to any
-revocable intent. Additionally, any fail arriving after the inference fired must have
-`failTime > cast + ttl` (the inference only fires after `blip > ttl`), which falls outside both the veto
-window (420) and `finalizeFail`'s window (499-501). A red cancel can only follow a green paired land.
-The verifier reading this branch expects to observe a red line that can never occur and may chase a
-ghost.
-
-**Fix:** Rewrite branch (b) as the green-then-red observation:
-`b) 绿色 landed 后紧跟红色『was cancelled by ...』：同 cast 的 fail 在窗口内到达，fail-wins 撤销已配对的落
-地（蓝色 (inferred) 行按边界设计永不被撤销——fail 必在窗口外到达）`
-
-### WR-05 (new): Self-hit channel has no target-ownership check — asymmetric with the apply channel's guid check
-
-**File:** `core/spell_trace_core.lua:528-555` (pattern captures the target and discards it; write is
-keyed on the current target at recordLandEvent:319)
-
-**Issue:** The unified OR evidence core ships three channels that are nominally equivalent, but their
-ownership validation is not: `processRawAuraApply` refuses any line whose guid does not match the
-current `macroTorch.target.guid` (453-456), while `onSelfDamageLine` accepts every `'Your <skill> hits
-<target>.'` line and — via `pairLandIntent` and `recordLandEvent` — reads and writes both keyed on
-`macroTorch.target.name`, the *current* target, not the target named in the line. The pattern at
-532/534 even captures the real target with `([^%.]+)` and discards it. Concrete failure: cast Rake on
-MobA (cast and intent recorded under MobA), the player retargets to MobB within the same GCD (tab
-targeting while the ~100ms melee resolution is in flight); the self-hit line "Your Rake hits MobA" then
-pairs / announces against MobB ("Rake cast on MobB landed") and writes a Rake land into MobB's stack —
-wrong-target ledger entry plus a green line claiming the wrong mob. The apply channel was given the
-guid check precisely to prevent this class of misattribution; the self-hit channel (Ferocious Bite,
-Rake, Pounce) was not. Decision-facing consumers remain guarded (`isRakePresent`/`isRipPresent`
-double-check the real target debuff), so this is a WARNING, not a blocker.
-
-**Fix:** Compare the parsed target with the current target before announcing/recording, mirroring the
-apply channel's ownership rejection:
+**Fix:** Pin channel identity alongside hue dominance, which closes the swap case
+deterministically:
 
 ```lua
--- in onSelfDamageLine, capture the target portion:
-local _, _, spell, hitTarget = string.find(eventMsg, 'Your (.-) hits ([^%.]+)%.')
--- ... (same for crits)
-if not hitTarget or macroTorch.target.name == nil
-    or macroTorch.equalsIgnoreCase(hitTarget, macroTorch.target.name) ~= true then
-    return
-end
+assert(cap2 and cap2.id == 'planted_yell',
+    "T-02 red arm must resolve to the planted YELL channel, got " .. tostring(cap2 and cap2.id))
+assert(cap3 and cap3.id == 'planted_system',
+    "T-02 yellow arm must resolve to the planted SYSTEM channel, got " .. tostring(cap3 and cap3.id))
 ```
 
-(If exact-name collision between same-named mobs matters to the verifier, at minimum refuse when the
-parsed target differs from the current target name; see IN-04 for the residual that even name
-equality cannot close.)
+and/or make the planted `YELL` a genuinely warm-yellow literal (e.g. `{1, 0.8, 0}`) so the
+hue check for the yellow arm requires `r` and `g` strictly above `b` with a visible gap, and
+shrink the header comment to claim coverage of the blue/green inversion plus channel pinning
+for the rest.
 
 ## Info
 
-### IN-01 (carried, still valid): No fixture pins the exact boundary at `delta == ttl` / `failTime == cast + ttl` / `blip == ttl`
+### IN-01: `decodeJson` in tools/cpbuild.lua is dead code (~245 lines, zero call sites)
 
-**File:** `classes/druid/selftest.lua:1221-1253` (Q-14), `:1151-1219` (Q-13), `:1054-1105` (Q-11)
+**File:** `tools/cpbuild.lua:315-559`
 
-**Issue:** All three window edges implement inclusive `<=` semantics whose correctness turns on a single
-character (`<` vs `<=`). Q-14 drives a mid-window 1.5s delta against ttl 0.9 (expire) and 2 (pair); the
-exact `delta == ttl` pair/expire split is never pinned. Q-13 uses +0.5 and -0.1 fail offsets. Q-11
-uses a 2.0s-old cast, not `blip == ttl`. These three edges remain the most regression-prone spots.
+**Issue:** The [cpBuild]/[cpBuildT] families are space-separated, not JSON; nothing in the file
+calls `decodeJson` (the only later reference is a comment at line 669). The function arrived as
+part of the byte-copied cpdamage.lua harness (D-07) and is pure maintenance surface: it must
+stay Lua-5.0-legal forever and passes the same batteries but can never execute.
 
-**Fix:** Add exact-edge assertions (or one three-phase fixture): pair at `castAt + 0.9` must succeed
-for a ttl-0.9 intent; `failTime == castAt + ttl` must veto; a cast at `GetTime() - ttl` must stay
-silent.
+**Fix:** Delete the function and the harness comment's mention of it, or add a one-line note
+that it is retained only for harness parity with tools/cpdamage.lua (D-07) and is intentionally
+unexercised.
 
-### IN-02 (carried, still valid): Q-02 fixture only rewires the intent's castAt — the castTable entry keeps the live clock
+### IN-02: events.lua handler arms for never-registered events are unreachable
 
-**File:** `classes/druid/selftest.lua:832-838`
+**File:** `core/events.lua:118-127` (PLAYER_DEAD, CHAT_MSG_SPELL_PERIODIC_SELF_BUFFS,
+CHAT_MSG_SPELL_AURA_GONE_SELF), `:196-198` (CHAT_MSG_COMBAT_CREATURE_VS_SELF_MISSES /
+CHAT_MSG_SPELL_CREATURE_VS_SELF_DAMAGE)
 
-**Issue:** The comment claims the seeded `castAt 1000.0` sits "inside the 0.9 default window" — true
-for the intent pairing math — but `recordCastTable('Rip')` pushed the real client `GetTime()` into
-`castTable`, so `recordLandEvent`'s dedup runs against a live-clock `lastCast` while the land time is
-1000.5. Q-02 passes and pins pairing/landing, but the cast-dimension dedup is only actually pinned by
-Q-12/Q-15 (which seed `castTable` correctly). The Q-02 comment overstates its coverage.
+**Issue:** The registrations for all five are absent (three commented out at lines 34-36; the
+creature-vs-self pair never registered), so every branch is dead. Harmless, but a maintainer
+reading the dispatcher believes these channels are handled. Pre-existing pattern, unchanged by
+this range.
 
-**Fix:** Extend the comment with one clause: "castTable entries keep the live clock on purpose;
-cast-dimension dedup coverage belongs to Q-12/Q-15."
+**Fix:** Either drop the dead branches or add the corresponding `frame:RegisterEvent` calls;
+if the events are reserved for future work, mark them with a `-- reserved (unregistered)` note
+so the dispatch table stays honest about what can fire.
 
-### IN-03 (carried, still valid): Expired intents are state-flipped but never removed — scans accumulate within the 32 cap
+### IN-03: parseSamples silently truncates at the first nil hole in the message ring
 
-**File:** `core/spell_trace_core.lua:190-195`
+**File:** `tools/cpbuild.lua:743-744` (`countList` via ipairs at 77-83)
 
-**Issue:** The `pairLandIntent` purge marks stale intents `'expired'` but leaves the rows in
-`stack.elements` until LRU eviction (cap 32). Inferred-landed casts consume nothing, so their intents
-stay `'pending'` indefinitely and every later visit rescans them. Bounded and behaviorally inert (the
-pair pass filters on `'pending'`), but `pairCpDamageIntent`'s purge (221-226) already demonstrates the
-removal idiom that could be mirrored here.
+**Issue:** `countList(messages)` counts with `ipairs`, which stops at the first nil index; the
+loop then reads only `messages[1..total]`. The client writer keeps the ring contiguous
+(`table.insert` + `table.remove(messages, 1)`), so genuine data is safe, but a hand-edited or
+corrupted SavedVariables file with a hole would silently drop every entry after the hole with
+no warning — the analyzer would report partial statistics as complete.
 
-**Fix:** `table.remove(stack.elements, i)` in the purge pass when expiring (or leave as-is and note
-the LRU cap as the bound — cosmetic churn only).
+**Fix:** Count all non-nil entries in one pass (a nil-aware counter) instead of an `ipairs`
+count, and emit a warning when holes are detected, so a truncated read can never masquerade as
+a complete report.
 
-### IN-04 (new): Ledger storage is keyed by mob name while ownership checks resolve at guid granularity
+### IN-04: `--rake-dur` accepts non-positive values silently and produces nonsense cutoffs
 
-**File:** `core/spell_trace_core.lua:110-112, 184-185, 319-320` (name-keyed table nests);
-`core/spell_trace_core.lua:453-456` (guid ownership check)
+**File:** `tools/cpbuild.lua:1163-1201` (flag parse), `:878-899` (calculatePassRates)
 
-**Issue:** Every ledger (`castTable`/`intentTable`/`failTable`/`landTable`) is nested by
-`macroTorch.target.name`, while the apply channel's ownership validation compares guids. Two distinct
-mobs sharing one name — the HUMAN-UAT's own "Training Dummy" fixture — collapse into one stack:
-a land/intent for dummy A and one for dummy B merge, cross-contaminating dedup (`lastLand >= lastCast`)
-and pairing across the two mobs. The guid check validates the *line* but cannot stop the *write* from
-landing in the merged stack. This is a pre-existing architectural property (mob-name keying dates to
-phase 24), but the unified-OR core leans on the ledger harder than before (dedup predicate + inference
-read/write), which is why it is recorded here. Combat decisions stay safe because
-`isRipPresent`/`isRakePresent`/`isPouncePresent` double-check the real target aura.
+**Issue:** `--rake-dur 0` or a negative value passes `tonumber` and the parser, and
+`calculatePassRates` then computes cutoffs `d - 1` / `0.9*d - 1` that are zero or negative —
+every `t <= cutoff` fails, both rows report 0% with no error, and the user cannot tell the
+output is garbage from a bad flag.
 
-**Fix:** Out of scope for this phase; note as a known residual. If ever addressed, key the per-target
-stacks by guid (falling back to name when the guid is unavailable), or clear per-mob stacks on
-target-change in combat.
+**Fix:** Reject non-positive durations at parse time:
+
+```lua
+local dur = tonumber(args[i + 1])
+if dur == nil or dur <= 0 then
+    io.write('error: ' .. FLAG_RAKE_DUR .. ' expects a positive number of seconds, got: ' ..
+        tostring(args[i + 1]) .. '\n')
+    printUsage()
+    os.exit(1)
+end
+```
+
+### IN-05: T-02 swaps the live client globals ChatTypeInfo and DEFAULT_CHAT_FRAME with truncated stand-ins
+
+**File:** `classes/druid/selftest.lua:1834-1858`
+
+**Issue:** The planted `ChatTypeInfo` table has only five keys (the real table has ~20: PARTY,
+RAID, WHISPER, etc.) and the planted `DEFAULT_CHAT_FRAME` stub has only `AddMessage`. The
+window is synchronous within one OnUpdate tick (no chat events can interleave), restore-before-
+assert is followed, and global stubbing is already the suite's precedent (Q-series replace
+`macroTorch.show`/`loginContext` wholesale), so this is a documented hazard rather than a
+defect. If the selftest runner ever becomes asynchronous or another addon's OnUpdate runs
+mid-test, a nil-index or missing-method call in third-party code becomes possible.
+
+**Fix:** Keep as-is for now (consistent with CR-01 precedent); if the runner changes, snapshot
+and restore with `setmetatable({}, { __index = savedCTI })` so absent keys still resolve
+during the window.
 
 ---
 
-_Reviewed: 2026-09-10T06:30:00Z_
+_Reviewed: 2026-09-11T03:30:00Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
-
-Note: the review-config file list contained `core/spell_trace_core.l.lua` (double-l typo); the actual
-file `core/spell_trace_core.lua` was reviewed and is listed in `files_reviewed_list`.
