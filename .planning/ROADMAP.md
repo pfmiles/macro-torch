@@ -1019,6 +1019,23 @@ Plans:
 
 - [x] 29-03-PLAN.md — 边界用例后半程 Q-12/Q-14/Q-15/Q-16 + HUMAN-UAT.md Phase 29 实机验收协议（含 D-17/D-18 注记）+ 全阶段静态收尾电池
 
+### Phase 30: cpBuild 双保判定改造
+
+**Goal:** 改造 cpBuild 测量系统为双保判定实证 instrumentation：保留 macroTorch.cpBuildLog 开关门控（关闭时零 API 调用），新增 0.1s 轮询的 bite→满5星耗时 live 状态机（[cpBuildT] ok/fail 行，D-04 三态+双旁路协议），新增自包含离线分析器 tools/cpbuild.lua（k 间隔分桶 + 30s 断链切分 + T̄ + 双档达标率 + ok/fail 窗口矩阵），Category S-05..S-12 CR-01 stubbed 单测。设计锁定于 30-CONTEXT.md D-01..D-14。
+**Requirements**: —（无 req ID；reqs 覆盖门由编排器跳过）
+**Depends on:** Phase 29
+**Plans:** 3/3 plans complete
+
+Plans:
+**Wave 1**
+
+- [ ] 30-01-PLAN.md — DKI live 计时器 tracer 切片：三态状态机 + 0.1s 轮询 + [cpBuildT] 发射 + 全局重置双钩子 (Wave 1)
+- [ ] 30-03-PLAN.md — tools/cpbuild.lua 自包含离线分析器（harness 复制 + terse 解析 + 统计 + --selftest/--json-out/--rake-dur）(Wave 1)
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [ ] 30-02-PLAN.md — Category S-05..S-12 stubbed 单测 + HUMAN-UAT.md Phase 30 段（D-09 前置条件）+ 全阶段静态收尾电池 (Wave 2)
+
 ---
 
 ## Task 统计
