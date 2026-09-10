@@ -1,7 +1,7 @@
 ---
 phase: 30-cpbuild
 verified: 2026-09-10T15:56:58Z
-status: human_needed
+status: passed
 score: 14/14 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
@@ -9,6 +9,7 @@ decision_coverage:
   honored: 14
   total: 14
 human_verification:
+
   - test: "游戏内 /mt 全绿（Windows+Cygwin rebuild 后，Category S-05..S-12 共 8 条全过、无红色 FAIL）"
     expected: "8 条 DKI stubbed 测试在 WoW 1.12 客户端内全部通过；登录横幅仍为 CONFIG_OPTIONS 4 项（本 phase 未增删配置项）"
     why_human: "selftest 电池的唯一注册/执行入口是客户端内 macroTorch.SelfTest；本机已用字节级抽取 + Lua 5.0.3 进程内复现 8/8 全过（见 Behavioral Spot-Checks），但客户端内执行仍是 HUMAN-UAT Phase 30 part 2 的权威确认（D-14）"
