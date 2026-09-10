@@ -23,7 +23,7 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 29 — 统一 landing 判定重构（2/3 plans：29-01 统一 OR 证据链核心完成、29-02 反推兜底复活完成；29-03 边界用例待执行）
+- **Current Phase**: Phase 29 — 统一 landing 判定重构（3/3 plans executed；实机验证待办，见 29-UAT.md）
 - **Current Plan:** 3
 - **Total Plans in Phase:** 3
 - **Active Branch**: main
