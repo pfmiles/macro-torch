@@ -4,16 +4,16 @@ milestone: v1.0
 current_plan: 3
 status: in_progress
 stopped_at: Completed 29-03-PLAN.md
-last_updated: "2026-09-10T03:09:40.958Z"
-state_head: 575db45bcc0eb49b6bf80f6a4359a69c62d219b1
+last_updated: "2026-09-10T14:16:59.832Z"
+state_head: ddc4626b5cf2381db56f4dfd785f12c9dc9afd87
 progress:
-  total_phases: 28
+  total_phases: 29
   completed_phases: 12
-  total_plans: 64
+  total_plans: 67
   completed_plans: 64
 milestone_name: milestone
 last_activity: 2026-09-09
-current_phase_name: 统一 landing 判定重构
+current_phase_name: cpbuild
 last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrumentation fully removed (scout, ctx stamp, pair ledger, master switch) — the multi-cat arbitration is resolved by the upcoming unified landing design instead"
 ---
 
@@ -63,6 +63,7 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 
 ### Roadmap Evolution
 
+- Phase 30 added: cpBuild 双保判定改造 — 保留 cpBuildLog 开关持久化门控，新增 bite→满星耗时 live 计时器（状态机协议已封版），可选离线分析脚本 (2026-09-10)
 - Phase 29 added: 统一 landing 判定重构 — 去 landSource 参数、OR 三通道 + 反推兜底、cast 谓词去重、可配 intentTtl（默认 0.9s/猎人钉刺 ~2s）、FB 续期豁免 (2026-09-09)
 - Phase 24 added: 用 UNIT_SPELLCAST_SUCCEEDED 标准事件替代 UNIT_CASTEVENT 的 cast 记录链路，消除对全局 spellId 的依赖 (2026-08-17)
 - Phase 5 added: Druid技能方法封装改造 - 将player.cast()字符串调用重构为技能对象方法，支持多语言客户端，从Druid试点 (2026-06-13)
