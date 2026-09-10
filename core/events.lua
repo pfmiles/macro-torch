@@ -71,6 +71,10 @@ function macroTorch.eventHandle()
             end)
         end
     elseif event == 'PLAYER_TARGET_CHANGED' then
+        -- D-04 bypass 2 (phase 30): any target change discards the in-flight
+        -- DKI measurement window unconditionally (out of combat this is a
+        -- harmless no-op field reset)
+        macroTorch.resetCpBuildDki()
         -- target changed
         if macroTorch.player.isInCombat and macroTorch.target.isCanAttack then
             if macroTorch.context then
@@ -89,6 +93,10 @@ function macroTorch.eventHandle()
         -- on spell cast interrupted
     elseif event == 'PLAYER_REGEN_ENABLED' then
         macroTorch.onCombatExit()
+        -- D-04 bypass 2 (phase 30): the DKI state lives outside
+        -- macroTorch.context, so the context-table swap above does not clear
+        -- it — reset the in-flight window explicitly
+        macroTorch.resetCpBuildDki()
     elseif event == 'PLAYER_REGEN_DISABLED' then
         macroTorch.onCombatEnter()
     elseif event == "CHAT_MSG_COMBAT_SELF_MISSES" or event == "CHAT_MSG_SPELL_SELF_DAMAGE" then
