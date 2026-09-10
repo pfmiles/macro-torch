@@ -203,7 +203,6 @@
 4. 停手等待脱战（木桩场景约 5s 自动脱战 = 批次结束，D-11）
 5. `/reload`
 6. 从 `WTF/Account/<账号>/SavedVariables/SuperMacro.lua` 拷出文件
-- [ ] 提醒：`macroTorch.cpDamageLog` 与 `macroTorch.rawdiag2Enabled` 勿同开（环容量争抢，T-28-05 / D-10）
 
 ### 5. 分析运行
 
@@ -222,3 +221,51 @@
 - [ ] crit 全 false 或缺 crit 时：记录客户端语言环境（非英文客户端 hits/crits 句式不同，A3 假设）
 
 **完成信号:** 四项闭环全部达成（或按 Troubleshooting 修复后达成）；将第一张真实统计表的批量打印（或 --json-out 归档路径）回复给 verifier，由 verifier 汇入阶段末 28-UAT.md。
+
+---
+
+## Phase 29: 统一 landing 判定重构 -- 实机 UAT 闭环
+
+**Phase:** 29 -- 统一 landing 判定重构（三通道 OR 证据 + 反推兜底 + cast 谓词去重 + 可配 intentTtl）
+**Date:** 2026-09-10
+**目标:** 在游戏机完成重建与实机观察闭环：确认统一 landing 通道在单人木桩与（选做）多猫场景的落地通告行为，验证 fail-wins 否决、猎人钉刺弹道窗与反推兜底观感。
+
+### 1. Prerequisites（前提）
+
+- [ ] WoW 1.12.1（Turtle WoW）+ SuperWoW 客户端
+- [ ] Windows+Cygwin 下 `./build.sh` 成功重建 SM_EXTEND.lua（产物落盘后版控外生效）
+- [ ] 无需新增 SavedVariables 声明（沿用现有 SM 变体 .toc）
+- [ ] `macroTorch.LOG_MAX_SIZE` 若上次调过则保持一致即可
+
+### 2. Pre-Test（自测预检）
+
+- [ ] 游戏内 `/mt`：全部自检无红色 FAIL（Category Q 16 条全过：Q-01..Q-16；非 Q 可选项的黄色 warning 可容忍）
+- [ ] 登录横幅仍为 CONFIG_OPTIONS 4 项（本 phase 未增删配置项）
+
+### 3. 单人木桩
+
+- [ ] catAtk 循环打骷髅 1 分钟观察：Rake / Ferocious Bite 恒绿『landed』
+- [ ] Pounce / Rip 出现绿色『landed』或偶发蓝色『landed ... (inferred)』均可接受
+- [ ] 无『failed on』红行
+- [ ] 无 Rip 持续重放（ripLeft 正常启动即为通过）
+
+### 4. 多猫同目标（远程网友合作且对方零配置要求时选做）
+
+- [ ] 我方 Rip 后观察 ~1 秒内出现蓝色 `(inferred)` 兜底通告（apply 行被抑制时此通道仍交付落地）
+- [ ] ripLeft 启动且不再每帧重放 Rip
+- [ ] 对方技能行不触发我方任何通告（guid 归属检查）
+
+### 5. 猎人钉刺（hunter 角色）
+
+- [ ] Serpent / Scorpid Sting 落地仍可见（绿色配对或蓝色推断）
+- [ ] 远程位钉刺在 ~2 秒窗内正常落地
+
+### 6. Expected Outcomes / Troubleshooting（期望结果与排查）
+
+- [ ] a) Rip 全绿无蓝：apply 未被抑制，正常（抑制仅多猫场景）
+- [ ] b) 蓝色推断后紧跟红色『was cancelled by ...』：windowed fail 否决在生效，属 fail-wins 预期
+- [ ] c) 无任何 land 通告：查 tracingSpells 注册与 SuperWoW RAW 通道、查 `/mt` Q 段
+- [ ] 注记（D-17）：cpDamage 伤害配对零结构改动，其配对窗随全局默认 `macroTorch.LAND_INTENT_TTL = 0.9` 自动生效（claw/shred/bite 全近战，0.9 足够）
+- [ ] 注记（D-18 锁定）：远程钉刺的蓝色推断锚偏早于真实 apply 约一个飞行时间（保守提前重挂、不留空窗），本版本接受为最终形态、不做 anchorBias
+
+**完成信号:** 六节清单全部勾选（多猫节无合作条件时视为通过）；将观察结果（/mt 汇总行、木桩与钉刺的通告样例）回复给 verifier，由 verifier 汇入阶段末 29-UAT.md。
