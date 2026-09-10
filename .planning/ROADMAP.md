@@ -1004,7 +1004,7 @@ Plans:
 **Goal:** 重构 landing 判定机制：去掉 `landSource` 参数，所有 `land = true` 注册技能统一采用三通道证据（self-hit / apply / fail）OR 语义 + cast 后 `intentTtl` 窗口静默到期反推兜底；cast 维度谓词去重（同 cast 单条、同质量保留最早）；fail-wins 保留；`intentTtl` 成为 register 可选参数（默认 0.9s，猎人钉刺 ~2s 覆盖弹道）；FB 续期 push 豁免去重。设计锁定细节见 `.planning/phases/29-landing/DESIGN-CONTEXT.md`（2026-09-09 讨论收敛，RAWDIAG2 取证插桩已移除）
 **Requirements**: TBD
 **Depends on:** Phase 28
-**Plans:** 4 plans — 3/3 executed + 29-04 gap closure (UAT G-29-3, pending)
+**Plans:** 4/4 plans executed — 3/3 executed + 29-04 gap closure (UAT G-29-3, pending)
 
 Plans:
 **Wave 1**
@@ -1021,7 +1021,7 @@ Plans:
 
 **Wave 4** *(gap closure — UAT G-29-3)*
 
-- [ ] 29-04-PLAN.md — G-29-3 gap closure：修正 interface_debug.lua macroTorch.show 绿/蓝两臂色相颠倒（渲染层共享通路，D-14 协议） + Category T-02 映射层回归自测 + 静态电池
+- [x] 29-04-PLAN.md — G-29-3 gap closure：修正 interface_debug.lua macroTorch.show 绿/蓝两臂色相颠倒（渲染层共享通路，D-14 协议） + Category T-02 映射层回归自测 + 静态电池
 
 ### Phase 30: cpBuild 双保判定改造
 
