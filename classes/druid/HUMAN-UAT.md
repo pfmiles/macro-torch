@@ -263,7 +263,7 @@
 ### 6. Expected Outcomes / Troubleshooting（期望结果与排查）
 
 - [ ] a) Rip 全绿无蓝：apply 未被抑制，正常（抑制仅多猫场景）
-- [ ] b) 蓝色推断后紧跟红色『was cancelled by ...』：windowed fail 否决在生效，属 fail-wins 预期
+- [ ] b) 绿色 landed 后紧跟红色『was cancelled by ...』：同 cast 的 fail 在窗口内到达，fail-wins 撤销已配对的落地（蓝色 (inferred) 行按边界设计永不被撤销——fail 必在窗口外到达）
 - [ ] c) 无任何 land 通告：查 tracingSpells 注册与 SuperWoW RAW 通道、查 `/mt` Q 段
 - [ ] 注记（D-17）：cpDamage 伤害配对零结构改动，其配对窗随全局默认 `macroTorch.LAND_INTENT_TTL = 0.9` 自动生效（claw/shred/bite 全近战，0.9 足够）
 - [ ] 注记（D-18 锁定）：远程钉刺的蓝色推断锚偏早于真实 apply 约一个飞行时间（保守提前重挂、不留空窗），本版本接受为最终形态、不做 anchorBias
