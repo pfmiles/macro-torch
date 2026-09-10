@@ -419,6 +419,15 @@ function macroTorch.computeLandTable(spell)
     if blip <= ttl then
         return
     end
+    -- cross-combat upper bound (WR-02): the inference tick only advances while
+    -- in combat, so a cast whose silence window straddled a combat exit comes
+    -- back with a blip far beyond what a live inference can reach (ttl plus
+    -- one 0.1s tick of jitter); treat that abandoned cast as dead instead of
+    -- pushing a ghost land anchored at the stale cast time under the next
+    -- combat's same-named target
+    if blip > ttl * 6 then
+        return
+    end
     -- cast-dimension coverage predicate (D-02 reuse): this cast is already
     -- covered by a real evidence landing or an earlier inference
     local lastLand = macroTorch.peekLandEvent(spell) or 0
