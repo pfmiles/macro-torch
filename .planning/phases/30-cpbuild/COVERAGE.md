@@ -1,0 +1,1 @@
+No external API integration: phase touches only the WoW 1.12 Lua client API and local offline Lua tooling, no external service API
