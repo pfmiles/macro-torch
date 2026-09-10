@@ -315,8 +315,8 @@
 
 - [ ] `[cpBuildT] ok` 行 cadence 大致等于窗口周期（一窗一样本，窗口互斥）
 - [ ] `fail` 与 `ok` 之比即未达标率（fail 计入未达标分母）
-- [ ] 无 ok 无 fail — 查开关是否开启、目标是否为可攻击骷髅、GCD 探针黄色警告是否出现（Rake 法术必须在动作条上，否则无采集）
-- [ ] 行数骤停 — 查 MACRO_TORCH_LOG 裁剪上限 `macroTorch.LOG_MAX_SIZE`
+- [ ] 无 `[cpBuild]` 行 — 查 `macroTorch.cpBuildLog` 是否热开、GCD 探针黄色警告是否出现（Rake 法术必须在动作条上，否则 `cpBuildLogSample` 探针恒为 nil、无施法采样）
+- [ ] 无 `[cpBuildT]` ok 无 fail — 查 `macroTorch.cpBuildLog` 是否热开、目标态循环是否真的发生了 cp 下跳（无下跳则永无锚、零行产出）、`macroTorch.LOG_MAX_SIZE` 是否已裁剪（目标须可攻击且在战斗中；`[cpBuildT]` 只读连击点，不受 Rake 探针影响）
 - [ ] fail 占比异常偏高且 ok 明显偏短 — 自查是否中途打过 Rip 或目标被流血跳死（非咬击下跳会伪锚或伪 fail；见第 3 节终结技禁令）
 
 **完成信号:** 六节清单全部勾选后，将 /mt 汇总行、[cpBuildT] 行样例与分析脚本输出回复给 verifier，由 verifier 汇入阶段末 30-UAT.md。
