@@ -799,25 +799,31 @@ function macroTorch.computePounce_Erps()
     return energyPerTick / tickInterval
 end
 
--- spell trace + immune registration via SpellTrace:register() API (name-based, no spellId needed)
--- Pounce is an opener bleed whose land evidence is the aura-apply line paired with the cast intent
+-- spell trace + immune registration via SpellTrace:register() API (name-based,
+-- no spellId needed); land = true spells join the unified OR evidence channel
+-- (natural attributes decide which evidence lines exist — no per-spell source
+-- field)
+-- Pounce has both a direct-damage self-hit line and a debuff apply line: the
+-- two natural evidence channels stand side by side and the first arrival wins
 macroTorch.SpellTrace:register('Pounce', {
     spellName = 'Pounce', land = true,
-    landSource = 'aura-apply',
     immune = true, debuffTexture = 'Ability_Druid_SupriseAttack'
 })
--- Rake always produces 'Your Rake hits/crits' lines, so it uses the default 'self-hit' land source
+-- Rake always has a self-hit line; because it carries a tracked debuff
+-- texture, its apply line also joins the unified evidence channel (one
+-- channel more than the old semantics, intentional)
 macroTorch.SpellTrace:register('Rake', {
     spellName = 'Rake', land = true,
     immune = true, debuffTexture = 'Ability_Druid_Disembowel'
 })
--- Rip has no initial direct damage line, so its land evidence is the aura-apply line paired with the cast intent
+-- Rip has no direct damage line: its apply line is the natural evidence
+-- channel; when the apply is suppressed, the inference fallback (29-02)
+-- takes over and this file needs no awareness of it
 macroTorch.SpellTrace:register('Rip', {
     spellName = 'Rip', land = true,
-    landSource = 'aura-apply',
     immune = true, debuffTexture = 'Ability_GhoulFrenzy'
 })
--- Ferocious Bite uses the default 'self-hit' source via its 'Your Ferocious Bite hits/crits' lines
+-- Ferocious Bite land evidence is its 'Your Ferocious Bite hits/crits' self-hit line
 macroTorch.SpellTrace:register('Ferocious Bite', {
     spellName = 'Ferocious Bite', land = true,
     immune = false  -- FB has consumeLandEvent but NO immune tracing in original code
@@ -832,6 +838,9 @@ macroTorch.SpellTrace:register('Faerie Fire (Feral)', {
 -- restarts from land = the FB event time (no combo-point condition, debug
 -- decision #3). Renewal is a rewrite, not a cast — no intent pairing occurs
 -- and the Savagery snapshot fields are only read, never written (decision #4).
+-- Renewals dispatch through the exempt entry recordLandEventRenewal that
+-- bypasses the cast-dimension dedup; the isRakePresent/isRipPresent
+-- preconditions are unchanged.
 -- CR-01 fix (code review 27): the framework dispatches listener(spell,
 -- landTime); the first parameter is the spell name, the second is the event
 -- time. Declaring only (landTime) bound 'Ferocious Bite' into landTime and
@@ -844,14 +853,14 @@ macroTorch.onLandEvent('Ferocious Bite', function(spell, landTime)
                 tostring(macroTorch.rakeLeft(clickContext)) ..
                 ', expDuration: ' .. tostring(macroTorch.computeRake_Duration()) .. 's' ..
                 ', bleed idol: ' .. tostring(macroTorch.loginContext.lastRakeEquippedSavagery))
-        macroTorch.recordLandEvent('Rake', landTime)
+        macroTorch.recordLandEventRenewal('Rake', landTime)
     end
     if macroTorch.isRipPresent(clickContext) then
         macroTorch.show('Renewing rip... left: ' ..
                 tostring(macroTorch.ripLeft(clickContext)) ..
                 ', expDuration: ' .. tostring(macroTorch.computeRip_Duration()) .. 's' ..
                 ', bleed idol: ' .. tostring(macroTorch.loginContext.lastRipEquippedSavagery))
-        macroTorch.recordLandEvent('Rip', landTime)
+        macroTorch.recordLandEventRenewal('Rip', landTime)
     end
 end)
 
