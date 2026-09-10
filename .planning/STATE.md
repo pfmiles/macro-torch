@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 current_plan: 3
 status: in_progress
-stopped_at: Completed 29-02-PLAN.md
-last_updated: "2026-09-10T02:54:54.093Z"
-state_head: 90267cdf2a75fa353a95db97c412247702b265b9
+stopped_at: Completed 29-03-PLAN.md
+last_updated: "2026-09-10T03:09:40.958Z"
+state_head: 575db45bcc0eb49b6bf80f6a4359a69c62d219b1
 progress:
   total_phases: 28
   completed_phases: 12
   total_plans: 64
-  completed_plans: 63
+  completed_plans: 64
 milestone_name: milestone
 last_activity: 2026-09-09
 current_phase_name: 统一 landing 判定重构
@@ -171,6 +171,7 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 | Phase 28 P04 | 3 | 2 tasks | 2 files |
 | Phase 29 P01 | 10 | 3 tasks | 4 files |
 | Phase 29 P02 | 6 | 2 tasks | 2 files |
+| Phase 29 P03 | 9 | 3 tasks | 2 files |
 
 ## Decisions
 
@@ -217,11 +218,12 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 - [Phase ?]: Phase 28-04: HUMAN-UAT.md gains a 6-section Phase 28 user-machine acceptance script; the 4-item closed-loop human-check rides human_verify_mode=end-of-phase into the verifier's 28-UAT.md (no mid-plan checkpoints)
 - [Phase ?]: Phase 28-04: closing battery BATTERY_FAIL=0 with the corrected R8 anchor — 8-file bbcheck + build.sh + 6 product counts + R7 zero-path audit + Phase 27 pairLandIntent coexistence
 - [Phase ?]: D-01 confirmed by user at execution checkpoint: landSource field + landSources registry + both dispatch gates removed per locked scope (option-a)
+- [Phase ?]: 29-03 followed plan as specified: D-16 six boundary cases all landed (Category Q = 16), UAT protocol filed, full-phase battery green — DESIGN-CONTEXT locked decisions + D-16/D-17/D-18 implemented without directional deviation; only documented excursions are the pre-existing Druid.lua '#' comment glyphs (ledger entry 5) and the battery-time clean-tree diff form
 
 ## Session
 
-**Last session:** 2026-09-10T02:50:45.231Z
-**Stopped at:** Completed 29-02-PLAN.md
+**Last session:** 2026-09-10T03:09:40.169Z
+**Stopped at:** Completed 29-03-PLAN.md
 **Resume file:** None
 
 ## Quick Tasks Completed
