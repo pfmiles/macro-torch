@@ -1814,7 +1814,7 @@ end, true)
 	end, true)
 
 	-- Registration count: Category S adds 12 tests (quick 260907-0ya + WR-01 fix + phase 30 DKI 8 tests)
-	-- Category T: macroTorch.log persistence buffer cap (quick 260907-vve, 1 test)
+	-- Category T: macroTorch.log persistence buffer cap (quick 260907-vve) + show() render-hue mapping (29-04 gap closure G-29-3, 2 tests)
 	-- T-01 mirrors Cat S-01: pure default-value assert, read-only, no stubs,
 	-- isOptional=true. It passes on a fresh login (the macro_torch.lua nil-guard
 	-- has just re-armed 500); if the session overrode the value the failure is
@@ -1824,7 +1824,57 @@ end, true)
 			"LOG_MAX_SIZE should default to 500, got " .. tostring(macroTorch.LOG_MAX_SIZE))
 	end, true)
 
-	-- Registration count: Category T adds 1 test (quick 260907-vve)
+	-- T-02 drives the REAL macroTorch.show: the Q-series tests replace show
+	-- with a label-capturing stub, so the color-name -> render-hue mapping
+	-- table inside show had zero coverage. Only show's two downstream
+	-- consumers are planted (CR-01: snapshot, plant, pcall, restore before
+	-- any assert); the mapping arms run for real, so a hue inverted in any
+	-- arm turns this test red/yellow (G-29-3 gap closure).
+	macroTorch.SelfTest:register("Cat T-02: show() color names resolve to matching hue-dominant channels", function()
+		local savedDF = DEFAULT_CHAT_FRAME
+		local savedCTI = ChatTypeInfo
+		local captured = {}
+		DEFAULT_CHAT_FRAME = { AddMessage = function(self, msg, r, g, b, id)
+			table.insert(captured, { r = r, g = g, b = b, id = id })
+		end }
+		-- vanilla-shaped stand-ins with one unique id per key: SAY carries the
+		-- default arm, YELL/SYSTEM feed the red/yellow arms, OFFICER/GUILD stay
+		-- planted for future variant compatibility.
+		ChatTypeInfo = {
+			SAY = { r = 0.5, g = 0.5, b = 0.5, id = 'planted_say' },
+			YELL = { r = 1, g = 0.5, b = 0, id = 'planted_yell' },
+			SYSTEM = { r = 1, g = 1, b = 0, id = 'planted_system' },
+			OFFICER = { r = 0.25, g = 1, b = 0.25, id = 'planted_officer' },
+			GUILD = { r = 0.25, g = 1, b = 0.25, id = 'planted_guild' },
+		}
+		local pcallRes = pcall(function()
+			macroTorch.show('probe', nil)
+			macroTorch.show('probe', 'red')
+			macroTorch.show('probe', 'yellow')
+			macroTorch.show('probe', 'blue')
+			macroTorch.show('probe', 'green')
+		end)
+		DEFAULT_CHAT_FRAME = savedDF
+		ChatTypeInfo = savedCTI
+		local cap1 = captured[1]
+		local cap2 = captured[2]
+		local cap3 = captured[3]
+		local cap4 = captured[4]
+		local cap5 = captured[5]
+		assert(pcallRes, "T-02 pcall failed")
+		assert(cap1 and cap1.id == 'planted_say',
+			"T-02 default arm should resolve to the planted SAY channel, got " .. tostring(cap1 and cap1.id))
+		assert(cap2 and cap2.r >= cap2.g and cap2.r >= cap2.b,
+			"T-02 red arm must stay red-dominant, got r=" .. tostring(cap2 and cap2.r) .. " g=" .. tostring(cap2 and cap2.g) .. " b=" .. tostring(cap2 and cap2.b))
+		assert(cap3 and cap3.r >= cap3.b and cap3.g >= cap3.b,
+			"T-02 yellow arm must stay warm, got r=" .. tostring(cap3 and cap3.r) .. " g=" .. tostring(cap3 and cap3.g) .. " b=" .. tostring(cap3 and cap3.b))
+		assert(cap4 and cap4.b >= cap4.r and cap4.b >= cap4.g,
+			"T-02 blue arm must stay blue-dominant, got r=" .. tostring(cap4 and cap4.r) .. " g=" .. tostring(cap4 and cap4.g) .. " b=" .. tostring(cap4 and cap4.b))
+		assert(cap5 and cap5.g >= cap5.r and cap5.g >= cap5.b,
+			"T-02 green arm must stay green-dominant, got r=" .. tostring(cap5 and cap5.r) .. " g=" .. tostring(cap5 and cap5.g) .. " b=" .. tostring(cap5 and cap5.b))
+	end, true)
+
+	-- Registration count: Category T adds 2 tests (quick 260907-vve + 29-04 gap closure G-29-3)
 	-- Category U: cpDamage cast/damage log instrumentation (phase 28, 9 tests)
 	-- U-04/U-05/U-06/U-07/U-08/U-09 follow the CR-01 stub discipline: snapshot via
 	-- rawget, install own-key shadows, capture into locals, restore via raw
