@@ -84,6 +84,9 @@ end
 
 --- 在聊天框中显示传入的内容，传入内容会被tostring
 ---@param a any
+-- Color-label contract (HUMAN-UAT phase 29, D-14): the label must match
+-- the rendered hue - green = landed, blue = inferred. Each named arm is a
+-- hue-dominant literal so a future edit cannot silently invert it.
 function macroTorch.show(a, color)
     local col = color or 'white'
     local c = ChatTypeInfo["SAY"]
@@ -92,9 +95,9 @@ function macroTorch.show(a, color)
     elseif 'yellow' == col then
         c = ChatTypeInfo["SYSTEM"]
     elseif 'blue' == col then
-        c = ChatTypeInfo["OFFICER"]
+        c = { r = 0, g = 0.5, b = 0.9, id = 'custom_blue' }
     elseif 'green' == col then
-        c = { r = 0, g = 0.5, b = 0.9, id = 'custom_green' }
+        c = { r = 0, g = 1, b = 0, id = 'custom_green' }
     end
     DEFAULT_CHAT_FRAME:AddMessage(tostring(a), c.r, c.g, c.b, c.id)
 end
