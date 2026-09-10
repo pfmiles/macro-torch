@@ -73,8 +73,12 @@ function macroTorch.eventHandle()
     elseif event == 'PLAYER_TARGET_CHANGED' then
         -- D-04 bypass 2 (phase 30): any target change discards the in-flight
         -- DKI measurement window unconditionally (out of combat this is a
-        -- harmless no-op field reset)
-        macroTorch.resetCpBuildDki()
+        -- harmless no-op field reset). The existence guard keeps this
+        -- side-effect join from cascading a nil-call error into the
+        -- pre-existing target-change logic if Druid.lua ever fails to load.
+        if macroTorch.resetCpBuildDki then
+            macroTorch.resetCpBuildDki()
+        end
         -- target changed
         if macroTorch.player.isInCombat and macroTorch.target.isCanAttack then
             if macroTorch.context then
@@ -95,8 +99,11 @@ function macroTorch.eventHandle()
         macroTorch.onCombatExit()
         -- D-04 bypass 2 (phase 30): the DKI state lives outside
         -- macroTorch.context, so the context-table swap above does not clear
-        -- it — reset the in-flight window explicitly
-        macroTorch.resetCpBuildDki()
+        -- it — reset the in-flight window explicitly. Existence guard: a
+        -- missing Druid.lua must not error the combat-exit branch either.
+        if macroTorch.resetCpBuildDki then
+            macroTorch.resetCpBuildDki()
+        end
     elseif event == 'PLAYER_REGEN_DISABLED' then
         macroTorch.onCombatEnter()
     elseif event == "CHAT_MSG_COMBAT_SELF_MISSES" or event == "CHAT_MSG_SPELL_SELF_DAMAGE" then
