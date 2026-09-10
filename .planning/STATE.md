@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 status: in_progress
-stopped_at: Phase 29 context gathered
-last_updated: "2026-09-09T18:26:39.565Z"
-state_head: 172237f39cd309974a0de7799730b0cd2f2b0cf8
+stopped_at: Completed 29-01-PLAN.md
+last_updated: "2026-09-10T02:38:57.869Z"
+state_head: d010419eeac5653571e1ff20ac4b0e4f6702f1a8
 progress:
   total_phases: 28
   completed_phases: 12
   total_plans: 64
-  completed_plans: 61
+  completed_plans: 62
 milestone_name: milestone
 last_activity: 2026-09-09
 current_phase_name: 统一 landing 判定重构
@@ -22,7 +22,7 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 28 — catAtk claw/shred/bite damage instrumentation（4/4 plans：28-04 UAT 脚本 + 收尾电池完成，剩 verifier 阶段末 UAT）
+- **Current Phase**: Phase 29 — 统一 landing 判定重构（1/3 plans：29-01 统一 OR 证据链核心完成；29-02 反推兜底、29-03 边界用例待执行）
 - **Active Branch**: main
 
 ## Phase Progress
@@ -54,6 +54,7 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 | Phase 26: 猫德 fast 战斗逻辑 | ✅ complete | 2026-08-21 | 2026-08-22 | 3/3 plans |
 | Phase 27: catAtk event-driven land tracing refactor | ✅ complete | 2026-08-28 | 2026-08-29 | 3/3 plans |
 | Phase 28: catAtk claw/shred/bite damage instrumentation | ✅ complete | 2026-09-08 | 2026-09-08 | 4/4 plans |
+| Phase 29: 统一 landing 判定重构 | 🟡 in_progress | 2026-09-10 | — | 1/3 plans |
 
 ## Accumulated Context
 
@@ -165,6 +166,7 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 | Phase 28-cat-druid-claw-shred-bite-claw-shred-bite-catatk-catatk-mac P02 | 345 | 2 tasks | 2 files |
 | Phase 28 P03 | 18 | 4 tasks | 1 files |
 | Phase 28 P04 | 3 | 2 tasks | 2 files |
+| Phase 29 P01 | 10 | 3 tasks | 4 files |
 
 ## Decisions
 
@@ -210,12 +212,13 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 - [Phase ?]: Phase 28-04: R8 anchor corrected to the real symbol name shouldDoReshift (stale canDoReshift from docs commit 10db348) rather than renaming decision-file code
 - [Phase ?]: Phase 28-04: HUMAN-UAT.md gains a 6-section Phase 28 user-machine acceptance script; the 4-item closed-loop human-check rides human_verify_mode=end-of-phase into the verifier's 28-UAT.md (no mid-plan checkpoints)
 - [Phase ?]: Phase 28-04: closing battery BATTERY_FAIL=0 with the corrected R8 anchor — 8-file bbcheck + build.sh + 6 product counts + R7 zero-path audit + Phase 27 pairLandIntent coexistence
+- [Phase ?]: D-01 confirmed by user at execution checkpoint: landSource field + landSources registry + both dispatch gates removed per locked scope (option-a)
 
 ## Session
 
-**Last session:** 2026-09-09T16:30:59.454Z
-**Stopped at:** Phase 29 context gathered
-**Resume file:** .planning/phases/29-landing/29-CONTEXT.md
+**Last session:** 2026-09-10T02:38:57.075Z
+**Stopped at:** Completed 29-01-PLAN.md
+**Resume file:** None
 
 ## Quick Tasks Completed
 

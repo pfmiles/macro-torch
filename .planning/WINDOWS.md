@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 2
+open_count: 3
 waived_count: 0
 fixed_count: 2
-total_count: 4
-last_updated: 2026-09-08T13:49:44.997Z
+total_count: 5
+last_updated: 2026-09-10T02:39:33.873Z
 ---
 
 # Broken Windows Ledger
@@ -19,6 +19,7 @@ last_updated: 2026-09-08T13:49:44.997Z
 | 2 | 22 | stub | classes/druid/selftest.lua | 108 | Batch 2 end marker: placeholder for plan 22-02 expansion tests | open |  | 2026-07-30T15:31:25.495Z |  |
 | 3 | 28 | stub | tools/cpdamage.lua | 542 | selftest branch placeholder prints placeholder text; full selftest lands in 28-03 | fixed |  | 2026-09-08T12:37:50.223Z | 2026-09-08T13:49:44.744Z |
 | 4 | 28 | stub | tools/cpdamage.lua | 546 | json-out branch placeholder prints placeholder text; result-file output lands in 28-03 | fixed |  | 2026-09-08T12:37:50.446Z | 2026-09-08T13:49:44.997Z |
+| 5 | 29 | deviation | classes/druid/Druid.lua |  | Task-2 token-gate grep prints 2: pre-existing '#' comment glyphs ('decision #3'/'decision #4') preserved verbatim per plan instruction; no Lua 5.0 code token introduced | open |  | 2026-09-10T02:39:33.873Z |  |
 
 ````json
 [
@@ -69,6 +70,18 @@ last_updated: 2026-09-08T13:49:44.997Z
     "reason": "",
     "recorded_at": "2026-09-08T12:37:50.446Z",
     "resolved_at": "2026-09-08T13:49:44.997Z"
+  },
+  {
+    "id": 5,
+    "kind": "deviation",
+    "phase": "29",
+    "file": "classes/druid/Druid.lua",
+    "line": null,
+    "description": "Task-2 token-gate grep prints 2: pre-existing '#' comment glyphs ('decision #3'/'decision #4') preserved verbatim per plan instruction; no Lua 5.0 code token introduced",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-10T02:39:33.873Z",
+    "resolved_at": null
   }
 ]
 ````
