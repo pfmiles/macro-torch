@@ -760,27 +760,55 @@ end, true)
 			"target.distance API not available on this client")
 	end, true)
 
-	-- Category Q: event-driven land-framework regression tests (Phase 27 Q-01..Q-09)
-	-- Every stubbed test (Q-02..Q-07) follows the Phase-26 CR-01 discipline: the fake
+	-- Category Q: event-driven land-framework regression tests (Phase 27 Q-01..Q-09,
+	-- Phase 29 unified OR rewrite; the Q-11..Q-16 boundary cases land in 29-02/29-03)
+	-- Every stubbed test (Q-02..Q-16) follows the Phase-26 CR-01 discipline: the fake
 	-- loginContext / target are local tables built before install, framework calls run
 	-- inside a pcall, results are captured into locals, the real globals are restored by
 	-- raw assignment, and only then does any assert run — a failing assert can never
 	-- leave a polluted session. No test writes macroTorch.tracingSpells,
-	-- macroTorch.landSources, macroTorch.landListeners, or any real loginContext sub-table.
+	-- macroTorch.landListeners, or any real loginContext sub-table.
 
-	macroTorch.SelfTest:register("Cat Q-01: land-source registry values (aura-apply vs self-hit)", function()
-		assert(macroTorch.landSources['Rip'] == 'aura-apply',
-			"expected Rip landSource 'aura-apply', got " .. tostring(macroTorch.landSources['Rip']))
-		assert(macroTorch.landSources['Pounce'] == 'aura-apply',
-			"expected Pounce landSource 'aura-apply', got " .. tostring(macroTorch.landSources['Pounce']))
-		assert(macroTorch.landSources['Rake'] == 'self-hit',
-			"expected Rake landSource 'self-hit', got " .. tostring(macroTorch.landSources['Rake']))
-		assert(macroTorch.landSources['Ferocious Bite'] == 'self-hit',
-			"expected Ferocious Bite landSource 'self-hit', got " .. tostring(macroTorch.landSources['Ferocious Bite']))
-		assert(macroTorch.landSources['Serpent Sting'] == 'aura-apply',
-			"expected Serpent Sting landSource 'aura-apply', got " .. tostring(macroTorch.landSources['Serpent Sting']))
-		assert(macroTorch.landSources['Scorpid Sting'] == 'aura-apply',
-			"expected Scorpid Sting landSource 'aura-apply', got " .. tostring(macroTorch.landSources['Scorpid Sting']))
+	macroTorch.SelfTest:register("Cat Q-01: unified three-channel OR registration (no per-spell source registry)", function()
+		assert(macroTorch.landSources == nil,
+			"expected the per-spell land source registry to be gone (D-01)")
+		assert(macroTorch.tracingSpells['Pounce'] == true,
+			"expected Pounce land tracing")
+		assert(macroTorch.tracingSpells['Rake'] == true,
+			"expected Rake land tracing")
+		assert(macroTorch.tracingSpells['Rip'] == true,
+			"expected Rip land tracing")
+		assert(macroTorch.tracingSpells['Ferocious Bite'] == true,
+			"expected Ferocious Bite land tracing")
+		assert(macroTorch.tracingSpells['Serpent Sting'] == true,
+			"expected Serpent Sting land tracing")
+		assert(macroTorch.tracingSpells['Scorpid Sting'] == true,
+			"expected Scorpid Sting land tracing")
+		assert(macroTorch.LAND_INTENT_TTL == 0.9,
+			"expected the default evidence window 0.9, got " .. tostring(macroTorch.LAND_INTENT_TTL))
+		assert(macroTorch.landIntentTtls['Serpent Sting'] == 2,
+			"expected Serpent Sting intentTtl 2, got " .. tostring(macroTorch.landIntentTtls['Serpent Sting']))
+		assert(macroTorch.landIntentTtls['Scorpid Sting'] == 2,
+			"expected Scorpid Sting intentTtl 2, got " .. tostring(macroTorch.landIntentTtls['Scorpid Sting']))
+		assert(macroTorch.landIntentTtls['Pounce'] == 0.9,
+			"expected Pounce intentTtl default 0.9, got " .. tostring(macroTorch.landIntentTtls['Pounce']))
+		assert(macroTorch.landIntentTtls['Rake'] == 0.9,
+			"expected Rake intentTtl default 0.9, got " .. tostring(macroTorch.landIntentTtls['Rake']))
+		assert(macroTorch.landIntentTtls['Rip'] == 0.9,
+			"expected Rip intentTtl default 0.9, got " .. tostring(macroTorch.landIntentTtls['Rip']))
+		assert(macroTorch.landIntentTtls['Ferocious Bite'] == 0.9,
+			"expected Ferocious Bite intentTtl default 0.9, got " .. tostring(macroTorch.landIntentTtls['Ferocious Bite']))
+		local rakePattern = macroTorch.auraApplySpellPatterns['Rake']
+		local pouncePattern = macroTorch.auraApplySpellPatterns['Pounce']
+		local ripPattern = macroTorch.auraApplySpellPatterns['Rip']
+		assert(type(rakePattern) == 'string' and string.find(rakePattern, ' is afflicted by ') ~= nil,
+			"expected a Rake aura-apply pattern, got " .. tostring(rakePattern))
+		assert(type(pouncePattern) == 'string' and string.find(pouncePattern, ' is afflicted by ') ~= nil,
+			"expected a Pounce aura-apply pattern, got " .. tostring(pouncePattern))
+		assert(type(ripPattern) == 'string' and string.find(ripPattern, ' is afflicted by ') ~= nil,
+			"expected a Rip aura-apply pattern, got " .. tostring(ripPattern))
+		assert(macroTorch.auraApplySpellPatterns['Faerie Fire (Feral)'] == nil,
+			"expected no Faerie Fire (Feral) aura-apply pattern (land=false)")
 	end, true)
 
 	macroTorch.SelfTest:register("Cat Q-02: aura-apply line pairs the cast intent and lands at apply time", function()
@@ -799,9 +827,9 @@ end, true)
 		pcallRes = pcall(function()
 			macroTorch.recordCastTable('Rip')
 			-- recordCastTable stamps the intent with the real client clock; align the
-			-- seeded castAt into the fake pair window around the 1000.5 apply time
+			-- seeded castAt 0.5s before the applied 1000.5 — inside the 0.9 default window
 			-- (write to the fake context's own intent only)
-			fakeLoginContext.intentTable['Rip']['QTestMob'].top.castAt = 999.0
+			fakeLoginContext.intentTable['Rip']['QTestMob'].top.castAt = 1000.0
 			intentResult = macroTorch.processRawAuraApply('Rip',
 				'0xF1300000000000AB is afflicted by Rip.', '0xf1300000000000ab', 1000.5)
 			if intentResult then
@@ -1207,7 +1235,7 @@ end, true)
 		end)
 		macroTorch.loginContext = savedLoginContext
 		assert(pcallRes, "U-05 pcall failed")
-		assert(paired == nil, "U-05 expected nil beyond the 2s LAND_INTENT_TTL window")
+		assert(paired == nil, "U-05 expected nil beyond the LAND_INTENT_TTL window")
 		assert(remaining == 0, "U-05 expected the purge to drain the stack, got " .. tostring(remaining))
 	end, true)
 
