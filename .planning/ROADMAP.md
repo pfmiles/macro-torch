@@ -1004,7 +1004,7 @@ Plans:
 **Goal:** 重构 landing 判定机制：去掉 `landSource` 参数，所有 `land = true` 注册技能统一采用三通道证据（self-hit / apply / fail）OR 语义 + cast 后 `intentTtl` 窗口静默到期反推兜底；cast 维度谓词去重（同 cast 单条、同质量保留最早）；fail-wins 保留；`intentTtl` 成为 register 可选参数（默认 0.9s，猎人钉刺 ~2s 覆盖弹道）；FB 续期 push 豁免去重。设计锁定细节见 `.planning/phases/29-landing/DESIGN-CONTEXT.md`（2026-09-09 讨论收敛，RAWDIAG2 取证插桩已移除）
 **Requirements**: TBD
 **Depends on:** Phase 28
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans executed
 
 Plans:
 **Wave 1**
@@ -1017,7 +1017,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2)*
 
-- [ ] 29-03-PLAN.md — 边界用例后半程 Q-12/Q-14/Q-15/Q-16 + HUMAN-UAT.md Phase 29 实机验收协议（含 D-17/D-18 注记）+ 全阶段静态收尾电池
+- [x] 29-03-PLAN.md — 边界用例后半程 Q-12/Q-14/Q-15/Q-16 + HUMAN-UAT.md Phase 29 实机验收协议（含 D-17/D-18 注记）+ 全阶段静态收尾电池
 
 ---
 
