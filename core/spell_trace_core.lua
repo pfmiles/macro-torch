@@ -11,18 +11,22 @@
    limitations under the License.
 ]] --
 macroTorch.DEBUFF_LAND_LAG = 0.2
--- intent pending-window seconds before expiry (event-driven land pairing)
-macroTorch.LAND_INTENT_TTL = 2
+-- default evidence window (s) before a silent cast is inferred landed;
+-- the intentTtl register parameter overrides it per-spell; the cpDamage
+-- pairing keeps referencing this constant (D-17)
+macroTorch.LAND_INTENT_TTL = 0.9
 -- sets what spells to trace casts
 if not macroTorch.tracingSpells then
     macroTorch.tracingSpells = {}
 end
--- per-spell land source registry ('self-hit' default; 'aura-apply' lands come
--- from RAW_COMBATLOG aura-apply lines and require intent pairing)
-if not macroTorch.landSources then
-    macroTorch.landSources = {}
+-- per-spell evidence/ttl registry written by register, read by recordCastTable
+-- seeding and the inference layer
+if not macroTorch.landIntentTtls then
+    macroTorch.landIntentTtls = {}
 end
--- precompiled find patterns for aura-apply land spells (' is afflicted by <spell>.')
+-- precompiled find patterns for aura-apply evidence lines of land-tracing
+-- spells that carry a tracked debuff texture (natural-attribute driver,
+-- no per-spell source field)
 if not macroTorch.auraApplySpellPatterns then
     macroTorch.auraApplySpellPatterns = {}
 end
@@ -57,16 +61,23 @@ macroTorch.SpellTrace = {}
 -- land (boolean): 为 true 时调用 setSpellTracing(name)
 -- debuffTexture (string): immune tracing 所需的 debuff 贴图纹理
 -- spellName (string): 可选，应与注册名 name 一致，仅用于 guard invariant 校验
+-- intentTtl (number, optional): per-spell evidence window override; defaults to LAND_INTENT_TTL
 function macroTorch.SpellTrace:register(name, config)
     -- [CITED: PLAN 03-02 must_haves]
     if config.land then
         macroTorch.setSpellTracing(name)
-        macroTorch.landSources[name] = config.landSource or 'self-hit'
-        if config.landSource == 'aura-apply' then
-            -- pattern is built by raw concatenation: the registered spell name
-            -- enters a Lua find pattern, so names must stay free of pattern
-            -- metacharacters (all four current aura-apply names qualify)
-            macroTorch.auraApplySpellPatterns[name] = ' is afflicted by ' .. name .. '%.'
+        macroTorch.landIntentTtls[name] = config.intentTtl or macroTorch.LAND_INTENT_TTL
+        if config.immune and config.debuffTexture then
+            -- the aura-apply evidence channel exists for spells carrying a
+            -- tracked debuff texture (natural attribute, no per-spell source
+            -- field); the pattern is built by raw concatenation, so guard the
+            -- name against Lua find-pattern metacharacters first
+            if string.find(name, '[()%.%%%+%-%*%?%[%]%^%$]') then
+                macroTorch.show("[macro-torch] SpellTrace:register(" .. name ..
+                    "): name carries Lua find-pattern metacharacters, aura-apply channel skipped", 'red')
+            else
+                macroTorch.auraApplySpellPatterns[name] = ' is afflicted by ' .. name .. '%.'
+            end
         end
     end
     -- Guard invariant: when config.spellName is set, it must equal
@@ -112,7 +123,7 @@ function macroTorch.recordCastTable(spell)
     --     mob .. ' is recorded/renewed to castTable: ' ..
     --     macroTorch.loginContext.castTable[spell][mob].top)
     -- seed a cast intent consumed by event-driven land pairing (pairLandIntent);
-    -- expires after LAND_INTENT_TTL if no land/fail event arrives
+    -- expires after the intent's own ttl if no land/fail event arrives
     if not macroTorch.loginContext.intentTable then
         macroTorch.loginContext.intentTable = {}
     end
@@ -122,7 +133,8 @@ function macroTorch.recordCastTable(spell)
     if not macroTorch.loginContext.intentTable[spell][mob] then
         macroTorch.loginContext.intentTable[spell][mob] = macroTorch.LRUStack:new(32)
     end
-    macroTorch.loginContext.intentTable[spell][mob].push({ state = 'pending', castAt = GetTime(), landAt = nil })
+    macroTorch.loginContext.intentTable[spell][mob].push({ state = 'pending', castAt = GetTime(), landAt = nil,
+        ttl = macroTorch.landIntentTtls[spell] or macroTorch.LAND_INTENT_TTL })
 end
 -- record traced spells' failures, icluding all types of failures: miss, parry, resist, immune
 -- it also computes the final 'landTable' immediately, cauz the cast event must arrived upon the fail event arrive
@@ -155,11 +167,12 @@ function macroTorch.recordFailTable(spell, failType)
     -- type when it cancels a previously announced green landing (fail-wins)
     macroTorch.finalizeFail(spell, item[1], failType)
 end
--- pairs a land event with an unconsumed cast intent recorded within
--- LAND_INTENT_TTL seconds before the land. First runs a purge pass expiring
--- stale pending intents, then picks the newest still-pending intent whose
--- castAt is <= landTime and inside the TTL window. Never pairs an intent
--- already failed or landed (the fail-wins guarantee).
+-- pairs a land event with an unconsumed cast intent whose own ttl window
+-- (intent.ttl, defaulting to LAND_INTENT_TTL) covers the land. First runs a
+-- purge pass expiring stale pending intents past their own ttl, then picks
+-- the newest still-pending intent whose castAt is <= landTime and inside its
+-- ttl window. Never pairs an intent already failed or landed (the fail-wins
+-- guarantee).
 function macroTorch.pairLandIntent(spell, landTime)
     if not spell or not macroTorch.target.isCanAttack then
         return nil
@@ -173,10 +186,10 @@ function macroTorch.pairLandIntent(spell, landTime)
         return nil
     end
     local stack = macroTorch.loginContext.intentTable[spell][mob]
-    -- purge pass: expire pending intents older than the TTL window
+    -- purge pass: expire pending intents older than their own ttl window
     for i = macroTorch.tableLen(stack.elements), 1, -1 do
         local intent = stack.elements[i]
-        if intent.state == 'pending' and (landTime - intent.castAt) > macroTorch.LAND_INTENT_TTL then
+        if intent.state == 'pending' and (landTime - intent.castAt) > (intent.ttl or macroTorch.LAND_INTENT_TTL) then
             intent.state = 'expired'
         end
     end
@@ -184,7 +197,7 @@ function macroTorch.pairLandIntent(spell, landTime)
     for i = macroTorch.tableLen(stack.elements), 1, -1 do
         local intent = stack.elements[i]
         if intent.state == 'pending' and intent.castAt <= landTime and
-                (landTime - intent.castAt) <= macroTorch.LAND_INTENT_TTL then
+                (landTime - intent.castAt) <= (intent.ttl or macroTorch.LAND_INTENT_TTL) then
             intent.state = 'landed'
             intent.landAt = landTime
             return intent
@@ -284,11 +297,48 @@ function macroTorch.cpDamageEvent(sample, dmg, crit)
         ',"batch":' .. macroTorch.jsonEncodeScalar(sample.batch) .. '}'
     macroTorch.log('[cpDamage] ' .. json)
 end
--- records a land event on the landTable and dispatches registered listeners.
--- Does NOT touch intent state: pairing is the caller's job (aura-apply pairs
--- first and drops the land on no intent; self-hit pairs best-effort; the
--- bleed-renewal rewrites in 27-02 pair nothing).
+-- unified evidence entry: records a land event on the landTable and dispatches
+-- registered listeners; the cast-dimension dedup inside keeps one land per
+-- cast, earliest arrival wins. Renewal rewrites go through the exempt entry
+-- recordLandEventRenewal instead. Does NOT touch intent state: pairing is the
+-- caller's job (aura-apply pairs first and drops the land on no intent;
+-- self-hit pairs best-effort).
 function macroTorch.recordLandEvent(spell, landTime)
+    if not spell or not macroTorch.target.isCanAttack then
+        return
+    end
+    if not macroTorch.loginContext then
+        return
+    end
+    if not macroTorch.loginContext.landTable then
+        macroTorch.loginContext.landTable = {}
+    end
+    if not macroTorch.loginContext.landTable[spell] then
+        macroTorch.loginContext.landTable[spell] = {}
+    end
+    local mob = macroTorch.target.name
+    if not macroTorch.loginContext.landTable[spell][mob] then
+        macroTorch.loginContext.landTable[spell][mob] = macroTorch.LRUStack:new(100)
+    end
+    -- cast-dimension dedup keeps one land per cast, earliest arrival wins;
+    -- renewal bypasses via the dedicated exempt entry
+    local lastCast = macroTorch.peekCastEvent(spell)
+    local lastLand = macroTorch.peekLandEvent(spell) or 0
+    if lastCast and lastLand and lastLand >= lastCast then
+        return
+    end
+    macroTorch.loginContext.landTable[spell][mob].push(landTime)
+    if macroTorch.landListeners and macroTorch.landListeners[spell] then
+        for _, listener in ipairs(macroTorch.landListeners[spell]) do
+            listener(spell, landTime)
+        end
+    end
+end
+-- renewal entry: deliberately writes a new anchor past the cast-dimension
+-- dedup (FB listener call sites only). Guard shape, lazy-init, push and
+-- listener dispatch mirror recordLandEvent verbatim; only the dedup
+-- predicate is absent.
+function macroTorch.recordLandEventRenewal(spell, landTime)
     if not spell or not macroTorch.target.isCanAttack then
         return
     end
@@ -322,11 +372,12 @@ function macroTorch.onLandEvent(spell, fn)
     end
     table.insert(macroTorch.landListeners[spell], fn)
 end
--- handles a RAW aura-apply line ('<guid> is afflicted by <Spell>.') for an
--- aura-apply land source: parses the guid and requires a case-insensitive
--- match with the current target (ownership check), then pairs the line with a
--- cast intent — the land timestamp IS the apply event time. Returns the paired
--- intent, or nil when the line is not ours / does not pair.
+-- handles a RAW aura-apply line ('<guid> is afflicted by <Spell>.') — the
+-- apply-evidence channel of the unified OR land flow: parses the guid and
+-- requires a case-insensitive match with the current target (ownership
+-- check), then pairs the line with a cast intent — the land timestamp IS the
+-- apply event time. Returns the paired intent, or nil when the line is not
+-- ours / does not pair.
 function macroTorch.processRawAuraApply(spellName, rawText, targetGuid, now)
     if not spellName or not rawText then
         return nil
@@ -359,9 +410,10 @@ function macroTorch.processRawAuraApply(spellName, rawText, targetGuid, now)
     return intent
 end
 -- finalizes an intent as failed when a fail event arrives: consumes the newest
--- pending/landed intent within the TTL window, revokes the land entry the
--- intent produced (if any), and marks it failed. Fail is final regardless of
--- whether the land or the fail event arrived first.
+-- pending/landed intent inside its windowed fail veto (cast <= failTime <=
+-- cast + intent.ttl), revokes the land entry the intent produced (if any),
+-- and marks it failed. Fail is final regardless of whether the land or the
+-- fail event arrived first.
 function macroTorch.finalizeFail(spell, failTime, failType)
     if not spell or not macroTorch.target.isCanAttack then
         return
@@ -377,12 +429,12 @@ function macroTorch.finalizeFail(spell, failTime, failType)
     local stack = macroTorch.loginContext.intentTable[spell][mob]
     for i = macroTorch.tableLen(stack.elements), 1, -1 do
         local intent = stack.elements[i]
-        -- deliberately allows failTime slightly before castAt (negative
-        -- window): same-frame arrival order must not flip fail-wins, so
-        -- intent.state == 'pending' or 'landed' and a negative diff is
-        -- still consumed
+        -- windowed fail veto (D-04): consume when cast <= failTime <=
+        -- cast + intent.ttl; a same-frame fail (diff 0) still satisfies the
+        -- lower bound, so fail-wins never depends on arrival order
         if (intent.state == 'pending' or intent.state == 'landed') and
-                (failTime - intent.castAt) <= macroTorch.LAND_INTENT_TTL then
+                (failTime - intent.castAt) >= 0 and
+                (failTime - intent.castAt) <= (intent.ttl or macroTorch.LAND_INTENT_TTL) then
             if intent.state == 'landed' and intent.landAt then
                 -- revoke the land this intent produced (fail is final)
                 if macroTorch.loginContext.landTable and macroTorch.loginContext.landTable[spell] and
@@ -404,10 +456,11 @@ function macroTorch.finalizeFail(spell, failTime, failType)
         end
     end
 end
--- parses 'Your <skill> hits/crits <target>.' self-hit lines into land events
--- for registered self-hit land spells. The 'Your <skill>' prefix is
--- client-authenticated, so no intent pairing is required to record the land;
--- pairing is still attempted best-effort to consume the cast intent.
+-- parses 'Your <skill> hits/crits <target>.' self-hit lines into land events.
+-- The 'Your <skill>' prefix is client-authenticated, so every traced spell's
+-- self-hit line is land evidence (unified OR channel); no pairing is required
+-- to record the land — pairing is attempted best-effort to consume the cast
+-- intent, and recordLandEvent's cast dedup keeps one land per cast.
 function macroTorch.onSelfDamageLine(eventMsg, now)
     if not eventMsg then
         return
@@ -420,9 +473,6 @@ function macroTorch.onSelfDamageLine(eventMsg, now)
         return
     end
     if not macroTorch.tracingSpells[spell] then
-        return
-    end
-    if (macroTorch.landSources[spell] or 'self-hit') ~= 'self-hit' then
         return
     end
     macroTorch.pairLandIntent(spell, now)
