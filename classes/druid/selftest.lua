@@ -1420,7 +1420,400 @@ end, true)
 			"S-04 warning should carry the [cpBuild] tag: " .. tostring(warnings[1]))
 	end, true)
 
-	-- Registration count: Category S adds 4 tests (quick 260907-0ya + WR-01 fix)
+	-- Category S-05+ (phase 30): stubbed pins of the cpBuild DKI state machine (D-04 transitions, D-01 switch gate, both bypasses) under CR-01 discipline
+	macroTorch.SelfTest:register("Cat S-05: DKI WAIT_ANCHOR anchors on a 3-to-1 down-jump", function()
+		local savedGCP = GetComboPoints
+		local savedGTime = GetTime
+		local savedLog = macroTorch.log
+		local savedInCombat = macroTorch.inCombat
+		local savedCpBuildLog = macroTorch.cpBuildLog
+		local savedTarget = macroTorch.target
+		local savedDki = macroTorch.cpBuildDki
+		local captured = {}
+		local gcpCalls = 0
+		local stateAfter
+		local t0After
+		macroTorch.log = function(a)
+			table.insert(captured, tostring(a))
+		end
+		macroTorch.cpBuildLog = true
+		macroTorch.inCombat = true
+		macroTorch.cpBuildDki = { state = 'WAIT_ANCHOR', t0 = nil, prevCp = nil }
+		macroTorch.target = { isCanAttack = false }
+		GetTime = function()
+			return 42.5
+		end
+		-- the seeding tick records prevCp = 3, the second tick lands the anchor on 1
+		GetComboPoints = function()
+			gcpCalls = gcpCalls + 1
+			if gcpCalls == 1 then
+				return 3
+			end
+			return 1
+		end
+		local pcallRes = pcall(function()
+			macroTorch.cpBuildDkiTick()
+			macroTorch.cpBuildDkiTick()
+			stateAfter = macroTorch.cpBuildDki.state
+			t0After = macroTorch.cpBuildDki.t0
+		end)
+		GetComboPoints = savedGCP
+		GetTime = savedGTime
+		macroTorch.log = savedLog
+		macroTorch.inCombat = savedInCombat
+		macroTorch.cpBuildLog = savedCpBuildLog
+		macroTorch.target = savedTarget
+		macroTorch.cpBuildDki = savedDki
+		assert(pcallRes, "S-05 pcall failed")
+		assert(stateAfter == 'BUILDING', "S-05 expected the 3-to-1 down-jump to anchor into BUILDING, got " .. tostring(stateAfter))
+		assert(t0After == 42.5, "S-05 expected the anchor time to be the stubbed 42.5, got " .. tostring(t0After))
+		assert(macroTorch.tableLen(captured) == 0, "S-05 anchoring must not log anything, got " .. tostring(macroTorch.tableLen(captured)))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat S-06: DKI cp=0 back-look anchors alive target, cancels dead target", function()
+		local savedGCP = GetComboPoints
+		local savedGTime = GetTime
+		local savedLog = macroTorch.log
+		local savedInCombat = macroTorch.inCombat
+		local savedCpBuildLog = macroTorch.cpBuildLog
+		local savedTarget = macroTorch.target
+		local savedDki = macroTorch.cpBuildDki
+		local captured = {}
+		local gcpCalls = 0
+		local anchorState
+		local anchorT0
+		local cancelState
+		local cancelT0
+		macroTorch.log = function(a)
+			table.insert(captured, tostring(a))
+		end
+		macroTorch.cpBuildLog = true
+		macroTorch.inCombat = true
+		macroTorch.target = { isCanAttack = true }
+		GetTime = function()
+			return 42.5
+		end
+		GetComboPoints = function()
+			gcpCalls = gcpCalls + 1
+			if gcpCalls == 1 then
+				return 2
+			end
+			return 0
+		end
+		local pcallRes = pcall(function()
+			-- drive (a): the 2-to-0 down-jump on an attackable target anchors
+			macroTorch.cpBuildDki = { state = 'WAIT_ANCHOR', t0 = nil, prevCp = nil }
+			macroTorch.cpBuildDkiTick()
+			macroTorch.cpBuildDkiTick()
+			anchorState = macroTorch.cpBuildDki.state
+			anchorT0 = macroTorch.cpBuildDki.t0
+			-- drive (b): the same down-jump on a dead target cancels instead
+			macroTorch.cpBuildDki = { state = 'WAIT_ANCHOR', t0 = nil, prevCp = nil }
+			macroTorch.target = { isCanAttack = false }
+			gcpCalls = 0
+			macroTorch.cpBuildDkiTick()
+			macroTorch.cpBuildDkiTick()
+			cancelState = macroTorch.cpBuildDki.state
+			cancelT0 = macroTorch.cpBuildDki.t0
+		end)
+		GetComboPoints = savedGCP
+		GetTime = savedGTime
+		macroTorch.log = savedLog
+		macroTorch.inCombat = savedInCombat
+		macroTorch.cpBuildLog = savedCpBuildLog
+		macroTorch.target = savedTarget
+		macroTorch.cpBuildDki = savedDki
+		assert(pcallRes, "S-06 pcall failed")
+		assert(anchorState == 'BUILDING', "S-06 expected the alive-target back-look to anchor into BUILDING, got " .. tostring(anchorState))
+		assert(anchorT0 == 42.5, "S-06 expected the anchor time to be the stubbed 42.5, got " .. tostring(anchorT0))
+		assert(cancelState == 'WAIT_ANCHOR', "S-06 expected the dead-target back-look to cancel, got " .. tostring(cancelState))
+		assert(cancelT0 == nil, "S-06 expected no anchor time on a cancelled candidate, got " .. tostring(cancelT0))
+		assert(macroTorch.tableLen(captured) == 0, "S-06 the back-look must not log anything, got " .. tostring(macroTorch.tableLen(captured)))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat S-07: DKI BUILDING re-reach of 5 persists one ok line and goes DONE", function()
+		local savedGCP = GetComboPoints
+		local savedGTime = GetTime
+		local savedLog = macroTorch.log
+		local savedInCombat = macroTorch.inCombat
+		local savedCpBuildLog = macroTorch.cpBuildLog
+		local savedTarget = macroTorch.target
+		local savedDki = macroTorch.cpBuildDki
+		local captured = {}
+		local lineCount
+		local doneState
+		macroTorch.log = function(a)
+			table.insert(captured, tostring(a))
+		end
+		macroTorch.cpBuildLog = true
+		macroTorch.inCombat = true
+		macroTorch.cpBuildDki = { state = 'BUILDING', t0 = 99.0, prevCp = 4 }
+		macroTorch.target = { isCanAttack = false }
+		GetTime = function()
+			return 105.5
+		end
+		GetComboPoints = function()
+			return 5
+		end
+		local pcallRes = pcall(function()
+			macroTorch.cpBuildDkiTick()
+			lineCount = macroTorch.tableLen(captured)
+			doneState = macroTorch.cpBuildDki.state
+			macroTorch.cpBuildDkiTick()
+		end)
+		GetComboPoints = savedGCP
+		GetTime = savedGTime
+		macroTorch.log = savedLog
+		macroTorch.inCombat = savedInCombat
+		macroTorch.cpBuildLog = savedCpBuildLog
+		macroTorch.target = savedTarget
+		macroTorch.cpBuildDki = savedDki
+		assert(pcallRes, "S-07 pcall failed")
+		assert(lineCount == 1, "S-07 expected exactly one ok line, got " .. tostring(lineCount))
+		assert(captured[1] == '[cpBuildT] ok t=6.500', "S-07 expected the ok line [cpBuildT] ok t=6.500, got " .. tostring(captured[1]))
+		assert(doneState == 'DONE', "S-07 expected the re-reach of 5 to move the machine to DONE, got " .. tostring(doneState))
+		assert(macroTorch.tableLen(captured) == 1, "S-07 DONE must stay silent on a second tick, got " .. tostring(macroTorch.tableLen(captured)))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat S-08: DKI BUILDING mid-window down-jump emits fail and re-anchors", function()
+		local savedGCP = GetComboPoints
+		local savedGTime = GetTime
+		local savedLog = macroTorch.log
+		local savedInCombat = macroTorch.inCombat
+		local savedCpBuildLog = macroTorch.cpBuildLog
+		local savedTarget = macroTorch.target
+		local savedDki = macroTorch.cpBuildDki
+		local captured = {}
+		local stateAfter
+		local t0After
+		macroTorch.log = function(a)
+			table.insert(captured, tostring(a))
+		end
+		macroTorch.cpBuildLog = true
+		macroTorch.inCombat = true
+		macroTorch.cpBuildDki = { state = 'BUILDING', t0 = 99.0, prevCp = 4 }
+		macroTorch.target = { isCanAttack = false }
+		GetTime = function()
+			return 110.0
+		end
+		GetComboPoints = function()
+			return 1
+		end
+		local pcallRes = pcall(function()
+			macroTorch.cpBuildDkiTick()
+			stateAfter = macroTorch.cpBuildDki.state
+			t0After = macroTorch.cpBuildDki.t0
+		end)
+		GetComboPoints = savedGCP
+		GetTime = savedGTime
+		macroTorch.log = savedLog
+		macroTorch.inCombat = savedInCombat
+		macroTorch.cpBuildLog = savedCpBuildLog
+		macroTorch.target = savedTarget
+		macroTorch.cpBuildDki = savedDki
+		assert(pcallRes, "S-08 pcall failed")
+		assert(macroTorch.tableLen(captured) == 1, "S-08 expected exactly one fail line, got " .. tostring(macroTorch.tableLen(captured)))
+		assert(captured[1] == '[cpBuildT] fail', "S-08 expected the fail line [cpBuildT] fail, got " .. tostring(captured[1]))
+		assert(stateAfter == 'BUILDING', "S-08 expected the mid-window down-jump to stay in BUILDING, got " .. tostring(stateAfter))
+		assert(t0After == 110.0, "S-08 expected the re-anchor time to be the stubbed 110.0, got " .. tostring(t0After))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat S-09: DKI kill-shot truncation emits fail and returns to WAIT_ANCHOR", function()
+		local savedGCP = GetComboPoints
+		local savedGTime = GetTime
+		local savedLog = macroTorch.log
+		local savedInCombat = macroTorch.inCombat
+		local savedCpBuildLog = macroTorch.cpBuildLog
+		local savedTarget = macroTorch.target
+		local savedDki = macroTorch.cpBuildDki
+		local captured = {}
+		local stateAfter
+		local t0After
+		macroTorch.log = function(a)
+			table.insert(captured, tostring(a))
+		end
+		macroTorch.cpBuildLog = true
+		macroTorch.inCombat = true
+		macroTorch.cpBuildDki = { state = 'BUILDING', t0 = 99.0, prevCp = 3 }
+		macroTorch.target = { isCanAttack = false }
+		GetTime = function()
+			return 110.0
+		end
+		GetComboPoints = function()
+			return 0
+		end
+		local pcallRes = pcall(function()
+			macroTorch.cpBuildDkiTick()
+			stateAfter = macroTorch.cpBuildDki.state
+			t0After = macroTorch.cpBuildDki.t0
+		end)
+		GetComboPoints = savedGCP
+		GetTime = savedGTime
+		macroTorch.log = savedLog
+		macroTorch.inCombat = savedInCombat
+		macroTorch.cpBuildLog = savedCpBuildLog
+		macroTorch.target = savedTarget
+		macroTorch.cpBuildDki = savedDki
+		assert(pcallRes, "S-09 pcall failed")
+		assert(macroTorch.tableLen(captured) == 1, "S-09 expected exactly one fail line, got " .. tostring(macroTorch.tableLen(captured)))
+		assert(captured[1] == '[cpBuildT] fail', "S-09 expected the fail line [cpBuildT] fail, got " .. tostring(captured[1]))
+		assert(stateAfter == 'WAIT_ANCHOR', "S-09 expected the kill-shot truncation to return to WAIT_ANCHOR, got " .. tostring(stateAfter))
+		assert(t0After == nil, "S-09 expected a pristine WAIT_ANCHOR with no anchor time, got " .. tostring(t0After))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat S-10: DKI DONE stays silent until the next down-jump re-anchors", function()
+		local savedGCP = GetComboPoints
+		local savedGTime = GetTime
+		local savedLog = macroTorch.log
+		local savedInCombat = macroTorch.inCombat
+		local savedCpBuildLog = macroTorch.cpBuildLog
+		local savedTarget = macroTorch.target
+		local savedDki = macroTorch.cpBuildDki
+		local captured = {}
+		local gcpCalls = 0
+		local stateMid
+		local stateAfter
+		local t0After
+		macroTorch.log = function(a)
+			table.insert(captured, tostring(a))
+		end
+		macroTorch.cpBuildLog = true
+		macroTorch.inCombat = true
+		macroTorch.cpBuildDki = { state = 'DONE', t0 = nil, prevCp = 5 }
+		macroTorch.target = { isCanAttack = false }
+		GetTime = function()
+			return 66.0
+		end
+		GetComboPoints = function()
+			gcpCalls = gcpCalls + 1
+			if gcpCalls == 1 then
+				return 5
+			end
+			return 1
+		end
+		local pcallRes = pcall(function()
+			macroTorch.cpBuildDkiTick()
+			stateMid = macroTorch.cpBuildDki.state
+			macroTorch.cpBuildDkiTick()
+			stateAfter = macroTorch.cpBuildDki.state
+			t0After = macroTorch.cpBuildDki.t0
+		end)
+		GetComboPoints = savedGCP
+		GetTime = savedGTime
+		macroTorch.log = savedLog
+		macroTorch.inCombat = savedInCombat
+		macroTorch.cpBuildLog = savedCpBuildLog
+		macroTorch.target = savedTarget
+		macroTorch.cpBuildDki = savedDki
+		assert(pcallRes, "S-10 pcall failed")
+		assert(stateMid == 'DONE', "S-10 expected a steady 5 count in DONE to stay silent, got " .. tostring(stateMid))
+		assert(stateAfter == 'BUILDING', "S-10 expected the next down-jump in DONE to re-anchor into BUILDING, got " .. tostring(stateAfter))
+		assert(t0After == 66.0, "S-10 expected the re-anchor time to be the stubbed 66.0, got " .. tostring(t0After))
+		assert(macroTorch.tableLen(captured) == 0, "S-10 DONE must not log anything across both ticks, got " .. tostring(macroTorch.tableLen(captured)))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat S-11: DKI global reset discards the active window to WAIT_ANCHOR", function()
+		local savedGCP = GetComboPoints
+		local savedGTime = GetTime
+		local savedLog = macroTorch.log
+		local savedInCombat = macroTorch.inCombat
+		local savedCpBuildLog = macroTorch.cpBuildLog
+		local savedTarget = macroTorch.target
+		local savedDki = macroTorch.cpBuildDki
+		local captured = {}
+		local stateAfter
+		local t0After
+		local prevCpAfter
+		macroTorch.log = function(a)
+			table.insert(captured, tostring(a))
+		end
+		macroTorch.cpBuildLog = true
+		macroTorch.inCombat = true
+		macroTorch.cpBuildDki = { state = 'BUILDING', t0 = 123.0, prevCp = 3 }
+		macroTorch.target = { isCanAttack = false }
+		GetTime = function()
+			return 123.0
+		end
+		GetComboPoints = function()
+			return 1
+		end
+		local pcallRes = pcall(function()
+			-- the reset is driven directly, the poll stubs stay idle on purpose
+			macroTorch.resetCpBuildDki()
+			stateAfter = macroTorch.cpBuildDki.state
+			t0After = macroTorch.cpBuildDki.t0
+			prevCpAfter = macroTorch.cpBuildDki.prevCp
+		end)
+		GetComboPoints = savedGCP
+		GetTime = savedGTime
+		macroTorch.log = savedLog
+		macroTorch.inCombat = savedInCombat
+		macroTorch.cpBuildLog = savedCpBuildLog
+		macroTorch.target = savedTarget
+		macroTorch.cpBuildDki = savedDki
+		assert(pcallRes, "S-11 pcall failed")
+		assert(stateAfter == 'WAIT_ANCHOR', "S-11 expected the global reset to return to WAIT_ANCHOR, got " .. tostring(stateAfter))
+		assert(t0After == nil, "S-11 expected the global reset to discard the anchor time, got " .. tostring(t0After))
+		assert(prevCpAfter == nil, "S-11 expected the global reset to discard prevCp, got " .. tostring(prevCpAfter))
+		assert(macroTorch.tableLen(captured) == 0, "S-11 the global reset must not log anything, got " .. tostring(macroTorch.tableLen(captured)))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat S-12: DKI tick is zero-API when the switch is off or combat is idle", function()
+		local savedGCP = GetComboPoints
+		local savedGTime = GetTime
+		local savedLog = macroTorch.log
+		local savedInCombat = macroTorch.inCombat
+		local savedCpBuildLog = macroTorch.cpBuildLog
+		local savedTarget = macroTorch.target
+		local savedDki = macroTorch.cpBuildDki
+		local captured = {}
+		local gcpCalls = 0
+		local callsOff
+		local callsIdle
+		local callsControl
+		macroTorch.log = function(a)
+			table.insert(captured, tostring(a))
+		end
+		macroTorch.cpBuildLog = false
+		macroTorch.inCombat = true
+		macroTorch.cpBuildDki = { state = 'WAIT_ANCHOR', t0 = nil, prevCp = nil }
+		macroTorch.target = { isCanAttack = false }
+		GetTime = function()
+			return 42.5
+		end
+		GetComboPoints = function()
+			gcpCalls = gcpCalls + 1
+			return 3
+		end
+		local pcallRes = pcall(function()
+			-- the three arms differ only in the two cheap-first gates (D-01)
+			macroTorch.cpBuildDkiTick()
+			callsOff = gcpCalls
+			macroTorch.cpBuildLog = true
+			macroTorch.inCombat = false
+			gcpCalls = 0
+			macroTorch.cpBuildDkiTick()
+			callsIdle = gcpCalls
+			macroTorch.inCombat = true
+			gcpCalls = 0
+			macroTorch.cpBuildDkiTick()
+			callsControl = gcpCalls
+		end)
+		GetComboPoints = savedGCP
+		GetTime = savedGTime
+		macroTorch.log = savedLog
+		macroTorch.inCombat = savedInCombat
+		macroTorch.cpBuildLog = savedCpBuildLog
+		macroTorch.target = savedTarget
+		macroTorch.cpBuildDki = savedDki
+		assert(pcallRes, "S-12 pcall failed")
+		assert(callsOff == 0, "S-12 expected zero GetComboPoints calls with the switch off, got " .. tostring(callsOff))
+		assert(callsIdle == 0, "S-12 expected zero GetComboPoints calls while combat is idle, got " .. tostring(callsIdle))
+		assert(callsControl == 1, "S-12 expected exactly one GetComboPoints call in the control arm, got " .. tostring(callsControl))
+		assert(macroTorch.tableLen(captured) == 0, "S-12 expected no log lines across all three arms, got " .. tostring(macroTorch.tableLen(captured)))
+	end, true)
+
+	-- Registration count: Category S adds 12 tests (quick 260907-0ya + WR-01 fix + phase 30 DKI 8 tests)
 	-- Category T: macroTorch.log persistence buffer cap (quick 260907-vve, 1 test)
 	-- T-01 mirrors Cat S-01: pure default-value assert, read-only, no stubs,
 	-- isOptional=true. It passes on a fresh login (the macro_torch.lua nil-guard
