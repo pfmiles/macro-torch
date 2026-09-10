@@ -1,15 +1,16 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
+current_plan: 3
 status: in_progress
-stopped_at: Completed 29-01-PLAN.md
-last_updated: "2026-09-10T02:38:57.869Z"
-state_head: d010419eeac5653571e1ff20ac4b0e4f6702f1a8
+stopped_at: Completed 29-02-PLAN.md
+last_updated: "2026-09-10T02:54:54.093Z"
+state_head: 90267cdf2a75fa353a95db97c412247702b265b9
 progress:
   total_phases: 28
   completed_phases: 12
   total_plans: 64
-  completed_plans: 62
+  completed_plans: 63
 milestone_name: milestone
 last_activity: 2026-09-09
 current_phase_name: 统一 landing 判定重构
@@ -22,7 +23,9 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 29 — 统一 landing 判定重构（1/3 plans：29-01 统一 OR 证据链核心完成；29-02 反推兜底、29-03 边界用例待执行）
+- **Current Phase**: Phase 29 — 统一 landing 判定重构（2/3 plans：29-01 统一 OR 证据链核心完成、29-02 反推兜底复活完成；29-03 边界用例待执行）
+- **Current Plan:** 3
+- **Total Plans in Phase:** 3
 - **Active Branch**: main
 
 ## Phase Progress
@@ -54,7 +57,7 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 | Phase 26: 猫德 fast 战斗逻辑 | ✅ complete | 2026-08-21 | 2026-08-22 | 3/3 plans |
 | Phase 27: catAtk event-driven land tracing refactor | ✅ complete | 2026-08-28 | 2026-08-29 | 3/3 plans |
 | Phase 28: catAtk claw/shred/bite damage instrumentation | ✅ complete | 2026-09-08 | 2026-09-08 | 4/4 plans |
-| Phase 29: 统一 landing 判定重构 | 🟡 in_progress | 2026-09-10 | — | 1/3 plans |
+| Phase 29: 统一 landing 判定重构 | 🟡 in_progress | 2026-09-10 | — | 2/3 plans |
 
 ## Accumulated Context
 
@@ -167,6 +170,7 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 | Phase 28 P03 | 18 | 4 tasks | 1 files |
 | Phase 28 P04 | 3 | 2 tasks | 2 files |
 | Phase 29 P01 | 10 | 3 tasks | 4 files |
+| Phase 29 P02 | 6 | 2 tasks | 2 files |
 
 ## Decisions
 
@@ -216,8 +220,8 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 
 ## Session
 
-**Last session:** 2026-09-10T02:38:57.075Z
-**Stopped at:** Completed 29-01-PLAN.md
+**Last session:** 2026-09-10T02:50:45.231Z
+**Stopped at:** Completed 29-02-PLAN.md
 **Resume file:** None
 
 ## Quick Tasks Completed
