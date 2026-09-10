@@ -269,3 +269,52 @@
 - [ ] 注记（D-18 锁定）：远程钉刺的蓝色推断锚偏早于真实 apply 约一个飞行时间（保守提前重挂、不留空窗），本版本接受为最终形态、不做 anchorBias
 
 **完成信号:** 六节清单全部勾选（多猫节无合作条件时视为通过）；将观察结果（/mt 汇总行、木桩与钉刺的通告样例）回复给 verifier，由 verifier 汇入阶段末 29-UAT.md。
+
+---
+
+## Phase 30: cpBuild 双保判定 -- 实机 UAT 闭环
+
+**Phase:** 30 -- cpBuild 双保判定改造（DKI bite→满星 live 计时器 + [cpBuildT] 持久化行 + 离线分析器）
+**Date:** 2026-09-10
+**目标:** 在游戏机完成一次完整闭环：目标态循环下开开关采集 → 观察 `[cpBuildT] ok/fail` 行 → 脱战导档 → `lua tools/cpbuild.lua` 出 T̄ / 达标率 / 直方图 / 窗口矩阵统计，并回执 verifier。
+
+### 1. Prerequisites（前提）
+
+- [ ] WoW 1.12.1（Turtle WoW）+ SuperWoW 客户端
+- [ ] Windows+Cygwin 下 `./build.sh` 成功重建 SM_EXTEND.lua（产物落盘后版控外生效；本 phase 源码改动为 Druid.lua / events.lua / selftest.lua / HUMAN-UAT.md / tools/cpbuild.lua）
+- [ ] Cygwin 内可用 lua 5.x 解释器（分析脚本 `tools/cpbuild.lua` 执行依赖）
+- [ ] 可攻击的 Training Dummy（骷髅级即可）
+- [ ] **D-09 目标态循环前置（关键，否则数据无意义）:** 打桩必须在目标态循环下进行 — 双流血（Rake+Rip）由 bite 刷新维持的目标态循环，不是现行每次窗口硬打 Rake 补贴一星且起始耗能 32e 的循环；现行循环会系统性低估真实 T̄ 并混淆能量轮廓
+
+### 2. Pre-Test（自测预检）
+
+- [ ] 游戏内 `/mt` 全绿无红色 FAIL — Category S-05..S-12 共 8 条全过（其它类别可选项的黄色 warning 可容忍）
+- [ ] 登录横幅仍为 CONFIG_OPTIONS 4 项（本 phase 未增删配置项）
+- [ ] Cygwin 内 `lua tools/cpbuild.lua --selftest` 输出 ALL PASSED（无任何 FAIL 行）
+
+### 3. 采集协议
+
+- [ ] 游戏内 `/run macroTorch.cpBuildLog=true` 热开开关
+- [ ] 以目标态循环打骷髅若干分钟，观察聊天通道出现 `[cpBuildT] ok t=<sec>` 行（咬击锚点后约数秒、窗口周期一次）
+- [ ] 窗口内低星斩杀咬截断时出现偶发 `[cpBuildT] fail` 行
+- [ ] 战斗中途切换目标或脱战时不新增任何行（D-06：取消/全局重置不写行）
+
+### 4. 开关门控验证
+
+- [ ] `/run macroTorch.cpBuildLog=false` 后继续循环 — 无任何新 `[cpBuild]` / `[cpBuildT]` 行，帧表现无变化（D-01 零 API 路径：开关关闭时 0.1s 轮询在 GetComboPoints 之前短路返回）
+
+### 5. 分析运行
+
+- [ ] `lua tools/cpbuild.lua --selftest` 输出 ALL PASSED
+- [ ] 从 SavedVariables 导出 SuperMacro 存档文件（拷出 `WTF/Account/<账号>/SavedVariables/SuperMacro.lua`）
+- [ ] 运行 `lua tools/cpbuild.lua <SavedVariables 路径>`（可选追加 `--json-out out.json` 与 `--rake-dur 9`）
+- [ ] 核对输出含：k（inter-cast interval）均值 + 六档直方图 + 断链计数 + T̄ + T 分布直方图 + 双档达标率（9s 与 Savagery ×0.9 的 8.1s 档）+ ok/fail 窗口矩阵
+
+### 6. Expected Outcomes / Troubleshooting（期望结果与排查）
+
+- [ ] `[cpBuildT] ok` 行 cadence 大致等于窗口周期（一窗一样本，窗口互斥）
+- [ ] `fail` 与 `ok` 之比即未达标率（fail 计入未达标分母）
+- [ ] 无 ok 无 fail — 查开关是否开启、目标是否为可攻击骷髅、GCD 探针黄色警告是否出现（Rake 法术必须在动作条上，否则无采集）
+- [ ] 行数骤停 — 查 MACRO_TORCH_LOG 裁剪上限 `macroTorch.LOG_MAX_SIZE`
+
+**完成信号:** 六节清单全部勾选后，将 /mt 汇总行、[cpBuildT] 行样例与分析脚本输出回复给 verifier，由 verifier 汇入阶段末 30-UAT.md。
