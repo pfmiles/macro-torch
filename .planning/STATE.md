@@ -1,19 +1,19 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-current_plan: Not started
+current_plan: 2
 status: in_progress
-stopped_at: Phase 30 complete — all phases complete
-last_updated: "2026-09-10T17:49:27.950Z"
-state_head: ee87279adce488a26f6983e022e295af2ea5933d
+stopped_at: "Completed 29-04-PLAN.md (G-29-3 gap closure: render hue arms + Cat T-02 regression)"
+last_updated: "2026-09-10T19:00:56.112Z"
+state_head: 6bd0015178b2cfdf2cf8fd1eaf404aa21da1b1aa
 progress:
   total_phases: 29
   completed_phases: 13
-  total_plans: 67
-  completed_plans: 67
+  total_plans: 68
+  completed_plans: 68
 milestone_name: milestone
 last_activity: 2026-09-09
-current_phase_name: cpBuild 双保判定改造
+current_phase_name: landing
 last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrumentation fully removed (scout, ctx stamp, pair ledger, master switch) — the multi-cat arbitration is resolved by the upcoming unified landing design instead"
 ---
 
@@ -24,8 +24,8 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
 - **Current Phase**: Phase 30 — cpBuild 双保判定改造（3/3 plans complete；UAT 5/5 全绿，2026-09-11）。Phase 29 实机验证仍待办（见 29-UAT.md）
-- **Current Plan:** Not started
-- **Total Plans in Phase:** 3
+- **Current Plan:** 2
+- **Total Plans in Phase:** 4
 - **Active Branch**: main
 
 ## Phase Progress
@@ -177,6 +177,7 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 | Phase 30-cpbuild P01 | 2 | 2 tasks | 2 files |
 | Phase 30-cpbuild P03 | 19 | 3 tasks | 1 files |
 | Phase 30 P02 | 4 | 2 tasks | 3 files |
+| Phase 29-landing P04 | 206 | 2 tasks | 2 files |
 
 ## Decisions
 
@@ -235,11 +236,12 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 - [Phase 30]: runtime evidence stays user-side per D-14: the eight S-05..S-12 pins and the Phase 30 UAT protocol execute on Windows+Cygwin; static gates are the executor-certifiable subset, in-game battery tracked as unrun-verify in the windows ledger
 - [Phase 30]: UAT 5/5 全绿 — 实机目标态循环 32 窗口 T̄=5.61s（≪ 8.0s 截点），rakeDur 达标率 87.5% / savagery 75.0%、0 截断窗口；双保判据在实机成立，样本存档 .planning/samples/cpBuild.txt（132 施法 257s 连续会话 0 断链，交叉核验 100% 吻合）
 - [Phase 30]: 复审 fix 收口（e34c510/5f03a82/7f85576）— WR-01 下跳锚协议内 by-design（HUMAN-UAT 强化 D-09 终点技纪律），WR-02 双通道排障口径拆分，WR-03 events.lua resetCpBuildDki 存在性守卫
+- [Phase ?]: 29-04 followed plan as specified: G-29-3 render-layer fix lands D-14 hue arms (blue={0,0.5,0.9} custom_blue, green={0,1,0} custom_green, OFFICER cleared) + Cat T-02 real-show five-arm hue-dominance regression; Category Q untouched, SM_Extend.lua byte-identical, T-02 in-game run tracked as WINDOWS unrun-verify
 
 ## Session
 
-**Last session:** 2026-09-10T17:49:27.950Z
-**Stopped at:** Phase 30 complete — all phases complete
+**Last session:** 2026-09-10T19:00:55.223Z
+**Stopped at:** Completed 29-04-PLAN.md (G-29-3 gap closure: render hue arms + Cat T-02 regression)
 **Resume file:** None
 
 ## Quick Tasks Completed
