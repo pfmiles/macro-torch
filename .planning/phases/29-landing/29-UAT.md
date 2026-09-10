@@ -1,9 +1,9 @@
 ---
-status: complete
+status: diagnosed
 phase: 29-landing
 source: [29-VERIFICATION.md]
 started: 2026-09-10T20:10:00Z
-updated: 2026-09-10T18:14:08Z
+updated: 2026-09-10T18:19:34Z
 ---
 
 ## Current Test
@@ -52,5 +52,15 @@ blocked: 0
   reason: "User reported: 行为都符合预期，就是蓝色和绿色刚好搞反了：rake/bite全都是蓝色的landed, pounce和rip的inferred landed都是绿色的，没有红色"
   severity: minor
   test: 3
-  artifacts: []  # Filled by diagnosis
-  missing: []    # Filled by diagnosis
+  root_cause: "interface_debug.lua:87-99 macroTorch.show 渲染表绿/蓝两臂色相颠倒：'blue'→OFFICER(实渲染绿色)、'green'→{0,0.5,0.9}(实渲染蓝色)。Phase 29 判定逻辑与调用点标签均正确；缺陷为 GSD 重构前遗留（7d2369b/5594a09），Phase 29 建立绿/蓝协议后首次可见"
+  artifacts:
+    - path: "interface_debug.lua"
+      issue: "macroTorch.show 颜色名→渲染色相翻译表绿/蓝两臂颠倒"
+    - path: "core/spell_trace_core.lua"
+      issue: "通告调用点标签正确（受害方，无需改动）"
+    - path: "classes/druid/selftest.lua"
+      issue: "Q 系列自检只断言标签字符串且测试期 stub 掉 show，渲染层零覆盖"
+  missing:
+    - "修正 macroTorch.show 翻译表：'green' 用真实绿色、'blue' 用真实蓝色"
+    - "补一条对渲染映射表色相的回归自测（覆盖映射层）"
+  debug_session: ".planning/debug/landing-color-inverted.md"
