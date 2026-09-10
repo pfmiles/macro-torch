@@ -558,14 +558,26 @@ function macroTorch.onSelfDamageLine(eventMsg, now)
     if not eventMsg then
         return
     end
-    local _, _, spell = string.find(eventMsg, 'Your (.-) hits ([^%.]+)%.')
+    local _, _, spell, hitTarget = string.find(eventMsg, 'Your (.-) hits ([^%.]+)%.')
     if not spell then
-        _, _, spell = string.find(eventMsg, 'Your (.-) crits ([^%.]+)%.')
+        _, _, spell, hitTarget = string.find(eventMsg, 'Your (.-) crits ([^%.]+)%.')
     end
     if not spell then
         return
     end
     if not macroTorch.tracingSpells[spell] then
+        return
+    end
+    -- target-ownership check, mirroring the apply channel's guid rejection:
+    -- the land write and the announcement are keyed on the current target, so
+    -- a self-hit line naming another mob (retarget while the hit was in
+    -- flight) must not leak into the current target's ledger (WR-05).
+    -- Vanilla self-hit lines carry damage and absorb suffixes ('for 548',
+    -- '(45 absorbed)'); strip the absorb suffix first, then the damage one,
+    -- before the case-insensitive name compare.
+    local cleanTarget = string.gsub(hitTarget, ' %(%d+ .-%)$', '')
+    cleanTarget = string.gsub(cleanTarget, ' for %d+$', '')
+    if macroTorch.target.name == nil or string.lower(cleanTarget) ~= string.lower(macroTorch.target.name) then
         return
     end
     macroTorch.pairLandIntent(spell, now)
