@@ -297,6 +297,19 @@ function macroTorch.cpDamageEvent(sample, dmg, crit)
         ',"batch":' .. macroTorch.jsonEncodeScalar(sample.batch) .. '}'
     macroTorch.log('[cpDamage] ' .. json)
 end
+-- D-02 cast-dimension coverage predicate, shared by the announce gates and
+-- the record side: when the current cast already has a land (real evidence or
+-- an earlier inference), a later evidence line for the same cast is dropped,
+-- so the green announcement must be skipped for it as well (WR-01: a dropped
+-- write must not print a landed line).
+function macroTorch.isCastCovered(spell)
+    local lastCast = macroTorch.peekCastEvent(spell)
+    local lastLand = macroTorch.peekLandEvent(spell) or 0
+    if lastCast and lastLand and lastLand >= lastCast then
+        return true
+    end
+    return false
+end
 -- unified evidence entry: records a land event on the landTable and dispatches
 -- registered listeners; the cast-dimension dedup inside keeps one land per
 -- cast, earliest arrival wins. Renewal rewrites go through the exempt entry
@@ -321,10 +334,9 @@ function macroTorch.recordLandEvent(spell, landTime)
         macroTorch.loginContext.landTable[spell][mob] = macroTorch.LRUStack:new(100)
     end
     -- cast-dimension dedup keeps one land per cast, earliest arrival wins;
-    -- renewal bypasses via the dedicated exempt entry
-    local lastCast = macroTorch.peekCastEvent(spell)
-    local lastLand = macroTorch.peekLandEvent(spell) or 0
-    if lastCast and lastLand and lastLand >= lastCast then
+    -- renewal bypasses via the dedicated exempt entry; the predicate lives
+    -- in isCastCovered so the announce gates evaluate the same condition
+    if macroTorch.isCastCovered(spell) then
         return
     end
     macroTorch.loginContext.landTable[spell][mob].push(landTime)
@@ -467,8 +479,13 @@ function macroTorch.processRawAuraApply(spellName, rawText, targetGuid, now)
         -- Announced BEFORE recordLandEvent for the same causal-order reason
         -- as the self-hit path: the announcement precedes listener
         -- consequences, keeping output order uniform across both sources.
-        macroTorch.show(spellName .. ' cast on ' .. macroTorch.target.name ..
-            ' landed: ' .. now, 'green')
+        -- Gated on the same D-02 coverage outcome as the self-hit path, so an
+        -- apply whose write is deduped (a self-hit already landed this cast)
+        -- prints no misleading second green line (WR-01 symmetry).
+        if not macroTorch.isCastCovered(spellName) then
+            macroTorch.show(spellName .. ' cast on ' .. macroTorch.target.name ..
+                ' landed: ' .. now, 'green')
+        end
         macroTorch.recordLandEvent(spellName, now)
     end
     return intent
@@ -547,7 +564,12 @@ function macroTorch.onSelfDamageLine(eventMsg, now)
     -- causality: recordLandEvent dispatches land listeners synchronously,
     -- and their output (e.g. the Ferocious Bite Renewing lines) is a
     -- consequence of this hit and must follow the green landed line.
-    if macroTorch.loginContext and macroTorch.target.isCanAttack then
+    -- the announce is gated on the D-02 coverage outcome so a same-cast
+    -- duplicate (dual-channel spell whose apply paired first) stays silent
+    -- instead of printing a second green landed line for a dropped write
+    -- (WR-01); the announce still precedes recordLandEvent, keeping the
+    -- causal print order announced-before-listener-output intact
+    if macroTorch.loginContext and macroTorch.target.isCanAttack and not macroTorch.isCastCovered(spell) then
         macroTorch.show(spell .. ' cast on ' .. macroTorch.target.name ..
             ' landed: ' .. now, 'green')
     end
