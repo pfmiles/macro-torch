@@ -370,6 +370,105 @@ function macroTorch.cpBuildLogEvent(skillName, s)
     macroTorch.log('[cpBuild] ' .. skillName .. ' t=' .. s.t .. ' cp=' .. s.cp .. ' e=' .. s.e)
 end
 
+-- Phase 30 cpBuild instrumentation: DKI (double-keep proof) live timer. It
+-- measures T from the bite anchor (a combo-point down-jump to 1 or 0) to the
+-- first re-reach of 5 combo points and persists one [cpBuildT] line per
+-- window through macroTorch.log. Protocol locks (30-CONTEXT.md): D-01 the
+-- whole persistence is gated by macroTorch.cpBuildLog, switch off = zero
+-- client API calls on the poll path; D-04 three-state machine WAIT_ANCHOR /
+-- BUILDING / DONE with the cp=0 back-look disambiguation and two bypasses
+-- (mid-window down-jump truncation counts the fail denominator and re-anchors
+-- the next window; target change or combat exit resets without counting);
+-- D-06 line protocol [cpBuildT] ok t=<sec> / [cpBuildT] fail with the
+-- seconds value always formatted to 3 decimals. The state lives in a
+-- dedicated table OUTSIDE macroTorch.context because onCombatExit swaps the
+-- whole context table (combat_context.lua) and would destroy the in-flight
+-- window. Plain assignment (no nil guard): the file re-executes on every
+-- login/reload, which re-arms the machine exactly like the macro_torch.lua
+-- switch flags.
+macroTorch.cpBuildDki = { state = 'WAIT_ANCHOR', t0 = nil, prevCp = nil }
+
+-- D-04 bypass 2 global reset, called from core/events.lua on
+-- PLAYER_TARGET_CHANGED and on combat exit (PLAYER_REGEN_ENABLED). Discards
+-- the in-flight window without persisting any line: it clears state only and
+-- never touches the persisted sample history in MACRO_TORCH_LOG. No
+-- arguments, no returns, no client API calls.
+function macroTorch.resetCpBuildDki()
+    macroTorch.cpBuildDki.state = 'WAIT_ANCHOR'
+    macroTorch.cpBuildDki.t0 = nil
+    macroTorch.cpBuildDki.prevCp = nil
+end
+
+-- 0.1s poll driver (registered below as 'cpBuildDkiPoll'). Gate order is
+-- locked, cheapest first, mirroring cpDamageSample: with the switch off the
+-- tick is two plain field reads and returns before GetComboPoints (D-01),
+-- and the combat-idle gate is still a field read so both early exits make
+-- zero client API calls (D-05). The global GetComboPoints is called directly
+-- so the phase 30 selftests can stub and capture it (D-13).
+function macroTorch.cpBuildDkiTick()
+    if not macroTorch.cpBuildLog then
+        return
+    end
+    if not macroTorch.inCombat then
+        return
+    end
+    local cp = GetComboPoints() or 0
+    local prevCp = macroTorch.cpBuildDki.prevCp
+    macroTorch.cpBuildDki.prevCp = cp
+    local state = macroTorch.cpBuildDki.state
+    -- Down-jump predicate (all states): the cp count fell from above 1 down
+    -- to 1 or 0 since the last poll. Landing on 0 is ambiguous, so the target
+    -- is back-looked on the same tick: attackable means a real bite without
+    -- the remnant talent, dead or gone cancels the candidate (D-04).
+    local downJump = prevCp ~= nil and prevCp > 1 and cp <= 1
+    local biteAnchor = downJump and (cp == 1 or macroTorch.toBoolean(macroTorch.target.isCanAttack))
+    if state == 'BUILDING' then
+        if cp >= 5 then
+            -- Completed window (checked before the down-jump branch per
+            -- D-04): first re-reach of 5 combo points. One window yields
+            -- exactly one sample; the t token is always 3 decimals so the
+            -- offline parser (plan 30-03) can tonumber it exactly.
+            local t1 = GetTime()
+            macroTorch.log('[cpBuildT] ok t=' .. string.format('%.3f', t1 - macroTorch.cpBuildDki.t0))
+            macroTorch.cpBuildDki.state = 'DONE'
+        elseif downJump then
+            -- Mid-window truncation (D-04 bypass 1): the window is cut short,
+            -- so the fail denominator still counts.
+            macroTorch.log('[cpBuildT] fail')
+            if biteAnchor then
+                -- The interrupting bite anchors the next window; windows are
+                -- mutually exclusive, so the machine stays BUILDING.
+                macroTorch.cpBuildDki.t0 = GetTime()
+            else
+                -- Kill-shot bite on a dying target: no re-anchor. The target
+                -- is dead and the combat-exit reset owns the follow-up.
+                macroTorch.cpBuildDki.state = 'WAIT_ANCHOR'
+            end
+        end
+    elseif state == 'WAIT_ANCHOR' then
+        if biteAnchor then
+            macroTorch.cpBuildDki.t0 = GetTime()
+            macroTorch.cpBuildDki.state = 'BUILDING'
+        end
+        -- cancel (back-look falsy on cp 0): stay WAIT_ANCHOR, no state
+        -- change, no line, no count (D-04 explicit cancel)
+    else
+        -- DONE is fully silent until the next down-jump (one window = one
+        -- sample per D-04).
+        if downJump then
+            if biteAnchor then
+                macroTorch.cpBuildDki.t0 = GetTime()
+                macroTorch.cpBuildDki.state = 'BUILDING'
+            else
+                -- target dead or gone: back to WAIT_ANCHOR, no anchor, no line
+                macroTorch.cpBuildDki.state = 'WAIT_ANCHOR'
+            end
+        end
+    end
+end
+
+macroTorch.registerPeriodicTask('cpBuildDkiPoll', { interval = 0.1, task = macroTorch.cpBuildDkiTick })
+
 -- Pre-cast snapshot for one [cpDamage] entry (phase 28). Gates run in cheap-
 -- first order: (a) switch off = zero cost; (b) Training Dummy hard gate
 -- (verbatim the combo.lua clickContext.isTargetDummy expression); (c) batch
