@@ -1060,9 +1060,11 @@ end
 -- 4. 等待时间 >= 1.0秒（FF的GCD是1秒）
 function macroTorch.shouldCastFFDuringWaitWindow(clickContext)
     -- 基础排除条件
+    -- Kill-shot phase pauses all debuff maintenance, including FF fill (rule 9)
     if clickContext.ooc
             or macroTorch.target.isImmune('Faerie Fire (Feral)')
-            or macroTorch.shouldDoReshift(clickContext) then
+            or macroTorch.shouldDoReshift(clickContext)
+            or macroTorch.isKillShotOrLastChance(clickContext) then
         return false
     end
 
