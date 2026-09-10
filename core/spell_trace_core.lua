@@ -362,6 +362,70 @@ function macroTorch.recordLandEventRenewal(spell, landTime)
         end
     end
 end
+-- set up the land event generation for traced spells; silent-window inference rescue
+function macroTorch.maintainLandTables()
+    if not macroTorch.tracingSpells or macroTorch.tableLen(macroTorch.tracingSpells) == 0 or not macroTorch.inCombat then
+        return
+    end
+    for spellName in pairs(macroTorch.tracingSpells) do
+        macroTorch.computeLandTable(spellName)
+    end
+end
+macroTorch.registerPeriodicTask('maintainLandTables', { interval = 0.1, task = macroTorch.maintainLandTables })
+-- inference fallback revived per D-03/D-04: once a cast's own ttl window
+-- elapses in full silence (no self-hit, no paired apply, no in-window fail)
+-- the cast is declared landed anchored at its cast moment
+function macroTorch.computeLandTable(spell)
+    if not spell or not macroTorch.target.isCanAttack then
+        return
+    end
+    if not macroTorch.loginContext then
+        return
+    end
+    -- compute the final 'landTable'
+    if not macroTorch.loginContext.landTable then
+        macroTorch.loginContext.landTable = {}
+    end
+    if not macroTorch.loginContext.landTable[spell] then
+        macroTorch.loginContext.landTable[spell] = {}
+    end
+    local mob = macroTorch.target.name
+    if not macroTorch.loginContext.landTable[spell][mob] then
+        macroTorch.loginContext.landTable[spell][mob] = macroTorch.LRUStack:new(100)
+    end
+    local lastCast = macroTorch.peekCastEvent(spell)
+    if not lastCast then
+        return
+    end
+    -- per-spell evidence window: hunter stings use 2, druid bleeds 0.9 — the
+    -- same window that gates intent pairing and fail vetoes (one parameter,
+    -- three reads)
+    local ttl = macroTorch.landIntentTtls[spell] or macroTorch.LAND_INTENT_TTL
+    -- window-still-open return replaces the old blip lower/upper double
+    -- constant: the trigger edge IS the ttl, no magic numbers
+    local blip = GetTime() - lastCast
+    if blip <= ttl then
+        return
+    end
+    -- cast-dimension coverage predicate (D-02 reuse): this cast is already
+    -- covered by a real evidence landing or an earlier inference
+    local lastLand = macroTorch.peekLandEvent(spell) or 0
+    if lastLand >= lastCast then
+        return
+    end
+    -- windowed fail veto (D-04): a fail at cast <= failTime <= cast + ttl
+    -- vetoes this inference (replaces the old 0.05s adjacency heuristic);
+    -- failTable entries are {time, failType} pairs
+    local lastFail = macroTorch.peekFailEvent(spell)
+    if lastFail and lastFail[1] >= lastCast and (lastFail[1] - lastCast) <= ttl then
+        return
+    end
+    macroTorch.loginContext.landTable[spell][mob].push(lastCast)
+    -- blue reserved for the inferred fallback so real green evidence stays
+    -- visually distinguishable; the (inferred) suffix tells the player an
+    -- apply-confirmed landing from a fallback inference
+    macroTorch.show(spell .. ' cast on ' .. mob .. ' landed: ' .. lastCast .. ' ' .. '(inferred)', 'blue')
+end
 -- registers a listener invoked on every land event recorded for this spell
 function macroTorch.onLandEvent(spell, fn)
     if not macroTorch.landListeners then
