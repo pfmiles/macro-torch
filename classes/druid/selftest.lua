@@ -761,7 +761,9 @@ end, true)
 	end, true)
 
 	-- Category Q: event-driven land-framework regression tests (Phase 27 Q-01..Q-09,
-	-- Phase 29 unified OR rewrite; the Q-11..Q-16 boundary cases land in 29-02/29-03)
+	-- Phase 29 unified OR rewrite; 29-02 revives Q-09 as the inference-core
+	-- assertion and adds Q-11/Q-13 — the sequence is now Q-01..Q-11 + Q-13;
+	-- Q-12/Q-14..Q-16 land in 29-03)
 	-- Every stubbed test (Q-02..Q-16) follows the Phase-26 CR-01 discipline: the fake
 	-- loginContext / target are local tables built before install, framework calls run
 	-- inside a pcall, results are captured into locals, the real globals are restored by
@@ -996,13 +998,20 @@ end, true)
 			"expected at least one Ferocious Bite renewal listener")
 	end, true)
 
-	macroTorch.SelfTest:register("Cat Q-09: deleted polling machinery absent at runtime", function()
-		assert(macroTorch.maintainLandTables == nil,
-			"maintainLandTables should be deleted, got " .. tostring(macroTorch.maintainLandTables))
-		assert(macroTorch.computeLandTable == nil,
-			"computeLandTable should be deleted, got " .. tostring(macroTorch.computeLandTable))
+	macroTorch.SelfTest:register("Cat Q-09: inference core revived with 0.1s periodic registration", function()
+		assert(type(macroTorch.maintainLandTables) == 'function',
+			"maintainLandTables should be a function, got " .. tostring(macroTorch.maintainLandTables))
+		assert(type(macroTorch.computeLandTable) == 'function',
+			"computeLandTable should be a function, got " .. tostring(macroTorch.computeLandTable))
+		local task = macroTorch.periodicTasks['maintainLandTables']
+		assert(task ~= nil,
+			"expected the maintainLandTables periodic task registration")
+		assert(task.interval == 0.1,
+			"expected maintainLandTables interval 0.1, got " .. tostring(task.interval))
+		assert(task.task == macroTorch.maintainLandTables,
+			"expected the periodic task to point at the revived maintainLandTables")
 		assert(macroTorch.consumeDruidBattleEvents == nil,
-			"consumeDruidBattleEvents should be deleted, got " .. tostring(macroTorch.consumeDruidBattleEvents))
+			"consumeDruidBattleEvents should still be gone, got " .. tostring(macroTorch.consumeDruidBattleEvents))
 	end, true)
 
 	macroTorch.SelfTest:register("Cat Q-10: FB land event renews Rake and Rip with the numeric event time", function()
@@ -1036,6 +1045,129 @@ end, true)
 		macroTorch.context = savedContext
 		assert(pcallRes, "Q-10 pcall failed")
 		assert(ok, "expected the FB event time (number) to renew Rake and Rip land entries")
+	end, true)
+
+	macroTorch.SelfTest:register("Cat Q-11: silent-window inference fires after ttl with blue (inferred) announcement", function()
+		local savedLoginContext = macroTorch.loginContext
+		local savedTarget = macroTorch.target
+		local savedShow = macroTorch.show
+		local fakeLoginContext = {}
+		local fakeTarget = { isCanAttack = true, name = 'QTestMob', hasBuff = function(self) return false end }
+		local captured = {}
+		macroTorch.show = function(msg, color)
+			table.insert(captured, { msg = msg, color = color })
+		end
+		macroTorch.loginContext = fakeLoginContext
+		macroTorch.target = fakeTarget
+		local pcallRes = true
+		local seedCast, rakeTop, capCount, capMsg, capColor
+		pcallRes = pcall(function()
+			local now0 = GetTime()
+			-- 2.0s before now: past the 0.9 default window, the window is silent
+			seedCast = now0 - 2.0
+			fakeLoginContext.castTable = {}
+			fakeLoginContext.landTable = {}
+			fakeLoginContext.failTable = {}
+			fakeLoginContext.castTable['Rake'] = {}
+			fakeLoginContext.landTable['Rake'] = {}
+			fakeLoginContext.failTable['Rake'] = {}
+			fakeLoginContext.castTable['Rake']['QTestMob'] = macroTorch.LRUStack:new(100)
+			fakeLoginContext.landTable['Rake']['QTestMob'] = macroTorch.LRUStack:new(100)
+			fakeLoginContext.failTable['Rake']['QTestMob'] = macroTorch.LRUStack:new(100)
+			fakeLoginContext.castTable['Rake']['QTestMob'].push(seedCast)
+			macroTorch.computeLandTable('Rake')
+			rakeTop = fakeLoginContext.landTable['Rake']['QTestMob'].top
+			capCount = macroTorch.tableLen(captured)
+			local cap1 = captured[1]
+			if cap1 then
+				capMsg = cap1.msg
+				capColor = cap1.color
+			end
+		end)
+		macroTorch.loginContext = savedLoginContext
+		macroTorch.target = savedTarget
+		macroTorch.show = savedShow
+		assert(pcallRes, "Q-11 pcall failed")
+		assert(rakeTop == seedCast,
+			"expected the inference anchor to be the cast time, got " .. tostring(rakeTop))
+		assert(capCount == 1,
+			"expected exactly one announcement, got " .. tostring(capCount))
+		assert(string.find(capMsg or '', 'Rake cast on QTestMob landed:', 1, true) == 1,
+			"expected the Rake cast-on announcement prefix, got " .. tostring(capMsg))
+		assert(string.find(capMsg or '', '(inferred)', 1, true) ~= nil,
+			"expected the (inferred) suffix, got " .. tostring(capMsg))
+		assert(capColor == 'blue',
+			"expected a blue announcement, got " .. tostring(capColor))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat Q-13: windowed fail veto — inside vetoes inference, outside does not", function()
+		local savedLoginContext = macroTorch.loginContext
+		local savedTarget = macroTorch.target
+		local savedShow = macroTorch.show
+		local fakeLoginContext = {}
+		local fakeTarget = { isCanAttack = true, name = 'QTestMob', hasBuff = function(self) return false end }
+		local captured = {}
+		macroTorch.show = function(msg, color)
+			table.insert(captured, { msg = msg, color = color })
+		end
+		macroTorch.loginContext = fakeLoginContext
+		macroTorch.target = fakeTarget
+		local pcallRes = true
+		local landTopA, landTopB, countA, countB, castB, capMsg, capColor
+		pcallRes = pcall(function()
+			local function freshStacks()
+				fakeLoginContext.castTable = {}
+				fakeLoginContext.landTable = {}
+				fakeLoginContext.failTable = {}
+				fakeLoginContext.castTable['Rake'] = {}
+				fakeLoginContext.landTable['Rake'] = {}
+				fakeLoginContext.failTable['Rake'] = {}
+				fakeLoginContext.castTable['Rake']['QTestMob'] = macroTorch.LRUStack:new(100)
+				fakeLoginContext.landTable['Rake']['QTestMob'] = macroTorch.LRUStack:new(100)
+				fakeLoginContext.failTable['Rake']['QTestMob'] = macroTorch.LRUStack:new(100)
+			end
+			-- phase A: fail 0.5s after the cast, inside the 0.9 window --
+			-- vetoes the inference: zero land, zero announcement
+			freshStacks()
+			local nowA = GetTime()
+			local castA = nowA - 1.5
+			fakeLoginContext.castTable['Rake']['QTestMob'].push(castA)
+			fakeLoginContext.failTable['Rake']['QTestMob'].push({ nowA - 1.0, 'resist' })
+			macroTorch.computeLandTable('Rake')
+			landTopA = fakeLoginContext.landTable['Rake']['QTestMob'].top
+			countA = macroTorch.tableLen(captured)
+			-- phase B: fail 0.1s BEFORE the cast, below the window lower bound
+			-- inference fires with one blue (inferred) announcement
+			freshStacks()
+			local nowB = GetTime()
+			castB = nowB - 1.5
+			fakeLoginContext.castTable['Rake']['QTestMob'].push(castB)
+			fakeLoginContext.failTable['Rake']['QTestMob'].push({ nowB - 1.6, 'resist' })
+			macroTorch.computeLandTable('Rake')
+			landTopB = fakeLoginContext.landTable['Rake']['QTestMob'].top
+			countB = macroTorch.tableLen(captured) - countA
+			local capB = captured[1]
+			if capB then
+				capMsg = capB.msg
+				capColor = capB.color
+			end
+		end)
+		macroTorch.loginContext = savedLoginContext
+		macroTorch.target = savedTarget
+		macroTorch.show = savedShow
+		assert(pcallRes, "Q-13 pcall failed")
+		assert(landTopA == nil,
+			"expected the in-window fail to veto the inference, got " .. tostring(landTopA))
+		assert(countA == 0,
+			"expected no announcement in the veto phase, got " .. tostring(countA))
+		assert(landTopB == castB,
+			"expected the out-of-window fail to leave the inference intact, got " .. tostring(landTopB))
+		assert(countB == 1,
+			"expected exactly one announcement in the plain-inference phase, got " .. tostring(countB))
+		assert(string.find(capMsg or '', '(inferred)', 1, true) ~= nil,
+			"expected the (inferred) suffix in phase B, got " .. tostring(capMsg))
+		assert(capColor == 'blue',
+			"expected a blue phase B announcement, got " .. tostring(capColor))
 	end, true)
 
 	-- Category S: cpBuildLog combo-point cast logging (quick 260907-0ya, 4 tests)
