@@ -211,7 +211,10 @@ end
 -- paired intent's sample.spell must also equal it (WR-02: a stale intent must
 -- never be consumed by a different skill's damage line). A guid match whose
 -- spell mismatches matches nothing and consumes nothing, leaving the intent
--- pending for its own line. Reuses macroTorch.LAND_INTENT_TTL (2s, D-02).
+-- pending for its own line. Reuses macroTorch.LAND_INTENT_TTL (0.9s default,
+-- D-17); samples whose damage line lags the cast by more than the window are
+-- purged unpaired (a dropped [cpDamage] row on a lateness spike, never a
+-- combat misdecision).
 function macroTorch.pairCpDamageIntent(guid, now, want)
     if not guid or not macroTorch.loginContext or not macroTorch.loginContext.cpDamageIntents then
         return nil
@@ -477,7 +480,7 @@ function macroTorch.processRawAuraApply(spellName, rawText, targetGuid, now)
     end
     -- accepted residual risk (REVIEW.md WR-02 / SECURITY.md R-04): in a
     -- multi-feral scenario an allied Rip apply on the same target within our
-    -- pending window can pair with our cast intent (<=2s land offset); fail
+    -- pending window can pair with our cast intent (<= 0.9s default land offset); fail
     -- events still resolve in our favor via fail-wins, and the silent
     -- apply-suppression case is accepted per debug decisions 2 and 6
     local intent = macroTorch.pairLandIntent(spellName, now)
