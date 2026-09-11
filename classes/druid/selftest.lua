@@ -1323,6 +1323,119 @@ end, true)
 			"expected the sting land top 1000.0, got " .. tostring(stingLandTop))
 	end, true)
 
+	macroTorch.SelfTest:register("Cat Q-17: stale-coverage self-hit rescues the landing and restamps the cast record", function()
+		local savedLoginContext = macroTorch.loginContext
+		local savedTarget = macroTorch.target
+		local savedShow = macroTorch.show
+		local fakeLoginContext = {}
+		local fakeTarget = { isCanAttack = true, name = 'QTestMob', hasBuff = function(self) return false end }
+		local captured = {}
+		macroTorch.show = function(msg, color)
+			table.insert(captured, { msg = msg, color = color })
+		end
+		macroTorch.loginContext = fakeLoginContext
+		macroTorch.target = fakeTarget
+		local pcallRes = true
+		local now0, fbLandTop, fbCastTop, capCount, capColor, capMsg
+		pcallRes = pcall(function()
+			now0 = GetTime()
+			-- seed a PREVIOUS bite cast fully covered by its own land, both 2s
+			-- old: the stale [cast, land] pair sits beyond the 0.9 evidence
+			-- window, so the D-02 predicate alone would mistake the NEW line
+			-- for a duplicate of that covered cast
+			fakeLoginContext.castTable = {}
+			fakeLoginContext.castTable['Ferocious Bite'] = {}
+			fakeLoginContext.castTable['Ferocious Bite']['QTestMob'] = macroTorch.LRUStack:new(100)
+			fakeLoginContext.castTable['Ferocious Bite']['QTestMob'].push(now0 - 2.0)
+			fakeLoginContext.landTable = {}
+			fakeLoginContext.landTable['Ferocious Bite'] = {}
+			fakeLoginContext.landTable['Ferocious Bite']['QTestMob'] = macroTorch.LRUStack:new(100)
+			fakeLoginContext.landTable['Ferocious Bite']['QTestMob'].push(now0 - 1.95)
+			-- the new cast's self-hit line arrives before its cast record: the
+			-- rescue must restamp the cast at evidence time and accept the land
+			macroTorch.onSelfDamageLine('Your Ferocious Bite hits QTestMob for 548.', now0)
+			fbLandTop = fakeLoginContext.landTable['Ferocious Bite']['QTestMob'].top
+			fbCastTop = fakeLoginContext.castTable['Ferocious Bite']['QTestMob'].top
+			capCount = macroTorch.tableLen(captured)
+			local cap1 = captured[1]
+			if cap1 then
+				capColor = cap1.color
+				capMsg = cap1.msg
+			end
+		end)
+		macroTorch.loginContext = savedLoginContext
+		macroTorch.target = savedTarget
+		macroTorch.show = savedShow
+		assert(pcallRes, "Q-17 pcall failed")
+		assert(fbLandTop == now0,
+			"expected the rescued land at the line time, got " .. tostring(fbLandTop))
+		assert(type(fbCastTop) == 'number' and fbCastTop >= fbLandTop,
+			"expected a restamped cast record at evidence time, got " .. tostring(fbCastTop))
+		assert(capCount == 1,
+			"expected exactly one announcement, got " .. tostring(capCount))
+		assert(capColor == 'green',
+			"expected a green landed announcement, got " .. tostring(capColor))
+		assert(string.find(capMsg or '', 'Ferocious Bite cast on QTestMob landed:', 1, true) == 1,
+			"expected the Bite cast-on landed prefix, got " .. tostring(capMsg))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat Q-18: inference fallback dispatches land listeners (FB renews bleed clocks)", function()
+		local savedLoginContext = macroTorch.loginContext
+		local savedTarget = macroTorch.target
+		local savedShow = macroTorch.show
+		local savedContext = macroTorch.context
+		local fakeLoginContext = {}
+		local fakeTarget = { isCanAttack = true, name = 'QTestMob', hasBuff = function(self) return true end }
+		local captured = {}
+		macroTorch.show = function(msg, color)
+			table.insert(captured, { msg = msg, color = color })
+		end
+		macroTorch.loginContext = fakeLoginContext
+		macroTorch.target = fakeTarget
+		-- ripLeft/rakeLeft read macroTorch.context.lastRipAtCp; context is nil in
+		-- a fresh out-of-combat session, so stub it (V-01, mirrors Q-10)
+		macroTorch.context = {}
+		local pcallRes = true
+		local now0, fbLandTop, rakeTop, ripTop, capCount, cap1
+		pcallRes = pcall(function()
+			now0 = GetTime()
+			local nowSeed = now0
+			-- fresh bleed land anchors so isRakePresent/isRipPresent hold when
+			-- the listener runs (positive clocks, mirrors Q-10 seeding)
+			macroTorch.recordLandEvent('Rake', nowSeed)
+			macroTorch.recordLandEvent('Rip', nowSeed)
+			-- a silent Ferocious Bite cast 2s ago: past the 0.9 evidence
+			-- window, no fail line - the inference must fire
+			fakeLoginContext.castTable = {}
+			fakeLoginContext.castTable['Ferocious Bite'] = {}
+			fakeLoginContext.castTable['Ferocious Bite']['QTestMob'] = macroTorch.LRUStack:new(100)
+			fakeLoginContext.castTable['Ferocious Bite']['QTestMob'].push(now0 - 2.0)
+			macroTorch.computeLandTable('Ferocious Bite')
+			fbLandTop = fakeLoginContext.landTable['Ferocious Bite']['QTestMob'].top
+			rakeTop = fakeLoginContext.landTable['Rake']['QTestMob'].top
+			ripTop = fakeLoginContext.landTable['Rip']['QTestMob'].top
+			capCount = macroTorch.tableLen(captured)
+			cap1 = captured[1]
+		end)
+		macroTorch.loginContext = savedLoginContext
+		macroTorch.target = savedTarget
+		macroTorch.show = savedShow
+		macroTorch.context = savedContext
+		assert(pcallRes, "Q-18 pcall failed")
+		assert(fbLandTop == now0 - 2.0,
+			"expected the inferred FB anchor at the cast time, got " .. tostring(fbLandTop))
+		assert(rakeTop == now0 - 2.0,
+			"expected the listener to renew the Rake clock at the FB anchor, got " .. tostring(rakeTop))
+		assert(ripTop == now0 - 2.0,
+			"expected the listener to renew the Rip clock at the FB anchor, got " .. tostring(ripTop))
+		assert(capCount == 3,
+			"expected inferred + renewing rake + renewing rip lines, got " .. tostring(capCount))
+		assert(string.find(cap1 and cap1.msg or '', '(inferred)', 1, true) ~= nil,
+			"expected the (inferred) announcement first, got " .. tostring(cap1 and cap1.msg))
+		assert(cap1 and cap1.color == 'blue',
+			"expected a blue (inferred) announcement, got " .. tostring(cap1 and cap1.color))
+	end, true)
+
 	-- Category S: cpBuildLog combo-point cast logging (quick 260907-0ya, 4 tests)
 	-- S-03/S-04 follow the CR-01 stub discipline: snapshot via rawget, install
 	-- own-key shadows, capture into locals, restore via raw assignment BEFORE
