@@ -333,6 +333,31 @@ function macroTorch.isStaleCoveredPair(spell, lineTime)
     local ttl = macroTorch.landIntentTtls[spell] or macroTorch.LAND_INTENT_TTL
     return (lineTime - lastCast) > ttl
 end
+-- anchor-equality guard (silent-bite M1): a covered pair can be real
+-- evidence (lastLand - lastCast > 0; the cast-record bridge and the
+-- combat-log line read different frame clocks) or an anchor stamped AT the
+-- cast moment — the silent-window inference writes recordLandEvent(spell,
+-- lastCast), collapsing its pair to lastLand == lastCast, and the
+-- stale-coverage rescue restamps the same way. When such an anchor pair is
+-- the only coverage and a self-hit line arrives past the evidence window,
+-- the line is the late duplicate of the already inferred cast, NOT first
+-- evidence of an unrecorded cast. Treating it as first evidence fabricated
+-- a phantom cast record and intent, a second green landed line, and a
+-- second renewal dispatch (double ledger / double Renewing). Drop the late
+-- duplicate instead: the cast is already covered by its (inferred)
+-- announcement and the renewal listeners already ran when the anchor was
+-- written.
+function macroTorch.isAnchorCoveredPair(spell)
+    local lastCast = macroTorch.peekCastEvent(spell)
+    if not lastCast then
+        return false
+    end
+    local lastLand = macroTorch.peekLandEvent(spell)
+    if not lastLand then
+        return false
+    end
+    return lastLand == lastCast
+end
 -- unified evidence entry: records a land event on the landTable and dispatches
 -- registered listeners; the cast-dimension dedup inside keeps one land per
 -- cast, earliest arrival wins. Renewal rewrites go through the exempt entry
@@ -616,6 +641,15 @@ function macroTorch.onSelfDamageLine(eventMsg, now)
     -- first evidence; a late-arriving real record is then absorbed by the
     -- 0.2s cast dedup instead of inverting the invariant again.
     if macroTorch.isStaleCoveredPair(spell, now) then
+        -- anchor-equality guard (M1): a stale covered pair anchored at the
+        -- cast moment means this cast was already inferred landed, so this
+        -- late line is its duplicate — drop it silently (no cast restamp,
+        -- no green announcement, no listener dispatch) instead of
+        -- fabricating a phantom cast + intent for it. Real-evidence pairs
+        -- keep lastLand - lastCast > 0 and take the original rescue path.
+        if macroTorch.isAnchorCoveredPair(spell) then
+            return
+        end
         macroTorch.recordCastTable(spell)
     end
     -- user-visible land feedback (restored per user request 2026-08-30): the
