@@ -98,6 +98,10 @@ function macroTorch.show(a, color)
         c = { r = 0, g = 0.5, b = 0.9, id = 'custom_blue' }
     elseif 'green' == col then
         c = { r = 0, g = 1, b = 0, id = 'custom_green' }
+    elseif 'coffee' == col then
+        c = { r = 0.82, g = 0.71, b = 0.55, id = 'custom_coffee' }
+    elseif 'violet' == col then
+        c = { r = 0.86, g = 0.44, b = 0.58, id = 'custom_violet' }
     end
     DEFAULT_CHAT_FRAME:AddMessage(tostring(a), c.r, c.g, c.b, c.id)
 end
@@ -105,7 +109,7 @@ end
 --- 同 show()，但同时将消息持久化到 MACRO_TORCH_LOG SavedVariable
 --- 日志在 logout/reload 时自动写入 WTF/.../SavedVariables/SuperMacro.lua
 ---@param a any 要显示的内容（会被 tostring）
----@param color string 可选颜色: "white"(默认), "red", "yellow", "blue", "green"
+---@param color string 可选颜色: "white"(默认), "red", "yellow", "blue", "green", "coffee", "violet"
 function macroTorch.log(a, color)
     -- 防御性守卫：即使 SavedVariables 加载在文件执行之后覆盖了 MACRO_TORCH_LOG，
     -- 也能保证首次调用 log 时重新初始化（与文件顶部的守卫互为双保险）
