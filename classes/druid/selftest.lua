@@ -1476,6 +1476,17 @@ end, true)
 			fakeLoginContext.landTable['Ferocious Bite'] = {}
 			fakeLoginContext.landTable['Ferocious Bite']['QTestMob'] = macroTorch.LRUStack:new(100)
 			fakeLoginContext.landTable['Ferocious Bite']['QTestMob'].push(anchor)
+			-- WR-02 marker seeding: the real inference path marks this anchor
+			-- write in inferredAnchors inside computeLandTable; the fixture plants
+			-- the mark directly, keeping the planting style minimal. Full
+			-- computeLandTable-path fidelity (silent cast, polled inference,
+			-- marked anchor, late line) remains a known fixture limitation,
+			-- covered compositionally by Q-18 (inference + dispatch) plus this
+			-- guard-response test.
+			fakeLoginContext.inferredAnchors = {}
+			fakeLoginContext.inferredAnchors['Ferocious Bite'] = {}
+			fakeLoginContext.inferredAnchors['Ferocious Bite']['QTestMob'] = macroTorch.LRUStack:new(100)
+			fakeLoginContext.inferredAnchors['Ferocious Bite']['QTestMob'].push(anchor)
 			macroTorch.onSelfDamageLine('Your Ferocious Bite hits QTestMob for 548.', now0)
 			fbCastTop = fakeLoginContext.castTable['Ferocious Bite']['QTestMob'].top
 			fbLandTop = fakeLoginContext.landTable['Ferocious Bite']['QTestMob'].top
