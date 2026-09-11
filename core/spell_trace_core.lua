@@ -313,6 +313,26 @@ function macroTorch.isCastCovered(spell)
     end
     return false
 end
+-- stale-coverage discriminator (self-hit race rescue): the D-02 cast-dimension
+-- predicate protects against a second evidence channel reporting a cast that
+-- is already covered. But when a self-hit line dispatches BEFORE the cast
+-- record lands (event-queue race between the cast-record bridge and the
+-- combat-log line), the predicate sees the PREVIOUS cast's covered pair and
+-- mistakes it for coverage of THIS line. Only a covered pair whose own cast
+-- is inside the spell's evidence window can be a genuine duplicate of this
+-- line; an older one is stale coverage and the line must be accepted as
+-- first evidence of a not-yet-recorded cast.
+function macroTorch.isStaleCoveredPair(spell, lineTime)
+    if not macroTorch.isCastCovered(spell) then
+        return false
+    end
+    local lastCast = macroTorch.peekCastEvent(spell)
+    if not lastCast then
+        return false
+    end
+    local ttl = macroTorch.landIntentTtls[spell] or macroTorch.LAND_INTENT_TTL
+    return (lineTime - lastCast) > ttl
+end
 -- unified evidence entry: records a land event on the landTable and dispatches
 -- registered listeners; the cast-dimension dedup inside keeps one land per
 -- cast, earliest arrival wins. Renewal rewrites go through the exempt entry
@@ -444,11 +464,18 @@ function macroTorch.computeLandTable(spell)
     if lastFail and lastFail[1] >= lastCast and (lastFail[1] - lastCast) <= ttl then
         return
     end
-    macroTorch.loginContext.landTable[spell][mob].push(lastCast)
     -- blue reserved for the inferred fallback so real green evidence stays
     -- visually distinguishable; the (inferred) suffix tells the player an
     -- apply-confirmed landing from a fallback inference
     macroTorch.show(spell .. ' cast on ' .. mob .. ' landed: ' .. lastCast .. ' ' .. '(inferred)', 'blue')
+    -- route the fallback anchor through recordLandEvent so registered land
+    -- listeners (Ferocious Bite renewals) receive the inferred land the same
+    -- way they receive direct evidence — writing the landTable directly here
+    -- bypassed the listener dispatch and permanently lost the renewal booking
+    -- (silent-bite / premature-rip-recast family). The cast-dimension dedup
+    -- inside recordLandEvent cannot block this write: the predicate above
+    -- just verified lastLand < lastCast.
+    macroTorch.recordLandEvent(spell, lastCast)
 end
 -- registers a listener invoked on every land event recorded for this spell
 function macroTorch.onLandEvent(spell, fn)
@@ -581,6 +608,16 @@ function macroTorch.onSelfDamageLine(eventMsg, now)
         return
     end
     macroTorch.pairLandIntent(spell, now)
+    -- race rescue: a covered predicate whose cast pair predates this line's
+    -- evidence window is stale coverage (the cast-record bridge lost the
+    -- arrival-order race against the combat-log line), not a duplicate. Stamp
+    -- the missing cast record at evidence time so the cast <= land invariant
+    -- holds and the D-02 predicate below correctly evaluates this line as
+    -- first evidence; a late-arriving real record is then absorbed by the
+    -- 0.2s cast dedup instead of inverting the invariant again.
+    if macroTorch.isStaleCoveredPair(spell, now) then
+        macroTorch.recordCastTable(spell)
+    end
     -- user-visible land feedback (restored per user request 2026-08-30): the
     -- self-hit line IS the landing; print the green confirmation the pre-phase
     -- polling machinery used to emit. Plain show() — not a DIAG/RAWDIAG marker.
