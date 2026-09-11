@@ -278,6 +278,7 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 | 260909-4ep | 删除 RAWDIAG2 scout 的 60s 时间窗 disarm 门：窗口从玩家 Rip 施放（arm）持续到 combat exit（context 出战斗清空、每场战斗一个窗口）；rotation 每场只放一次 Rip（其余靠 FB 刷新），时间门会静默截断长战斗的后续取证 | 2026-09-09 | 69a0954 | [260909-4ep-rawdiag2-scout-60s-disarm-rip-arm-combat](./quick/260909-4ep-rawdiag2-scout-60s-disarm-rip-arm-combat/) |
 | 260909-w3r | 移除 RAWDIAG2 取证插桩：主开关与横幅条目（5→4 项）、safeRip 决策戳、combat-log scout、arming hook、intent-depth 助手、pair 账本全部删除；多猫仲裁改由统一 landing 方案在两种假设下自洽，取证装置失去存在必要 | 2026-09-09 | c383f34 | [260909-w3r-rawdiag2-forensics-instrumentation-remov](./quick/260909-w3r-rawdiag2-forensics-instrumentation-remov/) |
 | 260910-ilu | catAtk 原则文档 9 处裁决修订（B1 worldboss 圣物限定/B3 畏缩范围/A3 规则2 净收益/A4 erps>0/A5 规则4 门对齐/A6 自动攻强推广/B4 猛虎独立 GCD 注记/移除定义位置列与 SelfTest ID 表）+ 斩杀期 FF 等待窗排除门（shouldCastFFDuringWaitWindow 加 isKillShotOrLastChance，对齐规则 9） | 2026-09-10 | a810f6e | [260910-ilu-catatk-ff-code-1-shouldcastffduringwaitw](./quick/260910-ilu-catatk-ff-code-1-shouldcastffduringwaitw/) |
+| 260912-0kg | Reshift/FF 两条通告行颜色微调：macroTorch.show 新增 coffee（浅咖啡）+ violet（浅紫红，FF 图标色）自定义色臂，纯渲染层零判定改动 | 2026-09-12 | e4de202 | [260912-0kg-reshift-cat-lua-readyreshift-rgb-0-82-0-](./quick/260912-0kg-reshift-cat-lua-readyreshift-rgb-0-82-0-/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
