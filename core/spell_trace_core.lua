@@ -333,20 +333,26 @@ function macroTorch.isStaleCoveredPair(spell, lineTime)
     local ttl = macroTorch.landIntentTtls[spell] or macroTorch.LAND_INTENT_TTL
     return (lineTime - lastCast) > ttl
 end
--- anchor-equality guard (silent-bite M1): a covered pair can be real
--- evidence (lastLand - lastCast > 0; the cast-record bridge and the
--- combat-log line read different frame clocks) or an anchor stamped AT the
--- cast moment — the silent-window inference writes recordLandEvent(spell,
--- lastCast), collapsing its pair to lastLand == lastCast, and the
--- stale-coverage rescue restamps the same way. When such an anchor pair is
--- the only coverage and a self-hit line arrives past the evidence window,
--- the line is the late duplicate of the already inferred cast, NOT first
--- evidence of an unrecorded cast. Treating it as first evidence fabricated
--- a phantom cast record and intent, a second green landed line, and a
--- second renewal dispatch (double ledger / double Renewing). Drop the late
+-- anchor-equality guard (silent-bite M1, marker-discriminated per WR-02):
+-- the lastLand == lastCast top pair has three producers: (a) the
+-- silent-window inference anchor (recordLandEvent(spell, lastCast) inside
+-- computeLandTable), (b) the stale-coverage rescue restamp (recordCastTable
+-- and the dispatched line both read the GetTime() frame clock, so the
+-- rescue collapses its pair to equality), and (c) a same-frame
+-- bridge-stamp/hit-line coincidence. Only producer (a) marks its write in
+-- loginContext.inferredAnchors. When a MARKED anchor pair is the only
+-- coverage and a self-hit line arrives past the evidence window, the line
+-- is the late duplicate of the already inferred cast, NOT first evidence
+-- of an unrecorded cast. Treating it as first evidence fabricated a
+-- phantom cast record and intent, a second green landed line, and a second
+-- renewal dispatch (double ledger / double Renewing). Drop the late
 -- duplicate instead: the cast is already covered by its (inferred)
 -- announcement and the renewal listeners already ran when the anchor was
--- written.
+-- written. An UNMARKED equality pair ((b)/(c)) is real evidence and the
+-- guard must NOT fire — otherwise a bridge-lost follow-up cast whose line
+-- delays past the window is dropped as an "inferred duplicate", silently
+-- losing its land, announcement and renewal dispatch (the landing-silent
+-- symptom family this chain fixes, reopened through a narrower route).
 function macroTorch.isAnchorCoveredPair(spell)
     local lastCast = macroTorch.peekCastEvent(spell)
     if not lastCast then
@@ -356,7 +362,21 @@ function macroTorch.isAnchorCoveredPair(spell)
     if not lastLand then
         return false
     end
-    return lastLand == lastCast
+    if lastLand ~= lastCast then
+        return false
+    end
+    -- marker discriminator: only the inference path marks its anchor write.
+    -- The peek helpers above already established loginContext and the
+    -- current attackable target, so the lazy-init ledger read cannot throw.
+    local mob = macroTorch.target.name
+    if not macroTorch.loginContext.inferredAnchors or
+        not macroTorch.loginContext.inferredAnchors[spell] or
+        not macroTorch.loginContext.inferredAnchors[spell][mob] then
+        return false
+    end
+    return macroTorch.loginContext.inferredAnchors[spell][mob].anyMatch(function(anchorTime)
+        return anchorTime == lastLand
+    end)
 end
 -- unified evidence entry: records a land event on the landTable and dispatches
 -- registered listeners; the cast-dimension dedup inside keeps one land per
@@ -501,6 +521,24 @@ function macroTorch.computeLandTable(spell)
     -- inside recordLandEvent cannot block this write: the predicate above
     -- just verified lastLand < lastCast.
     macroTorch.recordLandEvent(spell, lastCast)
+    -- WR-02 marker: this anchor leaves the [lastCast, lastCast] equality
+    -- pair on top of the land ledger, and the stale-coverage rescue restamp
+    -- produces the identical signature (same-frame GetTime), so numeric
+    -- equality alone cannot tell the producers apart. Marking only the
+    -- inference write lets isAnchorCoveredPair drop only true inferred
+    -- duplicates; the pre-call lastLand >= lastCast guard above already
+    -- ensured this write happens, and the frame is single-threaded so no
+    -- state can change in between.
+    if not macroTorch.loginContext.inferredAnchors then
+        macroTorch.loginContext.inferredAnchors = {}
+    end
+    if not macroTorch.loginContext.inferredAnchors[spell] then
+        macroTorch.loginContext.inferredAnchors[spell] = {}
+    end
+    if not macroTorch.loginContext.inferredAnchors[spell][mob] then
+        macroTorch.loginContext.inferredAnchors[spell][mob] = macroTorch.LRUStack:new(100)
+    end
+    macroTorch.loginContext.inferredAnchors[spell][mob].push(lastCast)
 end
 -- registers a listener invoked on every land event recorded for this spell
 function macroTorch.onLandEvent(spell, fn)
@@ -641,12 +679,17 @@ function macroTorch.onSelfDamageLine(eventMsg, now)
     -- first evidence; a late-arriving real record is then absorbed by the
     -- 0.2s cast dedup instead of inverting the invariant again.
     if macroTorch.isStaleCoveredPair(spell, now) then
-        -- anchor-equality guard (M1): a stale covered pair anchored at the
-        -- cast moment means this cast was already inferred landed, so this
-        -- late line is its duplicate — drop it silently (no cast restamp,
-        -- no green announcement, no listener dispatch) instead of
-        -- fabricating a phantom cast + intent for it. Real-evidence pairs
-        -- keep lastLand - lastCast > 0 and take the original rescue path.
+        -- anchor-equality guard (M1, marker-discriminated per WR-02): an
+        -- equality pair produced by the inference path (marked in
+        -- inferredAnchors) means this cast was already inferred landed, so
+        -- this late line is its duplicate — drop it silently (no cast
+        -- restamp, no green announcement, no listener dispatch) instead of
+        -- fabricating a phantom cast + intent for it. Equality pairs NOT
+        -- carrying the mark (rescue restamp, same-frame bridge/line
+        -- coincidence) are real evidence and take the original rescue path
+        -- below — restamp, green announcement, land record and listener
+        -- dispatch — so a repeated F1 race cannot lose a follow-up cast's
+        -- first evidence.
         if macroTorch.isAnchorCoveredPair(spell) then
             return
         end
