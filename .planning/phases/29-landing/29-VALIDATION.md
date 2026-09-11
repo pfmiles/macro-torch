@@ -46,6 +46,8 @@ created: "2026-09-10"
 | 29-03-01 | 03 | 3 | D-16 | — | Q-12/Q-14/Q-15/Q-16 边界用例 | selftest | registry count = 16 + verify 4 项 | ✅ | ✅ |
 | 29-03-02 | 03 | 3 | D-17/D-18 | — | HUMAN-UAT.md 六节协议 / cpDamage 零改动声明 | doc | grep D-17/D-18 注记各 1 处 | ✅ | ✅ |
 | 29-03-03 | 03 | 3 | all | — | 全阶段静态电池 10/10 | static | 残留清零 / 字节一致 / CJK·CRLF·注释门 | ✅ | ✅ |
+| 29-04-01 | 04 | 4 | D-14 | — | macroTorch.show 绿/蓝两臂色相归位（G-29-3 修复，D-14 契约注释） | static | grep 两臂字面量 1-1-1 / OFFICER 清零 / bbcheck / token·CRLF·CJK 门 | ✅ | ✅ |
+| 29-04-02 | 04 | 4 | D-14 | — | Cat T-02 驱动真实 show() 断言五臂渲染色相 | selftest | 静态电池 6 项（注册 1 / Cat T- 2 / planted 2 / 三主导 1 各 1）；行为臂 manual（见下） | ✅ | ✅ |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -67,6 +69,7 @@ created: "2026-09-10"
 | Hunter Serpent/Scorpid 2s ttl pairing at range | D-12/D-16 | Projectile flight-time behavior is real-machine only | HUMAN-UAT.md §猎人钉刺 |
 | Remote inference anchor bias accepted (D-18) | D-18 | Design-locked acceptance of early-anchor form; observation-only | HUMAN-UAT.md D-18 note |
 | SM_EXTEND.lua rebuild + CONFIG_OPTIONS banner | — | Build runs on user's Windows+Cygwin side by convention | HUMAN-UAT.md §Prerequisites |
+| T-02 in-game execution (/mt sum 中 Category T 2 条全绿；五臂渲染色相：blue=真实蓝、green=真实绿) | D-14 | WoW client + lua interpreter only on the user machine; behavioral pass runs in-game | WINDOWS.md 条目 7 (unrun-verify)；rebuild 后游戏内 `/mt` 观察 T-02 与 §单人木桩色相 |
 
 ---
 
@@ -79,3 +82,15 @@ created: "2026-09-10"
 - [ ] `nyquist_compliant: true` — NOT set: manual-only items above are design-mandated (in-game verification), resolved via HUMAN-UAT.md + weekly-CD pacing; per user ruling at Step 4 these are marked manual-only, not gaps
 
 **Approval:** user (2026-09-10, Nyquist Step-4 gate: mark manual-only)
+
+---
+
+## Validation Audit 2026-09-11
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 1 |
+| Resolved | 0 |
+| Escalated | 1 |
+
+Audit scope: gap-closure 29-04 (G-29-3). D-14 render fix + T-02 static arm classified COVERED (all static gates green; code-review verdict correct). T-02 behavioral arm (in-game hue rendering) escalated to Manual-Only per user ruling at the Step-4 gate (same class as the 2026-09-10 design-mandated manual items; recorded in WINDOWS.md entry 7). Approval: user (2026-09-11).
