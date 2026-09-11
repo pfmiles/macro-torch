@@ -1,198 +1,110 @@
 ---
 phase: 29-landing
-reviewed: 2026-09-11T03:30:00Z
-depth: standard
-files_reviewed: 8
+reviewed: 2026-09-11T17:50:42Z
+depth: deep
+files_reviewed: 5
 files_reviewed_list:
-  - classes/druid/Druid.lua
-  - classes/druid/HUMAN-UAT.md
-  - classes/druid/selftest.lua
-  - classes/hunter/Hunter.lua
-  - core/events.lua
   - core/spell_trace_core.lua
+  - classes/druid/selftest.lua
   - interface_debug.lua
-  - tools/cpbuild.lua
+  - classes/druid/cat.lua
+  - classes/druid/Druid.lua
 findings:
   critical: 0
-  warning: 1
-  info: 5
+  warning: 2
+  info: 4
   total: 6
 status: issues_found
 ---
 
-# Phase 29: Code Review Report (29-04 Gap-Closure Delta + Range Superset)
+# Phase 29: Focused Re-Review (DELTA 1 announcement colors + DELTA 2 bite silent-landing fix chain)
 
-**Reviewed:** 2026-09-11T03:30:00Z
-**Depth:** standard
-**Files Reviewed:** 8
+**Reviewed:** 2026-09-11T17:48:34Z
+**Depth:** deep
+**Files Reviewed:** 5
 **Status:** issues_found
 
 ## Summary
 
-This pass covers the diff range `08ed9055^..HEAD`, with review rigor prioritized on the two
-29-04 gap-closure deliverables — the `macroTorch.show` green/blue hue arms in
-`interface_debug.lua` (commit 403116d) and the Category T-02 render-hue regression in
-`classes/druid/selftest.lua` (commit 6bd0015) — plus a regression sweep over the other six
-scoped files (phase 29 landing core, phase 30 DKI/cpBuild instrumentation, `tools/cpbuild.lua`).
+Focused re-review of two deltas on top of the Phase-29/30 codebase. Context files read for cross-module tracing: `core/events.lua` (event dispatch, not in scope list), `classes/hunter/Hunter.lua` (sting registrations), `.planning/phases/29-landing/29-04-SUMMARY.md` (D-14 color contract history).
 
-**Verdict on the 29-04 focus:** the hue fix is correct. The pre-fix tree had the green arm
-carrying a blue-dominant literal and the blue arm carrying `ChatTypeInfo["OFFICER"]` (green in
-vanilla 1.12) — the exact inversion UAT gap G-29-3 diagnosed. The new literals
-(`blue = {0, 0.5, 0.9}`, `green = {0, 1, 0}`) are hue-dominant per the D-14 contract, and the
-label usage across the range is consistent: `'blue'` only from the inference announcer
-(`spell_trace_core.lua:451`), `'green'` only from the two real-evidence announcers
-(`:498`, `:598`), `'red'` for fail/cancel lines, `'yellow'` for probe warnings — a grep
-inventory found no mismatched arms. T-02 drives the REAL `macroTorch.show` with planted
-downstream consumers only, which is the right architecture.
+**DELTA 1 (57cfba8 + 50dfcbe) verdict — structurally clean, one hue-contract violation.** Both new arms use the exact `{r, g, b, id}` shape of the existing blue/green arms; the values are 0..1 floats that `AddMessage` accepts unchanged, so rendering is crash-safe. No behavioral leakage: `macroTorch.show` is pure-render and no decision logic reads color labels. Lua 5.0 compliant (plain literals/elseif). The `macroTorch.log` @param list was updated consistently. Two residuals: the violet RGB is not hue-dominant for its label (violates the file's own D-14 color-label contract, WR-01), and the T-02 hue test was not extended to the new arms (IN-01).
 
-**Prior-review provenance (not duplicated as new findings).** All five warnings of the phase-29
-second-pass review (this file's previous revision, 2026-09-10) are verified fixed in the tree,
-per `.planning/phases/29-landing/29-REVIEW-FIX.md` iteration 1:
-- WR-01 (dedup-vs-announce asymmetry): the self-hit announce is now gated on `isCastCovered`
-  (`core/spell_trace_core.lua:596-600`).
-- WR-02 (no inference epoch guard): the `blip > ttl * 6` upper bound is in place (`:431`).
-- WR-03 (stale "2s" comments): rewritten to 0.9s semantics (`:214`, `:481`).
-- WR-04 (impossible HUMAN-UAT branch b): rewritten to green-then-red (`classes/druid/HUMAN-UAT.md:266`).
-- WR-05 (self-hit channel ownership): target-name ownership check after absorb/damage suffix
-  stripping (`:578-581`).
+**DELTA 2 (95cbb6e + 881594c) verdict — the M1 fix is real and the dispatch asymmetry it addresses is closed, but the discriminator used by 881594c is overbroad.** The inference fallback now routes through `recordLandEvent`, restoring listener dispatch parity with both evidence channels — verified against all three call paths. Q-17/Q-18/Q-19 fixtures are well-formed under the CR-01 discipline (snapshot/install/pcall/restore before assert) and reproduce their named scenarios faithfully. However, `isAnchorCoveredPair` uses numeric equality `lastLand == lastCast` as the anchor signature, and that signature is also produced by real-evidence flows — most importantly by the stale-coverage rescue itself (which restamps cast and land in the same frame, `events.lua:116` passes `GetTime()` and `recordCastTable` calls `GetTime()` again). A bridge-lost follow-up cast whose line arrives past the window is then silently dropped as an "inferred duplicate" even though it is first evidence — the same landing-silent symptom family this chain was fixing, via a narrower route (WR-02). No locked Phase-29 semantics (D-02 dedup, D-03 inference fallback, D-04 fail veto, D-06 fail-wins) regress: the fail veto still precedes the inference anchor in time by construction (an in-window fail always exists in `failTable` before `blip > ttl` fires), the D-02 predicate is evaluated identically, and fail-wins reachability is unchanged.
 
-Phase-30 review fixes from commits 6272e90 / 7f85576 / 5f03a82 are likewise present:
-`resetCpBuildDki` existence guards on both event joins (`core/events.lua:79-81`, `:104-106`)
-and the GCD-probe troubleshooting split by channel (`classes/druid/HUMAN-UAT.md:318-319`).
-The `.planning/WINDOWS.md` unrun-verify ledger already tracks items 6 (S-05..S-12 DKI pins) and
-7 (T-02 render-hue asserts) as in-game `/mt` runs pending on the Windows+Cygwin client; WR-01
-below overlaps item 7's coverage domain and is reported with that provenance noted.
+## Mandatory Generalization Question
 
-**Scoping note:** the review-config file list contained `tools/c/cpbuild.lua`; the actual file
-is `tools/cpbuild.lua` (no `c/` subdirectory), which was reviewed. Same class of config-typo the
-previous revision recorded for `core/spell_trace_core.l.lua`.
+**Does the anchor-equality guard + stale-coverage machinery protect ALL traced spells from the double-booking / phantom-cast failure?**
 
-No CRITICAL defects are provable. Decision-facing consumers (`isRipPresent`/`isRakePresent`/
-`isPouncePresent` debuff AND checks, `ripLeft`/`rakeLeft` clamping) still neutralize the worst
-ledger corruptions identified in earlier passes.
+Path census (verified source-level):
+
+| Spell | Self-hit rescue path (`onSelfDamageLine`) | Inference (`computeLandTable`, 0.1s poll) | Aura-apply channel (`processRawAuraApply`) | Land listener |
+|---|---|---|---|---|
+| Ferocious Bite | Yes — its only real-evidence channel | Yes | No (no debuff pattern; `immune=false`) | Yes (Rake/Rip renewal) |
+| Rake | Yes (dual channel) | Yes | Yes | No (but is a renewal *target*) |
+| Rip | No self-hit line exists in game | Yes | Yes — its natural channel | No (renewal target) |
+| Pounce | Yes (dual channel) | Yes | Yes | No |
+| Serpent/Scorpid Sting (intentTtl=2) | No self-hit line exists | Yes | Yes | No |
+| Claw/Shred | Not traced (`land=false`-like: never `setSpellTracing`d) | No | No | No |
+
+Audit results:
+
+1. **Self-hit spells (FB, Rake, Pounce): protected by the guard, with one over-trigger hole.** The M1 mode (inference anchor, then late line) is correctly dropped. But the guard discriminates `lastLand == lastCast`, and that signature has three producers: (a) the inference anchor, (b) the stale-coverage rescue itself (cast restamped via `recordCastTable`'s `GetTime()` and land at the caller's `GetTime()` — identical frame clock, so equal), (c) a same-frame bridge-stamp + hit-line coincidence. On producers (b)/(c) a subsequent bridge-lost cast whose line delays past the window is silently dropped — WR-02 below.
+2. **Aura-apply-only spells (Rip, stings, and the apply channel of Rake/Pounce): protected structurally, M1 cannot reach them.** A late apply after an inferred anchor fails intent pairing (`pairLandIntent` purge: `now - castAt > ttl` → expired) → returns nil → no write, no announce. An apply inside the window pairs the still-pending intent, but `recordLandEvent`'s D-02 dedup drops the write (`lastLand` = anchor `>= lastCast`) and the coverage-gated announce stays silent. No double ledger, no phantom cast. The guard is never even consulted, so spells without self-hit lines are immune to both the M1 failure and the WR-02 over-trigger.
+3. **Listener-dispatch asymmetry between rescue and inference paths: closed, for real evidence.** Both the self-hit path (including the rescue restamp leg) and the inference path now dispatch through `recordLandEvent`, and both announce before dispatching (green before listeners; blue `(inferred)` before listeners). The apply path is already symmetric. The only skip is the guard-drop path itself, which is correct when the anchor genuinely came from inference (listeners already ran at anchor-write) but lossy when the drop is a WR-02 false positive — that drop is then the only remaining dispatch asymmetry, and it is a defect-adjacent one, not a deliberate design.
+4. **Remote-inference anchors (stings, intentTtl=2): unaffected.** Their inference threshold is 2s; a 1s-late apply lands as real evidence (`landAt > castAt`, Q-16 pins this), so no equality pair forms from the normal channel.
+
+**Verdict:** No spell/landing-source combination fully bypasses the protection: self-hit spells are guarded (with the WR-02 over-trigger hole), apply-only spells are protected by channel design. The single residual failure mode is a false-positive drop of a bridge-lost cast's first evidence when the previous coverage pair carries the equality signature for a reason other than inference.
 
 ## Warnings
 
-### WR-01: T-02's red/yellow arms are structurally indistinguishable — a channel swap or a yellow-to-green inversion passes
+### WR-01: 'violet' arm RGB is red-dominant — violates the D-14 hue-matching contract
 
-**File:** `classes/druid/selftest.lua:1865-1874` (planted ChatTypeInfo at 1843-1849; yellow
-assert at 1869-1870)
-
-**Issue:** The test header claims "a hue inverted in any arm turns this test red/yellow," but
-the oracle only discriminates the blue/green pair (the actual G-29-3 defect). Two of the five
-arms are blind:
-- The red arm asserts `r >= g and r >= b` and the yellow arm asserts `r >= b and g >= b`, but
-  both real arms dereference planted `ChatTypeInfo` entries that are themselves warm-dominant
-  (`YELL = {1, 0.5, 0}` is red-dominant; `SYSTEM = {1, 1, 0}`). If `show()` swapped `'red'` and
-  `'yellow'`, cap2 would render the planted SYSTEM hue (1 >= 1 and 1 >= 0 both hold) and cap3
-  the planted YELL hue (1 >= 0 and 0.5 >= 0 both hold) — every assertion still passes.
-- The yellow assertion accepts any hue dominant in r OR g, including pure green: a yellow arm
-  mapped to the green literal `{0, 1, 0}` yields `r >= b` (0 >= 0) and `g >= b` (1 >= 0) — pass.
-- Unlike cap1, no assertion pins `cap2.id` / `cap3.id`, which would catch any swap at the
-  channel level regardless of hue.
-
-The comment's "any arm" guarantee is therefore overstated. The in-game execution of T-02,
-including whether these arms ever see adversarial input, is also still an open unrun-verify
-item (`.planning/WINDOWS.md` ledger item 7) — so the blind spot has not been exercised yet.
-
-**Fix:** Pin channel identity alongside hue dominance, which closes the swap case
-deterministically:
-
+**File:** `interface_debug.lua:103-104`
+**Issue:** The D-14 contract comment on the same function (lines 87-89) requires every named arm to be a *hue-dominant literal whose label matches the rendered hue* — the exact discipline that phase 29-04 introduced to fix the OFFICER-channel blue/green inversion (`29-04-SUMMARY.md` G-29-3). `{ r = 0.86, g = 0.44, b = 0.58 }` is red-dominant (r ≈ 0.86 > b ≈ 0.58): it renders pink/rose, not violet. A T-02-style hue assertion for the violet arm (`b >= r and b >= g`, the same form T-02 uses for the other arms at `selftest.lua:2047-2050`) would fail against these values. The user asked for a violet announcement and will see a pink line — a miniature repeat of the G-29-3 inversion class this contract exists to prevent. (Coffee `{0.82, 0.71, 0.55}` IS red-dominant and matches its brown label; the violet arm is the only violation.)
+**Fix:**
 ```lua
-assert(cap2 and cap2.id == 'planted_yell',
-    "T-02 red arm must resolve to the planted YELL channel, got " .. tostring(cap2 and cap2.id))
-assert(cap3 and cap3.id == 'planted_system',
-    "T-02 yellow arm must resolve to the planted SYSTEM channel, got " .. tostring(cap3 and cap3.id))
+elseif 'violet' == col then
+    c = { r = 0.55, g = 0.27, b = 0.93, id = 'custom_violet' }
 ```
+Any b-dominant literal works (e.g. the classic `{ r = 0.54, g = 0.17, b = 0.89 }`). Then extend T-02 to assert this arm's blue dominance so a future edit cannot silently invert it again.
 
-and/or make the planted `YELL` a genuinely warm-yellow literal (e.g. `{1, 0.8, 0}`) so the
-hue check for the yellow arm requires `r` and `g` strictly above `b` with a visible gap, and
-shrink the header comment to claim coverage of the blue/green inversion plus channel pinning
-for the rest.
+### WR-02: anchor-equality discriminator drops legitimate first evidence for a bridge-lost follow-up cast
+
+**File:** `core/spell_trace_core.lua:350-360` (guard) and `core/spell_trace_core.lua:643-653` (rescue call site)
+**Issue:** The M1 guard treats `lastLand == lastCast` as the inferred-anchor signature, but the stale-coverage rescue produces the identical signature with real evidence. `events.lua:116` invokes `onSelfDamageLine(arg1, GetTime())`; the rescue leg calls `recordCastTable(spell)`, which stamps `push(GetTime())` (`spell_trace_core.lua:120`) — same frame clock, so the rescued pair collapses to `cast == land`. Q-17's own assertion `fbCastTop >= fbLandTop` (`selftest.lua:1372-1373`) implicitly ratifies the equality-signature outcome and cannot tell the producers apart. The comment at lines 336-346 acknowledges the rescue "restamps the same way" and then treats *every* equality pair as an inferred anchor anyway.
+
+Concrete failure scenario: FB cast A racy (bridge lost the record race) → rescue restamps cast=land=T (equality pair, real evidence). FB cast B cast ~4s later, its bridge record lost again (same race, already demonstrated in the field session this chain fixes); B's hit line arrives at T+4.2s. `isStaleCoveredPair` → true (4.2 > 0.9); `isAnchorCoveredPair` → true (T == T) → the line is dropped silently: no green landed line, no land entry, no listener dispatch for B. The FB renewal never runs → Rake/Rip clocks count down from stale anchors → premature Rip re-cast risk. This is the same bite-landing-silent symptom family the chain was created to eliminate, re-opened through a narrower route. Severity is mitigated by the compounding preconditions (a second consecutive bridge race AND a line delay beyond the ttl of the previous stamp), but the discriminator cannot in principle distinguish the producers, and Q-17 pins the confusing signature as acceptable.
+**Fix:** mark inference anchors explicitly instead of inferring them from numeric equality. In `computeLandTable` (before `recordLandEvent(spell, lastCast)` at line 503), record a producer marker, e.g.:
+```lua
+if not macroTorch.loginContext.inferredAnchors then
+    macroTorch.loginContext.inferredAnchors = {}
+end
+if not macroTorch.loginContext.inferredAnchors[spell] then
+    macroTorch.loginContext.inferredAnchors[spell] = {}
+end
+macroTorch.loginContext.inferredAnchors[spell][macroTorch.target.name] = lastCast
+```
+and change `isAnchorCoveredPair` to consult the marker (`inferredAnchors[spell][mob] == lastLand`) instead of testing `lastLand == lastCast`. Rescue-stamped and same-frame coincidental equality pairs then correctly take the original rescue path, and a Q-20 test can drive the two-rescue chain: rescue cast A → bridge-lost cast B with a late line → assert B is rescued (announced green, land recorded), not dropped.
 
 ## Info
 
-### IN-01: `decodeJson` in tools/cpbuild.lua is dead code (~245 lines, zero call sites)
+### IN-01: T-02 hue test does not cover the two new arms
 
-**File:** `tools/cpbuild.lua:315-559`
+**File:** `classes/druid/selftest.lua:2009-2051`
+**Issue:** T-02's comment claims "a hue inverted in any arm turns this test red/yellow", but it only asserts the default/red/yellow/blue/green arms. The two arms added in 57cfba8 have zero automated hue coverage — WR-01 ships green under the current suite. Extend T-02 with `macroTorch.show('probe', 'coffee')` / `'violet'` calls plus hue-dominance asserts (r-dominant for coffee, b-dominant for violet). This also converts WR-01 from a latent to a caught defect.
 
-**Issue:** The [cpBuild]/[cpBuildT] families are space-separated, not JSON; nothing in the file
-calls `decodeJson` (the only later reference is a comment at line 669). The function arrived as
-part of the byte-copied cpdamage.lua harness (D-07) and is pure maintenance surface: it must
-stay Lua-5.0-legal forever and passes the same batteries but can never execute.
+### IN-02: Q-19 seeds the anchor by direct push instead of through the inference
 
-**Fix:** Delete the function and the harness comment's mention of it, or add a one-line note
-that it is retained only for harness parity with tools/cpdamage.lua (D-07) and is intentionally
-unexercised.
+**File:** `classes/druid/selftest.lua:1460-1479`
+**Issue:** The M1 fixture pushes `anchor` straight into the land table rather than generating it via `computeLandTable`, so the end-to-end chain (silent cast → inference fires → anchor written → late self-hit dropped) is only covered compositionally by Q-18 (inference + dispatch) and Q-19 (guard response). A single end-to-end test would pin the full interaction and would have surfaced the WR-02 ambiguity class earlier. Consider a Q-20 that runs a real `computeLandTable('Ferocious Bite')` on a stale silent cast and then feeds the late line, asserting zero captures and an unchanged cast stamp.
 
-### IN-02: events.lua handler arms for never-registered events are unreachable
+### IN-03: isAnchorCoveredPair comment misdescribes the clocks
 
-**File:** `core/events.lua:118-127` (PLAYER_DEAD, CHAT_MSG_SPELL_PERIODIC_SELF_BUFFS,
-CHAT_MSG_SPELL_AURA_GONE_SELF), `:196-198` (CHAT_MSG_COMBAT_CREATURE_VS_SELF_MISSES /
-CHAT_MSG_SPELL_CREATURE_VS_SELF_DAMAGE)
+**File:** `core/spell_trace_core.lua:336-338`
+**Issue:** The comment states "the cast-record bridge and the combat-log line read different frame clocks". Both the bridge (`recordCastTable` via `events.lua:139`) and the dispatcher (`events.lua:116`, `events.lua:175`) read the same `GetTime()` frame clock — the equality collapse is a same-frame artifact, not a cross-clock one. Reword the comment to describe the real producer set (inference anchor, rescue restamp, same-frame bridge/line coincidence) so future maintainers see why the WR-02 marker fix matters.
 
-**Issue:** The registrations for all five are absent (three commented out at lines 34-36; the
-creature-vs-self pair never registered), so every branch is dead. Harmless, but a maintainer
-reading the dispatcher believes these channels are handled. Pre-existing pattern, unchanged by
-this range.
+### IN-04: Q-17's `fbCastTop >= fbLandTop` assertion silently accepts the equality signature
 
-**Fix:** Either drop the dead branches or add the corresponding `frame:RegisterEvent` calls;
-if the events are reserved for future work, mark them with a `-- reserved (unregistered)` note
-so the dispatch table stays honest about what can fire.
-
-### IN-03: parseSamples silently truncates at the first nil hole in the message ring
-
-**File:** `tools/cpbuild.lua:743-744` (`countList` via ipairs at 77-83)
-
-**Issue:** `countList(messages)` counts with `ipairs`, which stops at the first nil index; the
-loop then reads only `messages[1..total]`. The client writer keeps the ring contiguous
-(`table.insert` + `table.remove(messages, 1)`), so genuine data is safe, but a hand-edited or
-corrupted SavedVariables file with a hole would silently drop every entry after the hole with
-no warning — the analyzer would report partial statistics as complete.
-
-**Fix:** Count all non-nil entries in one pass (a nil-aware counter) instead of an `ipairs`
-count, and emit a warning when holes are detected, so a truncated read can never masquerade as
-a complete report.
-
-### IN-04: `--rake-dur` accepts non-positive values silently and produces nonsense cutoffs
-
-**File:** `tools/cpbuild.lua:1163-1201` (flag parse), `:878-899` (calculatePassRates)
-
-**Issue:** `--rake-dur 0` or a negative value passes `tonumber` and the parser, and
-`calculatePassRates` then computes cutoffs `d - 1` / `0.9*d - 1` that are zero or negative —
-every `t <= cutoff` fails, both rows report 0% with no error, and the user cannot tell the
-output is garbage from a bad flag.
-
-**Fix:** Reject non-positive durations at parse time:
-
-```lua
-local dur = tonumber(args[i + 1])
-if dur == nil or dur <= 0 then
-    io.write('error: ' .. FLAG_RAKE_DUR .. ' expects a positive number of seconds, got: ' ..
-        tostring(args[i + 1]) .. '\n')
-    printUsage()
-    os.exit(1)
-end
-```
-
-### IN-05: T-02 swaps the live client globals ChatTypeInfo and DEFAULT_CHAT_FRAME with truncated stand-ins
-
-**File:** `classes/druid/selftest.lua:1834-1858`
-
-**Issue:** The planted `ChatTypeInfo` table has only five keys (the real table has ~20: PARTY,
-RAID, WHISPER, etc.) and the planted `DEFAULT_CHAT_FRAME` stub has only `AddMessage`. The
-window is synchronous within one OnUpdate tick (no chat events can interleave), restore-before-
-assert is followed, and global stubbing is already the suite's precedent (Q-series replace
-`macroTorch.show`/`loginContext` wholesale), so this is a documented hazard rather than a
-defect. If the selftest runner ever becomes asynchronous or another addon's OnUpdate runs
-mid-test, a nil-index or missing-method call in third-party code becomes possible.
-
-**Fix:** Keep as-is for now (consistent with CR-01 precedent); if the runner changes, snapshot
-and restore with `setmetatable({}, { __index = savedCTI })` so absent keys still resolve
-during the window.
-
----
-
-_Reviewed: 2026-09-11T03:30:00Z_
-_Reviewer: Claude (gsd-code-reviewer)_
-_Depth: standard_
+**File:** `classes/druid/selftest.lua:1372-1373`
+**Issue:** The graded `>=` is correct for a fixture that cannot control `GetTime()` ordering, but it means the test passes equally for `cast > land` (clean real-evidence pair) and `cast == land` (anchor-equality signature) — the exact state WR-02 depends on. After the marker fix (WR-02), tighten this assertion or add a companion assert that the rescue did not create an inference-marker entry, so the confusing signature stops being an accepted fixture outcome.
