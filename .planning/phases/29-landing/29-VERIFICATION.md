@@ -1,219 +1,185 @@
 ---
 phase: 29-landing
-verified: 2026-09-10T04:20:00Z
+verified: 2026-09-11T10:45:00Z
 status: human_needed
-score: 14/18 must-haves verified
-behavior_unverified: 4
+score: 21/22 must-haves verified
+behavior_unverified: 1
 behavior_unverified_items:
-  - decision: D-02
-    truth: "同 cast 单条 land、同质量保留最早（cast 维去重谓词在运行时压制后到证据）"
-    test: "游戏内 /mt 执行 Category Q；Q-12（apply 后 recordLandEvent 5.4 被拒）与 Q-15（普通入口被拒/豁免入口直推）必须全绿"
-    expected: "landTable 顶值不覆盖、同 cast 单条 land；电脑侧已静态确认谓词存在（spell_trace_core.lua:325-329 / :412-414），本机无 lua 解释器未执行"
-    why_human: "去重谓词是运行时状态转移（push 前的 return 分支）；grep 只能证明谓词在位与接线，不能证明夹具跑绿"
-  - decision: D-03
-    truth: "全窗口静默的 cast 在 ttl 到期后由 0.1s 周期任务推定 landed（蓝色 (inferred)）"
-    test: "游戏内 /mt 执行 Q-11（无证据反推：landTable 顶 == cast 时刻、show 恰 1 次蓝色含 (inferred)）与 Q-09（周期任务断言）"
-    expected: "反推以 cast 时刻为锚写入并发蓝色通告；反推永不与正推证据竞争"
-    why_human: "computeLandTable 六步谓词链每次写入都是运行时行为；周期任务调度帧循环只存在于游戏进程"
-  - decision: D-04
-    truth: "存在 cast <= failTime <= cast + ttl 的 fail 即否决反推；窗外 fail 不否决"
-    test: "游戏内 /mt 执行 Q-13（窗内 +0.5s 否决零通告零 land；窗前 -0.1s 推断照发）"
-    expected: "two-phase 断言两阶段均绿"
-    why_human: "否决判定是运行时状态转移；电脑侧只确认了静态谓词（spell_trace_core.lua:420 / :499-501）"
-  - decision: D-06
-    truth: "fail-wins 保留：同 cast 内窗口期 fail 即使后到仍撤销已推 land（revoke 语义不变）"
-    test: "游戏内 /mt 执行 Q-05（fail 后到撤销 land 顶值）与 Q-06（fail 先到禁止迟到配对）"
-    expected: "land 撤销 + intent state == 'failed'；红字取消行出现"
-    why_human: "revoke 机器（removeMatch + 红字取消）零 diff 已静态确认，但撤销行为本身是运行时语义；本机无法执行"
+  - decision: G-29-3 (29-04 truth 1)
+    truth: "用户 Windows+Cygwin 重建后实机观感归位：rake/bite landed 行渲绿、pounce/rip (inferred) 行渲蓝（HUMAN-UAT §247-248 / D-14 协议）"
+    test: "用户机 ./build.sh 重建 SM_EXTEND.lua 后，单人木桩打骷髅约 1 分钟观察通告颜色；同场 /mt 观察 Category T-02 全绿"
+    expected: "rake/bite landed 行绿色、pounce/rip (inferred) 行蓝色、无红 failed-on；T-02 通过（blue 臂渲蓝、green 臂渲绿）"
+    why_human: "渲染色相只有 WoW 1.12 客户端可观察；SM_EXTEND.lua 是用户侧 build 产物（本机按约定禁止 build）；修复源码已静态验证在位（blue={0,0.5,0.9}、green={0,1,0}、OFFICER 清零），但重建客户端的实机观感尚未行使"
+re_verification:
+  previous_status: human_needed
+  previous_score: 14/18
+  gaps_closed:
+    - "D-02/D-03/D-04/D-06 四条行为钉闭环（原 4 项 PRESENT_BEHAVIOR_UNVERIFIED → VERIFIED）：29-UAT.md test 2 游戏内 /mt 320 passed / 0 failed / 1 warnings，Category Q-01..Q-16 全绿（Q-05/Q-06/Q-09/Q-11/Q-12/Q-13/Q-15 行为断言实机行使）"
+    - "UAT test 4 多猫同目标 pass：apply 抑制下 (inferred) 兜底 + ripLeft 启动实机确认（D-03 行为面）"
+    - "UAT test 1 rebuild+横幅、test 5 猎人双钉刺 2s 弹道窗均 pass（D-12 行为面）"
+    - "G-29-3 机器侧闭环（29-UAT.md test 3 issue → 修复）：commits 403116d + 6bd0015 在当前树验证在位，interface_debug.lua 蓝绿双臂与 D-14 一致、OFFICER 清零、T-02 注册（静态全绿）；实机复验仍待用户侧 rebuild（见 behavior_unverified_items）"
+  gaps_remaining: []
+  regressions: []
 human_verification:
-  - test: "在用户 Windows+Cygwin 机执行 ./build.sh 重建 SM_EXTEND.lua（产物落盘后版控外生效），登录核查横幅 CONFIG_OPTIONS 仍为 4 项"
-    expected: "重建无报错；SM_EXTEND.lua 为含 Phase 29 代码的新产物；横幅 4 项不变"
-    why_human: "构建与产物加载只能在用户机（build 约定 + 本机禁止 build）"
-  - test: "游戏内 /mt：Category Q 16 条（Q-01..Q-16）全绿、无红色 FAIL；非 Q 可选黄色 warning 可容忍"
-    expected: "自检汇总行 0 failed；Q-01 统一 OR 注册断言、Q-02 0.9 窗配对、Q-09 周期任务、Q-11..Q-16 六组边界全部通过"
-    why_human: "selftest 只能在 WoW 1.12 客户端内执行；本机无 lua 解释器与游戏客户端"
-  - test: "单人木桩：catAtk 循环打骷髅约 1 分钟观察通告"
-    expected: "Rake/Ferocious Bite 恒绿 landed；Pounce/Rip 绿色 landed 或偶发蓝色 (inferred) 均可；无 failed-on 红行；ripLeft 正常启动（不持续重放 Rip）"
-    why_human: "落地通告、ripLeft 启动均为游戏内运行时行为"
-  - test: "多猫同目标（远程网友零配置合作时选做）：我方 Rip 后观察兜底通告与 ripLeft"
-    expected: "apply 行被抑制时 ~1 秒内出现蓝色 (inferred) 通告、ripLeft 启动且不再每帧重放 Rip；对方技能行不触发我方通告"
-    why_human: "多猫 apply 抑制只能实机复现；本机无法模拟第二条客户端事件流"
-  - test: "猎人角色：Serpent/Scorpid Sting 落地观察（含远程位）"
-    expected: "落地仍可见（绿色配对或蓝色推断）；远程钉刺在 ~2 秒弹道窗内正常落地"
-    why_human: "弹道飞行延迟是世界行为，仅游戏内可证"
+  - test: "用户 Windows+Cygwin 机执行 ./build.sh 重建 SM_EXTEND.lua（携带 29-04 修复的新产物），登录后游戏内 /mt 观察 Category T 2 条（T-01 + T-02）全绿、无红 FAIL"
+    expected: "T-02 五臂渲染色相断言通过：blue 臂渲真蓝、green 臂渲真绿；汇总行无红色 failure（WINDOWS.md 条目 7 unrun-verify 由此闭环，verify-work 回写 29-UAT.md）"
+    why_human: "T-02 行为级执行只存在于 WoW 1.12 客户端内；本机无 lua 解释器与游戏客户端（WINDOWS.md 条目 7 设计强制用户侧）"
+  - test: "单人木桩：catAtk 循环打骷髅约 1 分钟观察通告颜色（29-UAT.md test 3 复验，G-29-3 关闭确认）"
+    expected: "rake/bite landed 行渲绿色、pounce/rip (inferred) 行渲蓝色、无 failed-on 红行；ripLeft 正常启动"
+    why_human: "渲染色相由 1.12 客户端实渲，只有游戏内可观察；本机静态验证只能证明源码修复与调用点标签一致"
 ---
 
-# Phase 29: 统一 landing 判定重构 Verification Report
+# Phase 29: 统一 landing 判定重构 Verification Report（Re-verification / Gap-Closure）
 
 **Phase Goal:** 重构 landing 判定机制：去掉 `landSource` 参数，所有 `land = true` 注册技能统一采用三通道证据（self-hit / apply / fail）OR 语义 + cast 后 `intentTtl` 窗口静默到期反推兜底；cast 维度谓词去重（同 cast 单条、同质量保留最早）；fail-wins 保留；`intentTtl` 成为 register 可选参数（默认 0.9s，猎人钉刺 ~2s 覆盖弹道）；FB 续期 push 豁免去重。
 
-**Verified:** 2026-09-10T04:20:00Z
+**Verified:** 2026-09-11T10:45:00Z
 **Status:** human_needed
-**Re-verification:** No — initial verification（本目录此前无 VERIFICATION.md）
+**Re-verification:** Yes — 前次 2026-09-10T04:20:00Z（status human_needed，14/18）。本轮为 gap-closure 复验：UAT 后关闭 4 条行为钉 + G-29-3（commits 403116d / 6bd0015 / 069f865），剩余项评估见文末。
 
-**要求面说明:** 本 phase 为 specless phase（phase_req_ids 为空）。验证以 29-CONTEXT.md D-01..D-18 为权威要求面（执行侧已确认其与 REQUIREMENTS.md R1-R8 命名空间不相交），辅以 DESIGN-CONTEXT.md 8 条锁定决策与三个 PLAN 的 must_haves truths/prohibitions。
+**要求面说明:** 本 phase 为 specless phase（phase_req_ids 为空）。验证以 29-CONTEXT.md D-01..D-18 为权威决策面（D-14 ∈ line 39），辅以 DESIGN-CONTEXT.md 8 条锁定决策、四个 PLAN 的 must_haves truths/prohibitions（29-04 新增 4 truths + 3 prohibitions）。D-xx 命名空间与 REQUIREMENTS.md R1-R8 不相交（前次已确认，本轮复核一致）。
 
 ## Goal Achievement
 
-### 决策级目标回溯（D-01..D-18，file:line 证据）
+### 决策级目标回溯（D-01..D-18，回归复跑 + UAT 闭环证据）
 
-| # | 决策 | 静态状态 | 证据（本机复跑或直接读源码） |
-|---|------|---------|------------------------------|
-| D-01 | 去掉 landSource/landSources、按自然属性在场 | ✓ VERIFIED | register 无来源字段（core/spell_trace_core.lua:65-95）；landSources 全源码仅剩 Q-01 阴性断言 1 处（classes/druid/selftest.lua:779，grep -c = 1）；onSelfDamageLine 只留 tracingSpells 门（:539-541）；残留扫描（8 目录、豁免阴性断言后）空输出 |
-| D-02 | cast 维去重：同 cast 单条、同质量最早 | ✓ STATIC-PRESENT / HUMAN-NEEDED（运行时） | 谓词 `lastCast and lastLand and lastLand >= lastCast then return` 恰 1 处（:325-329），computeLandTable 复用 1 处（:412-414，grep count=2）；仅 lastCast 存在时生效；行为钉 Q-12/Q-15 已注册未执行 |
-| D-03 | 反推兜底：静默窗到期推定 landed，锚=cast | ✓ STATIC-PRESENT / HUMAN-NEEDED（运行时） | maintainLandTables 双门守卫 + 模块级 `registerPeriodicTask('maintainLandTables', {interval = 0.1, ...})`（:366-374，按键恰 1 处，periodic.lua:127 键空闲无覆盖）；computeLandTable 谓词序 = no-cast → `blip <= ttl`（:407）→ 覆盖谓词（:413）→ 窗口 fail 否决（:420）→ `push(lastCast)`（:423）→ 蓝色 '(inferred)'（:427）；行为钉 Q-09/Q-11 已注册未执行 |
-| D-04 | fail 否决窗口化 [cast, cast+ttl] | ✓ STATIC-PRESENT / HUMAN-NEEDED（运行时） | computeLandTable 否决 `lastFail[1] >= lastCast and (lastFail[1] - lastCast) <= ttl`（:419-421）；finalizeFail 窗口 `>=0 and <= intent.ttl`（:499-501，diff 确认负差容差块换为窗口化注释）；行为钉 Q-13 已注册未执行 |
-| D-05 | intentTtl 一参三用 | ✓ VERIFIED | 三处窗口判定 + 播种 + 推断层全部读 per-spell ttl：播种 landIntentTtls[spell]（:137）、pair purge（:192）、pair 趟（:200）、finalizeFail（:501）、computeLandTable（:403）；`(intent.ttl or macroTorch.LAND_INTENT_TTL)` 恰 3 处 |
-| D-06 | fail-wins 保留（后到 fail 撤销已推 land） | ✓ STATIC-PRESENT / HUMAN-NEEDED（运行时） | revoke 机器（removeMatch by landAt + 红字取消行）在 phase 29 diff 中零改动（git diff 4ee2315..HEAD 无 removeMatch/cancelled 行）；行为钉 Q-05/Q-06 已注册未执行 |
-| D-07 | intent 播种携带 intent.ttl | ✓ VERIFIED | recordCastTable push 表含 `ttl = macroTorch.landIntentTtls[spell] or macroTorch.LAND_INTENT_TTL`（:136-137，grep 恰 1 处播种） |
-| D-08 | FB 续期 push 豁免去重 + 前置条件保留 | ✓ VERIFIED | Druid FB 监听器两处改走 `recordLandEventRenewal('Rake'/'Rip', landTime)`（classes/druid/Druid.lua:856/:863，grep 恰 2）；普通 `macroTorch.recordLandEvent('` 在 Druid.lua 残留 0；isRakePresent/isRipPresent 前置条件原样（:850/:861） |
-| D-09 | register 新可选参数 intentTtl | ✓ VERIFIED | config 字段注释含 intentTtl 行（:64）；`config.intentTtl or macroTorch.LAND_INTENT_TTL`（:69）；与 intent.ttl 播种字段同名 |
-| D-10 | LAND_INTENT_TTL = 0.9、注释默认窗语义、cpDamage 跟随 | ✓ VERIFIED | `macroTorch.LAND_INTENT_TTL = 0.9` 恰 1 处定义（:17）+ 注释含 "default evidence window…cpDamage pairing keeps referencing"（:14-16）；全文件引用 10 处（9 代码 + 1 注释，门 ≥9）；cpDamage 五函数 diff 零改动（`git diff | grep -c pairCpDamageIntent...` = 0） |
-| D-11 | 续期豁免独立函数 | ✓ VERIFIED | `function macroTorch.recordLandEventRenewal(spell, landTime)` 恰 1 处（:341-364），与 recordLandEvent 逐字同构唯独缺去重谓词；生产调用点仅 Druid FB 监听器 2 处 |
-| D-12 | 猎人双钉刺 intentTtl = 2、猫德吃默认 | ✓ VERIFIED | Hunter.lua Serpent（:155-159）/Scorpid（:162-166）各一行 `intentTtl = 2`（grep 恰 2）；猫德 4 技能 register 无 ttl 字段（Druid.lua:808-830）；Q-01 断言 landIntentTtls 六项取值（钉刺 2/猫德 0.9）；弹道覆盖闸验 → 优 UAT 第 5 节（人验） |
-| D-13 | (inferred) 后缀 | ✓ VERIFIED | `' (inferred)', 'blue'` 格式串恰 1 处（:427）；Q-11/Q-13 断言 string.find(capMsg,'(inferred)',1,true)；游戏内观感由单人木桩/多猫节观察 |
-| D-14 | 蓝色通告 | ✓ VERIFIED | 'blue' 颜色参数（:427）；Q-11/Q-13 断言 capColor == 'blue' |
-| D-15 | Q-01 重写为统一 OR 断言 | ✓ VERIFIED | 新测试名 + 断言全集（selftest.lua:778-818）：landSources==nil、六 tracingSpells true、LAND_INTENT_TTL==0.9、六项 ttl 取值、三 apply pattern 存在且 FF 缺席（`:816-817`）；Q-02 种植 castAt=1000.0（:838，greps 恰 1）；执行 → 人验 /mt |
-| D-16 | 六组边界用例全落地（Category Q = 16） | ✓ VERIFIED（落地）/ 执行人验 | `SelfTest:register("Cat Q-` 恰 16 条（Q-01..Q-16，grep -c = 16）；Q-11~Q-16 六个新注册体逐读实质断言非 stub（Q-12 去重拒后到 / Q-14 双 ttl 边界 / Q-15 续期豁免 / Q-16 2s 窗收 1s 迟到 apply / Q-11 反推 / Q-13 否决双阶段），全部 CR-01 纪律；跑绿 → 人验 /mt |
-| D-17 | cpDamage 零结构改动、窗随 0.9 自动生效 | ✓ VERIFIED | cpDamage 段落 diff 0 行（只改到常量自身注释）；pairCpDamageIntent 两个窗口读宏常量（:223/:234） |
-| D-18 | 远程反推锚偏早接受、不引入 anchorBias | ✓ VERIFIED | 源码 `anchorBias` 零命中；HUMAN-UAT.md:269 注记行 1 处（greps 各恰 1）；"接受为最终形态"属记录义务——观察确认在单人木桩/钉刺节人验 |
+| # | 决策 | 状态 | 证据 |
+|---|------|------|------|
+| D-01 | 去掉 landSource/landSources、按自然属性在场 | ✓ VERIFIED（回归） | landSource 残留扫描 core/+classes/ 输出 0；landSources 仅剩 Q-01 阴性断言（selftest.lua）；工作树整体 clean |
+| D-02 | cast 维去重：同 cast 单条、同质量最早 | ✓ VERIFIED（行为闭环） | 静态谓词回归在位（dedup 谓词 + computeLandTable 复用，前次 :325-329/:412-414 锚）；**行为钉 Q-12/Q-15 已由 UAT test 2 实机行使**（/mt 320 passed / 0 failed） |
+| D-03 | 反推兜底：静默窗到期推定 landed，锚=cast | ✓ VERIFIED（行为闭环） | mainainLandTables 双门 + registerPeriodicTask('maintainLandTables' 恰 1 处（:374 锚回归）；**Q-09/Q-11 实机全绿；UAT test 4 多猫抑制场景 (inferred) 兜底实机确认 pass** |
+| D-04 | fail 否决窗口化 [cast, cast+ttl] | ✓ VERIFIED（行为闭环） | 静态谓词回归在位；**Q-13 two-phase 断言实机全绿（UAT test 2）** |
+| D-05 | intentTtl 一参三用 | ✓ VERIFIED（回归） | `(intent.ttl or macroTorch.LAND_INTENT_TTL)` 恰 3 处保留（register/播种/双窗）；前次 :64/:69/:137/:192/:200/:501 证据链无回归 |
+| D-06 | fail-wins 保留（后到 fail 撤销已推 land） | ✓ VERIFIED（行为闭环） | revoke 机器（removeMatch + 红字取消）此前已零 diff 确认；**Q-05/Q-06 实机全绿（UAT test 2）** |
+| D-07 | intent 播种携带 intent.ttl | ✓ VERIFIED（回归） | recordCastTable push 播种 `ttl = macroTorch.landIntentTtls[spell] or ...` 保留（前次 :136-137 锚） |
+| D-08 | FB 续期 push 豁免去重 + 前置条件保留 | ✓ VERIFIED（回归） | Druid.lua 续期出口 `macroTorch.recordLandEventRenewal('Rake'/'Rip', landTime)` 恰 2 处（现 :959/:966，行号偏移为 phase 30 cpBuild 插桩所致）；isRakePresent/isRipPresent 前置条件原样（:957/:964 原读） |
+| D-09 | register 新可选参数 intentTtl | ✓ VERIFIED（回归） | register config 注释 + `config.intentTtl or macroTorch.LAND_INTENT_TTL` 保留（前次 :64/:69 锚） |
+| D-10 | LAND_INTENT_TTL = 0.9、注释默认窗语义、cpDamage 跟随 | ✓ VERIFIED（回归） | `macroTorch.LAND_INTENT_TTL = 0.9` 恰 1 处（:17 锚复跑 = 1） |
+| D-11 | 续期豁免独立函数 | ✓ VERIFIED（回归） | `function macroTorch.recordLandEventRenewal` 恰 1 处（复跑 = 1） |
+| D-12 | 猎人双钉刺 intentTtl = 2、猫德吃默认 | ✓ VERIFIED（行为闭环） | Hunter.lua `intentTtl = 2` 恰 2（复跑 = 2）；**UAT test 5 猎人钉刺弹道窗实机 pass** |
+| D-13 | (inferred) 后缀 | ✓ VERIFIED（回归） | :451 唯一 blue 调用行仍 `' '..'(inferred)', 'blue'`（字面量拼接形态有微调、语义与位置不变） |
+| D-14 | 蓝色通告（且与 green 可辨） | ✓ VERIFIED（含 gap-closure） | 调用点 :451 blue（inferred）/ :499 + :598 green（landed）恰与 29-04 key_links 三方标签一致；**渲染层双臂已修复**：blue→{0,0.5,0.9} 蓝主导、green→{0,1,0} 纯绿、OFFICER 清零（详见 29-04 truths） |
+| D-15 | Q-01 重写为统一 OR 断言 | ✓ VERIFIED（回归） | Q-01 统一 OR 断言加 landSources==nil 阴性断言在位；Category Q 注册恰 16（复跑 = 16） |
+| D-16 | 六组边界用例全落地（Category Q = 16） | ✓ VERIFIED（编写层）+ 实机已行使 | register("Cat Q- 恰 16；**Q-11..Q-16 六组边界均实机全绿（UAT test 2）** |
+| D-17 | cpDamage 零结构改动、窗随 0.9 自动生效 | ✓ VERIFIED（回归） | 无回归证据面变更（29-04 变更面不含 core/；phase 30 变更经 29-REVIEW 复审未触碰本决策） |
+| D-18 | 远程反推锚偏早接受、不引入 anchorBias | ✓ VERIFIED（回归） | 源码 anchorBias 零命中（前次结论维持） |
 
-**结论:** 18 条决策全部落地，静态证据 14 条完全充分（VERIFIED）、4 条（D-02/D-03/D-04/D-06）为运行时状态转移语义——机制在位且接线完好，但本机无 lua 解释器与游戏客户端，行为证明依赖用户机 /mt 与实机观察（HUMAN-NEEDED）。**无一 FAILED、无一缺失工件。**
+**结论:** 18 条决策全部 VERIFIED——14 条静态证据维持（回归复跑确认无退化），4 条原 PRESENT_BEHAVIOR_UNVERIFIED（D-02/D-03/D-04/D-06）经 29-UAT.md test 2/test 4 实机行使转为行为闭环。**无一 FAILED、无一缺失工件。**
 
-### 三个 PLAN 的 must_haves truths 抽查结果
+### 29-04 Gap-Closure must_haves truths（本轮重点）
 
-| Truth（摘） | 状态 | 证据 |
-|-------------|------|------|
-| land=true 技能不再按 per-spell 来源分派（统一 OR） | ✓ VERIFIED | D-01 行证据；processRawAuraApply 统一走 pair→announce→record（:445-475），onSelfDamageLine 统一走 pair→announce→record（:528-555） |
-| register/播种/双窗读 intent.ttl | ✓ VERIFIED | :64/:69/:137/:192/:200/:501 |
-| 常量 0.9 + 钉刺 2 | ✓ VERIFIED | :17；Hunter.lua grep = 2；Q-01 断言六项 |
-| 同 cast 单条 + fail 窗内毁 land | ✓ STATIC-PRESENT / 人验 | 谓词 :325-329；revoke :502-516（zero-diff）；Q-05/Q-12 待人验 |
-| Q-01 统一 OR 重写、Q-02 在 0.9 窗下 | ✓ VERIFIED（编写层）；人验（执行层） | selftest.lua:778-858 与计划规格逐点吻合 |
-| 反推通告 (inferred) 蓝、锚 = cast | ✓ STATIC-PRESENT | :423-427；Q-11 断言（待人验执行） |
-| blip<=ttl 直返 / 已覆盖不反推 | ✓ VERIFIED | :407/:413 |
-| fail 窗内否决/窗外不否决 | ✓ STATIC-PRESENT | :420；Q-13 两阶段（待人验） |
-| 双门守卫 + 0.1s unique key | ✓ VERIFIED | :367（tracingSpells 空集 + inCombat 双门）；:374（键恰 1 处、periodic.lua:127 无覆盖） |
-| Q-09/Q-11/Q-13 三注册 | ✓ VERIFIED（编写层） | 名称/断言与 29-02 计划规格吻合 |
-| D-16 六组全落地、Q 总数 16 | ✓ VERIFIED | grep -c 'SelfTest:register("Cat Q-' = 16；六新用例体实质 |
-| cpDamage 零改动 + D-18 入档 | ✓ VERIFIED | diff 0；HUMAN-UAT.md:268-269 |
-| HUMAN-UAT Phase 29 六节协议 | ✓ VERIFIED | 标题恰 1 处；六节含 Prerequisites/Pre-Test/单人木桩/多猫/钉刺/Troubleshooting；anchorBias 恰 1 处 |
-| 无来源残留 / events+immune 零 diff / SM_Extend 字节一致 | ✓ VERIFIED | 残留扫描空；`git diff --exit-code -- events.lua spell_trace_immune.lua` 零输出；`git status --porcelain -- SM_Extend.lua` 空 |
-| SM_Extend 全程字节等于 HEAD | ✓ VERIFIED | 同上；工作树整体 clean |
+| # | Truth | 状态 | 证据（本轮静态复跑） |
+|---|-------|------|----------------------|
+| 1 | 用户重建后实机观感归位：landed 渲绿、inferred 渲蓝 | ⚠️ PRESENT_BEHAVIOR_UNVERIFIED | 源码修复在位且接线完好（truth 2），但实机观感随 SM_EXTEND.lua 重建才生效——渲染色相的行使必须在 WoW 客户端内，见 behavior_unverified_items 与人验清单 |
+| 2 | 蓝绿双臂字面量 hue 与协议一致、OFFICER 键清零（静态） | ✓ VERIFIED | blue 臂 `c = { r = 0, g = 0.5, b = 0.9, id = 'custom_blue' }`（蓝主导，interface_debug.lua:97）；green 臂 `c = { r = 0, g = 1, b = 0, id = 'custom_green' }`（纯绿，:99）；OFFICER 引用 0；Color-label contract 注释恰 1；SAY/YELL/SYSTEM 臂与 AddMessage 出口行各恰 1 原样保留 |
+| 3 | Category T 就绪 2 条、T-02 驱动真实 show 断言五臂 | ✓ VERIFIED（静态；行为臂 → 人验） | 注册名恰 1、`SelfTest:register("Cat T-` 恰 2、planted_say 恰 2、red/yellow/blue/green 主导断言各恰 1、Category T.*2 tests 注释恰 2；T-02 引用真实 macroTorch.show（无 show stub）、CR-01 恢复先于全部断言（selftest.lua:1859-1860 `DEFAULT_CHAT_FRAME = savedDF` 在 cap1..cap5 与 assert 之前）。注：WR-01 警告「任何臂颠倒即红/黄」口径对 red/yellow 互换存在盲区（见复审警告节）——不影响 G-29-3 所需 blue/green 判别；T-02 在游戏内 /mt 的 pass/fail 为 WINDOWS.md 条目 7 unrun-verify（人验） |
+| 4 | 静态电池全绿：bbcheck/令牌/CRLF/CJK/SM_Extend | ✓ VERIFIED | 本轮复跑全部通过（见 Behavioral Spot-Checks 表） |
 
-**Score:** 14/18（4 条 PRESENT_BEHAVIOR_UNVERIFIED — 机制在位、行为未在本地行使，见 behavior_unverified_items 与人验清单）
+**29-04 Score:** 3/4 VERIFIED + 1 PRESENT_BEHAVIOR_UNVERIFIED。
 
-### Required Artifacts
+### 四个 PLAN 的 must_haves truths 抽查回归
+
+29-01/29-02/29-03 的 frontmatter truths 抽查（前次已全通过）在本轮回归全部维持：统一 OR 分派（D-01）、ttl 贯通（D-05）、常量与钉刺（D-10/D-12）、去重与 fail 窗（D-02/D-04，行为面已闭环）、Q-01/Q-02 基线（D-15）、反推蓝通告（D-03/D-13/D-14）、blip<=ttl 直返与覆盖不反推（:407/:413 锚）、双门守卫 + 0.1s unique key、HUMAN-UAT 六节协议、无来源残留 / events+immune 零 diff（29-04 变更面不含 core/）、SM_Extend 字节一致、cpDamage 零改动、D-18 入档。本轮新增验证点：`registerPeriodicTask('maintainLandTables'` 恰 1、Hunter `intentTtl = 2` 恰 2、Renewal 生产调用点恰 2（:959/:966，另 :944 为注释）。
+
+**Score（合并口径）:** 21/22——18 决策 18 条 VERIFIED（14 静态 + 4 UAT 行为闭环）+ 29-04 新增 4 truths 中 3 条 VERIFIED，1 条 PRESENT_BEHAVIOR_UNVERIFIED（G-29-3 实机复验）。
+
+### Required Artifacts（29-04 变更面）
 
 | Artifact | Expected | Status | Details |
 | -------- | -------- | ------ | ------- |
-| core/spell_trace_core.lua | 统一 OR 核 + 反推层 | ✓ VERIFIED | 666 行；register 新形态、landIntentTtls、去重谓词、recordLandEventRenewal、maintainLandTables/computeLandTable、周期注册全部在位 |
-| classes/druid/Druid.lua | 注册点迁移 + FB 续期豁免 | ✓ VERIFIED | diff 仅 register 块与 FB 监听器行；无决策逻辑改动 |
-| classes/hunter/Hunter.lua | 双钉刺 intentTtl=2 | ✓ VERIFIED | diff 仅两个 register 块（+13/-5 面） |
-| classes/druid/selftest.lua | Category Q 16 条 | ✓ VERIFIED | 16 注册；六新用例体实质断言 |
-| classes/druid/HUMAN-UAT.md | Phase 29 六节协议 | ✓ VERIFIED | :227-271 |
-| 取整 todo 关闭：druid-rip-land-forensics-next-cd.md | 删除或 no-op | ✓ VERIFIED | 本 phase 跨度内已删除（`git diff 4ee2315..HEAD --summary`: delete mode 100644 .planning/todos/pending/druid-rip-land-forensics-next-cd.md）；29-03 执行时 find=0（no-op 记录自洽——文件在规划期 docs commit 已除） |
+| interface_debug.lua | 蓝绿双臂修正 + D-14 契约注释，仅 5 行增/2 行删 | ✓ VERIFIED | 变更面 `git diff 403116d~1..069f865` = interface_debug.lua + selftest.lua + 4 个 .planning 文档；diff 无 core/、无 Q 区改动 |
+| classes/druid/selftest.lua | T-02 注册 + 计数注释更新 | ✓ VERIFIED | +52/-2；T-02 体与 29-04 计划夹具六步规格逐点吻合 |
+| SM_Extend.lua | 全程字节等于 HEAD（产物不触碰） | ✓ VERIFIED | `git status --porcelain -- SM_Extend.lua` 空；修复经用户侧 rebuild 生效 |
 
-### Key Link Verification
+### Key Link Verification（29-04）
 
 | From | To | Via | Status | 证据 |
-|------|----|-----|--------|------|
-| SpellTrace:register | auraApplySpellPatterns 填充 | 自然属性驱动（immune+debuffTexture）+ pattern 元字符守卫 | ✓ WIRED | spell_trace_core.lua:70-81；落点集 Pounce/Rip/Rake + 双钉刺，FF 豁免（Q-01 :816 断言） |
-| events.lua tier-2 | processRawAuraApply | `for spellName, pattern in pairs(macroTorch.auraApplySpellPatterns)` 遍历匹配 | ✓ WIRED | core/events.lua:156-164（零 diff，表填充触发条件变更后自动覆盖） |
-| events.lua UNIT_SPELLCAST_SUCCEEDED | recordCastTable | tracingSpells 门 | ✓ WIRED | core/events.lua:165-168 |
-| events.lua CHAT 通道 | onSelfDamageLine | 自伤行派发 | ✓ WIRED | core/events.lua:99-101 |
-| recordCastTable 播种 ttl | pairLandIntent / finalizeFail 双窗 | intent.ttl（带常量兜底） | ✓ WIRED | :137 → :192/:200 → :501 |
-| recordLandEventRenewal | Druid FB 监听器 | 豁免入口调用 x2 | ✓ WIRED | Druid.lua:856/:863 |
-| computeLandTable false 周期 | registerPeriodicTask('maintainLandTables') | periodic.lua periodicTasks + 0.1s 帧循环 | ✓ WIRED | :374 → core/periodic.lua:110/:127；加载序 periodic(6) < spell_trace_core(21)，模块级注册行执行时函数已存在 |
-| maintainLandTables 战斗门 | macroTorch.inCombat | combat_context onCombatEnter/Exit | ✓ WIRED | combat_context.lua:22/33 |
-| landTable 消费侧（ripLeft/immune 路径2/cpDamage） | land 供给 | 既有消费代码 | ✓ WIRED | 消费侧零改动（变更面证明）；immune 路径 2 复活属附带行为（spell_trace_immune.lua 零 diff，人验观察点） |
+| ---- | -- | --- | ------ | ---- |
+| macroTorch.show 映射表 | DEFAULT_CHAT_FRAME:AddMessage | 唯一渲染出口 | ✓ WIRED | 出口行恰 1（interface_debug.lua:102）；双臂与 SAY/YELL/SYSTEM 臂均走该行 |
+| T-02 夹具 | 真实 macroTorch.show | 无 show stub、只植两个下游依赖 | ✓ WIRED | selftest.lua:1848-1853 pcall 内五臂直接调用；捕获桩接 DEFAULT_CHAT_FRAME |
+| spell_trace_core.lua:451/499/598 调用点标签 | 修复后渲染 | 受害方零改动 | ✓ WIRED | :451 'blue' 唯一消费者 = (inferred) 反推行；:499/:598 'green' = 两处 landed 行；全树 'green' 消费者（diag/Target）均为 landed 类实证消息，修复后统一渲真绿——无消费者依赖旧倒置映射 |
+| 双臂字面量 | D-14 契约 | hue-dominant 直译 | ✓ WIRED | blue={0,0.5,0.9} b=0.9 主导；green={0,1,0} g=1 唯一非零；red/yellow 臂经 planted ChatTypeInfo 独立通道不受本次修改影响 |
 
-### Data-Flow Trace（Level 4）
+### Data-Flow Trace（Level 4，G-29-3 修复面）
 
 | 数据变量 | 来源 | 真实数据? | Status |
 | -------- | ---- | --------- | ------ |
-| landTable[spell][mob].top | recordLandEvent（正推：apply 配对 / self-hit）→ push(landTime) | 游戏事件时间 | ✓ FLOWING |
-| landTable（反推） | computeLandTable → push(lastCast)（castTable 真实 GetTime） | 真实 cast 记录 | ✓ FLOWING |
-| intent.ttl | recordCastTable 播种 ← landIntentTtls ← register config.intentTtl / 常量 0.9 | 注册静态配置 | ✓ FLOWING |
-| fail 否决输入 | recordFailTable ← CheckDodgeParryBlockResist 5 类失败行 | 游戏失败事件 | ✓ FLOWING |
-| 续期锚 | FB land 监听器 ← onLandEvent 派发 ← recordLandEvent('Ferocious Bite') | 真实 FB 落地时间 | ✓ FLOWING |
-| cpDamage 配对窗 | pairCpDamageIntent 读 LAND_INTENT_TTL | 常量 0.9（D-17 自动跟随） | ✓ FLOWING（结构零改动） |
+| c（blue/green 臂） | 色相字面量（静态配置，非数据流） | 修复后协议一致 | ✓ FLOWING（渲染层全链共享：spell_trace_core 通告 / macroTorch.log / diag / Target 同表受益） |
+| T-02 captured[] | DEFAULT_CHAT_FRAME 捕获桩 → show 真实映射臂 | 真实映射臂输出 | ✓ FLOWING（夹具只植下游，映射表本体照真执行） |
+| 字面量倒置风险 | grep 门 + T-02 五臂断言 | 静态 + 行为双重钉 | ✓ FLOWING（任一蓝绿倒置回改，T-02 blue-dominant/green-dominant 断言必失败） |
 
-未发现任何 已接线变量终止于硬编码常量或 mock：夹具（Q-02..Q-16）用种植值属测试隔离范畴（CR-01），生产路径全部连真实事件流。Q-02 的 castTable 活钟种植值一事（IN-02）为夹具注释覆盖性夸大，不影响断言真值。
-
-### Behavioral Spot-Checks
+### Behavioral Spot-Checks（本轮复跑）
 
 | Behavior | Command | Result | Status |
 | -------- | ------- | ------ | ------ |
-| 四源码括号平衡 | `node .planning/phases/27-*/tools/bbcheck.js <4 files>` | 4/4 BALANCED | ✓ PASS（本机复跑） |
-| trailing whitespace / 行尾 | `git diff --check`（工作树 clean 即空） | 空 | ✓ PASS |
-| 来源注册残留 | `grep -rn 'landSource' core/ classes/ ... \| grep -v 'macroTorch.landSources == nil'` | 空输出 | ✓ PASS |
-| VERIFICATION-ONLY 契约 | `git diff --exit-code -- core/events.lua core/spell_trace_immune.lua` | 无输出 | ✓ PASS |
-| cpDamage 零改动 | `git diff HEAD -- core/spell_trace_core.lua \| grep -c pairCpDamageIntent...` | 0 | ✓ PASS |
-| 令牌门 | grep -cn '#\|goto \|::' 4 文件 | 0/0/2/0（Druid 2 处为既有注释 '#' 字形，diff 证实 phase 29 未引入） | ✓ PASS（既有假阳性已入账） |
-| /mt Q 序列 | `grep -c 'SelfTest:register("Cat Q-' selftest.lua` | 16 | ✓ PASS |
-| selftest 执行（Q-01..Q-16 全绿） | 无 lua 解释器/游戏客户端 | N/A | ? SKIP → 人验 |
+| bbcheck 两文件括号平衡 | `node .planning/phases/27-catatk-event-driven-land-tracing-refactor/tools/bbcheck.js interface_debug.lua classes/druid/selftest.lua` | 2/2 BALANCED | ✓ PASS |
+| diff --check | `git diff --check` | 空 | ✓ PASS |
+| Lua 5.0 令牌门（代码行口径） | `grep -v '^[[:space:]]*--' 两文件 \| grep -c '#\|goto \|::'` | 0 / 0 | ✓ PASS |
+| CRLF 门 | `grep -c $'\r' 两文件` | 0 / 0 | ✓ PASS |
+| 新增注释 CJK 门 | `git diff -U0 403116d~1..6bd0015 -- 两文件` 增量注释 CJK | 0 | ✓ PASS |
+| 新增注释词元门 | 同上增量注释无 [a-z] 词元行 | 0 | ✓ PASS |
+| OFFICER 清零门 | `grep -c 'OFFICER' interface_debug.lua` | 0（全源码仅 T-02 planted 夹具 2 处，符合计划） | ✓ PASS |
+| 臂字面量/契约计数门 | custom_blue 1 / 纯绿 1 / Color-label contract 1 / SAY-YELL-SYSTEM-AddMessage 各 1 | 全部命中 | ✓ PASS |
+| T-02 注册电池 | 注册名 1 / Cat T- 2 / planted_say 2 / 三主导各 1 / Category T.*2 tests 2 | 全部命中 | ✓ PASS |
+| Data 层回归 | landSource 残留 0 / LAND_INTENT_TTL 恰 1 / Renewal 恰 1 定义 / Hunter ttl=2 恰 2 / Q 注册 16 | 全部命中 | ✓ PASS |
+| in-game /mt 执行（Q + T 全绿） | 本机无 lua 解释器/客户端 | N/A | ? SKIP → 人验（UAT test 2 已证 Q 全绿；T-02 未行使 = WINDOWS 条目 7） |
 
 ### Probe Execution
 
-本 phase 无 project probes（无 `scripts/*/tests/probe-*.sh`）；PLAN/SUMMARY 亦无声明 probe 路径。机器侧门 = bbcheck + grep 电池（上面已复跑全绿）。— N/A
+本 phase 无 project probes（无 `scripts/*/tests/probe-*.sh`）；PLAN/SUMMARY 无声明 probe 路径。机器侧门 = bbcheck + grep 电池（上表全部复跑通过）。— N/A
 
 ### Requirements Coverage
 
 | 决策 | 来源 | 状态 | 证据 |
 |------|------|------|------|
-| D-01..D-18 | 29-CONTEXT.md | 14 VERIFIED + 4 HUMAN-NEEDED | 见上表 |
-| DESIGN-CONTEXT 锁定 1 | 29 计划集 | ✓ 覆盖（D-01） | — |
-| 锁定 2（去重） | — | ✓ 覆盖（D-02） | — |
-| 锁定 3（反推） | — | ✓ 覆盖（D-03/D-13/D-14） | — |
-| 锁定 4（fail 窗口） | — | ✓ 覆盖（D-04） | — |
-| 锁定 5（intentTtl） | — | ✓ 覆盖（D-05/D-09/D-10/D-12） | — |
-| 锁定 6（fail-wins） | — | ✓ 覆盖（D-06） | — |
-| 锁定 7（FB 豁免） | — | ✓ 覆盖（D-08/D-11） | — |
-| 锁定 8（intent 附带 ttl） | — | ✓ 覆盖（D-07） | — |
-| ORPHANED requirements | — | 无 | REQUIREMENTS.md 无本 phase 映射（specless）；CONTEXT Deferred 三项明确 EXCLUDED |
+| D-01..D-18 | 29-CONTEXT.md（D-14 ∈ :39） | 18/18 VERIFIED（4 条 UAT 行为闭环） | 见决策回溯表 |
+| D-14 颜色契约 | 29-CONTEXT.md:39 + HUMAN-UAT §247-248 + DESIGN-CONTEXT 锁定 3 | ✓ 覆盖（29-04 双 fix + T-02） | interface_debug.lua 双臂与契约一致；Q 断言标签 + T-02 断言色相两侧合围 |
+| DESIGN-CONTEXT 锁定 1-8 | DESIGN-CONTEXT.md | 全部覆盖（前次确认，回归无退化） | 锁定 5/8 行为面经 UAT test 2/4/5 闭环 |
+| 29-04 PLAN requirements [D-14] | 29-04-PLAN frontmatter | ✓ SATISFIED | 臂字面量修复 + T-02 注册 + 契约注释齐备 |
+| REQUIREMENTS.md R1-R8 | REQUIREMENTS.md | 与 D-xx 命名空间不相交（前次确认） | 29-04 无新孤儿需求；ORPHANED = 无 |
 
-### Anti-Patterns / Reviewer-Documented Warnings（29-REVIEW.md WR-01..WR-04）
+### Anti-Patterns / Reviewer-Documented Findings（29-REVIEW.md，0 critical / 1 warning / 5 info）
 
-本 phase 代码评审 0 critical / 4 warnings。按「评审警告不单独推翻锁定决策、只降低对应人验项置信度」的口径逐条记录如下（均已本机确认原文在位）：
-
-| ID | File:Line | 内容 | 严重度 | 对人验的影响 |
+| ID | File:Line | 内容 | 严重度 | 影响 |
 |----|-----------|------|--------|-------------|
-| WR-01 | core/spell_trace_core.lua:542-554 | self-hit 通道无条件先发绿通告、后进 recordLandEvent 去重——双通道技能（Rake/Pounce）可能出现同 cast 双绿通告（apply 配对先落 + self-hit 后播，第二次表写入被去重丢弃） | ⚠️ Warning | 单人木桩观察若见 Rake/Pounce 偶发双绿『landed』属已知观感残差，非判定失败；判定施放层（表内单条）仍正确。修复（让通告跟随去重结果）属后续改进 |
-| WR-02 | core/spell_trace_core.lua:396-427 | computeLandTable 只有下界（blip <= ttl）无跨战斗/重目标 epoch 上界：旧 cast 在同名 mob 的后场战斗中可被误推（蓝通告一枚 + 陈旧锚）。ripLeft 钳 0 与 isRipPresent 卫护使决策面不受伤 | ⚠️ Warning | 实机若在开战后瞬间对同名 mob 看到一次陈旧蓝色 (inferred)，属已知限制；D-03 锁定形态（无 anchorBias 同类护栏）。修复（战斗退出清表或 blip 上界）属后续改进 |
-| WR-03 | core/spell_trace_core.lua:214、:459 | 两处陈旧 "2s" 注释（"(2s, D-02)" 与 "(<=2s land offset)"）与实际 0.9 窗矛盾，违反锁定决策 5 的清洗条款（29-01 移交、29-02/29-03 未收口）。常量本身上方注释已更新（:14-16） | ⚠️ Warning | 不影响行为（D-17 锁定）；属文档债。建议下一快速任务将两处注释改为 0.9 语义 |
-| WR-04 | classes/druid/HUMAN-UAT.md:266 | Troubleshooting 支路 (b) 描述「蓝色推断后紧跟红色取消」——实现的机器里该序列不可能产生（finalizeFail 只撤销 landed 配对 intent；反推 push 永不置 intent landed；反推后的 fail 必在窗外）。正确形态是绿色配对后跟红撤销 | ⚠️ Warning | 人验执行支路 (b) 时按正确预期观察：**绿色** landed 后紧跟红色『was cancelled by ...』= fail-wins 生效；蓝色 (inferred) 行永不被撤销。UAT 文档行文待修 |
+| WR-01 | classes/druid/selftest.lua:1865-1874 | T-02 的 red/yellow 臂结构性不可区分（planted YELL/SYSTEM 均为暖色主导 + 断言交集宽松）——若未来 `show()` 互换 red/yellow 臂或 yellow→green 倒置，断言仍可能通过；"任何臂颠倒必红"口径对这两臂言过其实 | ⚠️ Warning | G-29-3 所需的 blue/green 判别不受影响（该对判别确定性成立）；「任何臂」保证按缩小口径理解，或后续采纳 WR-01 建议（pin cap2/cap3.id）。不阻塞 gap closure |
+| IN-05 | selftest.lua:1834-1858 | T-02 以 5 键截断版 ChatTypeInfo 与仅 AddMessage 的桩替换实时全局；CR-01 同步窗口内无事件交错，与 Q 系列先例一致，属已记录险情非缺陷 | ℹ️ Info | 维持现状（CR-01 先例）；runner 变异步时再上 __index 回退快照 |
+| IN-01..IN-04 | tools/cpbuild.lua / core/events.lua 等 | phase 30 范围内 info 级发现（dead code、无注册事件臂、ipairs 洞、非正时长） | ℹ️ Info | 与 29-04 变更无涉 |
 
-IN-01（三个窗边精确相等点未钉）、IN-02（Q-02 注释覆盖性夸大）、IN-03（expired intent 暂留至 LRU 顶格）为 info 级，不降决策判定。
+前次记录的 WR-01..WR-05（第一轮评审）已由 29-REVIEW-FIX.md iteration 1 修复并在当前评审中核实（self-hit 通告 gated on isCastCovered、blip > ttl*6 epoch 上界、(inferred) 文案、HUMAN-UAT 支路 (b) 修正、self-hit 通道所有权校验）——前次行为面风险项已消解。
 
-### 违反禁令检查（judgment-tier prohibitions，本机静态裁决）
+### 违反禁令检查（29-04 prohibitions，judgment-tier 本机静态裁决）
 
 | Prohibition | 本机证据 | 裁决 |
 |-------------|---------|------|
-| 不改 core/events.lua 与 core/spell_trace_immune.lua | `git diff --exit-code` 零输出 | 未违反 ✓（非权威 LLM-judge；human review recommended） |
-| 不修改 cpDamage 五函数结构 | diff grep = 0 | 未违反 ✓（同 flag） |
-| 不跑 build、不碰 SM_Extend.lua | `git status --porcelain -- SM_Extend.lua` 空；工作树 clean；复审无 build 侧提交 | 未违反 ✓（同 flag） |
-| 不引入新 spell、不改 catAtk/hunterAtk 决策逻辑 | 两个职业文件 diff 仅 register 块与 FB 监听器行；无新 register 名 | 未违反 ✓（同 flag） |
-| 29-03 不修改 core/ 任何文件 | 29-03 提交（9efc645/575db45）文件面 = selftest.lua + HUMAN-UAT.md | 未违反 ✓（同 flag） |
+| 不修改 core/ 任何文件 | 变更面 `403116d~1..069f865` 仅 interface_debug.lua + selftest.lua + 4 文档 | 未违反 ✓（非权威 LLM-judge；human review recommended） |
+| 不跑 build.sh、不触碰 SM_Extend.lua | SM_Extend.lua porcelain 空；源码已变而产物未变 ⇒ 本机未重建（重建将改变产物字节） | 未违反 ✓（同 flag） |
+| Category Q 16 条断言零改动 | `git diff 403116d~1..6bd0015 -- selftest.lua` 无任何 Q 区行 | 未违反 ✓（同 flag） |
 
-全部禁令在静态裁决层未检出违反；限于本机无运行时环境，对外部副作用（build 执行态）仅达「本仓库内零证据」强度，留人类复核位。
+## Human Verification Required
 
-## Human Verification Required（汇入 29-UAT.md）
+以下 2 项为设计强制用户侧（不存在可行机器替代）：均在用户 Windows+Cygwin 机执行，被 WINDOWS.md 条目 7（unrun-verify）与 29-VALIDATION.md Manual-Only 表跟踪，由 verify-work 会话回写 29-UAT.md（G-29-3 gap 关闭 / UAT status）。
 
-以下 5 项由 orchestrator 持久化为 29-UAT.md；操作指引均为既有协议 classes/druid/HUMAN-UAT.md Phase 29 节六节的可勾选条款。D-02/D-03/D-04/D-06 四条行为钉（Q-05/Q-06/Q-11/Q-12/Q-13/Q-15）随第 2 项 /mt 一并闭环。
+1. **重建 + /mt Category T ——** `./build.sh` 重建 SM_EXTEND.lua（携带 29-04 修复的新产物），登录后游戏内 `/mt` 观察 Category T 2 条全绿（T-01 + T-02），无红 FAIL。这是 G-29-3 missing 第 2 条（渲染映射回归）的行为证明。
+2. **单人木桩色相复验（29-UAT.md test 3 复跑）——** 打骷髅约 1 分钟观察通告颜色：rake/bite landed 行渲**绿**、pounce/rip (inferred) 行渲**蓝**、无红 failed-on；ripLeft 正常启动。这是 G-29-3 truth（HUMAN-UAT §247-248 绿=landed/蓝=inferred）的实机关闭确认。
 
-1. **Windows+Cygwin 重建 SM_EXTEND.lua** — 执行 ./build.sh；要求重建无报错、产物落盘（协议 §1），登录横幅 CONFIG_OPTIONS 仍 4 项（§2）。
-2. **游戏内 /mt 自检** — Category Q-01..Q-16 全部绿色、无红 FAIL；非 Q 黄色 warning 可容忍（协议 §2）。这是 4 条 HUMAN-NEEDED 决策的行为证明总入口。
-3. **单人木桩通告行为** — catAtk 打骷髅约 1 分钟：Rake/FB 恒绿 landed；Pounce/Rip 绿 landed 或偶发蓝 (inferred)；无 failed-on 红行；ripLeft 启动不重放（协议 §3）。注意 WR-01：Rake/Pounce 偶发双绿通告属已知观感残差。
-4. **多猫同目标（推断）兜底 + ripLeft 启动** — 选做：我方 Rip 后 ~1s 内蓝色 (inferred) 兜底通告、ripLeft 启动；对方技能行不触发我方通告（协议 §4）。注意 WR-02：开战后瞬间对同名 mob 的陈旧蓝通告属已知限制。
-5. **猎人钉刺 2s 弹道窗** — Serpent/Scorpid 落地可见；远程位 ~2s 窗内正常落地（协议 §5）。fail-wins 观察按 WR-04 修正预期：绿色 landed 后跟红色取消（非蓝后红）。
+（前次人验清单 5 项的现状：重建横幅 / /mt Q 全绿 / 多猫 / 猎人钉刺均已 UAT pass；仅 test 3 因 G-29-3 翻车，其机器侧修复已落地，实机复验即上面第 2 项。）
 
 ## Gaps Summary
 
-无 gaps_found：全部 18 条决策落地且静态证据完整，工件无缺失/无 stub/无断开接线；总体状态 human_needed 全部来自「本机无 lua 解释器与游戏客户端」这一环境事实（运行态只能由用户机 /mt 与实机观察闭环），以及 4 条运行时状态转移决策的行为未行使（PRESENT_BEHAVIOR_UNVERIFIED，已在 behavior_unverified_items 与人验清单中）。
+**无 BLOCKER、无 FAILED、无缺失工件。** 前次 human_needed 的两类缺口在本轮闭合情况：
 
-额外 INFO（不影响判定）：STATE.md:26 的 Current Status 段仍写「2/3 plans … 29-03 待执行」——机器侧 frontmatter（current_plan: 3、stopped_at、64/64）已更新，人读段落滞后，属 docs commit 簿记小瑕疵。
+- **4 条行为钉（D-02/D-03/D-04/D-06）→ 已闭环**（UAT /mt 320 passed / 0 failed），转为 VERIFIED。
+- **G-29-3 → 机器侧已闭环**（双臂修复 + T-02 静态全绿，regression diff 无 Q 扰动、无 core 扰动、无债务标记、无 stub 反模式）。
+
+剩余 open 项全部为设计强制用户侧的实机复验（渲染色相 + T-02 行为臂），非代码缺口：
+
+- 前次 UAT 的 test 3 实机观察发生在修复前构建上，修复后构建的观感确认天然只能发生在用户下次 rebuild 之后；
+- T-02 的行为级 pass/fail 只能由游戏内 /mt 行使（无本机 lua 解释器）。
+
+两项均已形式化跟踪（WINDOWS.md 条目 7 open + 29-VALIDATION Manual-Only 已批准行），故总体状态 **human_needed**：机器可验证面 21/22 全绿，1 条 G-29-3 实机复验 + T-02 在游戏内行使待用户侧会话闭环。闭环后本 phase 可判定 passed（verify-work 回写 29-UAT.md）。
 
 ---
 
-_Verified: 2026-09-10T04:20:00Z_
+_Verified: 2026-09-11T10:45:00Z_
 _Verifier: Claude (gsd-verifier)_
