@@ -1513,7 +1513,7 @@ function macroTorch.safeFF(clickContext)
                 tostring(macroTorch.isFFPresent(clickContext)) ..
                 ', FF left: ' ..
                 tostring(macroTorch.ffLeft(clickContext)) ..
-                ', at energy: ' .. macroTorch.player.mana .. ', cp: ' .. tostring(clickContext.comboPoints), 'violet')
+                ', at energy: ' .. macroTorch.player.mana .. ', cp: ' .. tostring(clickContext.comboPoints), 'pink')
         macroTorch.player.faerie_fire_feral('raw')
         macroTorch.context.ffTimer = GetTime()
         return true
