@@ -1436,6 +1436,69 @@ end, true)
 			"expected a blue (inferred) announcement, got " .. tostring(cap1 and cap1.color))
 	end, true)
 
+	macroTorch.SelfTest:register("Cat Q-19: delayed self-hit against an inferred anchor is dropped (M1 — no phantom cast/land/renewal)", function()
+		local savedLoginContext = macroTorch.loginContext
+		local savedTarget = macroTorch.target
+		local savedShow = macroTorch.show
+		local savedContext = macroTorch.context
+		local fakeLoginContext = {}
+		-- hasBuff stubbed true on purpose: if a phantom dispatch ran, the
+		-- Ferocious Bite renewal listener would print Renewing lines AND
+		-- rewrite the seeded bleed clocks — both measurable, so total
+		-- silence proves the listener never dispatched
+		local fakeTarget = { isCanAttack = true, name = 'QTestMob', hasBuff = function(self) return true end }
+		local captured = {}
+		macroTorch.show = function(msg, color)
+			table.insert(captured, { msg = msg, color = color })
+		end
+		macroTorch.loginContext = fakeLoginContext
+		macroTorch.target = fakeTarget
+		macroTorch.context = {}
+		local pcallRes = true
+		local anchor, fbCastTop, fbLandTop, fbLandSize, rakeLandSize, ripLandSize, capCount
+		pcallRes = pcall(function()
+			local now0 = GetTime()
+			anchor = now0 - 2.0
+			-- fresh bleed anchors so the renewal listener WOULD renew if it
+			-- dispatched (mirrors Q-18 seeding)
+			macroTorch.recordLandEvent('Rake', now0)
+			macroTorch.recordLandEvent('Rip', now0)
+			-- M1 repro: the silent-window inference already anchored this
+			-- cast at its cast moment (lastLand == lastCast — the
+			-- anchor-equality signature); the delayed self-hit line arrives
+			-- 2s later, past the 0.9 evidence window. The rescue must NOT
+			-- stamp a phantom cast for it (that fabricated the double
+			-- ledger / double Renewing field-test cluster).
+			fakeLoginContext.castTable = {}
+			fakeLoginContext.castTable['Ferocious Bite'] = {}
+			fakeLoginContext.castTable['Ferocious Bite']['QTestMob'] = macroTorch.LRUStack:new(100)
+			fakeLoginContext.castTable['Ferocious Bite']['QTestMob'].push(anchor)
+			fakeLoginContext.landTable['Ferocious Bite'] = {}
+			fakeLoginContext.landTable['Ferocious Bite']['QTestMob'] = macroTorch.LRUStack:new(100)
+			fakeLoginContext.landTable['Ferocious Bite']['QTestMob'].push(anchor)
+			macroTorch.onSelfDamageLine('Your Ferocious Bite hits QTestMob for 548.', now0)
+			fbCastTop = fakeLoginContext.castTable['Ferocious Bite']['QTestMob'].top
+			fbLandTop = fakeLoginContext.landTable['Ferocious Bite']['QTestMob'].top
+			fbLandSize = macroTorch.tableLen(fakeLoginContext.landTable['Ferocious Bite']['QTestMob'].elements)
+			rakeLandSize = macroTorch.tableLen(fakeLoginContext.landTable['Rake']['QTestMob'].elements)
+			ripLandSize = macroTorch.tableLen(fakeLoginContext.landTable['Rip']['QTestMob'].elements)
+			capCount = macroTorch.tableLen(captured)
+		end)
+		macroTorch.loginContext = savedLoginContext
+		macroTorch.target = savedTarget
+		macroTorch.show = savedShow
+		macroTorch.context = savedContext
+		assert(pcallRes, "Q-19 pcall failed")
+		assert(capCount == 0,
+			"expected zero announcements (no green landed, no Renewing), got " .. tostring(capCount))
+		assert(fbCastTop == anchor,
+			"expected no phantom cast restamp, got top " .. tostring(fbCastTop) .. " vs anchor " .. tostring(anchor))
+		assert(fbLandTop == anchor and fbLandSize == 1,
+			"expected the inferred anchor to stay the only land entry, got top " .. tostring(fbLandTop) .. " size " .. tostring(fbLandSize))
+		assert(rakeLandSize == 1 and ripLandSize == 1,
+			"expected the renewal listener not to rewrite the bleed clocks, got rake size " .. tostring(rakeLandSize) .. " rip size " .. tostring(ripLandSize))
+	end, true)
+
 	-- Category S: cpBuildLog combo-point cast logging (quick 260907-0ya, 4 tests)
 	-- S-03/S-04 follow the CR-01 stub discipline: snapshot via rawget, install
 	-- own-key shadows, capture into locals, restore via raw assignment BEFORE
