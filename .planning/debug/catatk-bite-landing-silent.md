@@ -2,7 +2,7 @@
 status: awaiting_human_verify
 trigger: "目前的catAtk循环遇到一个问题需要排查：有一次，已经是在正常的木桩战斗过程中，已经开局了几十秒了，目标身上已经有了rake & rip，此时我打了个5星bite，屏幕上能看到白字输出的“Bite!!!... ooc: false”提示，但却没有看到蓝色的landing信息；然后随后是“Reshift!!!...”信息，且reshift信息中显示当前能量为0，也就是说明前面那个bite肯定是成功打出去了的，不然不会清空能量；但那个bite却没有对应的蓝色landing信息或红色fail信息出现，就静默地走掉了；然后接下来我的catAtk宏就判断rake & rip没有被bite续上，因此后来的5星又打了个rip，但此时其实目标身上的rip还在的(因为其实被bite续上了)。需要帮我排查下bite成功却没有landing信息的原因；我记得bite的landing，应该是全靠self-hit事件来确定的吧？因为它既没有apply debuff的效果，也没有fail反推兜底，那么这个问题就唯一可能会出现在释放之后的确定造成伤害的事件解析身上？我目前能想到的会不会是glance的伤害信息跟普通的伤害信息不一样，导致解析出错？"
 created: 2026-09-11T05:37:48Z
-updated: 2026-09-11T10:00:00Z
+updated: 2026-09-12T04:00:00Z
 ---
 
 ## Current Focus
@@ -21,14 +21,14 @@ reasoning_checkpoint (Fix-1 landed 2026-09-11, user-adjudicated):
   candidate_causes:
     - "[code fix-introduced] M1: rescue 与推断锚点的叠交互(已修: anchor-equality guard + Q-19)"
     - "[environment] M2: 客户端 bars 通道迟滞(维持约束推断,待下次实机观察冻结是否再现)"
-    - "[environment] M3: 客户端 UnitDebuff 数据滞后/16 槽驱逐(用户裁决后领先;Fix-3b 作废)"
+    - "[environment] M3: 客户端 UnitDebuff 数据滞后/16 槽驱逐(2026-09-12 新簇首次现形:咬后单 Renewing rip + 补耙补偿循环,自愈代价 35e;Fix-3b 已作废)"
   and_gate: "yes — 原始观察簇 = M1×M2 同时成立;M3 独立解释 Renewing rake 缺席。M1 已修;M2/M3 留实机观察"
 
 bug_class: Bohrbug(M1, fixed) + Heisenbug×2(M2 bars 迟滞 / M3 UnitDebuff 数据,待实机观察)
 hypothesis: M1 fixed+committed;M2 维持约束推断;M3 回归客户端环境路线
 test: 静态电池 PASS 已跑;Q-19 待游戏内 /mt(用户与 Fix-1 同车实机);Q-17 静态推演绿
 expecting: 用户下次木桩:双腾账消失、Renewing 不再双印;Q-19 于 /mt 绿
-next_action: "回归 human-verify 检查点:递交 Fix-1 提交内容 + 会话新状态 + 下次实机清单(Q-19 /mt;木桩观察:双腾账是否消失、状态条冻结是否再现、Renewing rake 缺席场景与 Debuff 图标行为、必要时 Fix-2 插桩立项)"
+next_action: "2026-09-12 新簇已分析归档为 M3 首签（Evidence 已记，判别 todo 已固化 .planning/todos/pending/）。剩余 human 项:① 下次上线 /mt 全绿报告（Q-17/18/19+Category T，新构建）;② 簇再现时抄蓝/绿行时间戳与两发 Rake!!! 能量值钉死 AB 路径;③ 状态条冻结观察;④ 全部正常后会话结案归档"
 
 ## Symptoms
 <!-- Written during gathering, then IMMUTABLE -->
@@ -89,6 +89,11 @@ user_observed (AskUserQuestion 2026-09-11): ① 非 debug 模式 addon 不回显
   checked: 本次实案环境事实（用户 AskUserQuestion 回复 + 前置机制澄清）
   found: 能量归零只能证明施放动作发生（1.12 终结技 miss 同样消耗能量），该次 bite 有 hit/miss 两种可能路径；macroTorch.log 落盘非默认、取证需主动插桩；用户游戏机可拷回 SuperMacro.lua
   implication: 静态排查必须同时覆盖 hit-arm（self-hit 匹配→landed 通告）与 fail-arm（miss/dodge/parry 事件→红 fail 通告）两条路径的静默可能；实机取证依赖插桩版构建产出
+
+- timestamp: 2026-09-12
+  checked: 新实机簇（用户打桩报告，构建=WR-02 标记判别 + violet→pink 重命名后）：Bite 白字→绿 bite landing→仅一行 Renewing rip（无 Renewing rake）→咖啡 Reshift(nextMove: Rake)→两行白 Rake!!!（补耙 A）→蓝 Rake (Inferred)→又一行白 Rake!!!（补耙 B）→绿 Rake landing→此后正常
+  found: ① 链条自洽为非回归（Path A/M3 环境链）：咬后仅续 Rip=客户端 hasBuff(Rake) 读到假（同款 M3 签名，首次以"单 Renewing + 补耙补偿循环"形态现形）；② 补耙 A 落在被咬刷新的服务器 rake 上→同施法者刷新跳过 apply 行（既有旧案先例）→A 只剩自伤行通道+洪流推迟>0.9s→兜底蓝(Inferred)（D-03 与 29-04 色相归位正常工作，蓝=真实蓝）；③ 兜底不改 hasBuff→客户端仍滞后→补耙 B→绿→恢复（自愈，代价=多发一把 35e 耙）；④ 绿行前有新鲜白字 Rake!!! 施放打印→两发真耙而非同耙双报；WR-02 标记判别对"推断锚+迟到行"静默丢弃的行为与 Q-19 设计一致、无回归迹象；⑤ 时间戳值未转述→AB 两路径最终钉死点仍开放（判别 todo 已固化 .planning/todos/pending/rake-lag-vs-regression-discriminators.md）
+  implication: M3 获得最强实机签名（单 Renewing+补耙链）；Change-fix 路线生效、无需回调查；防双账修复未引入新症状。残留问题=客户端 debuff 滞后导致的多打一次耙（35e 浪费、自愈），是否做宏侧宽限属设计裁决待议（触达锁定判定语义，不轻动）
 
 - timestamp: 2026-09-11T10:00:00Z
   checked: 用户 human-verify 裁决（2026-09-11）与 Fix-1 落地执行
