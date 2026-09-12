@@ -12,9 +12,9 @@ progress:
   total_plans: 68
   completed_plans: 68
 milestone_name: milestone
-last_activity: 2026-09-09
+last_activity: 2026-09-13
 current_phase_name: landing
-last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrumentation fully removed (scout, ctx stamp, pair ledger, master switch) — the multi-cat arbitration is resolved by the upcoming unified landing design instead"
+last_activity_desc: "Completed quick task 260913-2wo: 修复 tools/cpdamage.lua 的 --json-out 输出为严格 JSON（G-28-5，encodeKey 数字键加引号）"
 ---
 
 # Project State
@@ -279,6 +279,7 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 | 260909-w3r | 移除 RAWDIAG2 取证插桩：主开关与横幅条目（5→4 项）、safeRip 决策戳、combat-log scout、arming hook、intent-depth 助手、pair 账本全部删除；多猫仲裁改由统一 landing 方案在两种假设下自洽，取证装置失去存在必要 | 2026-09-09 | c383f34 | [260909-w3r-rawdiag2-forensics-instrumentation-remov](./quick/260909-w3r-rawdiag2-forensics-instrumentation-remov/) |
 | 260910-ilu | catAtk 原则文档 9 处裁决修订（B1 worldboss 圣物限定/B3 畏缩范围/A3 规则2 净收益/A4 erps>0/A5 规则4 门对齐/A6 自动攻强推广/B4 猛虎独立 GCD 注记/移除定义位置列与 SelfTest ID 表）+ 斩杀期 FF 等待窗排除门（shouldCastFFDuringWaitWindow 加 isKillShotOrLastChance，对齐规则 9） | 2026-09-10 | a810f6e | [260910-ilu-catatk-ff-code-1-shouldcastffduringwaitw](./quick/260910-ilu-catatk-ff-code-1-shouldcastffduringwaitw/) |
 | 260912-0kg | Reshift/FF 两条通告行颜色微调：macroTorch.show 新增 coffee（浅咖啡）+ violet（浅紫红，FF 图标色）自定义色臂，纯渲染层零判定改动 | 2026-09-12 | e4de202 | [260912-0kg-reshift-cat-lua-readyreshift-rgb-0-82-0-](./quick/260912-0kg-reshift-cat-lua-readyreshift-rgb-0-82-0-/) |
+| 260913-2wo | 修复 tools/cpdamage.lua 的 --json-out 输出为严格 JSON（G-28-5）：新增 encodeKey 数字键加引号 + 2 项自检断言（33→35），5.0/5.1/5.4 三解释器全绿，Node JSON.parse 端到端通过，屏显输出字节级不变 | 2026-09-13 | 1b62f12 | [260913-2wo-tools-cpdamage-lua-json-out-json-g-28-5-](./quick/260913-2wo-tools-cpdamage-lua-json-out-json-g-28-5-/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
