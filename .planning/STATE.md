@@ -15,7 +15,7 @@ milestone_name: milestone
 last_activity: 2026-09-13
 current_phase: 29
 current_phase_name: 统一 landing 判定重构
-last_activity_desc: "Completed quick task 260913-2wo: 修复 tools/cpdamage.lua 的 --json-out 输出为严格 JSON（G-28-5，encodeKey 数字键加引号）"
+last_activity_desc: "Completed quick task 260913-46s: tools/cpdamage.lua OOC-Bite Criteria 自动计算块（R*(A/B)/R*(D/B) + --erps，selftest 35→49 三解释器全绿）"
 ---
 
 # Project State
@@ -283,6 +283,7 @@ last_activity_desc: "Completed quick task 260913-2wo: 修复 tools/cpdamage.lua 
 | 260910-ilu | catAtk 原则文档 9 处裁决修订（B1 worldboss 圣物限定/B3 畏缩范围/A3 规则2 净收益/A4 erps>0/A5 规则4 门对齐/A6 自动攻强推广/B4 猛虎独立 GCD 注记/移除定义位置列与 SelfTest ID 表）+ 斩杀期 FF 等待窗排除门（shouldCastFFDuringWaitWindow 加 isKillShotOrLastChance，对齐规则 9） | 2026-09-10 | a810f6e | [260910-ilu-catatk-ff-code-1-shouldcastffduringwaitw](./quick/260910-ilu-catatk-ff-code-1-shouldcastffduringwaitw/) |
 | 260912-0kg | Reshift/FF 两条通告行颜色微调：macroTorch.show 新增 coffee（浅咖啡）+ violet（浅紫红，FF 图标色）自定义色臂，纯渲染层零判定改动 | 2026-09-12 | e4de202 | [260912-0kg-reshift-cat-lua-readyreshift-rgb-0-82-0-](./quick/260912-0kg-reshift-cat-lua-readyreshift-rgb-0-82-0-/) |
 | 260913-2wo | 修复 tools/cpdamage.lua 的 --json-out 输出为严格 JSON（G-28-5）：新增 encodeKey 数字键加引号 + 2 项自检断言（33→35），5.0/5.1/5.4 三解释器全绿，Node JSON.parse 端到端通过，屏显输出字节级不变 | 2026-09-13 | 1b62f12 | [260913-2wo-tools-cpdamage-lua-json-out-json-g-28-5-](./quick/260913-2wo-tools-cpdamage-lua-json-out-json-g-28-5-/) |
+| 260913-46s | 为 tools/cpdamage.lua 添加 CC 咬决策常量自动计算块（OOC-Bite Criteria：R*(A/B)/R*(D/B) 翻转阈值 + 可选 --erps <N> 参数 + --json-out 同步块；E/S/C/β 读取点按 28-OOC-BITE-CRITERIA.md；selftest 35→49 三解释器全绿，Node 严格 JSON 与屏显 additive 零删除双口径门通过，宏本体 11 字段 schema 零改动） | 2026-09-13 | a8e7852 | [260913-46s-tools-cpdamage-lua-cc-decisions-additive](./quick/260913-46s-tools-cpdamage-lua-cc-decisions-additive/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
