@@ -94,6 +94,11 @@ user_observed (AskUserQuestion 2026-09-11): ① 非 debug 模式 addon 不回显
   implication: 静态排查必须同时覆盖 hit-arm（self-hit 匹配→landed 通告）与 fail-arm（miss/dodge/parry 事件→红 fail 通告）两条路径的静默可能；实机取证依赖插桩版构建产出
 
 - timestamp: 2026-09-12
+  checked: 簇再现（用户带时间戳全转录）：bite 绿 landing 2853.608 → Renewing rip → 咖啡 Reshift(nextMove: Rake) → 白 Rake!!! (present: false, 补耙 A) → 玫红 FF!!! cp: 1 → 蓝 Rake (Inferred) 2855.854 → 白 Rake!!! (present: false, 补耙 B) → 绿 Rake landing 2858.458 → 此后正常
+  found: ① 时间戳推演：A 施放≈2854.95（蓝行=施放+0.9s 反推），B 落地 2858.458（A→B 间隔≈3.3s，35e 能量回填可行）；② **cp: 1 铁证**：咬已吃光星，FF 打印的 cp: 1 只能来自耙 A → A 真命中，不是 miss（miss 无星）→ 蓝行推断与真实一致，账无误；③ A 的双证据通道（自伤行+新挂流血的 apply 行）在 0.9s 窗内双双未到 → 通道迟滞；若 1~2s 后才到，自伤行会被标记判别（Q-19）静默吞掉、apply 行被过期意图丢弃——两者皆是设计静默，故转录里不见绿；④ B 决策时打印 present: false——rakeLeft 时钟已被 A 的蓝字兜底刷新（应为≈5.6s>0），故 false 即 hasBuff（客户端 UnitDebuff）仍读不到 ≈3.4s 前已命中的耙 → 客户端 debuff 数据通道滞后（与 M2 状态条冻结同族的环境延迟）；B 落地绿后一切跟上 → 自愈；⑤ 小涟漪：B 落地前 rakeLeft 以 A 施放时刻为锚，若 B 迟迟不落地时钟会早报到期——本次 B 立即绿已自愈，非缺陷
+  implication: 该簇形态（咬后单 Renewing=真到期 + 补耙 A 蓝 + 补耙 B present:false）第一次带时间戳+cp 字段完整闭环：全程无判定逻辑缺陷、无账错、无双报；纯环境型（证据通道迟滞被兜底救账 + debuff 数据通道滞后致一发 35e 冗余耙）。是否做"蓝字兜底后宽限"优化仍为可选设计项
+
+- timestamp: 2026-09-12
   checked: 新实机簇（用户打桩报告，构建=WR-02 标记判别 + violet→pink 重命名后）：Bite 白字→绿 bite landing→仅一行 Renewing rip（无 Renewing rake）→咖啡 Reshift(nextMove: Rake)→两行白 Rake!!!（补耙 A）→蓝 Rake (Inferred)→又一行白 Rake!!!（补耙 B）→绿 Rake landing→此后正常
   found: ① 用户纠偏前提（同 09-12）：咬只刷新现存 debuff 不新增——咬时 rake 已自然到期（9s 上限），单 Renewing rip 与咬后补耙均为正常机制，非回归非滞后；② 补耙 A 蓝字=新耙双证据通道（自伤行+新挂流血必发的 apply 行）在 0.9s 窗内双双静默→沉默窗反推兜底照设计接住（候选=咬/换形/续期洪流的通道迟滞，与 M2 状态条冻结同族的环境延迟；代价仅 rakeLeft 时钟以施放时刻为锚，误差<1s 无害）；③ 补耙 B=待判题：Rake 判定门为双钥匙（客户端图标 UnitDebuff + 自维护 rakeLeft 时钟）；A 的蓝字兜底已把 landTable 顶刷新→rakeLeft 应为正值→B 成立多半因客户端图标数据滞后，但白 Rake!!! 打印自带 'Rake present:' 字段，下次一行即可钉死（false→图标滞后坐实；true→keepRake 判定树其它分支问题，立案回查）；④ 绿行前有新鲜白字施放打印→蓝绿为两发真耙，WR-02 标记判别无回归迹象；⑤ 时间戳值未转述（判别 todo 已固化 .planning/todos/pending/rake-lag-vs-regression-discriminators.md）
   implication: 咬后续期行为无异常（机制澄清后）；真正残余=补耙 B 的判门归因，证据入口已内置（Rake present 字段），无需插桩；"咬后客户端滞后"（M3 原形态）作废，连同旧簇"只续 rip"一起回归朴素解释区
