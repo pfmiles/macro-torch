@@ -1,15 +1,15 @@
 ---
-status: awaiting_human_verify
+status: resolved
 trigger: "目前的catAtk循环遇到一个问题需要排查：有一次，已经是在正常的木桩战斗过程中，已经开局了几十秒了，目标身上已经有了rake & rip，此时我打了个5星bite，屏幕上能看到白字输出的“Bite!!!... ooc: false”提示，但却没有看到蓝色的landing信息；然后随后是“Reshift!!!...”信息，且reshift信息中显示当前能量为0，也就是说明前面那个bite肯定是成功打出去了的，不然不会清空能量；但那个bite却没有对应的蓝色landing信息或红色fail信息出现，就静默地走掉了；然后接下来我的catAtk宏就判断rake & rip没有被bite续上，因此后来的5星又打了个rip，但此时其实目标身上的rip还在的(因为其实被bite续上了)。需要帮我排查下bite成功却没有landing信息的原因；我记得bite的landing，应该是全靠self-hit事件来确定的吧？因为它既没有apply debuff的效果，也没有fail反推兜底，那么这个问题就唯一可能会出现在释放之后的确定造成伤害的事件解析身上？我目前能想到的会不会是glance的伤害信息跟普通的伤害信息不一样，导致解析出错？"
 created: 2026-09-11T05:37:48Z
-updated: 2026-09-12T04:00:00Z
+updated: 2026-09-12T05:00:00Z
 ---
 
 ## Current Focus
 <!-- OVERWRITE on each update - reflects NOW -->
 
 reasoning_checkpoint (Fix-1 landed 2026-09-11, user-adjudicated):
-  hypothesis: "M1 CONFIRMED+fixed(code-proven): rescue 分支对推断锚点覆盖对(lastLand==lastCast)的补记制造幻影 cast+intent → 双腾账/双 Renewing;fix=isAnchorCoveredPair anchor-equality guard(rescue 分支命中即 return,不补记/不通告/不派遣)+Q-19 回归。M2 CONFIRMED-by-constraint(维持): 客户端 bars 通道迟滞冻结 CP/energy——用户对 FF!!! cp 值无 recall 补充,约束推断不变。M3 re-routed(用户裁决): 服务器 bite 确刷 rake+rip 且图标会重置 → '服务器不刷新 rake'路线作废;Renewing rake 缺席回归客户端侧 UnitDebuff 数据滞后/16 槽驱逐类环境解释;Fix-3b(删 FB listener 的 rake 续锚)作废,永不落地。"
+  hypothesis: "M1 CONFIRMED+fixed(code-proven): rescue 分支对推断锚点覆盖对(lastLand==lastCast)的补记制造幻影 cast+intent → 双腾账/双 Renewing;fix=isAnchorCoveredPair anchor-equality guard(rescue 分支命中即 return,不补记/不通告/不派遣)+Q-19 回归。M2 CONFIRMED-by-constraint(维持): 客户端 bars 通道迟滞冻结 CP/energy——用户对 FF!!! cp 值无 recall 补充,约束推断不变。M3 re-routed(用户裁决): 服务器 bite 确刷 rake+rip 且图标会重置 → '服务器不刷新 rake'路线作废;Renewing rake 缺席回归客户端侧 UnitDebuff 数据滞后/16 槽驱逐类环境解释;Fix-3b(删 FB listener 的 rake 续锚)作废,永不落地。CLOSED 2026-09-12: /mt 324 passed / 0 failed / 1 optional-warn(SP3 全局,与本案无关);实机两簇闭环(咬只续现存 debuff/补耙 A 蓝=兜底救账/补耙 B=客户端 debuff 数据通道迟滞);guard 终形经 code-review --fix 升级为 inferredAnchors 标记判别(a30f5fb)。"
   confirming_evidence:
     - "用户裁决(2026-09-11): bite 会刷新 rake 和 rip 两种 buff(服务器侧确定行为,不用怀疑),Rake 图标被咬刷新会重置 → M3 服务器路线消除,M3 完全回归客户端 debuff 数据问题"
     - "用户 /mt 全绿:Q-17/Q-18 与 Category T 均过(95cbb6e 修复的实机回归面干净)"
@@ -24,11 +24,11 @@ reasoning_checkpoint (Fix-1 landed 2026-09-11, user-adjudicated):
     - "[environment] M3(原形态作废 2026-09-12:用户澄清咬只续现存 debuff 不新增,单 Renewing rip=rake 真到期正常机制): 残余待判=补耙 B 判门归因——白 Rake!!! 打印自带 'Rake present:' 字段,false→客户端图标(hasBuff)滞后坐实 / true→keepRake 判定树分支问题立案回查"
   and_gate: "yes — 原始观察簇 = M1×M2 同时成立;M3 原形态经用户澄清作废(单 Renewing 回归机制正常面)。M1 已修;M2 留实机观察;M3 残余转判门归因"
 
-bug_class: Bohrbug(M1, fixed) + Heisenbug(M2 bars 迟滞,待实机观察);M3 原形态作废,残余=补耙 B 判门归因待判
-hypothesis: M1 fixed+committed;M2 维持约束推断;M3 原形态作废(咬只续现存),残余补耙 B 判门归因('Rake present:' 字段钉死)
-test: 静态电池 PASS 已跑;Q-19 待游戏内 /mt(用户与 Fix-1 同车实机);Q-17 静态推演绿
-expecting: 用户下次木桩:双腾账消失、Renewing 不再双印;Q-19 于 /mt 绿
-next_action: "2026-09-12 新簇经用户机制纠偏后收敛为:咬后续期行为正常(真到期)、补耙 A 蓝字=通道迟滞被兜底救账(无害)、补耙 B 判门待判('Rake present:' 字段是钥匙)。剩余 human 项:① 下次上线 /mt 全绿报告（Q-17/18/19+Category T，新构建）;② 簇再现时抄蓝/绿行时间戳 + 两处白 Rake!!! 全行（尤其 Rake present: 值）;③ 状态条冻结观察;④ 全部正常后会话结案归档"
+bug_class: Bohrbug(M1, fixed, verified) ; M2(客户端通道迟滞,环境,维持约束推断,未再现) ; M3(原形态作废)
+hypothesis: 全部纳案:M1 修复经用户 324/0/1 实机验收封板;补耙簇闭环(咬只续现存+兜底救账+数据通道迟滞,无缺陷);无残余待修项
+test: 静态电池 PASS 已跑;游戏内 /mt 2026-09-12: 324 passed / 0 failed / 1 warning(SP3 optional global not found——SuperMacro 全局可选探测,与本案无关);Q-17/18/19 与 Category T 在 324 全绿之列
+expecting: 已兑现:双腾账/双 Renewing 未再现;无静默咬;两簇补耙同签名闭环
+next_action: 归档:本会话转 .planning/debug/resolved/（human 验收 324/0/1 + 两簇实机闭环）——结案,无后续动作
 
 ## Symptoms
 <!-- Written during gathering, then IMMUTABLE -->
@@ -112,12 +112,12 @@ user_observed (AskUserQuestion 2026-09-11): ① 非 debug 模式 addon 不回显
 <!-- OVERWRITE as understanding evolves -->
 
 root_cause: AND-gate 双因子（原始静默案）。F1（触发，rare）：Ferocious Bite 的自伤证据行（CHAT_MSG_SPELL_SELF_DAMAGE）先于 cast 记录（UNIT_CASTEVENT 桥/UNIT_SPELLCAST_SUCCEEDED）落表到达——客户端事件洪流下两条通道的到达序可反转——此时 D-02 cast 维覆盖谓词 isCastCovered 用全局栈顶把上一发 bite 的 [cast,land] 覆盖对误判为"本行已覆盖"：绿 landed 通告被压制（onSelfDamageLine 门控）+ land 写入被 recordLandEvent 去重压制 → Ferocious Bite land listener 不触发 → rake/rip 续期记账丢失 → 术左 ripLeft 后驱 0 → isRipPresent 误判 false → 换 Savagery + 提前重放 Rip。F2（系统性）：D-03 反推兜底 computeLandTable 直接 push landTable、绕过 landListeners 派遣——即使兜底触发，FB 续期 listener 也不会执行、续期记账依然丢失，且反推兜底在 29-04 前构建上的通告'blue'→OFFICER 渲染为绿色，与用户"无蓝无红"观察自洽（用户三无观察的兜底绿线可见性即此解释）。bite 命中机制本身无异常（glance 不可能、事件行格式与全样本吻合、isCanAttack 话计算恒真均已排除）。95cbb6e 修复后的实机新簇：M1（fix-introduced，code-proven = 95cbb6e 的 isStaleCoveredPair rescue 与推断锚点交叠）：bite_B 自伤行迟到 >0.9s → 推断锚点（lastLand==lastCast）先行覆盖本 cast → 迟到行被误判'未落表新 cast 首条证据' → recordCastTable 补记幻影 cast+intent → 二次绿 landed + 二次 listener 派遣（双腾账/双 Renewing）。M2（环境，维持约束推断）：客户端 CP/能量 bar 更新在洪流下冻结 ~5-6s → cp5Bite 双白字同值、第二发被服务器以真实能量拒。M3（环境，用户裁决后）：Renewing rake 缺席 = 客户端 UnitDebuff 数据滞后/16 槽驱逐类问题（服务器 bite 确刷 rake+rip、Rake 图标会重置）。
-fix: ①（95cbb6e）isStaleCoveredPair 陈旧覆盖判别 + rescue 补记 cast 时间戳（恢复 cast<=land 不变量）+ computeLandTable 兜底改走 recordLandEvent（恢复 listener 派遣）+ Q-17/Q-18；②（Fix-1，本次）onSelfDamageLine rescue 分支新增 isAnchorCoveredPair（lastLand==lastCast）anchor-equality guard——命中即 return，不补记/不通告/不派遣；新增 Q-19 回归（推断锚点 + 迟到自伤行交叠最小 repro）。Fix-3b（删 FB listener 的 rake 续锚）经用户裁决作废、永不落地。Fix-2（一次性 DIAG 插桩）决定不捆绑，保留为后续项。
+fix: ①（95cbb6e）isStaleCoveredPair 陈旧覆盖判别 + rescue 补记 cast 时间戳（恢复 cast<=land 不变量）+ computeLandTable 兜底改走 recordLandEvent（恢复 listener 派遣）+ Q-17/Q-18；②（Fix-1，本次）onSelfDamageLine rescue 分支新增 isAnchorCoveredPair（lastLand==lastCast）anchor-equality guard——命中即 return，不补记/不通告/不派遣；新增 Q-19 回归（推断锚点 + 迟到自伤行交叠最小 repro）。Fix-3b（删 FB listener 的 rake 续锚）经用户裁决作废、永不落地。Fix-2（一次性 DIAG 插桩）决定不捆绑，保留为后续项。③（2026-09-12 code-review --fix）anchor-equality guard 经复核升级为 inferredAnchors 显式标记判别（a30f5fb）：数值等值无法区分推断锚与救援同帧产物，标记化后重复 F1 竞态回归完整救援路径（不补记/不通告/不派遣仅对真推断锚生效）；Q-19 改种标记。最终形态：95cbb6e → 881594c → a30f5fb。
 verification:
-  target_test: { result: pending_in_game, reason: Q-19 仅能在游戏内 /mt 运行（本机无 WoW 客户端/Lua 运行时）；静态语义推演逐条过（见 Current Focus reasoning_checkpoint）；伴随用户下次 rebuild 与 Q-17/Q-18 同车 /mt }
+  target_test: { result: passed_in_game, evidence: 2026-09-12 /mt = 324 passed / 0 failed / 1 warning（SP3 optional global not found——可选项探测，与本案无关）; Q-17/Q-18/Q-19 与 Category T 在通过清单内；伴随实机还完成两簇补耙复验（同签名闭环，无缺陷） }
   mutation_check: { result: skipped, reason: 无 Stryker/无头 Lua 运行时可驱动游戏内测试（既有惯例，95cbb6e 同） }
   no_op_deletion: { result: pass, diff 为纯增补：isAnchorCoveredPair 新函数 + rescue 分支 guard-早退 + Q-19 注册；早退（deletion-shaped）有 RCA 明确论证（M1 幻影补记链路，见 reasoning_checkpoint fix_rationale） }
   adjacent_tests: { result: skipped_static_ok, reason: Q-01..Q-18 须游戏内执行；静态兼容推演已逐条过（Q-17 fixture 为严格不等真实证据对、不触发 equality guard；Q-07/Q-12/Q-15/Q-18 判定路径 untouched）；bbcheck BALANCED ×2 }
-  revert_and_reconfirm: { result: skipped, reason: bug 为实机竞态、无法在本机复现/回放（无客户端、无录制）；回购验证绑定用户下次木桩（双腾账消失=确认） }
-  guardrail_verdict: pending_human_verify
+  revert_and_reconfirm: { result: skipped, reason: bug 为实机竞态、无法在本机复现/回放（无客户端、无录制）；回购验证绑定用户木桩——2026-09-12 两轮打桩无静默咬/无双腾账，视为确认 }
+  guardrail_verdict: passed_human_verify
 files_changed: [core/spell_trace_core.lua, classes/druid/selftest.lua]
