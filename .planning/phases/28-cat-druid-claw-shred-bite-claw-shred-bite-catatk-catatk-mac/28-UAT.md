@@ -3,7 +3,7 @@ status: complete
 phase: 28-cat-druid-claw-shred-bite-claw-shred-bite-catatk-catatk-mac
 source: [28-VERIFICATION.md]
 started: 2026-09-08T14:42:28Z
-updated: 2026-09-12T17:58:44Z
+updated: 2026-09-12T18:18:30Z
 ---
 
 ## Current Test
@@ -34,15 +34,14 @@ evidence: cpDmgOut.txt shows 4 batches + aggregate, full tier tables, OOC table,
 
 ### 5. json-out strictness decision
 expected: Decide one of: (a) accept the current Lua-flavored numeric-key archive format as-is (override), or (b) request a quoting fix so `--json-out` output is strict JSON parsable by Node/other strict parsers. This is the single recorded verification gap (28-VERIFICATION.md gaps): numeric bucket keys are currently emitted unquoted, e.g. `{"claw":{1:{"n":0}}}`.
-result: issue
-reported: "拍板 (b)：要求修复 --json-out 输出为严格 JSON（数字键加引号或数组化），screen 报告文本保持不变"
-severity: minor
+result: pass
+evidence: 拍板 (b) → quick task 260913-2wo (commit 1b62f12): encodeKey 数字键加引号 + 2 项自检断言（33→35）；5.0.3/5.1.5/5.4.7 三解释器 selftest 全绿；真实 SV 输入 --json-out 经 Node JSON.parse 端到端通过（STRICT-JSON-OK）；屏显输出与修复前字节级全等。
 
 ## Summary
 
 total: 5
-passed: 4
-issues: 1
+passed: 5
+issues: 0
 pending: 0
 skipped: 0
 blocked: 0
@@ -51,7 +50,9 @@ blocked: 0
 
 - gap_id: G-28-5
   truth: "--json-out output must be strict JSON parsable by Node/other strict parsers (numeric bucket keys quoted or array-encoded)"
-  status: failed
+  status: resolved
+  resolved_by: "quick task 260913-2wo (commit 1b62f12, docs 456c88b)"
+  resolved_at: 2026-09-13
   reason: "User decided (b) on 2026-09-13: request a quoting fix. Verifier probe: Node JSON.parse rejects the current output at position 57 (bare numeric keys, e.g. {\"claw\":{1:{\"n\":0}}}). Terminal report and decision lines are unaffected."
   severity: minor
   test: 5
