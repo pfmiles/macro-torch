@@ -1,19 +1,20 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-current_plan: 2
+current_plan: Not started
 status: in_progress
-stopped_at: "Completed 29-04-PLAN.md (G-29-3 gap closure: render hue arms + Cat T-02 regression)"
-last_updated: "2026-09-10T19:00:56.112Z"
-state_head: 6bd0015178b2cfdf2cf8fd1eaf404aa21da1b1aa
+stopped_at: Phase 28 complete, ready to plan Phase 29
+last_updated: "2026-09-12T18:30:57.725Z"
+state_head: 32c900b941ae5e5fb0de40002cb4c8fd8393373d
 progress:
   total_phases: 29
-  completed_phases: 13
+  completed_phases: 15
   total_plans: 68
   completed_plans: 68
 milestone_name: milestone
 last_activity: 2026-09-13
-current_phase_name: landing
+current_phase: 29
+current_phase_name: 统一 landing 判定重构
 last_activity_desc: "Completed quick task 260913-2wo: 修复 tools/cpdamage.lua 的 --json-out 输出为严格 JSON（G-28-5，encodeKey 数字键加引号）"
 ---
 
@@ -23,8 +24,8 @@ last_activity_desc: "Completed quick task 260913-2wo: 修复 tools/cpdamage.lua 
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 30 — cpBuild 双保判定改造（3/3 plans complete；UAT 5/5 全绿，2026-09-11）。Phase 29 实机验证已闭环（2026-09-12：29-UAT.md complete 5/5，G-29-3 resolved，29-VERIFICATION.md passed）
-- **Current Plan:** 2
+- **Current Phase**: Phase 29 — 统一 landing 判定重构（实机验证已闭环：29-UAT.md complete 5/5，G-29-3 resolved，29-VERIFICATION.md passed，2026-09-12）。Phase 28 cat 伤害打桩 UAT 5/5 全绿、verification passed、阶段完成（2026-09-13）。Phase 30 已全绿闭合（2026-09-11）
+- **Current Plan:** Not started
 - **Total Plans in Phase:** 4
 - **Active Branch**: main
 
@@ -57,7 +58,7 @@ last_activity_desc: "Completed quick task 260913-2wo: 修复 tools/cpdamage.lua 
 | Phase 26: 猫德 fast 战斗逻辑 | ✅ complete | 2026-08-21 | 2026-08-22 | 3/3 plans |
 | Phase 27: catAtk event-driven land tracing refactor | ✅ complete | 2026-08-28 | 2026-08-29 | 3/3 plans |
 | Phase 28: catAtk claw/shred/bite damage instrumentation | ✅ complete | 2026-09-08 | 2026-09-08 | 4/4 plans |
-| Phase 29: 统一 landing 判定重构 | 🟡 in_progress | 2026-09-10 | — | 2/3 plans |
+| Phase 29: 统一 landing 判定重构 | ✅ complete | 2026-09-10 | 2026-09-12 | 4/4 plans |
 | Phase 30: cpBuild 双保判定改造 | ✅ complete | 2026-09-10 | 2026-09-11 | 3/3 plans |
 
 ## Accumulated Context
@@ -103,6 +104,8 @@ last_activity_desc: "Completed quick task 260913-2wo: 修复 tools/cpdamage.lua 
 | 2026-06-07 | build_order.txt 一次性全量 | Phase 1 写出所有 Phase 2-4 文件路径，容错模式跳过未创建文件 |
 | 2026-06-07 | LRUStack 改用 classMetatable(nil) | 验证工厂设计，统一 metatable 模式，无父类情况显式传 nil |
 | 2026-06-07 | periodic.lua Phase 1 独立 Frame | OnUpdate 代码块与 OnEvent handler 零耦合，立即分离无过渡状态 |
+| 2026-09-13 | CC(清晰预兆)咬决策基准文档化 | 推演定案：CC 恒给 shred（免费单次+省能耗双赢）；CC 咬仅在 ERPS≥~25/s 窗口更优（如 Essence）。基准+校准流程落档 28-OOC-BITE-CRITERIA.md，常数不写死宏 |
+| 2026-09-13 | cpdamage --json-out 严格 JSON 修复 | G-28-5：encodeKey 数字键加引号 + 自检 33→35，5.0/5.1/5.4 三解释器全绿，屏显输出字节级不变 |
 
 ## Open Questions
 
@@ -241,7 +244,7 @@ last_activity_desc: "Completed quick task 260913-2wo: 修复 tools/cpdamage.lua 
 ## Session
 
 **Last session:** 2026-09-10T19:00:55.223Z
-**Stopped at:** Completed 29-04-PLAN.md (G-29-3 gap closure: render hue arms + Cat T-02 regression)
+**Stopped at:** Phase 28 complete, ready to plan Phase 29
 **Resume file:** None
 
 ## Quick Tasks Completed
@@ -285,9 +288,10 @@ last_activity_desc: "Completed quick task 260913-2wo: 修复 tools/cpdamage.lua 
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
 - [Phase 21-02]: D-06: All 5 explicit comparisons replaced (oocMod, cp5Bite, energyDischargeBeforeBite, dischargeEnergyChangeRelicAndRip, shouldUseShred), local erps retained where needed for overflow calculations
 - [Phase 21-02]: D-07: 3 implicit comparisons preserved unchanged — shouldDoReshift, shouldCastFFDuringWaitWindow, recoverNormalRelic express different semantics (energy overflow, not isPseudoInfiniteEnergy)
+- [Phase 28]: cpDamage UAT 5/5 全绿闭环（实机 941 样本/52.1min/4 批次，11 字段 0 坏行；SavedVariables 段持久化实证；Category U 9/9）。OOC-bite 推演定案：CC→shred + 泄能再咬 = 现状最优；CC 咬仅 ERPS≥~25 场景更优，基准+校准流程落档 28-OOC-BITE-CRITERIA.md。G-28-5 --json-out 严格 JSON 修复经 quick 260913-2wo 落地（1b62f12）
 
 ## Session
 
-**Last session:** 2026-09-07T08:30:00.000Z
-**Stopped at:** Phase 27 UAT complete — phase marked complete, milestone v1.0 ready to archive
+**Last session:** 2026-09-12T18:33:15.000Z
+**Stopped at:** Phase 28 complete (UAT 5/5 + verification passed + VALIDATION + SECURITY), ready to plan Phase 29
 **Resume file:** None

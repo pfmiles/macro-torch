@@ -1,11 +1,12 @@
 ---
 phase: 28-cat-druid-claw-shred-bite-claw-shred-bite-catatk-catatk-mac
 verified: 2026-09-08T14:40:46Z
-status: human_needed
+status: passed
 score: 13/16 must-haves verified
 behavior_unverified: 2
 overrides_applied: 0
 gaps:
+
   - truth: "`--json-out <file>` writes a JSON-structured result archive (D-16)"
     status: partial
     reason: "The archive is written and structured, but bucket tables keyed by bleedCount (0..3) are emitted with unquoted numeric keys (encodeValue object branch uses encodeScalar(k), e.g. {\"claw\":{1:{\"n\":0}}}), which is Lua table notation, not strict JSON — Node JSON.parse / python json / jq all reject it (probe-reproduced). The terminal report, decision lines and the entries interop contract are unaffected. runSelftest has no assertion on archive strictness, which is why all 33 assertions stay green despite the deviation."
@@ -15,7 +16,9 @@ gaps:
     missing:
       - "Quote numeric keys in encodeValue's object branch (or encode 0..3-keyed bucket tables as arrays) so the archive parses as strict JSON"
       - "Optionally add a selftest assertion that round-trips the emitted archive through decodeJson or checks the key quotation"
+
 behavior_unverified_items:
+
   - truth: "After a Training Dummy claw cast lands, exactly one [cpDamage]-prefixed 11-field JSON entry appears in the persisted ring (D-01/D-07 emit loop)"
     test: "In game, run /mt and observe Cat U-06/U-08, or follow HUMAN-UAT.md Phase 28 section 4 (dummy protocol) — cast claw/shred/bite and read back the SV file"
     expected: "One [cpDamage] line per landed cast with crit=false/true accordingly; 11 fields in the spell dmg crit e energyPool bleedCount isOoc isBehind cp t batch order; miss/dodge/parry lines produce nothing and never consume the pending intent (U-07 assertion, including the WR-02 Rake-line scenario)"
@@ -25,6 +28,7 @@ behavior_unverified_items:
     expected: "Zero captured [cpDamage] lines; intent stack count remains 1 after both the dodge line and the Rake hits line"
     why_human: "The pattern-drop logic is deterministic string matching and reads correctly statically, but the drop-and-don't-consume invariant is a runtime ordering guarantee pinned only by the in-game U-07 test"
 human_verification:
+
   - test: "Confirm the deployed SuperMacro variant's .toc carries the MACRO_TORCH_LOG SavedVariables declaration (RESEARCH A2); if missing, append it and fully exit the game before retesting"
     expected: "WTF/Account/<account>/SavedVariables/SuperMacro.lua contains a MACRO_TORCH_LOG section after any logged write"
     why_human: "The .toc file lives on the user's game machine and cannot be inspected from the repository"
@@ -197,6 +201,7 @@ One genuine gap, one judgment item — nothing blocks the phase goal:
 
 ```yaml
 overrides:
+
   - must_have: "--json-out writes a strict-JSON result file (D-16)"
     reason: "Archive intentionally follows Lua-table notation readable in the user's Lua ecosystem (WoW addon developer); the terminal report is the primary deliverable and is fully verified"
     accepted_by: "<user>"
