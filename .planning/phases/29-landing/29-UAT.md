@@ -1,9 +1,9 @@
 ---
-status: diagnosed
+status: complete
 phase: 29-landing
 source: [29-VERIFICATION.md]
 started: 2026-09-10T20:10:00Z
-updated: 2026-09-10T18:19:34Z
+updated: 2026-09-12T05:45:00Z
 ---
 
 ## Current Test
@@ -23,9 +23,8 @@ note: 320 passed / 0 failed / 1 warnings — 黄色 warning 属协议可容忍�
 
 ### 3. Single-dummy landing behavior
 expected: 单人木桩：Rake/FB 恒绿 landed；Pounce/Rip 绿或偶发蓝 (inferred)；无红 failed-on；ripLeft 正常启动（§3）
-result: issue
-reported: "行为都符合预期，就是蓝色和绿色刚好搞反了：rake/bite全都是蓝色的landed, pounce和rip的inferred landed都是绿色的，没有红色"
-severity: minor
+result: pass
+note: "2026-09-12 gap-closure(29-04) 修复后复验：打桩实机目击绿 landed / 蓝 (Inferred) / 咖啡 Reshift / 粉 FF 四色相全部正确、无红；/mt Category T 绿（324 passed / 0 failed / 1 warn=SP3 optional）。色相倒置已闭环（见 Gaps G-29-3）"
 
 ### 4. Multi-druid same target (optional)
 expected: 多猫同目标时 apply 被抑制 → ~1s 内蓝色 (inferred) 兜底 + ripLeft 启动、不再每帧重放；他人技能行不触发我方通告（§4）
@@ -38,8 +37,8 @@ result: pass
 ## Summary
 
 total: 5
-passed: 4
-issues: 1
+passed: 5
+issues: 0
 pending: 0
 skipped: 0
 blocked: 0
@@ -48,7 +47,9 @@ blocked: 0
 
 - gap_id: G-29-3
   truth: "单人木桩：绿色=landed、蓝色=inferred（HUMAN-UAT.md §247-248）；Rake/FB 恒绿 landed，Pounce/Rip 绿或偶发蓝 (inferred)"
-  status: failed
+  status: resolved
+  resolved_by: 29-04-PLAN.md
+  resolved_at: 2026-09-12
   reason: "User reported: 行为都符合预期，就是蓝色和绿色刚好搞反了：rake/bite全都是蓝色的landed, pounce和rip的inferred landed都是绿色的，没有红色"
   severity: minor
   test: 3
