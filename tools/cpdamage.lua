@@ -35,6 +35,9 @@ local PREFIX = '[cpDamage] '
 -- the rest of its line and trip the bracket balance)
 local FLAG_SELFTEST = '-' .. '-selftest'
 local FLAG_JSON_OUT = '-' .. '-json-out'
+-- energy regeneration rate assumed by the OOC-bite criteria verdicts
+local FLAG_ERPS = '-' .. '-erps'
+local DEFAULT_ERPS = 10
 
 -- count a contiguous 1..n array with ipairs (Lua 5.0 has no length
 -- operator; the message ring and the entry lists are always contiguous
@@ -1030,6 +1033,96 @@ function decisionLines(stats)
     return lines
 end
 
+-- OOC-bite (ClearCasting bite) decision thresholds for the cat rotation,
+-- derived from the aggregate statistics per 28-OOC-BITE-CRITERIA.md:
+--   R*(A/B) = (S - 35b) / E   R*(D/B) = (C - 37b) / E
+-- where S is the bleed2 shred average damage, C is the claw average damage
+-- of each bleed tier, b is the bite regression slope and E is the best claw
+-- tier builder efficiency (avg dmg/e, the CRITERIA doc E read point - not
+-- ERPS times time). Verdicts split on the assumed energy-per-second rate:
+--   erps >= R*(A/B) -> A (CC bite right away)
+--   R*(D/B) <= erps < R*(A/B) -> B (free builder then bite now)
+--   erps < R*(D/B) -> D (discharge then bite, the current rotation)
+-- Unusable regressions return early with the reason and no thresholds.
+function oocBiteCriteria(stats, erps)
+    local crit = { erps = tonumber(erps) or 10 }
+    local reg = nil
+    if stats ~= nil then
+        reg = stats.biteRegression
+    end
+    if reg == nil then
+        crit.usable = false
+        crit.note = 'no regression'
+        return crit
+    end
+    if not reg.usable then
+        crit.usable = false
+        crit.note = reg.reason
+        return crit
+    end
+    crit.usable = true
+    crit.b = reg.b
+    crit.a = reg.a
+    local buckets = stats.clawShred.buckets
+    -- E: best claw avgEff across bleedCount tiers with samples
+    local bestE = nil
+    for tier = 0, 3 do
+        local b = buckets.claw[tier]
+        if b ~= nil and b.n > 0 and b.avgEff ~= nil then
+            if bestE == nil or b.avgEff > bestE then
+                bestE = b.avgEff
+            end
+        end
+    end
+    crit.E = bestE
+    -- R*(A/B): S reads the bleed2 shred average damage
+    local sz = buckets.shred[2]
+    local S2 = nil
+    if sz ~= nil and sz.n > 0 then
+        S2 = sz.avgDmg
+    end
+    if S2 ~= nil and bestE ~= nil then
+        crit.rAB = { S = S2, E = bestE, r = (S2 - 35 * reg.b) / bestE }
+    end
+    -- R*(D/B): C and E read each bleed tier claw row
+    local tierKeys = { 'bleed2', 'bleed3' }
+    local rDB = {}
+    local anyTier = false
+    for ti = 1, 2 do
+        local tier = ti + 1
+        local cb = buckets.claw[tier]
+        if cb ~= nil and cb.n > 0 then
+            rDB[tierKeys[ti]] = { C = cb.avgDmg, E = cb.avgEff,
+                r = (cb.avgDmg - 37 * reg.b) / cb.avgEff }
+            anyTier = true
+        end
+    end
+    if anyTier then
+        crit.rDB = rDB
+    end
+    -- verdicts: split each bleed tier on the two thresholds (A/B/D)
+    if crit.rAB ~= nil then
+        local verdicts = {}
+        for ti = 1, 2 do
+            local tierData = nil
+            if crit.rDB ~= nil then
+                tierData = crit.rDB[tierKeys[ti]]
+            end
+            if tierData ~= nil then
+                if crit.erps >= crit.rAB.r then
+                    verdicts[tierKeys[ti]] = 'A'
+                elseif crit.erps >= tierData.r then
+                    verdicts[tierKeys[ti]] = 'B'
+                else
+                    verdicts[tierKeys[ti]] = 'D'
+                end
+            end
+        end
+        crit.verdicts = verdicts
+    end
+    return crit
+end
+
 -- one claw/shred tier table: header plus two rows per bleedCount tier
 -- (claw, shred); columns n / avg dmg / avg dmg / e / single-cast avg, an
 -- explicit 0..3 loop and a (low n) tag on thin tiers (0 < n < 10, D-18)
@@ -1086,6 +1179,56 @@ local function printBiteLine(reg)
     end
 end
 
+-- OOC-bite criteria block (additive to the decision lines), fed by the
+-- oocBiteCriteria result: header with the assumed ERPS, the slope/base/E
+-- line, the R*(A/B) line, one R*(D/B) line per bleed tier, then the A/B/D
+-- verdict line. Missing pieces render locked fallback text.
+local function printOocBiteBlock(crit)
+    io.write('OOC-Bite Criteria (28-OOC-BITE-CRITERIA.md; assumed ERPS = ' ..
+        tostring(crit.erps) .. '/s):\n')
+    if not crit.usable then
+        io.write('  bite regression unavailable (' .. tostring(crit.note) ..
+            ') - thresholds skipped\n')
+        return
+    end
+    io.write('  b (bite slope) = ' .. fmtEff(crit.b) ..
+        '  a (base) = ' .. fmtDmg(crit.a) ..
+        '  E (best claw avg dmg/e) = ' .. fmtEff(crit.E) .. '\n')
+    if crit.rAB ~= nil then
+        io.write('  R*(A/B) = (S - 35b) / E: S (bleed2 shred) = ' .. fmtDmg(crit.rAB.S) ..
+            ' -> R* = ' .. fmtDmg(crit.rAB.r) .. '/s\n')
+    else
+        io.write('  R*(A/B) = (S - 35b) / E: no bleed2 shred samples\n')
+    end
+    local tierKeys = { 'bleed2', 'bleed3' }
+    for ti = 1, 2 do
+        local tierData = nil
+        if crit.rDB ~= nil then
+            tierData = crit.rDB[tierKeys[ti]]
+        end
+        if tierData ~= nil then
+            io.write('  R*(D/B) = (C - 37b) / E: ' .. tierKeys[ti] .. ' claw C = ' ..
+                fmtDmg(tierData.C) .. ', E = ' .. fmtEff(tierData.E) ..
+                ' -> R* = ' .. fmtDmg(tierData.r) .. '/s\n')
+        else
+            io.write('  R*(D/B) = (C - 37b) / E: no ' .. tierKeys[ti] .. ' claw samples\n')
+        end
+    end
+    local vParts = {}
+    for ti = 1, 2 do
+        local vt = nil
+        if crit.verdicts ~= nil then
+            vt = crit.verdicts[tierKeys[ti]]
+        end
+        if vt == nil then
+            vt = 'n/a'
+        end
+        table.insert(vParts, tierKeys[ti] .. ' -> ' .. vt)
+    end
+    io.write('  verdict at ERPS ' .. tostring(crit.erps) .. '/s: ' ..
+        table.concat(vParts, ', ') .. '\n')
+end
+
 -- terminal report (D-16/D-17): one section per batch (claw/shred tier
 -- table, OOC tier table, bite line), an aggregate section over the whole
 -- sample, the decision lines and a tail with the drop counters. All loops
@@ -1110,6 +1253,7 @@ function printReport(res)
     for i = 1, countList(res.decisions) do
         io.write('  ' .. res.decisions[i] .. '\n')
     end
+    printOocBiteBlock(res.oocBite)
     if res.dropped.badLines > 0 then
         io.write('warning: ' .. tostring(res.dropped.badLines) ..
             ' malformed [cpDamage] lines skipped\n')
@@ -1279,6 +1423,59 @@ function runSelftest()
     local decs = decisionLines(statsRef)
     check(countList(decs) > 0, 'decision lines are generated')
     check(string.sub(decs[1], 1, 6) == 'Tier 0', 'first decision line opens with the tier 0 bucket')
+    local ctrlStats = {
+        clawShred = { buckets = {
+            claw = {
+                [2] = { n = 20, avgDmg = 563.86, avgEff = 15.24, avgRaw = 563.86 },
+                [3] = { n = 20, avgDmg = 647.11, avgEff = 17.49, avgRaw = 647.11 },
+            },
+            shred = {
+                [2] = { n = 20, avgDmg = 684.95, avgEff = 8.50, avgRaw = 684.95 },
+            },
+        } },
+        biteRegression = { usable = true, n = 30, a = 1039.16, b = 6.8545 },
+    }
+    local cc = oocBiteCriteria(ctrlStats, 10)
+    check(cc ~= nil and cc.usable, 'oocBiteCriteria runs on the controlled stats')
+    check(cc ~= nil and cc.E ~= nil and math.abs(cc.E - 17.49) < 0.001,
+        'E picks the claw tier 3 avgEff 17.49 as the best claw efficiency')
+    check(cc ~= nil and cc.rAB ~= nil and cc.rAB.S == 684.95,
+        'rAB S reads the bleed2 shred average damage 684.95')
+    check(cc ~= nil and cc.rAB ~= nil and math.abs(cc.rAB.r - 25.4455) < 0.001,
+        'rAB threshold matches the documented 25.4/s break point')
+    check(cc ~= nil and cc.rDB ~= nil and cc.rDB.bleed2 ~= nil and cc.rDB.bleed2.C == 563.86,
+        'rDB bleed2 C reads the bleed2 claw average damage 563.86')
+    check(cc ~= nil and cc.rDB ~= nil and cc.rDB.bleed3 ~= nil and cc.rDB.bleed3.C == 647.11,
+        'rDB bleed3 C reads the bleed3 claw average damage 647.11')
+    check(cc ~= nil and cc.rDB ~= nil and cc.rDB.bleed2 ~= nil and cc.rDB.bleed3 ~= nil and
+        cc.rDB.bleed2.E == 15.24 and cc.rDB.bleed3.E == 17.49,
+        'rDB E pairs with each bleed tier claw avgEff')
+    check(cc ~= nil and cc.rDB ~= nil and cc.rDB.bleed2 ~= nil and
+        math.abs(cc.rDB.bleed2.r - 20.3572) < 0.001,
+        'rDB bleed2 threshold matches the documented 20.4/s break point')
+    check(cc ~= nil and cc.rDB ~= nil and cc.rDB.bleed3 ~= nil and
+        math.abs(cc.rDB.bleed3.r - 22.4982) < 0.001,
+        'rDB bleed3 threshold matches the documented 22.5/s break point')
+    check(cc ~= nil and cc.verdicts ~= nil and cc.verdicts.bleed2 == 'D' and cc.verdicts.bleed3 == 'D',
+        'ERPS 10 lands both bleed tiers in verdict D (current discharge)')
+    local cc21 = oocBiteCriteria(ctrlStats, 21)
+    check(cc21 ~= nil and cc21.verdicts ~= nil and cc21.verdicts.bleed2 == 'B' and
+        cc21.verdicts.bleed3 == 'D',
+        'ERPS 21 sits between the bleed2 and bleed3 break points (B then D)')
+    local cc26 = oocBiteCriteria(ctrlStats, 26)
+    check(cc26 ~= nil and cc26.verdicts ~= nil and cc26.verdicts.bleed2 == 'A' and
+        cc26.verdicts.bleed3 == 'A',
+        'ERPS 26 clears the rAB break point for both bleed tiers (A)')
+    local encCc = encodeValue({ oocBite = cc26 })
+    local rtCc, rtCcErr = decodeJson(encCc)
+    check(rtCc ~= nil and rtCcErr == nil and rtCc['oocBite'] ~= nil and
+        rtCc['oocBite']['verdicts'] ~= nil and rtCc['oocBite']['verdicts']['bleed2'] == 'A',
+        'oocBite block round-trips through the strict json encoder and decoder')
+    local ccBad = oocBiteCriteria({ clawShred = ctrlStats.clawShred,
+        biteRegression = { usable = false, reason = 'n<3', n = 1 } }, 10)
+    check(ccBad ~= nil and ccBad.usable == false and ccBad.note == 'n<3' and
+        ccBad.rAB == nil and ccBad.rDB == nil and ccBad.verdicts == nil,
+        'unusable regression short-circuits the oocBite criteria to a note')
     io.write('selftest: ALL ' .. tostring(passed) .. ' PASSED\n')
     os.exit(0)
 end
@@ -1288,6 +1485,9 @@ function printUsage()
     io.write('usage: lua tools/cpdamage.lua <path/to/SuperMacro.lua>\n')
     io.write('usage: lua tools/cpdamage.lua <path/to/SuperMacro.lua> ' ..
         FLAG_JSON_OUT .. ' <file>\n')
+    io.write('usage: lua tools/cpdamage.lua <path/to/SuperMacro.lua> ' ..
+        FLAG_ERPS .. ' <N> sets the assumed ERPS for the OOC-bite criteria (default ' ..
+        tostring(DEFAULT_ERPS) .. '/s)\n')
     io.write('usage: lua tools/cpdamage.lua ' .. FLAG_SELFTEST .. '\n')
 end
 
@@ -1303,6 +1503,7 @@ function main(args)
     end
     local selftestMode = false
     local jsonOutPath = nil
+    local erps = DEFAULT_ERPS
     local svPath = nil
     local i = 1
     while args[i] ~= nil do
@@ -1317,6 +1518,16 @@ function main(args)
                 os.exit(1)
             end
             jsonOutPath = args[i + 1]
+            i = i + 2
+        elseif a == FLAG_ERPS then
+            local num = tonumber(args[i + 1])
+            if num == nil or num < 0 then
+                io.write('error: ' .. FLAG_ERPS ..
+                    ' requires a non-negative energy-per-second number\n')
+                printUsage()
+                os.exit(1)
+            end
+            erps = num
             i = i + 2
         else
             if svPath ~= nil then
@@ -1375,6 +1586,7 @@ function main(args)
             biteRegression = statsRef.biteRegression,
         },
         decisions = decisionLines(statsRef),
+        oocBite = oocBiteCriteria(statsRef, erps),
         dropped = { badLines = parsed.badLines, invalidFields = parsed.invalidFields },
         truncated = parsed.truncated,
     }
