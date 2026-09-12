@@ -21,14 +21,14 @@ reasoning_checkpoint (Fix-1 landed 2026-09-11, user-adjudicated):
   candidate_causes:
     - "[code fix-introduced] M1: rescue 与推断锚点的叠交互(已修: anchor-equality guard + Q-19)"
     - "[environment] M2: 客户端 bars 通道迟滞(维持约束推断,待下次实机观察冻结是否再现)"
-    - "[environment] M3: 客户端 UnitDebuff 数据滞后/16 槽驱逐(2026-09-12 新簇首次现形:咬后单 Renewing rip + 补耙补偿循环,自愈代价 35e;Fix-3b 已作废)"
-  and_gate: "yes — 原始观察簇 = M1×M2 同时成立;M3 独立解释 Renewing rake 缺席。M1 已修;M2/M3 留实机观察"
+    - "[environment] M3(原形态作废 2026-09-12:用户澄清咬只续现存 debuff 不新增,单 Renewing rip=rake 真到期正常机制): 残余待判=补耙 B 判门归因——白 Rake!!! 打印自带 'Rake present:' 字段,false→客户端图标(hasBuff)滞后坐实 / true→keepRake 判定树分支问题立案回查"
+  and_gate: "yes — 原始观察簇 = M1×M2 同时成立;M3 原形态经用户澄清作废(单 Renewing 回归机制正常面)。M1 已修;M2 留实机观察;M3 残余转判门归因"
 
-bug_class: Bohrbug(M1, fixed) + Heisenbug×2(M2 bars 迟滞 / M3 UnitDebuff 数据,待实机观察)
-hypothesis: M1 fixed+committed;M2 维持约束推断;M3 回归客户端环境路线
+bug_class: Bohrbug(M1, fixed) + Heisenbug(M2 bars 迟滞,待实机观察);M3 原形态作废,残余=补耙 B 判门归因待判
+hypothesis: M1 fixed+committed;M2 维持约束推断;M3 原形态作废(咬只续现存),残余补耙 B 判门归因('Rake present:' 字段钉死)
 test: 静态电池 PASS 已跑;Q-19 待游戏内 /mt(用户与 Fix-1 同车实机);Q-17 静态推演绿
 expecting: 用户下次木桩:双腾账消失、Renewing 不再双印;Q-19 于 /mt 绿
-next_action: "2026-09-12 新簇已分析归档为 M3 首签（Evidence 已记，判别 todo 已固化 .planning/todos/pending/）。剩余 human 项:① 下次上线 /mt 全绿报告（Q-17/18/19+Category T，新构建）;② 簇再现时抄蓝/绿行时间戳与两发 Rake!!! 能量值钉死 AB 路径;③ 状态条冻结观察;④ 全部正常后会话结案归档"
+next_action: "2026-09-12 新簇经用户机制纠偏后收敛为:咬后续期行为正常(真到期)、补耙 A 蓝字=通道迟滞被兜底救账(无害)、补耙 B 判门待判('Rake present:' 字段是钥匙)。剩余 human 项:① 下次上线 /mt 全绿报告（Q-17/18/19+Category T，新构建）;② 簇再现时抄蓝/绿行时间戳 + 两处白 Rake!!! 全行（尤其 Rake present: 值）;③ 状态条冻结观察;④ 全部正常后会话结案归档"
 
 ## Symptoms
 <!-- Written during gathering, then IMMUTABLE -->
@@ -63,6 +63,9 @@ user_observed (AskUserQuestion 2026-09-11): ① 非 debug 模式 addon 不回显
 - hypothesis: 两次白字判定是 4.5s 窗口内积攒星到 5 的合法重判（bite_0 消耗后经 FF+claw×N 重建）
   evidence: 几何排除——FF(1星)+多发 claw 需 140+ 总能量,而窗口内可用能量(2→47≈45+复原)最多支撑 1 发 claw(35e),CP 至多 2 < 3/5;且同值 47 双印要求两个判定帧读同一冻结值,合法重建路径下能量条会正常行走
   timestamp: 2026-09-11T08:30:00Z
+- hypothesis: "咬后续期 rake 缺失 = 客户端 UnitDebuff 数据滞后"（M3 原形态，包括对 2026-09-11 旧簇与 2026-09-12 新簇的该解释）
+  evidence: 用户 2026-09-12 澄清游戏机制：咬只能刷新目标身上已存在的 rake/rip，不能凭空新增。咬时 rake 已经自然到期（9s 上限）→ 单 Renewing rip 是"只续现存"的应然输出，属正常机制；咬后补耙亦为正常决策。据此两簇的"只续 rip"都有了朴素解释，客户端滞后解释失据
+  timestamp: 2026-09-12
 - hypothesis: M3 服务器路线——服务器 bite 命中不刷新 Rake（仅 Rip），宏的 FB-rake 续期记账是钟表谎言，rake 真实 9s 到期恰好落进簇窗（旧案仅实锤 rip 刷新）
   evidence: 用户 2026-09-11 裁决澄清：bite 会刷新 rake 和 rip 两种 buff（服务器侧确定行为，不用怀疑），Rake 图标被咬刷新会重置——Renewing rake 缺席不是服务器机制，而是客户端侧 UnitDebuff 数据滞后/16 槽驱逐类环境问题；Fix-3b（删 rake 续锚）随之作废
   timestamp: 2026-09-11T10:00:00Z
@@ -92,8 +95,8 @@ user_observed (AskUserQuestion 2026-09-11): ① 非 debug 模式 addon 不回显
 
 - timestamp: 2026-09-12
   checked: 新实机簇（用户打桩报告，构建=WR-02 标记判别 + violet→pink 重命名后）：Bite 白字→绿 bite landing→仅一行 Renewing rip（无 Renewing rake）→咖啡 Reshift(nextMove: Rake)→两行白 Rake!!!（补耙 A）→蓝 Rake (Inferred)→又一行白 Rake!!!（补耙 B）→绿 Rake landing→此后正常
-  found: ① 链条自洽为非回归（Path A/M3 环境链）：咬后仅续 Rip=客户端 hasBuff(Rake) 读到假（同款 M3 签名，首次以"单 Renewing + 补耙补偿循环"形态现形）；② 补耙 A 落在被咬刷新的服务器 rake 上→同施法者刷新跳过 apply 行（既有旧案先例）→A 只剩自伤行通道+洪流推迟>0.9s→兜底蓝(Inferred)（D-03 与 29-04 色相归位正常工作，蓝=真实蓝）；③ 兜底不改 hasBuff→客户端仍滞后→补耙 B→绿→恢复（自愈，代价=多发一把 35e 耙）；④ 绿行前有新鲜白字 Rake!!! 施放打印→两发真耙而非同耙双报；WR-02 标记判别对"推断锚+迟到行"静默丢弃的行为与 Q-19 设计一致、无回归迹象；⑤ 时间戳值未转述→AB 两路径最终钉死点仍开放（判别 todo 已固化 .planning/todos/pending/rake-lag-vs-regression-discriminators.md）
-  implication: M3 获得最强实机签名（单 Renewing+补耙链）；Change-fix 路线生效、无需回调查；防双账修复未引入新症状。残留问题=客户端 debuff 滞后导致的多打一次耙（35e 浪费、自愈），是否做宏侧宽限属设计裁决待议（触达锁定判定语义，不轻动）
+  found: ① 用户纠偏前提（同 09-12）：咬只刷新现存 debuff 不新增——咬时 rake 已自然到期（9s 上限），单 Renewing rip 与咬后补耙均为正常机制，非回归非滞后；② 补耙 A 蓝字=新耙双证据通道（自伤行+新挂流血必发的 apply 行）在 0.9s 窗内双双静默→沉默窗反推兜底照设计接住（候选=咬/换形/续期洪流的通道迟滞，与 M2 状态条冻结同族的环境延迟；代价仅 rakeLeft 时钟以施放时刻为锚，误差<1s 无害）；③ 补耙 B=待判题：Rake 判定门为双钥匙（客户端图标 UnitDebuff + 自维护 rakeLeft 时钟）；A 的蓝字兜底已把 landTable 顶刷新→rakeLeft 应为正值→B 成立多半因客户端图标数据滞后，但白 Rake!!! 打印自带 'Rake present:' 字段，下次一行即可钉死（false→图标滞后坐实；true→keepRake 判定树其它分支问题，立案回查）；④ 绿行前有新鲜白字施放打印→蓝绿为两发真耙，WR-02 标记判别无回归迹象；⑤ 时间戳值未转述（判别 todo 已固化 .planning/todos/pending/rake-lag-vs-regression-discriminators.md）
+  implication: 咬后续期行为无异常（机制澄清后）；真正残余=补耙 B 的判门归因，证据入口已内置（Rake present 字段），无需插桩；"咬后客户端滞后"（M3 原形态）作废，连同旧簇"只续 rip"一起回归朴素解释区
 
 - timestamp: 2026-09-11T10:00:00Z
   checked: 用户 human-verify 裁决（2026-09-11）与 Fix-1 落地执行
