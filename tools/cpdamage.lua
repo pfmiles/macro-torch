@@ -563,6 +563,25 @@ function encodeScalar(v)
     return 'null'
 end
 
+-- object key encoder, complement to encodeScalar: string keys pass
+-- through encodeScalar (already quoted), numeric keys become quoted
+-- decimal text reusing the same stable cross-version whole/fractional
+-- forms as the scalar number branch (G-28-5: bare numeric keys would
+-- emit Lua-flavour object bodies that strict JSON decoders reject),
+-- and any other key type degrades to a quoted tostring.
+function encodeKey(k)
+    if type(k) == 'string' then
+        return encodeScalar(k)
+    end
+    if type(k) == 'number' then
+        if k == math.floor(k) then
+            return '"' .. string.format('%.0f', k) .. '"'
+        end
+        return '"' .. string.format('%.4f', k) .. '"'
+    end
+    return '"' .. tostring(k) .. '"'
+end
+
 -- recursive JSON writer for the result document: contiguous 1..n tables
 -- serialise as arrays, every other table as an object keyed through
 -- encodeScalar. Depth capped against accidental self-reference.
@@ -595,7 +614,7 @@ function encodeValue(v, depth)
     end
     local parts = {}
     for k, val in pairs(v) do
-        table.insert(parts, encodeScalar(k) .. ':' .. encodeValue(val, depth + 1))
+        table.insert(parts, encodeKey(k) .. ':' .. encodeValue(val, depth + 1))
     end
     return '{' .. table.concat(parts, ',') .. '}'
 end
@@ -1246,6 +1265,12 @@ function runSelftest()
     check(bad1 == nil and badErr1 ~= nil, 'malformed JSON returns nil plus an error')
     local bad2, badErr2 = decodeJson('nope')
     check(bad2 == nil and badErr2 ~= nil, 'non-JSON token returns nil plus an error')
+    local encOut = encodeValue({ claw = { [0] = { n = 0 } } })
+    check(encOut == '{' .. DQ .. 'claw' .. DQ .. ':{' .. DQ .. '0' .. DQ .. ':{' .. DQ .. 'n' .. DQ .. ':0}}}',
+        'json encoder quotes numeric object keys')
+    local rt, rtErr = decodeJson(encOut)
+    check(rt ~= nil and rtErr == nil and rt['claw'] ~= nil and rt['claw']['0'] ~= nil and rt['claw']['0']['n'] == 0,
+        'encoded object round-trips through the strict decoder')
     local statsRef = {
         clawShred = cs,
         oocTiers = oc,
