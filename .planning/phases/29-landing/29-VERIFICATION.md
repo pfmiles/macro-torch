@@ -1,10 +1,11 @@
 ---
 phase: 29-landing
 verified: 2026-09-11T10:45:00Z
-status: human_needed
+status: passed
 score: 21/22 must-haves verified
 behavior_unverified: 1
 behavior_unverified_items:
+
   - decision: G-29-3 (29-04 truth 1)
     truth: "用户 Windows+Cygwin 重建后实机观感归位：rake/bite landed 行渲绿、pounce/rip (inferred) 行渲蓝（HUMAN-UAT §247-248 / D-14 协议）"
     test: "用户机 ./build.sh 重建 SM_EXTEND.lua 后，单人木桩打骷髅约 1 分钟观察通告颜色；同场 /mt 观察 Category T-02 全绿"
@@ -21,6 +22,7 @@ re_verification:
   gaps_remaining: []
   regressions: []
 human_verification:
+
   - test: "用户 Windows+Cygwin 机执行 ./build.sh 重建 SM_EXTEND.lua（携带 29-04 修复的新产物），登录后游戏内 /mt 观察 Category T 2 条（T-01 + T-02）全绿、无红 FAIL"
     expected: "T-02 五臂渲染色相断言通过：blue 臂渲真蓝、green 臂渲真绿；汇总行无红色 failure（WINDOWS.md 条目 7 unrun-verify 由此闭环，verify-work 回写 29-UAT.md）"
     why_human: "T-02 行为级执行只存在于 WoW 1.12 客户端内；本机无 lua 解释器与游戏客户端（WINDOWS.md 条目 7 设计强制用户侧）"

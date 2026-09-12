@@ -23,7 +23,7 @@ last_activity_desc: "Completed quick task 260909-w3r: RAWDIAG2 forensics instrum
 
 - **Milestone**: macro-torch 架构重构
 - **Started**: 2026-06-07
-- **Current Phase**: Phase 30 — cpBuild 双保判定改造（3/3 plans complete；UAT 5/5 全绿，2026-09-11）。Phase 29 实机验证仍待办（见 29-UAT.md）
+- **Current Phase**: Phase 30 — cpBuild 双保判定改造（3/3 plans complete；UAT 5/5 全绿，2026-09-11）。Phase 29 实机验证已闭环（2026-09-12：29-UAT.md complete 5/5，G-29-3 resolved，29-VERIFICATION.md passed）
 - **Current Plan:** 2
 - **Total Plans in Phase:** 4
 - **Active Branch**: main
