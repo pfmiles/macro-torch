@@ -1100,7 +1100,7 @@ function oocBiteCriteria(stats, erps)
     for ti = 1, 2 do
         local tier = ti + 1
         local cb = buckets.claw[tier]
-        if cb ~= nil and cb.n > 0 then
+        if cb ~= nil and cb.n > 0 and cb.avgDmg ~= nil and cb.avgEff ~= nil then
             rDB[tierKeys[ti]] = { C = cb.avgDmg, E = cb.avgEff,
                 r = (cb.avgDmg - 37 * reg.b) / cb.avgEff }
             anyTier = true
@@ -1490,6 +1490,21 @@ function runSelftest()
     check(not validErps(0 / 0), 'erps guard rejects a NaN rate')
     check(not validErps(tonumber('1e999')), 'erps guard rejects an overflowing (inf) rate')
     check(validErps(0) and validErps(26), 'erps guard accepts finite non-negative rates')
+    local ccMissing = oocBiteCriteria({
+        clawShred = { buckets = {
+            claw = {
+                [2] = { n = 1, avgDmg = 1 },
+                [3] = { n = 1, avgDmg = 5, avgEff = 2 },
+            },
+            shred = {
+                [2] = { n = 1, avgDmg = 10, avgEff = 5 },
+            },
+        } },
+        biteRegression = { usable = true, n = 3, a = 1, b = 1 },
+    }, 10)
+    check(ccMissing ~= nil and ccMissing.usable == true and ccMissing.rDB ~= nil and
+        ccMissing.rDB.bleed2 == nil and ccMissing.rDB.bleed3 ~= nil,
+        'rDB skips a bleed tier with samples but no avgEff (hand-written stats fallback)')
     io.write('selftest: ALL ' .. tostring(passed) .. ' PASSED\n')
     os.exit(0)
 end
