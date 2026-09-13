@@ -866,11 +866,13 @@ macroTorch.SelfTest:register("P: cp5Bite still bites when no discharge condition
     local origIsRipPresent = macroTorch.isRipPresent
     local origRipLeft = macroTorch.ripLeft
     local origIsRakePresent = macroTorch.isRakePresent
+    local origRakeLeft = macroTorch.rakeLeft
     local origSafeBite = macroTorch.safeBite
     local origReadyBite = macroTorch.readyBite
     local origMana = rawget(macroTorch.player, 'mana')
     macroTorch.isRipPresent = function(clickContext) return true end
     macroTorch.ripLeft = function(clickContext) return 4 end
+    macroTorch.rakeLeft = function(clickContext) return 9 end
     macroTorch.isRakePresent = function(clickContext) return true end
     local biteCalled = false
     macroTorch.safeBite = function(clickContext) biteCalled = true end
@@ -895,6 +897,7 @@ macroTorch.SelfTest:register("P: cp5Bite still bites when no discharge condition
     end)
     macroTorch.isRipPresent = origIsRipPresent
     macroTorch.ripLeft = origRipLeft
+    macroTorch.rakeLeft = origRakeLeft
     macroTorch.isRakePresent = origIsRakePresent
     macroTorch.safeBite = origSafeBite
     macroTorch.readyBite = origReadyBite
@@ -903,7 +906,60 @@ macroTorch.SelfTest:register("P: cp5Bite still bites when no discharge condition
     assert(ok, 'cp5Bite did not bite when no discharge condition matched')
 end, true)
 
--- Registration count: Category P adds 8 tests (2 in 26-01, 4 in 26-02, 1 in quick 260825-t86, 1 in quick 260825-vp9)
+-- Quick 260914-1t0: pins the 1.3s Rake renewal gate added in quick 260914-0ql.
+-- With Rake present and rakeLeft <= 1.3s, cp5Bite must skip the discharge
+-- attempt entirely (the discharge stub must never be called) and go straight
+-- to the bite so Ferocious Bite lands in time to renew Rake. Rip is pinned
+-- fresh (ripLeft 4 > 2.3) so the 2.3s Rip gate stays open; only the Rake gate
+-- can fire. Stub/restore style mirrors the P-06/P-03 pattern (CR-01: restore
+-- BEFORE asserts inside a pcall guard) so no real spell fires in the login
+-- self-test. Registered as the 9th Category P test.
+macroTorch.SelfTest:register("P: cp5Bite skips discharge to renew rake when rake <=1.3s", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local origIsRipPresent = macroTorch.isRipPresent
+    local origRipLeft = macroTorch.ripLeft
+    local origIsRakePresent = macroTorch.isRakePresent
+    local origRakeLeft = macroTorch.rakeLeft
+    local origDischarge = macroTorch.energyDischargeBeforeBite
+    local origSafeBite = macroTorch.safeBite
+    local origReadyBite = macroTorch.readyBite
+    macroTorch.isRipPresent = function(clickContext) return true end
+    macroTorch.ripLeft = function(clickContext) return 4 end
+    macroTorch.isRakePresent = function(clickContext) return true end
+    macroTorch.rakeLeft = function(clickContext) return 1.0 end
+    local biteCalled = false
+    local dischargeCalled = false
+    macroTorch.safeBite = function(clickContext) biteCalled = true end
+    macroTorch.readyBite = function(clickContext) biteCalled = true end
+    macroTorch.energyDischargeBeforeBite = function(clickContext)
+        dischargeCalled = true
+        return false
+    end
+    local ok, pcallRes = true, true
+    pcallRes = pcall(function()
+        local ctx = {
+            comboPoints = 5,
+            isImmuneRip = false,
+            ooc = false,
+            isPseudoInfiniteEnergy = false
+        }
+        biteCalled = false
+        dischargeCalled = false
+        macroTorch.cp5Bite(ctx)
+        ok = (biteCalled == true) and (dischargeCalled == false)
+    end)
+    macroTorch.isRipPresent = origIsRipPresent
+    macroTorch.ripLeft = origRipLeft
+    macroTorch.isRakePresent = origIsRakePresent
+    macroTorch.rakeLeft = origRakeLeft
+    macroTorch.safeBite = origSafeBite
+    macroTorch.readyBite = origReadyBite
+    macroTorch.energyDischargeBeforeBite = origDischarge
+    assert(pcallRes, "cp5Bite rake-renewal test pcall failed")
+    assert(ok, 'cp5Bite discharged or did not bite when rake <=1.3s')
+end, true)
+
+-- Registration count: Category P adds 9 tests (2 in 26-01, 4 in 26-02, 1 in quick 260825-t86, 1 in quick 260825-vp9, 1 in quick 260914-1t0)
 
 -- Category R: target clear() wipe verification (quick 260831-24c, 2 tests)
 -- Both tests follow the CR-01 stub discipline: run inside a pcall, capture
