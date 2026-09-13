@@ -136,6 +136,12 @@ function macroTorch.cp5Bite(clickContext)
             shouldDischarge = false
         end
 
+        -- Check Rake duration: <=1.3s left = one discharge GCD (1s) + slack; an
+        -- immediate bite renews Rake, discharge would let it fall off
+        if shouldDischarge and macroTorch.isRakePresent(clickContext) and macroTorch.rakeLeft(clickContext) <= 1.3 then
+            shouldDischarge = false
+        end
+
         if shouldDischarge then
             -- Discharge attempted -> defer the bite verdict to the next click. This
             -- unifies the previous OoC-only guard and closes the high-energy non-OoC
