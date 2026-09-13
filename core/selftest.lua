@@ -959,7 +959,64 @@ macroTorch.SelfTest:register("P: cp5Bite skips discharge to renew rake when rake
     assert(ok, 'cp5Bite discharged or did not bite when rake <=1.3s')
 end, true)
 
--- Registration count: Category P adds 9 tests (2 in 26-01, 4 in 26-02, 1 in quick 260825-t86, 1 in quick 260825-vp9, 1 in quick 260914-1t0)
+-- Quick 260914-49l: pins the rule-9 kill-shot discharge exemption added to
+-- energyDischargeBeforeBite. On kill-shot frames cp5Bite must skip the
+-- discharge attempt entirely and go straight to the bite verdict. The REAL
+-- energyDischargeBeforeBite is kept (260825-vp9 lesson: stubbing the whole
+-- function would bypass the new exemption line); its periphery is stubbed so
+-- no real spell fires: Rip and Rake are pinned fresh (left 9 > 2.3 / 1.3
+-- gates) so no duration gate can fire, and isKillShotOrLastChance returns
+-- true to hit the new exemption which returns before any mana arithmetic.
+-- regularAttack records any discharge attempt; safeBite/readyBite record the
+-- bite. CR-01: run inside pcall, restore BEFORE asserts. Registered as the
+-- 10th Category P test.
+macroTorch.SelfTest:register("P: cp5Bite skips discharge and bites on kill-shot frames", function()
+    if UnitClass('player') ~= 'Druid' then return end
+    local origIsRipPresent = macroTorch.isRipPresent
+    local origRipLeft = macroTorch.ripLeft
+    local origIsRakePresent = macroTorch.isRakePresent
+    local origRakeLeft = macroTorch.rakeLeft
+    local origKillShot = macroTorch.isKillShotOrLastChance
+    local origRegularAttack = macroTorch.regularAttack
+    local origSafeBite = macroTorch.safeBite
+    local origReadyBite = macroTorch.readyBite
+    macroTorch.isRipPresent = function(clickContext) return true end
+    macroTorch.ripLeft = function(clickContext) return 9 end
+    macroTorch.isRakePresent = function(clickContext) return true end
+    macroTorch.rakeLeft = function(clickContext) return 9 end
+    macroTorch.isKillShotOrLastChance = function(clickContext) return true end
+    local biteCalled = false
+    local dischargeAttempted = false
+    macroTorch.regularAttack = function(clickContext) dischargeAttempted = true end
+    macroTorch.safeBite = function(clickContext) biteCalled = true end
+    macroTorch.readyBite = function(clickContext) biteCalled = true end
+    local ok, pcallRes = true, true
+    pcallRes = pcall(function()
+        local ctx = {
+            comboPoints = 5,
+            isImmuneRip = false,
+            ooc = false,
+            isBehind = false,
+            isPseudoInfiniteEnergy = false
+        }
+        biteCalled = false
+        dischargeAttempted = false
+        macroTorch.cp5Bite(ctx)
+        ok = (biteCalled == true) and (dischargeAttempted == false)
+    end)
+    macroTorch.isRipPresent = origIsRipPresent
+    macroTorch.ripLeft = origRipLeft
+    macroTorch.isRakePresent = origIsRakePresent
+    macroTorch.rakeLeft = origRakeLeft
+    macroTorch.isKillShotOrLastChance = origKillShot
+    macroTorch.regularAttack = origRegularAttack
+    macroTorch.safeBite = origSafeBite
+    macroTorch.readyBite = origReadyBite
+    assert(pcallRes, "cp5Bite kill-shot test pcall failed")
+    assert(ok, 'cp5Bite discharged or did not bite on kill-shot frames')
+end, true)
+
+-- Registration count: Category P adds 10 tests (2 in 26-01, 4 in 26-02, 1 in quick 260825-t86, 1 in quick 260825-vp9, 1 in quick 260914-1t0, 1 in quick 260914-49l)
 
 -- Category R: target clear() wipe verification (quick 260831-24c, 2 tests)
 -- Both tests follow the CR-01 stub discipline: run inside a pcall, capture

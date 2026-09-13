@@ -170,6 +170,11 @@ function macroTorch.energyDischargeBeforeBite(clickContext)
         return true
     end
 
+    -- Kill-shot frames never discharge: rule 9 pauses all discharge logic
+    if macroTorch.isKillShotOrLastChance(clickContext) then
+        return false
+    end
+
     -- Skip discharge when energy regeneration exceeds Shred cost (infinite energy scenario)
     if clickContext.isPseudoInfiniteEnergy then
         return false
