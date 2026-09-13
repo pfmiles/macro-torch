@@ -39,6 +39,15 @@ local FLAG_JSON_OUT = '-' .. '-json-out'
 local FLAG_ERPS = '-' .. '-erps'
 local DEFAULT_ERPS = 10
 
+-- WR-01: the assumed ERPS drives the verdict math and lands in the strict
+-- JSON archive, so the CLI must reject every non-finite number. NaN fails
+-- the ordered comparison and the self-equality test, and since Lua 5.0 has
+-- no math.huge the overflow ceiling is the literal 999 (far above any rate
+-- reachable from the 28-OOC-BITE-CRITERIA.md break points).
+local function validErps(num)
+    return num ~= nil and num >= 0 and num == num and num <= 999
+end
+
 -- count a contiguous 1..n array with ipairs (Lua 5.0 has no length
 -- operator; the message ring and the entry lists are always contiguous
 -- because the client trims them with table.remove)
@@ -1476,6 +1485,11 @@ function runSelftest()
     check(ccBad ~= nil and ccBad.usable == false and ccBad.note == 'n<3' and
         ccBad.rAB == nil and ccBad.rDB == nil and ccBad.verdicts == nil,
         'unusable regression short-circuits the oocBite criteria to a note')
+    check(not validErps(nil), 'erps guard rejects a nil rate')
+    check(not validErps(-3), 'erps guard rejects a negative rate')
+    check(not validErps(0 / 0), 'erps guard rejects a NaN rate')
+    check(not validErps(tonumber('1e999')), 'erps guard rejects an overflowing (inf) rate')
+    check(validErps(0) and validErps(26), 'erps guard accepts finite non-negative rates')
     io.write('selftest: ALL ' .. tostring(passed) .. ' PASSED\n')
     os.exit(0)
 end
@@ -1521,7 +1535,7 @@ function main(args)
             i = i + 2
         elseif a == FLAG_ERPS then
             local num = tonumber(args[i + 1])
-            if num == nil or num < 0 then
+            if not validErps(num) then
                 io.write('error: ' .. FLAG_ERPS ..
                     ' requires a non-negative energy-per-second number\n')
                 printUsage()
