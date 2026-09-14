@@ -551,6 +551,33 @@ end, true)
 			"expected false: 3+ bleeds paid frames should use Claw")
 	end, true)
 
+	macroTorch.SelfTest:register("Principle R6-05c: 3+ bleeds paid frames, absent infinite flag — strict false (WR-02 pin)", function()
+		local ctx = {
+			ooc = false,
+			isBehind = true,
+			isRakePresent = true,
+			isRipPresent = true,
+			isPouncePresent = true,
+			AUTO_TICK_ERPS = 10,
+			TIGER_ERPS = 10 / 3,
+			RAKE_ERPS = 0,
+			RIP_ERPS = 0,
+			POUNCE_ERPS = 0,
+			BERSERK_ERPS = 10,
+			berserk = false,
+			hasEssenceOfTheRed = false,
+			isTigerPresent = false,
+		}
+		-- WR-02 pin: the isPseudoInfiniteEnergy key is ABSENT from this ctx.
+		-- Without the `== true` normalization in shouldUseShred, `false or nil`
+		-- is nil and branch 3 would return nil instead of strict false. The
+		-- and-chain short-circuits at `(false or false)` before touching the
+		-- isBehind / isBehindAttackJustFailed accessors, so no shadow
+		-- discipline is needed (same no-shadow pattern as R6-05b).
+		assert(macroTorch.shouldUseShred(ctx) == false,
+			"expected strict false: 3+ bleeds paid frames without infinite flag should use Claw")
+	end, true)
+
 	macroTorch.SelfTest:register("Principle R6-06: Rip absent normal battle — use Claw for faster CP generation", function()
 		local ctx = {
 			isBehind = true,

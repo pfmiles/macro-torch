@@ -986,7 +986,7 @@ function macroTorch.shouldUseShred(clickContext)
     -- Check if we have infinite energy situation (Essence of the Red or similar buffs)
     -- When ERPS covers Shred cost, treat it like infinite ooc - Shred becomes free
     local erps = macroTorch.computeErps(clickContext)
-    local infiniteEnergy = clickContext.isPseudoInfiniteEnergy
+    local infiniteEnergy = clickContext.isPseudoInfiniteEnergy == true
 
     -- Decision tree matching regularAttack logic
     if bleedCount <= 1 then
