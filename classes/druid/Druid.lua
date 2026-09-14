@@ -1014,7 +1014,13 @@ function macroTorch.shouldUseShred(clickContext)
         -- With infinite energy (Essence of the Red), treat like ooc - always use Shred when behind
         return (clickContext.ooc or infiniteEnergy) and clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed
     else
-        return false -- 3+ bleeding always uses Claw
+        -- 3+ bleeds: paid frames keep Claw (DPE still wins when energy is spent). Free frames
+        -- (OoC / pseudo-infinite energy) make energy cost irrelevant and the GCD the scarce
+        -- resource; per the 2026-09-14 sample verdict, single-cast comparison still favors
+        -- Shred even against full 3-bleed-bonus Claw (shred non-crit single-cast 507.3 n=124
+        -- vs 3-bleed claw 483.5 n=13, ~5% expected gap at equal crit; claw gains only +57
+        -- per extra bleed).
+        return (clickContext.ooc or infiniteEnergy) and clickContext.isBehind and not macroTorch.player.isBehindAttackJustFailed
     end
 end
 

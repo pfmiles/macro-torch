@@ -481,11 +481,57 @@ end, true)
 			"expected false: 2 bleeds without OoC or infinite energy should use Claw")
 	end, true)
 
-	macroTorch.SelfTest:register("Principle R6-05: 3+ bleeds always Claw regardless of OoC/infinite", function()
+	macroTorch.SelfTest:register("Principle R6-05: 3+ bleeds free frames (OoC/infinite) behind — use Shred", function()
 		local ctx = {
 			ooc = true,
 			isBehind = true,
 			isPseudoInfiniteEnergy = true,
+			isRakePresent = true,
+			isRipPresent = true,
+			isPouncePresent = true,
+			SHRED_E = 60,
+			CLAW_E = 45,
+			AUTO_TICK_ERPS = 10,
+			TIGER_ERPS = 10 / 3,
+			RAKE_ERPS = 0,
+			RIP_ERPS = 0,
+			POUNCE_ERPS = 0,
+			BERSERK_ERPS = 10,
+			berserk = false,
+			hasEssenceOfTheRed = false,
+			isTigerPresent = true,
+			isFastBattleNotPvp = false,
+			isImmuneRip = true,
+			comboPoints = 1,
+		}
+		-- R6-05 keeps the CR-01 stub discipline (R6-01..R6-03 pattern): snapshot
+		-- isBehindAttackJustFailed via rawget, shadow it false, restore BEFORE asserts.
+		-- Folded light pin: on this same free-frame ctx getNextAbilityCost must resolve
+		-- SHRED_E at step 5 (not CLAW_E). isKillShotOrLastChance is stubbed false so the
+		-- shouldUseBite step-1 arm cannot fire on a live kill-shot target.
+		local player = macroTorch.player
+		local saved = rawget(player, 'isBehindAttackJustFailed')
+		player.isBehindAttackJustFailed = false
+		local origKillShot = macroTorch.isKillShotOrLastChance
+		macroTorch.isKillShotOrLastChance = function(clickContext) return false end
+		local ok, res, cost = pcall(function()
+			local useShred = macroTorch.shouldUseShred(ctx)
+			local nextCost = macroTorch.getNextAbilityCost(ctx)
+			return useShred, nextCost
+		end)
+		rawset(player, 'isBehindAttackJustFailed', saved)
+		macroTorch.isKillShotOrLastChance = origKillShot
+		assert(ok, "R6-05 errored: " .. tostring(res))
+		assert(res, "expected true: 3+ bleeds free frames behind should use Shred")
+		assert(cost == ctx.SHRED_E,
+			"expected SHRED_E resolve from getNextAbilityCost on free-frame 3-bleed ctx")
+	end, true)
+
+	macroTorch.SelfTest:register("Principle R6-05b: 3+ bleeds paid frames — use Claw", function()
+		local ctx = {
+			ooc = false,
+			isBehind = true,
+			isPseudoInfiniteEnergy = false,
 			isRakePresent = true,
 			isRipPresent = true,
 			isPouncePresent = true,
@@ -499,8 +545,10 @@ end, true)
 			hasEssenceOfTheRed = false,
 			isTigerPresent = false,
 		}
+		-- Paid frames: (false or false) short-circuits the and-chain before the
+		-- accessor, so no shadow discipline is needed (same shape as R6-04).
 		assert(macroTorch.shouldUseShred(ctx) == false,
-			"expected false: 3+ bleeds should always use Claw")
+			"expected false: 3+ bleeds paid frames should use Claw")
 	end, true)
 
 	macroTorch.SelfTest:register("Principle R6-06: Rip absent normal battle — use Claw for faster CP generation", function()
