@@ -1171,6 +1171,9 @@ function macroTorch.shouldCastFFDuringWaitWindow(clickContext)
     -- 基础排除条件
     -- Kill-shot phase pauses all debuff maintenance, including FF fill (rule 9)
     if clickContext.ooc
+            or clickContext.prowling
+            -- Stealth must never be broken by FF fill: hostile instant that breaks prowl and opens combat
+            -- mirrors keepRake isFightStarted guard and oocMod prowling guard
             or macroTorch.target.isImmune('Faerie Fire (Feral)')
             or macroTorch.shouldDoReshift(clickContext)
             or macroTorch.isKillShotOrLastChance(clickContext) then
