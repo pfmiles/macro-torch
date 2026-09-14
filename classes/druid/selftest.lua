@@ -826,6 +826,54 @@ end, true)
 		assert(res, "expected true: essence 0-energy FF fill window (SHRED_E=60)")
 	end, true)
 
+	-- This frame satisfies all WR-01 energy-window conditions (the razor edge), so a true verdict would mean the prowling arm alone was exercised
+	macroTorch.SelfTest:register("FF wait window: prowling frame refused (stealth never FF-fills)", function()
+		local ctx = {
+			ooc = false,
+			prowling = true,
+			isPseudoInfiniteEnergy = true,
+			isBehind = true,
+			isRakePresent = true,
+			isRipPresent = true,
+			isPouncePresent = true,
+			SHRED_E = 60,
+			CLAW_E = 45,
+			RESHIFT_ENERGY = 40,
+			TIGER_E = 30,
+			isTigerPresent = true,
+			isTrivialBattle = false,
+			isFastBattleNotPvp = false,
+			isImmuneRip = true,
+			comboPoints = 1,
+		}
+		-- Stub discipline mirrors WR-01 (block directly above); all restores
+		-- happen BEFORE the asserts (CR-01); shouldDoReshift is NOT stubbed
+		local player = macroTorch.player
+		local savedBehind = rawget(player, 'isBehindAttackJustFailed')
+		player.isBehindAttackJustFailed = false
+		local savedMana = rawget(player, 'mana')
+		player.mana = 0
+		local origKillShot = macroTorch.isKillShotOrLastChance
+		macroTorch.isKillShotOrLastChance = function(clickContext) return false end
+		local origErps = macroTorch.computeErps
+		macroTorch.computeErps = function(clickContext) return 60 end
+		local origImmune = rawget(macroTorch.target, 'isImmune')
+		macroTorch.target.isImmune = function(spellName) return false end
+		local origSpellExist = macroTorch.isSpellExist
+		macroTorch.isSpellExist = function(spellName, bookType) return true end
+		local ok, res = pcall(function()
+			return macroTorch.shouldCastFFDuringWaitWindow(ctx) == false
+		end)
+		rawset(player, 'isBehindAttackJustFailed', savedBehind)
+		rawset(player, 'mana', savedMana)
+		macroTorch.isKillShotOrLastChance = origKillShot
+		macroTorch.computeErps = origErps
+		rawset(macroTorch.target, 'isImmune', origImmune)
+		macroTorch.isSpellExist = origSpellExist
+		assert(ok, "prowling pin errored: " .. tostring(res))
+		assert(res, "expected false: prowling frame must never FF-fill")
+	end, true)
+
 	-- End of Batch 2 — all catAtk principle regression tests complete
 
 	-- Category O: Idol Dance (Phase 23)
