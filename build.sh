@@ -29,6 +29,6 @@ done < build_order.txt
 
 # Copy to game directory only on Windows/Cygwin
 if [ "$OSTYPE" = "cygwin" ]; then
-    cp $target /cygdrive/d/games/TurtleWoW_bak/Interface/AddOns/SuperMacro/
-    cp $target /cygdrive/d/games/capybara_wow_v1181/Game/Interface/AddOns/SuperMacro/
+    cp $target /cygdrive/d/games/octowow/Interface/AddOns/SuperMacro/
+    cp $target /cygdrive/d/games/capybara/Interface/AddOns/SuperMacro/
 fi
