@@ -736,6 +736,69 @@ end, true)
 			"expected true: wait window sufficient for FF (>= 1s)")
 	end, true)
 
+	macroTorch.SelfTest:register("WR-01 FF wait window: essence 0-energy edge accepted (SHRED_E=60)", function()
+		local ctx = {
+			ooc = false,
+			isPseudoInfiniteEnergy = true,
+			isBehind = true,
+			isRakePresent = true,
+			isRipPresent = true,
+			isPouncePresent = true,
+			SHRED_E = 60,
+			CLAW_E = 45,
+			RESHIFT_ENERGY = 40,
+			TIGER_E = 30,
+			isTigerPresent = true,
+			isTrivialBattle = false,
+			isFastBattleNotPvp = false,
+			isImmuneRip = true,
+			comboPoints = 1,
+		}
+		-- WR-01 direction-correct pin (260914-nth REVIEW): a HIGHER minAbilityCost
+		-- WIDENS the `currentEnergy < minAbilityCost` clause — the plan's "never
+		-- triggers" argument for the FF consumer was inverted. Working the full
+		-- gate set (projected >= min AND current < min AND waitSeconds >= 1.0),
+		-- the reachable delta zone is the razor edge: erps == 60 (naked Essence)
+		-- AND SHRED_E == 60 (no Improved Shred) AND currentEnergy == 0, where
+		-- waitSeconds = 60/60 = 1.0 so the FF fill fires; pre-change the min was
+		-- CLAW_E = 45 (window [-45, -15] unreachable) and the frame idled.
+		-- Verdict ACCEPTED: FF fills an otherwise-idle GCD during the ~1s
+		-- essence regen pause and its cast path models energy cost 0; client
+		-- verification remains unrun-verify.
+		-- Stub discipline (CR-01/R6-05 pattern, all restored BEFORE asserts):
+		-- isKillShotOrLastChance, computeErps (forced 60), target FF immunity,
+		-- and spell-learned checks are stub functions; player.mana and
+		-- isBehindAttackJustFailed are rawget-shadowed own keys. shouldDoReshift
+		-- is deliberately NOT stubbed — verified against cat.lua:252-281 it
+		-- resolves false naturally on this frame (projected 0 + 60*1.5 = 90 >=
+		-- SHRED_E 60); RESHIFT_ENERGY/TIGER_E are set to typical values only so
+		-- its effectiveEnergy arithmetic stays defined in combat.
+		local player = macroTorch.player
+		local savedBehind = rawget(player, 'isBehindAttackJustFailed')
+		player.isBehindAttackJustFailed = false
+		local savedMana = rawget(player, 'mana')
+		player.mana = 0
+		local origKillShot = macroTorch.isKillShotOrLastChance
+		macroTorch.isKillShotOrLastChance = function(clickContext) return false end
+		local origErps = macroTorch.computeErps
+		macroTorch.computeErps = function(clickContext) return 60 end
+		local origImmune = rawget(macroTorch.target, 'isImmune')
+		macroTorch.target.isImmune = function(spellName) return false end
+		local origSpellExist = macroTorch.isSpellExist
+		macroTorch.isSpellExist = function(spellName, bookType) return true end
+		local ok, res = pcall(function()
+			return macroTorch.shouldCastFFDuringWaitWindow(ctx) == true
+		end)
+		rawset(player, 'isBehindAttackJustFailed', savedBehind)
+		rawset(player, 'mana', savedMana)
+		macroTorch.isKillShotOrLastChance = origKillShot
+		macroTorch.computeErps = origErps
+		rawset(macroTorch.target, 'isImmune', origImmune)
+		macroTorch.isSpellExist = origSpellExist
+		assert(ok, "WR-01 errored: " .. tostring(res))
+		assert(res, "expected true: essence 0-energy FF fill window (SHRED_E=60)")
+	end, true)
+
 	-- End of Batch 2 — all catAtk principle regression tests complete
 
 	-- Category O: Idol Dance (Phase 23)
