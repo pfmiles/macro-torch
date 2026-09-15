@@ -46,6 +46,7 @@ probeFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 local function recordEvLine(evName, evArg)
     local now = GetTime()
     local e, m = UnitMana('player')
+    e = e or 0
     m = m or 0
     local d = math.floor(e - (lastEnergy[evName] or e))
     local dt = 0
@@ -54,7 +55,7 @@ local function recordEvLine(evName, evArg)
     end
     lastEnergy[evName] = e
     lastTime[evName] = now
-    macroTorch.log(string.format("EPR|EV|%s|t=%.3f|earg=%s|e=%s|m=%s|d=%d|dt=%d", evName, now, tostring(evArg), tostring(e), tostring(m), d, dt))
+    macroTorch.log(string.format("EPR|EV|t=%.3f|ev=%s|earg=%s|e=%s|m=%s|d=%d|dt=%d", now, evName, tostring(evArg), tostring(e), tostring(m), d, dt))
 end
 
 -- WoW 1.12 frame-script convention: global event / arg1 carry the payload.
@@ -105,8 +106,9 @@ local function probeOnUpdate(elapsed)
     pollAccum = pollAccum + elapsed
     if pollAccum < 1.0 then return end
     local e, m = UnitMana('player')
+    e = e or 0
     m = m or 0
-    local d = e - (lastPollEnergy or e)
+    local d = math.floor(e - (lastPollEnergy or e))
     lastPollEnergy = e
     local c = UnitAffectingCombat('player') and '1' or '0'
     pollAccum = pollAccum - 1.0
