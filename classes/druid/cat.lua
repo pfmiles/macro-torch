@@ -409,6 +409,9 @@ function macroTorch.readyReshift(clickContext, nextMove, nextAbilityCost)
                 tostring(macroTorch.computeErps(clickContext) * 1.5) ..
                 ', nextAbilityCost: ' .. tostring(nextAbilityCost) .. ', tigerLeft = ' .. macroTorch.tigerLeft(clickContext) ..
                 ', earning = ' .. tostring(clickContext.RESHIFT_ENERGY - macroTorch.player.mana - clickContext.TIGER_E), 'coffee')
+        if macroTorch.energyProbe and macroTorch.energyProbeLog then
+            macroTorch.energyProbeLog(string.format("EPR|REL|t=%.3f|e=%s|next=%s|cost=%s|earn=%s", GetTime(), tostring(macroTorch.player.mana), tostring(nextMove), tostring(nextAbilityCost), tostring(clickContext.RESHIFT_ENERGY - macroTorch.player.mana - clickContext.TIGER_E)))
+        end
         macroTorch.player.reshift('ready')
         return true
     end
