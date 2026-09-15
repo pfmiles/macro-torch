@@ -22,18 +22,6 @@ if macroTorch.energyProbe == nil then
     macroTorch.energyProbe = false
 end
 
--- Probe-only persistence sink: lines land exclusively in the probeTick
--- buffer, capped at 2500 entries. The first-write nil-guards mirror the
--- macroTorch.log double-guard so a fresh MACRO_TORCH_LOG SavedVariables
--- table still rebuilds the nursery on first call. This function never
--- writes the chat frame and never reroutes through the shared display sink.
-function macroTorch.energyProbeLog(line)
-    if not MACRO_TORCH_LOG then MACRO_TORCH_LOG = { messages = {}, maxSize = 500 } end
-    if not MACRO_TORCH_LOG.probeTick then MACRO_TORCH_LOG.probeTick = { messages = {}, maxSize = 2500 } end
-    while macroTorch.tableLen(MACRO_TORCH_LOG.probeTick.messages) >= MACRO_TORCH_LOG.probeTick.maxSize do table.remove(MACRO_TORCH_LOG.probeTick.messages, 1) end
-    table.insert(MACRO_TORCH_LOG.probeTick.messages, tostring(line))
-end
-
 -- Per-event-name baselines for deltas: energy and timestamp bucketed by the
 -- event string (Lua 5.0 grammar, no hash-length operator in this file).
 local lastEnergy = {}
@@ -66,7 +54,7 @@ local function recordEvLine(evName, evArg)
     end
     lastEnergy[evName] = e
     lastTime[evName] = now
-    macroTorch.energyProbeLog(string.format("EPR|EV|%s|t=%.3f|earg=%s|e=%s|m=%s|d=%d|dt=%d", evName, now, tostring(evArg), tostring(e), tostring(m), d, dt))
+    macroTorch.log(string.format("EPR|EV|%s|t=%.3f|earg=%s|e=%s|m=%s|d=%d|dt=%d", evName, now, tostring(evArg), tostring(e), tostring(m), d, dt))
 end
 
 -- WoW 1.12 frame-script convention: global event / arg1 carry the payload.
@@ -91,7 +79,7 @@ local function probeOnEvent()
         if okNet then
             net = tostring(bIn) .. '/' .. tostring(bOut) .. '/' .. tostring(latHome) .. '/' .. tostring(latWorld)
         end
-        macroTorch.energyProbeLog(string.format("EPR|SES|t=%.3f|form=%s|net=%s", GetTime(), form, net))
+        macroTorch.log(string.format("EPR|SES|t=%.3f|form=%s|net=%s", GetTime(), form, net))
         return
     end
     if not macroTorch.energyProbe then return end
@@ -122,7 +110,7 @@ local function probeOnUpdate(elapsed)
     lastPollEnergy = e
     local c = UnitAffectingCombat('player') and '1' or '0'
     pollAccum = pollAccum - 1.0
-    macroTorch.energyProbeLog(string.format("EPR|POLL|t=%.3f|e=%s|m=%s|d=%d|c=%s", GetTime(), tostring(e), tostring(m), d, c))
+    macroTorch.log(string.format("EPR|POLL|t=%.3f|e=%s|m=%s|d=%d|c=%s", GetTime(), tostring(e), tostring(m), d, c))
 end
 
 probeFrame:SetScript("OnEvent", probeOnEvent)

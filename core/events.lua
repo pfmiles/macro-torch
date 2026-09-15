@@ -144,13 +144,13 @@ function macroTorch.eventHandle()
                 end
                 macroTorch._pendingCastSpellName = nil
             end
-            if macroTorch.energyProbe and macroTorch.energyProbeLog and pendingName == 'Reshift' then
-                macroTorch.energyProbeLog(string.format("EPR|CAST|t=%.3f|spell=%s|e=%s", GetTime(), tostring(pendingName), tostring(UnitMana('player'))))
+            if macroTorch.energyProbe and pendingName == 'Reshift' then
+                macroTorch.log(string.format("EPR|CAST|t=%.3f|spell=%s|e=%s", GetTime(), tostring(pendingName), tostring(UnitMana('player'))))
             end
         end
     elseif event == "RAW_COMBATLOG" then
-        if macroTorch.energyProbe and macroTorch.energyProbeLog and arg2 and string.find(arg2, 'nergize') then
-            macroTorch.energyProbeLog(string.format("EPR|RAW|t=%.3f|ch=%s|txt=%s", GetTime(), tostring(arg1), tostring(arg2)))
+        if macroTorch.energyProbe and arg2 and string.find(arg2, 'nergize') then
+            macroTorch.log(string.format("EPR|RAW|t=%.3f|ch=%s|txt=%s", GetTime(), tostring(arg1), tostring(arg2)))
         end
         -- [cpDamage] phase 28 channel gate: dispatch SELF_DAMAGE raw lines to
         -- the cpDamage parser before the tier-1 whitelist returns below. The
