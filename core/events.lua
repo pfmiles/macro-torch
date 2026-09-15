@@ -130,6 +130,9 @@ function macroTorch.eventHandle()
         local unitId, _, castType = arg1, arg2, arg3
         -- only CAST events carry spellId data; MAINHAND/OFFHAND are auto-attack swings
         if unitId == macroTorch.player.guid and castType == 'CAST' then
+            -- Capture before the bridge block below consumes and nils the pending
+            -- name; the probe tap reads the local, never the real global.
+            local pendingName = macroTorch._pendingCastSpellName
             -- Bridge-based spell identification: _castSpell sets _pendingCastSpellName
             -- (always English name) before calling CastSpellByName; UNIT_CASTEVENT
             -- fires shortly after. Zero manual spellId maintenance.
@@ -141,8 +144,14 @@ function macroTorch.eventHandle()
                 end
                 macroTorch._pendingCastSpellName = nil
             end
+            if macroTorch.energyProbe and macroTorch.energyProbeLog and pendingName == 'Reshift' then
+                macroTorch.energyProbeLog(string.format("EPR|CAST|t=%.3f|spell=%s|e=%s", GetTime(), tostring(pendingName), tostring(UnitMana('player'))))
+            end
         end
     elseif event == "RAW_COMBATLOG" then
+        if macroTorch.energyProbe and macroTorch.energyProbeLog and arg2 and string.find(arg2, 'nergize') then
+            macroTorch.energyProbeLog(string.format("EPR|RAW|t=%.3f|ch=%s|txt=%s", GetTime(), tostring(arg1), tostring(arg2)))
+        end
         -- [cpDamage] phase 28 channel gate: dispatch SELF_DAMAGE raw lines to
         -- the cpDamage parser before the tier-1 whitelist returns below. The
         -- gate consumes the line here and the tier-1 set stays untouched, so
