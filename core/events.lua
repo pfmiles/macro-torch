@@ -122,8 +122,14 @@ function macroTorch.eventHandle()
     elseif event == "CHAT_MSG_SPELL_AURA_GONE_SELF" then
         -- when player lose a buff
     elseif event == "CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE" then
+        if macroTorch.energyProbe and macroTorch.log and arg1 then
+            macroTorch.log(string.format("EPR|PDT|t=%.3f|tx=%s|ch=%s|txt=%s", GetTime(), "CHAT", tostring(event), tostring(arg1)))
+        end
 
     elseif event == "CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE" then
+        if macroTorch.energyProbe and macroTorch.log and arg1 then
+            macroTorch.log(string.format("EPR|PDT|t=%.3f|tx=%s|ch=%s|txt=%s", GetTime(), "CHAT", tostring(event), tostring(arg1)))
+        end
 
     elseif event == "UNIT_CASTEVENT" then
         -- when player myself cast a spell
@@ -169,6 +175,9 @@ function macroTorch.eventHandle()
         -- without touching arg2.
         if arg1 ~= 'CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE' and arg1 ~= 'CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE' then
             return
+        end
+        if macroTorch.energyProbe and macroTorch.log and arg2 then
+            macroTorch.log(string.format("EPR|PDT|t=%.3f|tx=%s|ch=%s|txt=%s", GetTime(), "RAW", tostring(arg1), tostring(arg2)))
         end
         -- Tier 2 + Tier 3 (substring precheck + registered spell match):
         -- O(N) string.find over the precompiled per-spell patterns, N =
