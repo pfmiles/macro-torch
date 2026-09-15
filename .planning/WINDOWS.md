@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 6
+open_count: 7
 waived_count: 0
 fixed_count: 2
-total_count: 8
-last_updated: 2026-09-13T17:30:02.596Z
+total_count: 9
+last_updated: 2026-09-15T14:25:29.216Z
 ---
 
 # Broken Windows Ledger
@@ -23,6 +23,7 @@ last_updated: 2026-09-13T17:30:02.596Z
 | 6 | 30 | unrun-verify | classes/druid/selftest.lua |  | S-05..S-12 stubbed DKI pins: in-game /mt battery not runnable on this host (D-14) - execute on Windows+Cygwin per HUMAN-UAT.md Phase 30 protocol | open |  | 2026-09-10T15:09:51.784Z |  |
 | 7 | 29 | unrun-verify | classes/druid/selftest.lua |  | T-02 render-hue behavior asserts execute only in-game via /mt on the user's Windows+Cygwin client (no local Lua interpreter on this host); static battery is the executor-certifiable subset, live run backfills 29-UAT.md via verify-work | open |  | 2026-09-10T18:59:57.868Z |  |
 | 8 | quick-260914-1t0 | unrun-verify | core/selftest.lua |  | In-game Category P battery (9 tests, incl. P-03 no-discharge liveness pin and new rake <=1.3s renewal pin) must be verified by the user on WoW client (Windows+Cygwin rebuild); static gates green (3-interpreter loadfile, diff locks) | open |  | 2026-09-13T17:30:02.596Z |  |
+| 9 | quick-260915-uzs | unrun-verify | core/events.lua |  | In-game PDT dual-transport battery must run on user's WoW client (Windows+Cygwin rebuild): EPR\|PDT lines (both tx=RAW and tx=CHAT) appear during Rake/Rip bleeds on training dummy after /run macroTorch.energyProbe = true; static gates green (3-interpreter loadfile, 9/0 diff locks) | open |  | 2026-09-15T14:25:29.216Z |  |
 
 ````json
 [
@@ -120,6 +121,18 @@ last_updated: 2026-09-13T17:30:02.596Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-13T17:30:02.596Z",
+    "resolved_at": null
+  },
+  {
+    "id": 9,
+    "kind": "unrun-verify",
+    "phase": "quick-260915-uzs",
+    "file": "core/events.lua",
+    "line": null,
+    "description": "In-game PDT dual-transport battery must run on user's WoW client (Windows+Cygwin rebuild): EPR|PDT lines (both tx=RAW and tx=CHAT) appear during Rake/Rip bleeds on training dummy after /run macroTorch.energyProbe = true; static gates green (3-interpreter loadfile, 9/0 diff locks)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-15T14:25:29.216Z",
     "resolved_at": null
   }
 ]
