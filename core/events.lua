@@ -155,8 +155,11 @@ function macroTorch.eventHandle()
             end
         end
     elseif event == "RAW_COMBATLOG" then
-        if macroTorch.energyProbe and arg2 and string.find(arg2, 'nergize') then
-            macroTorch.log(string.format("EPR|RAW|t=%.3f|ch=%s|txt=%s", GetTime(), tostring(arg1), tostring(arg2)))
+        if macroTorch.energyProbe and arg2 then
+            local lum = string.lower(arg2 or '')
+            if string.find(lum, 'nergize') then
+                macroTorch.log(string.format("EPR|RAW|t=%.3f|ch=%s|txt=%s", GetTime(), tostring(arg1), tostring(arg2)))
+            end
         end
         -- [cpDamage] phase 28 channel gate: dispatch SELF_DAMAGE raw lines to
         -- the cpDamage parser before the tier-1 whitelist returns below. The
