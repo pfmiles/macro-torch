@@ -600,11 +600,11 @@ macroTorch.registerPlayerClass("Druid", macroTorch.Druid)
 function macroTorch.computeNormalRelic(clickContext)
     -- fast combat / PvP: always Builder idol, never waste GCD on Savagery (Gap 1 fix per D-01)
     if macroTorch.isTrivialBattleOrPvp(clickContext) then
-        return macroTorch.selectFerocityOrEmeraldRot()
+        return macroTorch.selectFerocityOrEmeraldRot(clickContext)
     end
     -- non-combat, immune Rip target: Builder idol (preserved per D-02)
     if not macroTorch.player.isInCombat and clickContext.isImmuneRip then
-        return macroTorch.selectFerocityOrEmeraldRot()
+        return macroTorch.selectFerocityOrEmeraldRot(clickContext)
     end
     -- non-combat, non-immune: pre-switch to Savagery for opening snapshot (preserved per D-02)
     if not macroTorch.player.isInCombat then
@@ -612,11 +612,11 @@ function macroTorch.computeNormalRelic(clickContext)
     end
     -- immune to Rip: Savagery provides zero benefit, always Builder idol (Gap 2 fix per D-01)
     if clickContext.isImmuneRip then
-        return macroTorch.selectFerocityOrEmeraldRot()
+        return macroTorch.selectFerocityOrEmeraldRot(clickContext)
     end
     -- Rip already present on target: use Builder idol to save energy
     if macroTorch.isRipPresent(clickContext) then
-        return macroTorch.selectFerocityOrEmeraldRot()
+        return macroTorch.selectFerocityOrEmeraldRot(clickContext)
     end
     -- no Rip, not immune, normal combat: prepare Savagery snapshot
     return 'Idol of Savagery'
@@ -624,10 +624,11 @@ end
 
 -- 在Idol of Ferocity和Idol of the Emerald Rot之间选择
 -- 逻辑：检查拥有情况（背包 or 身上）：如果只有一个存在，选那个
---       如果两个都存在：
---       - 若穿着8/8 Cenarion T1，选Ferocity（不冲突）
---       - 否则选Emerald Rot（与8/8 T1效果冲突）
-function macroTorch.selectFerocityOrEmeraldRot()
+--       如果两个都存在，按三层优先级（D-01/D-02/D-04）：
+--       1. 8/8 Cenarion T1：永远 Ferocity（T1 套装效果与 Emerald Rot 冲突）
+--       2. 战斗粘性：战斗中已穿戴任一 builder 神像时保持当前穿戴，禁止互切
+--       3. 战斗类型：fast/trivial/pvp → Ferocity；普通战斗 → Emerald Rot
+function macroTorch.selectFerocityOrEmeraldRot(clickContext)
     local IDOL_FEROCITY = 'Idol of Ferocity'
     local IDOL_EMERALD_ROT = 'Idol of the Emerald Rot'
 
@@ -643,13 +644,26 @@ function macroTorch.selectFerocityOrEmeraldRot()
         return IDOL_EMERALD_ROT
     end
 
-    -- 两个都存在时，根据8/8 T1判断
+    -- 两个都存在时的三层选择
     if hasFerocity and hasEmeraldRot then
+        -- 1. 8/8 Cenarion T1：套装效果与 Emerald Rot 冲突，无条件 Ferocity（D-01）
         if player.countEquippedItemNameContains('Cenarion') >= 8 then
             return IDOL_FEROCITY
-        else
-            return IDOL_EMERALD_ROT
         end
+        -- 2. 战斗粘性：战斗中已穿戴任一 builder，保持当前件，禁止互切（D-02）
+        if player.isInCombat then
+            if player.isRelicEquipped(IDOL_FEROCITY) then
+                return IDOL_FEROCITY
+            end
+            if player.isRelicEquipped(IDOL_EMERALD_ROT) then
+                return IDOL_EMERALD_ROT
+            end
+        end
+        -- 3. 战斗类型：fast/trivial/pvp → Ferocity，否则 Emerald Rot（D-04）
+        if macroTorch.isTrivialBattleOrPvp(clickContext) or macroTorch.isFastBattleNotPvp(clickContext) then
+            return IDOL_FEROCITY
+        end
+        return IDOL_EMERALD_ROT
     end
 
     -- 两个都不存在，默认返回Ferocity（兼容原逻辑）
