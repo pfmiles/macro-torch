@@ -946,6 +946,285 @@ end, true)
 			"target.distance API not available on this client")
 	end, true)
 
+	macroTorch.SelfTest:register("Cat O-08: Ferocity-only ownership returns Ferocity", function()
+		local player = macroTorch.player
+		local savedHasItem = player.hasItem
+		local savedIsRelicEquipped = player.isRelicEquipped
+		local savedCountCenarion = player.countEquippedItemNameContains
+		local savedIsInCombat = rawget(player, 'isInCombat')
+		local savedVt = macroTorch.isTrivialBattleOrPvp
+		local savedVf = macroTorch.isFastBattleNotPvp
+		player.hasItem = function(name)
+			if string.find(name, 'Ferocity') then return true end
+			return false
+		end
+		player.isRelicEquipped = function(name) return false end
+		player.countEquippedItemNameContains = function(name) return 0 end
+		rawset(player, 'isInCombat', false)
+		macroTorch.isTrivialBattleOrPvp = function(ctx) return false end
+		macroTorch.isFastBattleNotPvp = function(ctx) return false end
+		local ok, res = pcall(function()
+			return macroTorch.selectFerocityOrEmeraldRot({})
+		end)
+		player.hasItem = savedHasItem
+		player.isRelicEquipped = savedIsRelicEquipped
+		player.countEquippedItemNameContains = savedCountCenarion
+		rawset(player, 'isInCombat', savedIsInCombat)
+		macroTorch.isTrivialBattleOrPvp = savedVt
+		macroTorch.isFastBattleNotPvp = savedVf
+		assert(ok, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(res))
+		assert(res == 'Idol of Ferocity', "O-08 expected Idol of Ferocity, got " .. tostring(res))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat O-09: Emerald-Rot-only ownership returns Emerald Rot", function()
+		local player = macroTorch.player
+		local savedHasItem = player.hasItem
+		local savedIsRelicEquipped = player.isRelicEquipped
+		local savedCountCenarion = player.countEquippedItemNameContains
+		local savedIsInCombat = rawget(player, 'isInCombat')
+		local savedVt = macroTorch.isTrivialBattleOrPvp
+		local savedVf = macroTorch.isFastBattleNotPvp
+		player.hasItem = function(name)
+			if string.find(name, 'Emerald') then return true end
+			return false
+		end
+		player.isRelicEquipped = function(name) return false end
+		player.countEquippedItemNameContains = function(name) return 0 end
+		rawset(player, 'isInCombat', false)
+		macroTorch.isTrivialBattleOrPvp = function(ctx) return false end
+		macroTorch.isFastBattleNotPvp = function(ctx) return false end
+		local ok, res = pcall(function()
+			return macroTorch.selectFerocityOrEmeraldRot({})
+		end)
+		player.hasItem = savedHasItem
+		player.isRelicEquipped = savedIsRelicEquipped
+		player.countEquippedItemNameContains = savedCountCenarion
+		rawset(player, 'isInCombat', savedIsInCombat)
+		macroTorch.isTrivialBattleOrPvp = savedVt
+		macroTorch.isFastBattleNotPvp = savedVf
+		assert(ok, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(res))
+		assert(res == 'Idol of the Emerald Rot', "O-09 expected Idol of the Emerald Rot, got " .. tostring(res))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat O-10: 8/8 Cenarion T1 beats in-combat stickiness", function()
+		local player = macroTorch.player
+		local savedHasItem = player.hasItem
+		local savedIsRelicEquipped = player.isRelicEquipped
+		local savedCountCenarion = player.countEquippedItemNameContains
+		local savedIsInCombat = rawget(player, 'isInCombat')
+		local savedVt = macroTorch.isTrivialBattleOrPvp
+		local savedVf = macroTorch.isFastBattleNotPvp
+		player.hasItem = function(name) return true end
+		player.isRelicEquipped = function(name)
+			if string.find(name, 'Emerald') then return true end
+			return false
+		end
+		player.countEquippedItemNameContains = function(name) return 8 end
+		rawset(player, 'isInCombat', true)
+		macroTorch.isTrivialBattleOrPvp = function(ctx) return false end
+		macroTorch.isFastBattleNotPvp = function(ctx) return false end
+		local ok, res = pcall(function()
+			return macroTorch.selectFerocityOrEmeraldRot({})
+		end)
+		player.hasItem = savedHasItem
+		player.isRelicEquipped = savedIsRelicEquipped
+		player.countEquippedItemNameContains = savedCountCenarion
+		rawset(player, 'isInCombat', savedIsInCombat)
+		macroTorch.isTrivialBattleOrPvp = savedVt
+		macroTorch.isFastBattleNotPvp = savedVf
+		assert(ok, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(res))
+		assert(res == 'Idol of Ferocity', "O-10 expected Idol of Ferocity, got " .. tostring(res))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat O-11: in-combat wearing Ferocity sticks to Ferocity", function()
+		local player = macroTorch.player
+		local savedHasItem = player.hasItem
+		local savedIsRelicEquipped = player.isRelicEquipped
+		local savedCountCenarion = player.countEquippedItemNameContains
+		local savedIsInCombat = rawget(player, 'isInCombat')
+		local savedVt = macroTorch.isTrivialBattleOrPvp
+		local savedVf = macroTorch.isFastBattleNotPvp
+		player.hasItem = function(name) return true end
+		player.isRelicEquipped = function(name)
+			if string.find(name, 'Ferocity') then return true end
+			return false
+		end
+		player.countEquippedItemNameContains = function(name) return 0 end
+		rawset(player, 'isInCombat', true)
+		macroTorch.isTrivialBattleOrPvp = function(ctx) return false end
+		macroTorch.isFastBattleNotPvp = function(ctx) return false end
+		local ok, res = pcall(function()
+			return macroTorch.selectFerocityOrEmeraldRot({})
+		end)
+		player.hasItem = savedHasItem
+		player.isRelicEquipped = savedIsRelicEquipped
+		player.countEquippedItemNameContains = savedCountCenarion
+		rawset(player, 'isInCombat', savedIsInCombat)
+		macroTorch.isTrivialBattleOrPvp = savedVt
+		macroTorch.isFastBattleNotPvp = savedVf
+		assert(ok, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(res))
+		assert(res == 'Idol of Ferocity', "O-11 expected Idol of Ferocity, got " .. tostring(res))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat O-12: in-combat wearing Emerald Rot sticks to Emerald Rot", function()
+		local player = macroTorch.player
+		local savedHasItem = player.hasItem
+		local savedIsRelicEquipped = player.isRelicEquipped
+		local savedCountCenarion = player.countEquippedItemNameContains
+		local savedIsInCombat = rawget(player, 'isInCombat')
+		local savedVt = macroTorch.isTrivialBattleOrPvp
+		local savedVf = macroTorch.isFastBattleNotPvp
+		player.hasItem = function(name) return true end
+		player.isRelicEquipped = function(name)
+			if string.find(name, 'Emerald') then return true end
+			return false
+		end
+		player.countEquippedItemNameContains = function(name) return 0 end
+		rawset(player, 'isInCombat', true)
+		macroTorch.isTrivialBattleOrPvp = function(ctx) return true end
+		macroTorch.isFastBattleNotPvp = function(ctx) return true end
+		local ok, res = pcall(function()
+			return macroTorch.selectFerocityOrEmeraldRot({})
+		end)
+		player.hasItem = savedHasItem
+		player.isRelicEquipped = savedIsRelicEquipped
+		player.countEquippedItemNameContains = savedCountCenarion
+		rawset(player, 'isInCombat', savedIsInCombat)
+		macroTorch.isTrivialBattleOrPvp = savedVt
+		macroTorch.isFastBattleNotPvp = savedVf
+		assert(ok, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(res))
+		assert(res == 'Idol of the Emerald Rot', "O-12 expected Idol of the Emerald Rot, got " .. tostring(res))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat O-13: fast/trivial battle type selects Ferocity (both verdict arms)", function()
+		local player = macroTorch.player
+		local savedHasItem = player.hasItem
+		local savedIsRelicEquipped = player.isRelicEquipped
+		local savedCountCenarion = player.countEquippedItemNameContains
+		local savedIsInCombat = rawget(player, 'isInCombat')
+		local savedVt = macroTorch.isTrivialBattleOrPvp
+		local savedVf = macroTorch.isFastBattleNotPvp
+		player.hasItem = function(name) return true end
+		player.isRelicEquipped = function(name) return false end
+		player.countEquippedItemNameContains = function(name) return 0 end
+		rawset(player, 'isInCombat', false)
+		local vtVerdict = true
+		local vfVerdict = false
+		macroTorch.isTrivialBattleOrPvp = function(ctx) return vtVerdict end
+		macroTorch.isFastBattleNotPvp = function(ctx) return vfVerdict end
+		local okA, resA = pcall(function()
+			return macroTorch.selectFerocityOrEmeraldRot({})
+		end)
+		vtVerdict = false
+		vfVerdict = true
+		local okB, resB = pcall(function()
+			return macroTorch.selectFerocityOrEmeraldRot({})
+		end)
+		player.hasItem = savedHasItem
+		player.isRelicEquipped = savedIsRelicEquipped
+		player.countEquippedItemNameContains = savedCountCenarion
+		rawset(player, 'isInCombat', savedIsInCombat)
+		macroTorch.isTrivialBattleOrPvp = savedVt
+		macroTorch.isFastBattleNotPvp = savedVf
+		assert(okA, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(resA))
+		assert(resA == 'Idol of Ferocity', "O-13a expected Idol of Ferocity, got " .. tostring(resA))
+		assert(okB, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(resB))
+		assert(resB == 'Idol of Ferocity', "O-13b expected Idol of Ferocity, got " .. tostring(resB))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat O-14: normal battle selects Emerald Rot", function()
+		local player = macroTorch.player
+		local savedHasItem = player.hasItem
+		local savedIsRelicEquipped = player.isRelicEquipped
+		local savedCountCenarion = player.countEquippedItemNameContains
+		local savedIsInCombat = rawget(player, 'isInCombat')
+		local savedVt = macroTorch.isTrivialBattleOrPvp
+		local savedVf = macroTorch.isFastBattleNotPvp
+		player.hasItem = function(name) return true end
+		player.isRelicEquipped = function(name) return false end
+		player.countEquippedItemNameContains = function(name) return 0 end
+		rawset(player, 'isInCombat', false)
+		macroTorch.isTrivialBattleOrPvp = function(ctx) return false end
+		macroTorch.isFastBattleNotPvp = function(ctx) return false end
+		local ok, res = pcall(function()
+			return macroTorch.selectFerocityOrEmeraldRot({})
+		end)
+		player.hasItem = savedHasItem
+		player.isRelicEquipped = savedIsRelicEquipped
+		player.countEquippedItemNameContains = savedCountCenarion
+		rawset(player, 'isInCombat', savedIsInCombat)
+		macroTorch.isTrivialBattleOrPvp = savedVt
+		macroTorch.isFastBattleNotPvp = savedVf
+		assert(ok, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(res))
+		assert(res == 'Idol of the Emerald Rot', "O-14 expected Idol of the Emerald Rot, got " .. tostring(res))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat O-15: in-combat non-builder falls through to battle type", function()
+		local player = macroTorch.player
+		local savedHasItem = player.hasItem
+		local savedIsRelicEquipped = player.isRelicEquipped
+		local savedCountCenarion = player.countEquippedItemNameContains
+		local savedIsInCombat = rawget(player, 'isInCombat')
+		local savedVt = macroTorch.isTrivialBattleOrPvp
+		local savedVf = macroTorch.isFastBattleNotPvp
+		player.hasItem = function(name) return true end
+		player.isRelicEquipped = function(name) return false end
+		player.countEquippedItemNameContains = function(name) return 0 end
+		rawset(player, 'isInCombat', true)
+		local vtVerdict = true
+		local vfVerdict = false
+		macroTorch.isTrivialBattleOrPvp = function(ctx) return vtVerdict end
+		macroTorch.isFastBattleNotPvp = function(ctx) return vfVerdict end
+		local okA, resA = pcall(function()
+			return macroTorch.selectFerocityOrEmeraldRot({})
+		end)
+		vtVerdict = false
+		vfVerdict = false
+		local okB, resB = pcall(function()
+			return macroTorch.selectFerocityOrEmeraldRot({})
+		end)
+		player.hasItem = savedHasItem
+		player.isRelicEquipped = savedIsRelicEquipped
+		player.countEquippedItemNameContains = savedCountCenarion
+		rawset(player, 'isInCombat', savedIsInCombat)
+		macroTorch.isTrivialBattleOrPvp = savedVt
+		macroTorch.isFastBattleNotPvp = savedVf
+		assert(okA, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(resA))
+		assert(resA == 'Idol of Ferocity', "O-15a expected Idol of Ferocity, got " .. tostring(resA))
+		assert(okB, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(resB))
+		assert(resB == 'Idol of the Emerald Rot', "O-15b expected Idol of the Emerald Rot, got " .. tostring(resB))
+	end, true)
+
+	macroTorch.SelfTest:register("Cat O-16: real verdict wiring — seeded clickContext reaches isTrivialBattleOrPvp / isFastBattleNotPvp", function()
+		if not macroTorch.target.isCanAttack then return end
+		if macroTorch.target.isPlayerControlled then return end
+		local player = macroTorch.player
+		local savedHasItem = player.hasItem
+		local savedIsRelicEquipped = player.isRelicEquipped
+		local savedCountCenarion = player.countEquippedItemNameContains
+		local savedIsInCombat = rawget(player, 'isInCombat')
+		player.hasItem = function(name) return true end
+		player.isRelicEquipped = function(name) return false end
+		player.countEquippedItemNameContains = function(name) return 0 end
+		rawset(player, 'isInCombat', false)
+		local ctxA = { isTrivialBattle = true }
+		local ctxB = { isTrivialBattle = false, isFastBattleNotPvp = true }
+		local okA, resA = pcall(function()
+			return macroTorch.selectFerocityOrEmeraldRot(ctxA)
+		end)
+		local okB, resB = pcall(function()
+			return macroTorch.selectFerocityOrEmeraldRot(ctxB)
+		end)
+		player.hasItem = savedHasItem
+		player.isRelicEquipped = savedIsRelicEquipped
+		player.countEquippedItemNameContains = savedCountCenarion
+		rawset(player, 'isInCombat', savedIsInCombat)
+		assert(okA, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(resA))
+		assert(resA == 'Idol of Ferocity', "O-16a expected Idol of Ferocity, got " .. tostring(resA))
+		assert(okB, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(resB))
+		assert(resB == 'Idol of Ferocity', "O-16b expected Idol of Ferocity, got " .. tostring(resB))
+	end, true)
+
 	-- Category Q: event-driven land-framework regression tests (Phase 27 Q-01..Q-09,
 	-- Phase 29 unified OR rewrite; 29-02 revives Q-09 as the inference-core
 	-- assertion and adds Q-11/Q-13; 29-03 closes D-16 with Q-12/Q-14/Q-15/Q-16.
