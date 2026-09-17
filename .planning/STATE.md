@@ -12,10 +12,10 @@ progress:
   total_plans: 68
   completed_plans: 68
 milestone_name: milestone
-last_activity: 2026-09-16
+last_activity: 2026-09-17
 current_phase: 29
 current_phase_name: 统一 landing 判定重构
-last_activity_desc: "Completed quick task 260916-utm: catAtk builder 神像选择三层化（T1优先→战斗中粘性→战斗类型，O-08..O-16 selftest 9 项）"
+last_activity_desc: "Completed quick task 260917-j9z: 纯机械改名 selectFerocityOrEmeraldRot → selectBuilderRelic（Druid.lua 5 处 + selftest.lua 24 处，零语义改动，2.5s 能量门原值不动）"
 ---
 
 # Project State
@@ -295,6 +295,7 @@ last_activity_desc: "Completed quick task 260916-utm: catAtk builder 神像选�
 | 260915-uzs | energy tick 取证探针扩展 PDT 通道：RAW_COMBATLOG 两个 periodic 通道（creature/hostileplayer）全量 tick 行以 EPR|PDT(tx=RAW) 落 macroTorch.log，同名 chat 通道再落 EPR|PDT(tx=CHAT) 双传输比对到达时序；无法术白名单，所有可检测 periodic tick 事件全量落盘供离线分析 | 2026-09-15 | 344a81a | [260915-uzs-energy-tick-pdt-raw-combatlog-periodic-c](./quick/260915-uzs-energy-tick-pdt-raw-combatlog-periodic-c/) |
 | 260916-0hh | 修复 260915-uzs 评审 WR-01/02/03：RAW tap 'nergize' 匹配改 string.lower 大小写不敏感（任意 casing 全捕获）；EV 行裸事件名移为 t= 后 ev= KV 恢复 8 线路型 EPR\|TYPE\|t= 固定列契约；两处 UnitMana e 补 nil 守卫 + POLL d 补 floor | 2026-09-16 | 69c2e4b | [260916-0hh-fix-260915-uzs-review-warnings-wr-01-02-](./quick/260916-0hh-fix-260915-uzs-review-warnings-wr-01-02-) |
 | 260916-utm | catAtk builder 神像选择三层化：selectFerocityOrEmeraldRot 增加 clickContext 参数（8/8 T1 优先→战斗中粘性防 builder 互切→fast/trivial/pvp 用 Ferocity、普通用 Emerald Rot），computeNormalRelic 4 处调用点传参，执行层零改动，新增 Cat O-08..O-16 九项 selftest（三解释器 12/12 全绿） | 2026-09-16 | 619452e | [260916-utm-catatk-builder-1-selectferocityoremerald](./quick/260916-utm-catatk-builder-1-selectferocityoremerald/) |
+| 260917-j9z | 纯机械符号改名 selectFerocityOrEmeraldRot → selectBuilderRelic：Druid.lua 定义处+4 调用点、selftest.lua 24 处引用（O-08..O-16 stub 调用与 assert 文案）同步替换，零语义改动（两处 2.5s 能量门逐字节不变、物品名注释保留），行数 1795/2783 与注册计数 16 不变，三解释器全绿；principles 文档工作树同步 | 2026-09-17 | b30ca29 | [260917-j9z-macrotorch-selectferocityoremeraldrot-ma](./quick/260917-j9z-macrotorch-selectferocityoremeraldrot-ma/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
