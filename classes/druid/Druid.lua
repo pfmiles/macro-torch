@@ -600,11 +600,11 @@ macroTorch.registerPlayerClass("Druid", macroTorch.Druid)
 function macroTorch.computeNormalRelic(clickContext)
     -- fast combat / PvP: always Builder idol, never waste GCD on Savagery (Gap 1 fix per D-01)
     if macroTorch.isTrivialBattleOrPvp(clickContext) then
-        return macroTorch.selectFerocityOrEmeraldRot(clickContext)
+        return macroTorch.selectBuilderRelic(clickContext)
     end
     -- non-combat, immune Rip target: Builder idol (preserved per D-02)
     if not macroTorch.player.isInCombat and clickContext.isImmuneRip then
-        return macroTorch.selectFerocityOrEmeraldRot(clickContext)
+        return macroTorch.selectBuilderRelic(clickContext)
     end
     -- non-combat, non-immune: pre-switch to Savagery for opening snapshot (preserved per D-02)
     if not macroTorch.player.isInCombat then
@@ -612,11 +612,11 @@ function macroTorch.computeNormalRelic(clickContext)
     end
     -- immune to Rip: Savagery provides zero benefit, always Builder idol (Gap 2 fix per D-01)
     if clickContext.isImmuneRip then
-        return macroTorch.selectFerocityOrEmeraldRot(clickContext)
+        return macroTorch.selectBuilderRelic(clickContext)
     end
     -- Rip already present on target: use Builder idol to save energy
     if macroTorch.isRipPresent(clickContext) then
-        return macroTorch.selectFerocityOrEmeraldRot(clickContext)
+        return macroTorch.selectBuilderRelic(clickContext)
     end
     -- no Rip, not immune, normal combat: prepare Savagery snapshot
     return 'Idol of Savagery'
@@ -628,7 +628,7 @@ end
 --       1. 8/8 Cenarion T1：永远 Ferocity（T1 套装效果与 Emerald Rot 冲突）
 --       2. 战斗粘性：战斗中已穿戴任一 builder 神像时保持当前穿戴，禁止互切
 --       3. 战斗类型：fast/trivial/pvp → Ferocity；普通战斗 → Emerald Rot
-function macroTorch.selectFerocityOrEmeraldRot(clickContext)
+function macroTorch.selectBuilderRelic(clickContext)
     local IDOL_FEROCITY = 'Idol of Ferocity'
     local IDOL_EMERALD_ROT = 'Idol of the Emerald Rot'
 
