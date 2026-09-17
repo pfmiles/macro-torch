@@ -964,7 +964,7 @@ end, true)
 		macroTorch.isTrivialBattleOrPvp = function(ctx) return false end
 		macroTorch.isFastBattleNotPvp = function(ctx) return false end
 		local ok, res = pcall(function()
-			return macroTorch.selectFerocityOrEmeraldRot({})
+			return macroTorch.selectBuilderRelic({})
 		end)
 		player.hasItem = savedHasItem
 		player.isRelicEquipped = savedIsRelicEquipped
@@ -972,7 +972,7 @@ end, true)
 		rawset(player, 'isInCombat', savedIsInCombat)
 		macroTorch.isTrivialBattleOrPvp = savedVt
 		macroTorch.isFastBattleNotPvp = savedVf
-		assert(ok, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(res))
+		assert(ok, "selectBuilderRelic pcall failed: " .. tostring(res))
 		assert(res == 'Idol of Ferocity', "O-08 expected Idol of Ferocity, got " .. tostring(res))
 	end, true)
 
@@ -994,7 +994,7 @@ end, true)
 		macroTorch.isTrivialBattleOrPvp = function(ctx) return false end
 		macroTorch.isFastBattleNotPvp = function(ctx) return false end
 		local ok, res = pcall(function()
-			return macroTorch.selectFerocityOrEmeraldRot({})
+			return macroTorch.selectBuilderRelic({})
 		end)
 		player.hasItem = savedHasItem
 		player.isRelicEquipped = savedIsRelicEquipped
@@ -1002,7 +1002,7 @@ end, true)
 		rawset(player, 'isInCombat', savedIsInCombat)
 		macroTorch.isTrivialBattleOrPvp = savedVt
 		macroTorch.isFastBattleNotPvp = savedVf
-		assert(ok, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(res))
+		assert(ok, "selectBuilderRelic pcall failed: " .. tostring(res))
 		assert(res == 'Idol of the Emerald Rot', "O-09 expected Idol of the Emerald Rot, got " .. tostring(res))
 	end, true)
 
@@ -1024,7 +1024,7 @@ end, true)
 		macroTorch.isTrivialBattleOrPvp = function(ctx) return false end
 		macroTorch.isFastBattleNotPvp = function(ctx) return false end
 		local ok, res = pcall(function()
-			return macroTorch.selectFerocityOrEmeraldRot({})
+			return macroTorch.selectBuilderRelic({})
 		end)
 		player.hasItem = savedHasItem
 		player.isRelicEquipped = savedIsRelicEquipped
@@ -1032,7 +1032,7 @@ end, true)
 		rawset(player, 'isInCombat', savedIsInCombat)
 		macroTorch.isTrivialBattleOrPvp = savedVt
 		macroTorch.isFastBattleNotPvp = savedVf
-		assert(ok, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(res))
+		assert(ok, "selectBuilderRelic pcall failed: " .. tostring(res))
 		assert(res == 'Idol of Ferocity', "O-10 expected Idol of Ferocity, got " .. tostring(res))
 	end, true)
 
@@ -1054,7 +1054,7 @@ end, true)
 		macroTorch.isTrivialBattleOrPvp = function(ctx) return false end
 		macroTorch.isFastBattleNotPvp = function(ctx) return false end
 		local ok, res = pcall(function()
-			return macroTorch.selectFerocityOrEmeraldRot({})
+			return macroTorch.selectBuilderRelic({})
 		end)
 		player.hasItem = savedHasItem
 		player.isRelicEquipped = savedIsRelicEquipped
@@ -1062,7 +1062,7 @@ end, true)
 		rawset(player, 'isInCombat', savedIsInCombat)
 		macroTorch.isTrivialBattleOrPvp = savedVt
 		macroTorch.isFastBattleNotPvp = savedVf
-		assert(ok, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(res))
+		assert(ok, "selectBuilderRelic pcall failed: " .. tostring(res))
 		assert(res == 'Idol of Ferocity', "O-11 expected Idol of Ferocity, got " .. tostring(res))
 	end, true)
 
@@ -1084,7 +1084,7 @@ end, true)
 		macroTorch.isTrivialBattleOrPvp = function(ctx) return true end
 		macroTorch.isFastBattleNotPvp = function(ctx) return true end
 		local ok, res = pcall(function()
-			return macroTorch.selectFerocityOrEmeraldRot({})
+			return macroTorch.selectBuilderRelic({})
 		end)
 		player.hasItem = savedHasItem
 		player.isRelicEquipped = savedIsRelicEquipped
@@ -1092,7 +1092,7 @@ end, true)
 		rawset(player, 'isInCombat', savedIsInCombat)
 		macroTorch.isTrivialBattleOrPvp = savedVt
 		macroTorch.isFastBattleNotPvp = savedVf
-		assert(ok, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(res))
+		assert(ok, "selectBuilderRelic pcall failed: " .. tostring(res))
 		assert(res == 'Idol of the Emerald Rot', "O-12 expected Idol of the Emerald Rot, got " .. tostring(res))
 	end, true)
 
@@ -1113,12 +1113,12 @@ end, true)
 		macroTorch.isTrivialBattleOrPvp = function(ctx) return vtVerdict end
 		macroTorch.isFastBattleNotPvp = function(ctx) return vfVerdict end
 		local okA, resA = pcall(function()
-			return macroTorch.selectFerocityOrEmeraldRot({})
+			return macroTorch.selectBuilderRelic({})
 		end)
 		vtVerdict = false
 		vfVerdict = true
 		local okB, resB = pcall(function()
-			return macroTorch.selectFerocityOrEmeraldRot({})
+			return macroTorch.selectBuilderRelic({})
 		end)
 		player.hasItem = savedHasItem
 		player.isRelicEquipped = savedIsRelicEquipped
@@ -1126,9 +1126,9 @@ end, true)
 		rawset(player, 'isInCombat', savedIsInCombat)
 		macroTorch.isTrivialBattleOrPvp = savedVt
 		macroTorch.isFastBattleNotPvp = savedVf
-		assert(okA, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(resA))
+		assert(okA, "selectBuilderRelic pcall failed: " .. tostring(resA))
 		assert(resA == 'Idol of Ferocity', "O-13a expected Idol of Ferocity, got " .. tostring(resA))
-		assert(okB, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(resB))
+		assert(okB, "selectBuilderRelic pcall failed: " .. tostring(resB))
 		assert(resB == 'Idol of Ferocity', "O-13b expected Idol of Ferocity, got " .. tostring(resB))
 	end, true)
 
@@ -1147,7 +1147,7 @@ end, true)
 		macroTorch.isTrivialBattleOrPvp = function(ctx) return false end
 		macroTorch.isFastBattleNotPvp = function(ctx) return false end
 		local ok, res = pcall(function()
-			return macroTorch.selectFerocityOrEmeraldRot({})
+			return macroTorch.selectBuilderRelic({})
 		end)
 		player.hasItem = savedHasItem
 		player.isRelicEquipped = savedIsRelicEquipped
@@ -1155,7 +1155,7 @@ end, true)
 		rawset(player, 'isInCombat', savedIsInCombat)
 		macroTorch.isTrivialBattleOrPvp = savedVt
 		macroTorch.isFastBattleNotPvp = savedVf
-		assert(ok, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(res))
+		assert(ok, "selectBuilderRelic pcall failed: " .. tostring(res))
 		assert(res == 'Idol of the Emerald Rot', "O-14 expected Idol of the Emerald Rot, got " .. tostring(res))
 	end, true)
 
@@ -1176,12 +1176,12 @@ end, true)
 		macroTorch.isTrivialBattleOrPvp = function(ctx) return vtVerdict end
 		macroTorch.isFastBattleNotPvp = function(ctx) return vfVerdict end
 		local okA, resA = pcall(function()
-			return macroTorch.selectFerocityOrEmeraldRot({})
+			return macroTorch.selectBuilderRelic({})
 		end)
 		vtVerdict = false
 		vfVerdict = false
 		local okB, resB = pcall(function()
-			return macroTorch.selectFerocityOrEmeraldRot({})
+			return macroTorch.selectBuilderRelic({})
 		end)
 		player.hasItem = savedHasItem
 		player.isRelicEquipped = savedIsRelicEquipped
@@ -1189,9 +1189,9 @@ end, true)
 		rawset(player, 'isInCombat', savedIsInCombat)
 		macroTorch.isTrivialBattleOrPvp = savedVt
 		macroTorch.isFastBattleNotPvp = savedVf
-		assert(okA, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(resA))
+		assert(okA, "selectBuilderRelic pcall failed: " .. tostring(resA))
 		assert(resA == 'Idol of Ferocity', "O-15a expected Idol of Ferocity, got " .. tostring(resA))
-		assert(okB, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(resB))
+		assert(okB, "selectBuilderRelic pcall failed: " .. tostring(resB))
 		assert(resB == 'Idol of the Emerald Rot', "O-15b expected Idol of the Emerald Rot, got " .. tostring(resB))
 	end, true)
 
@@ -1210,18 +1210,18 @@ end, true)
 		local ctxA = { isTrivialBattle = true }
 		local ctxB = { isTrivialBattle = false, isFastBattleNotPvp = true }
 		local okA, resA = pcall(function()
-			return macroTorch.selectFerocityOrEmeraldRot(ctxA)
+			return macroTorch.selectBuilderRelic(ctxA)
 		end)
 		local okB, resB = pcall(function()
-			return macroTorch.selectFerocityOrEmeraldRot(ctxB)
+			return macroTorch.selectBuilderRelic(ctxB)
 		end)
 		player.hasItem = savedHasItem
 		player.isRelicEquipped = savedIsRelicEquipped
 		player.countEquippedItemNameContains = savedCountCenarion
 		rawset(player, 'isInCombat', savedIsInCombat)
-		assert(okA, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(resA))
+		assert(okA, "selectBuilderRelic pcall failed: " .. tostring(resA))
 		assert(resA == 'Idol of Ferocity', "O-16a expected Idol of Ferocity, got " .. tostring(resA))
-		assert(okB, "selectFerocityOrEmeraldRot pcall failed: " .. tostring(resB))
+		assert(okB, "selectBuilderRelic pcall failed: " .. tostring(resB))
 		assert(resB == 'Idol of Ferocity', "O-16b expected Idol of Ferocity, got " .. tostring(resB))
 	end, true)
 
