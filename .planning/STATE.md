@@ -1,21 +1,21 @@
 ---
-gsd_state_version: 1.0
+gsd_state_version: "1.0"
 milestone: v1.0
-current_plan: Not started
 status: in_progress
 stopped_at: Phase 28 complete, ready to plan Phase 29
-last_updated: "2026-09-12T18:30:57.725Z"
-state_head: 32c900b941ae5e5fb0de40002cb4c8fd8393373d
+last_updated: "2026-10-15T17:13:32.351Z"
+state_head: 941330ac53aaf375065f870e27c30a9d9c3cdd44
 progress:
   total_phases: 29
   completed_phases: 15
   total_plans: 68
   completed_plans: 68
 milestone_name: milestone
-last_activity: 2026-09-17
+last_activity: 2026-10-16
 current_phase: 29
 current_phase_name: 统一 landing 判定重构
-last_activity_desc: "Completed quick task 260917-j9z: 纯机械改名 selectFerocityOrEmeraldRot → selectBuilderRelic（Druid.lua 5 处 + selftest.lua 24 处，零语义改动，2.5s 能量门原值不动）"
+current_plan: Not started
+last_activity_desc: "Completed quick task 261016-04w: update pokemonLoad orderedTable — remove Dog Whistle, add Onyxian Brood Egg/Mechanical Yeti/Decoy Dragonling Remote (7 entries ordered by summon level), backupItem untouched"
 ---
 
 # Project State
@@ -292,10 +292,11 @@ last_activity_desc: "Completed quick task 260917-j9z: 纯机械改名 selectFero
 | 260914-u4l | FF 见缝插针覆盖审查收敛：shouldCastFFDuringWaitWindow 排除表新增 prowling 臂（潜行帧禁 FF 填充防破潜毁 Pounce/Ravage 先手，补齐与 keepRake isFightStarted、oocMod prowling 守卫的不对称）+ selftest 潜行拒绝 pin（WR-01 razor edge 帧镜像，修复前必红方向型）；tiger 潜行提前放经复核为有意设计、rake 已有 isFightStarted 守卫，均不涉改 | 2026-09-14 | b0a610a | [260914-u4l-ff-shouldcastffduringwaitwindow-prowling](./quick/260914-u4l-ff-shouldcastffduringwaitwindow-prowling/) |
 | 260915-tt3 | 创建 energy tick 相位取证探针（实机调研）：新增 classes/druid/energy_probe.lua 探针模块 + build_order.txt 加行 + core/events.lua RAW/UNIT_CASTEVENT 两处 flag 门控透传 + cat.lua readyReshift 释放点日志 | 2026-09-15 | d9319f2 | [260915-tt3-energy-tick-classes-druid-energy-probe-l](./quick/260915-tt3-energy-tick-classes-druid-energy-probe-l/) |
 | 260915-udx | energy tick 探针改为重用 macroTorch.log：删除 probeTick 独立存储桶与 energyProbeLog 包装函数，探针文件内部与 events.lua/cat.lua 三处门控写入点全部直调 macroTorch.log（屏幕显式输出 + 既有持久化/裁剪机制），守卫简化为 energyProbe 单开关 | 2026-09-15 | a80fe39 | [260915-udx-energy-tick-macrotorch-log-probetick-ene](./quick/260915-udx-energy-tick-macrotorch-log-probetick-ene/) |
-| 260915-uzs | energy tick 取证探针扩展 PDT 通道：RAW_COMBATLOG 两个 periodic 通道（creature/hostileplayer）全量 tick 行以 EPR|PDT(tx=RAW) 落 macroTorch.log，同名 chat 通道再落 EPR|PDT(tx=CHAT) 双传输比对到达时序；无法术白名单，所有可检测 periodic tick 事件全量落盘供离线分析 | 2026-09-15 | 344a81a | [260915-uzs-energy-tick-pdt-raw-combatlog-periodic-c](./quick/260915-uzs-energy-tick-pdt-raw-combatlog-periodic-c/) |
+| 260915-uzs | energy tick 取证探针扩展 PDT 通道：RAW_COMBATLOG 两个 periodic 通道（creature/hostileplayer）全量 tick 行以 EPR\|PDT(tx=RAW) 落 macroTorch.log，同名 chat 通道再落 EPR\|PDT(tx=CHAT) 双传输比对到达时序；无法术白名单，所有可检测 periodic tick 事件全量落盘供离线分析 | 2026-09-15 | 344a81a | [260915-uzs-energy-tick-pdt-raw-combatlog-periodic-c](./quick/260915-uzs-energy-tick-pdt-raw-combatlog-periodic-c/) |
 | 260916-0hh | 修复 260915-uzs 评审 WR-01/02/03：RAW tap 'nergize' 匹配改 string.lower 大小写不敏感（任意 casing 全捕获）；EV 行裸事件名移为 t= 后 ev= KV 恢复 8 线路型 EPR\|TYPE\|t= 固定列契约；两处 UnitMana e 补 nil 守卫 + POLL d 补 floor | 2026-09-16 | 69c2e4b | [260916-0hh-fix-260915-uzs-review-warnings-wr-01-02-](./quick/260916-0hh-fix-260915-uzs-review-warnings-wr-01-02-) |
 | 260916-utm | catAtk builder 神像选择三层化：selectFerocityOrEmeraldRot 增加 clickContext 参数（8/8 T1 优先→战斗中粘性防 builder 互切→fast/trivial/pvp 用 Ferocity、普通用 Emerald Rot），computeNormalRelic 4 处调用点传参，执行层零改动，新增 Cat O-08..O-16 九项 selftest（三解释器 12/12 全绿） | 2026-09-16 | 619452e | [260916-utm-catatk-builder-1-selectferocityoremerald](./quick/260916-utm-catatk-builder-1-selectferocityoremerald/) |
 | 260917-j9z | 纯机械符号改名 selectFerocityOrEmeraldRot → selectBuilderRelic：Druid.lua 定义处+4 调用点、selftest.lua 24 处引用（O-08..O-16 stub 调用与 assert 文案）同步替换，零语义改动（两处 2.5s 能量门逐字节不变、物品名注释保留），行数 1795/2783 与注册计数 16 不变，三解释器全绿；principles 文档工作树同步 | 2026-09-17 | b30ca29 | [260917-j9z-macrotorch-selectferocityoremeraldrot-ma](./quick/260917-j9z-macrotorch-selectferocityoremeraldrot-ma/) |
+| 261016-04w | 更新 pokemonLoad orderedTable：删 Dog Whistle、加 Onyxian Brood Egg/Mechanical Yeti/Decoy Dragonling Remote，7 条目按召唤物等级排序（鸡/龙/蛋/巴罗夫/骷髅书/雪人/诱饵龙），backupItem 不动 | 2026-10-16 | 941330a | [261016-04w-pokemonload-orderedtable-entity-player-l](./quick/261016-04w-pokemonload-orderedtable-entity-player-l/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
