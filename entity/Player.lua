@@ -498,31 +498,39 @@ function macroTorch.Player:new()
     function obj.pokemonLoad()
         local battleChickenSaying = 'Go, Battle Chicken! I choose you!'
         local arcaniteDragonlingSaying = 'Come on out, Arcanite Dragonling!'
-        local trackingHoundSaying = 'Go, Tracking Hound! I choose you!'
+        local onyxianEggSaying = 'Go, Onyxian Broodling! I choose you!'
         local barovServantsSaying = 'Go, Barov Servants! I choose you!'
         local skeletonSaying = 'Come on out, Skeleton!'
+        local mechanicalYetiSaying = 'Go, Mechanical Yeti! I choose you!'
+        local decoyDragonlingSaying = 'Come on out, Decoy Dragonling!'
 
         local orderedTable = {
             keys = {
                 battleChickenSaying,
                 arcaniteDragonlingSaying,
-                trackingHoundSaying,
+                onyxianEggSaying,
                 barovServantsSaying,
-                skeletonSaying
+                skeletonSaying,
+                mechanicalYetiSaying,
+                decoyDragonlingSaying
             },
             values = {
                 [battleChickenSaying] = 'Gnomish Battle Chicken',
                 [arcaniteDragonlingSaying] = 'Arcanite Dragonling',
-                [trackingHoundSaying] = 'Dog Whistle',
+                [onyxianEggSaying] = 'Onyxian Brood Egg',
                 [barovServantsSaying] = 'Barov Peasant Caller',
-                [skeletonSaying] = 'Ancient Cornerstone Grimoire'
+                [skeletonSaying] = 'Ancient Cornerstone Grimoire',
+                [mechanicalYetiSaying] = 'Mechanical Yeti',
+                [decoyDragonlingSaying] = 'Decoy Dragonling Remote'
             },
             toSlots = {
                 [battleChickenSaying] = 13,
                 [arcaniteDragonlingSaying] = 13,
-                [trackingHoundSaying] = 13,
+                [onyxianEggSaying] = 13,
                 [barovServantsSaying] = 13,
-                [skeletonSaying] = 17
+                [skeletonSaying] = 17,
+                [mechanicalYetiSaying] = 13,
+                [decoyDragonlingSaying] = 17
             },
             backupItem = { [skeletonSaying] = { item = "Jadestone Skewer", slot = 16 } }
         }
