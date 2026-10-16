@@ -342,36 +342,6 @@ function macroTorch.Player:new()
         return macroTorch.getTalentRank(talentName)
     end
 
-    -- load useable item to the slot in which the swappingItem is placed, give up if the useable item is in CD
-    function obj.loadUseableItem(useableItemsTable, swappingItem)
-        for _, saying in ipairs(useableItemsTable.keys) do
-            local useableItem = useableItemsTable.values[saying]
-            if obj.hasItem(useableItem) and obj.getItemInBagCoolDown(useableItem) <= 30 then
-                local swappingSlot = macroTorch.getEquippedItemSlot(swappingItem)
-                if swappingSlot then
-                    if not macroTorch.itemLoadingTable then
-                        macroTorch.itemLoadingTable = {}
-                    end
-                    if not macroTorch.itemLoadingTable[swappingSlot] then
-                        macroTorch.itemLoadingTable[swappingSlot] = {}
-                    end
-                    if macroTorch.itemLoadingTable[swappingSlot].useableItem == nil then
-                        macroTorch.itemLoadingTable[swappingSlot].swappingItem = swappingItem
-                        macroTorch.itemLoadingTable[swappingSlot].useableItem = useableItem
-                        macroTorch.itemLoadingTable[swappingSlot].useableItemUsed = false
-                        if saying and not macroTorch.isNumber(saying) then
-                            macroTorch.itemLoadingTable[swappingSlot].saying = saying
-                        end
-                        obj.equipItem(useableItem, swappingSlot)
-                        macroTorch.show("Useable item loaded: " .. useableItem)
-                        return true
-                    end
-                end
-            end
-        end
-        return false
-    end
-
     -- Load the next useable item from the table into its target equipment slot,
     -- with an automatic snapshot of whatever the load displaces:
     --   * target slot occupied -> the displaced item name is recorded (swap path)
@@ -517,12 +487,12 @@ function macroTorch.Player:new()
             end
         end
 
-        -- Global lock: at most one loaded item at a time. State is only written
-        -- after a verified success, so any entry with an unused useableItem is
-        -- a real loaded item and must block new loads.
+        -- Global lock: at most one loaded item at a time. The state table only
+        -- holds verified loads, so any entry carrying a useableItem - used or
+        -- not - is a live load; it blocks new loads until the restore arm clears the entry.
         if macroTorch.itemLoadingTable then
             for _, loadingTable in pairs(macroTorch.itemLoadingTable) do
-                if loadingTable.useableItem and loadingTable.useableItemUsed == false then
+                if loadingTable.useableItem then
                     macroTorch.show("A usable item is already loaded: " .. loadingTable.useableItem)
                     return false
                 end
