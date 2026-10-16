@@ -3,8 +3,8 @@ gsd_state_version: "1.0"
 milestone: v1.0
 status: in_progress
 stopped_at: Phase 28 complete, ready to plan Phase 29
-last_updated: "2026-10-15T17:13:32.351Z"
-state_head: 941330ac53aaf375065f870e27c30a9d9c3cdd44
+last_updated: "2026-10-16T02:36:37.943Z"
+state_head: 665dd4ade33423d02781f41efc188f469036abbf
 progress:
   total_phases: 29
   completed_phases: 15
@@ -15,7 +15,7 @@ last_activity: 2026-10-16
 current_phase: 29
 current_phase_name: 统一 landing 判定重构
 current_plan: Not started
-last_activity_desc: "Completed quick task 261016-04w: update pokemonLoad orderedTable — remove Dog Whistle, add Onyxian Brood Egg/Mechanical Yeti/Decoy Dragonling Remote (7 entries ordered by summon level), backupItem untouched"
+last_activity_desc: "Completed quick task 261016-20c: refactor pokemon load/restore pipeline (three-arm auto-snapshot load + three-arm verified restore + 3 helpers; static gates all green; three-scenario in-game UAT pending, verification human_needed)"
 ---
 
 # Project State
@@ -297,6 +297,7 @@ last_activity_desc: "Completed quick task 261016-04w: update pokemonLoad ordered
 | 260916-utm | catAtk builder 神像选择三层化：selectFerocityOrEmeraldRot 增加 clickContext 参数（8/8 T1 优先→战斗中粘性防 builder 互切→fast/trivial/pvp 用 Ferocity、普通用 Emerald Rot），computeNormalRelic 4 处调用点传参，执行层零改动，新增 Cat O-08..O-16 九项 selftest（三解释器 12/12 全绿） | 2026-09-16 | 619452e | [260916-utm-catatk-builder-1-selectferocityoremerald](./quick/260916-utm-catatk-builder-1-selectferocityoremerald/) |
 | 260917-j9z | 纯机械符号改名 selectFerocityOrEmeraldRot → selectBuilderRelic：Druid.lua 定义处+4 调用点、selftest.lua 24 处引用（O-08..O-16 stub 调用与 assert 文案）同步替换，零语义改动（两处 2.5s 能量门逐字节不变、物品名注释保留），行数 1795/2783 与注册计数 16 不变，三解释器全绿；principles 文档工作树同步 | 2026-09-17 | b30ca29 | [260917-j9z-macrotorch-selectferocityoremeraldrot-ma](./quick/260917-j9z-macrotorch-selectferocityoremeraldrot-ma/) |
 | 261016-04w | 更新 pokemonLoad orderedTable：删 Dog Whistle、加 Onyxian Brood Egg/Mechanical Yeti/Decoy Dragonling Remote，7 条目按召唤物等级排序（鸡/龙/蛋/巴罗夫/骷髅书/雪人/诱饵龙），backupItem 不动 | 2026-10-16 | 941330a | [261016-04w-pokemonload-orderedtable-entity-player-l](./quick/261016-04w-pokemonload-orderedtable-entity-player-l/) |
+| 261016-20c | 副手 pokemon 装载/恢复管线重构：三支自动快照装载（swap/空槽/双手卸装）+ 三臂验证式恢复 + 三个新 helper + 三解释器全绿；三场景实机 UAT 待执行 | 2026-10-16 | 665dd4a | [261016-20c-pokemon-entity-player-lua-loaduseableite](./quick/261016-20c-pokemon-entity-player-lua-loaduseableite/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
