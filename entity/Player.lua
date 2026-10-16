@@ -372,47 +372,112 @@ function macroTorch.Player:new()
         return false
     end
 
-    -- Load the next useable item from the table
-    -- Only one item can be loaded at a time - must cast and unload before loading another
-    -- @param useableItemsTable table with keys, values, toSlots (maps key->slot), and optional backupItem
+    -- Load the next useable item from the table into its target equipment slot,
+    -- with an automatic snapshot of whatever the load displaces:
+    --   * target slot occupied -> the displaced item name is recorded (swap path)
+    --     so the restore press can put it back to the same slot;
+    --   * target slot empty (off-hand) -> the main hand (16) is snapshotted first,
+    --     then the item is equipped and verified via GetInventoryItemLink:
+    --       - verified: keep the load, main hand untouched (nothing to restore
+    --         except the loaded item itself);
+    --       - refused (a two-hand weapon in the main hand blocks the off-hand):
+    --         the two-hander is unequipped into an empty bag slot (recorded),
+    --         then the equip is retried and verified again.
+    -- Only one item can be loaded at a time - must cast and unload before loading
+    -- another.
+    -- @param useableItemsTable table with keys, values (maps key->item name) and
+    --        toSlots (maps key->target equipment slot, 13/14=trinket, 16=main
+    --        hand, 17=off-hand)
     --
-    -- Examples of useableItemsTable structure:
-    --
-    -- Example 1: Multiple items for different slots
-    -- local combatItems = {
-    --     keys = {"Use Trinket 1", "Use Trinket 2", "Use Weapon"},
-    --     values = {
-    --         ["Use Trinket 1"] = "Talisman of Ephemeral Power",
-    --         ["Use Trinket 2"] = "Zandalarian Hero Charm",
-    --         ["Use Weapon"] = "Crul'shorukh, Edge of Chaos"
-    --     },
-    --     toSlots = {  -- NEW: maps each key to its target slot
-    --         ["Use Trinket 1"] = 13,  -- Trinket slot 1
-    --         ["Use Trinket 2"] = 14,  -- Trinket slot 2
-    --         ["Use Weapon"] = 16      -- Main hand
-    --     }
-    -- }
-    -- macroTorch.player.loadUseableItemToSlot(combatItems)
-    --
-    -- Example 2: Items with backup configuration
-    -- local itemsWithBackup = {
-    --     keys = {"Use Trinket", "Use Temporary Weapon"},
-    --     values = {
-    --         ["Use Trinket"] = "Defender of the Timbermaw",
-    --         ["Use Temporary Weapon"] = "Broken Wine Bottle"
-    --     },
-    --     toSlots = {
-    --         ["Use Trinket"] = 13,
-    --         ["Use Temporary Weapon"] = 16
-    --     },
-    --     backupItem = {
-    --         ["Use Trinket"] = "Bladefist's Breadth",
-    --         ["Use Temporary Weapon"] = {
-    --             item = "Shard of the Fallen Star",
-    --             slot = 17  -- Restore to off-hand
+    -- Example of useableItemsTable structure:
+    --     local combatItems = {
+    --         keys = {"Use Trinket 1", "Use Trinket 2", "Use Weapon"},
+    --         values = {
+    --             ["Use Trinket 1"] = "Talisman of Ephemeral Power",
+    --             ["Use Trinket 2"] = "Zandalarian Hero Charm",
+    --             ["Use Weapon"] = "Crul'shorukh, Edge of Chaos"
+    --         },
+    --         toSlots = {
+    --             ["Use Trinket 1"] = 13,  -- Trinket slot 1
+    --             ["Use Trinket 2"] = 14,  -- Trinket slot 2
+    --             ["Use Weapon"] = 16      -- Main hand
     --         }
     --     }
-    -- }
+    --     macroTorch.player.loadUseableItemToSlot(combatItems)
+
+    -- Empirically verified client fact: GetInventoryItemLink returns ZERO values
+    -- on an empty slot in this Lua 5.0 client. Every read below is captured into
+    -- a local first - never concatenate, index or tostring a raw multi-value API
+    -- return.
+    -- @param slot number equipment slot index
+    -- @param itemName string item name (substring match)
+    -- @return boolean true only when the slot link exists and contains itemName
+    function obj.isItemNameInSlot(slot, itemName)
+        local link = macroTorch.getEquippedItemLink(slot)
+        return macroTorch.toBoolean(link and strfind(link, itemName))
+    end
+
+    -- Equip a bag item into targetSlot and verify the result through the slot
+    -- link. This gate fixes the former unconditional-success bug: the client
+    -- refuses the equip (e.g. off-hand while a two-hander occupies the main
+    -- hand) with a clean cursor and the item auto-returned to the bag, so the
+    -- only trustworthy success signal is the slot link itself.
+    -- @param itemName string item name in bag
+    -- @param targetSlot number equipment slot index
+    -- @return boolean true only when the slot link confirms the item landed
+    function obj.equipItemToSlotVerified(itemName, targetSlot)
+        obj.equipItem(itemName, targetSlot)
+        return obj.isItemNameInSlot(targetSlot, itemName)
+    end
+
+    -- Unequip the named item from equipment slot into the first empty bag slot,
+    -- verifying every sub-step; on any failed sub-step the item is rolled back
+    -- into the original slot so the inventory is never left half-moved.
+    -- Sub-steps: PickupInventoryItem(slot) lifts the item onto the cursor and
+    -- empties the slot; PickupContainerItem(bag, emptySlot) deposits the cursor
+    -- item into that empty slot (same-frame protected-action pairing as the
+    -- verified PickupContainerItem + EquipCursorItem sequence).
+    -- @param itemName string expected item name in slot
+    -- @param slot number equipment slot index
+    -- @return boolean true only when the slot no longer holds itemName and
+    --         itemName is found in a bag
+    function obj.unequipToBagVerified(itemName, slot)
+        if not obj.isItemNameInSlot(slot, itemName) then
+            return false
+        end
+        PickupInventoryItem(slot)
+        if obj.isItemNameInSlot(slot, itemName) then
+            return false
+        end
+        local depositBag, depositSlot = nil, nil
+        for bag = 0, 4 do
+            local numSlots = GetContainerNumSlots(bag)
+            for s = 1, numSlots do
+                local slotLink = GetContainerItemLink(bag, s)
+                if not slotLink then
+                    depositBag, depositSlot = bag, s
+                    break
+                end
+            end
+            if depositBag then
+                break
+            end
+        end
+        if not depositBag then
+            EquipCursorItem(slot)
+            return false
+        end
+        PickupContainerItem(depositBag, depositSlot)
+        if CursorHasItem() then
+            EquipCursorItem(slot)
+            return false
+        end
+        if obj.isItemNameInSlot(slot, itemName) or not macroTorch.isItemExist(itemName) then
+            return false
+        end
+        return true
+    end
+
     function obj.loadUseableItemToSlot(useableItemsTable)
         -- Ensure useableItemsTable has required fields
         if not useableItemsTable or not useableItemsTable.keys or not useableItemsTable.toSlots then
@@ -420,10 +485,43 @@ function macroTorch.Player:new()
             return false
         end
 
-        -- Check if there's already a usable item loaded (global lock - only one at a time)
+        -- Combat pause: equipment actions are client-refused while in combat.
+        -- The load key simply does nothing then; press it again after combat, no
+        -- state is lost.
+        if UnitAffectingCombat("player") then
+            return false
+        end
+
+        -- Resume arm pre-scan: a previous press unequipped the two-hander but
+        -- the final equip was not verified, so the state table only holds a
+        -- pending entry. Finish it before any fresh load attempt so it can
+        -- never be shadowed by another loadable item in the ordered table.
+        if macroTorch.itemLoadingTable then
+            for slot, pendingTable in pairs(macroTorch.itemLoadingTable) do
+                if slot and pendingTable and pendingTable.pendingEquip and not pendingTable.useableItem then
+                    obj.equipItem(pendingTable.pendingEquip, slot)
+                    if obj.isItemNameInSlot(slot, pendingTable.pendingEquip) then
+                        pendingTable.useableItem = pendingTable.pendingEquip
+                        pendingTable.useableItemUsed = false
+                        if pendingTable.pendingSaying and not macroTorch.isNumber(pendingTable.pendingSaying) then
+                            pendingTable.saying = pendingTable.pendingSaying
+                        end
+                        pendingTable.pendingEquip = nil
+                        pendingTable.pendingSaying = nil
+                        macroTorch.show("Useable item loaded to slot " .. slot .. ": " .. pendingTable.useableItem)
+                        return true
+                    end
+                    macroTorch.show("Useable item load failed to slot " .. slot .. ": " .. pendingTable.pendingEquip)
+                    return false
+                end
+            end
+        end
+
+        -- Global lock: at most one loaded item at a time. State is only written
+        -- after a verified success, so any entry with an unused useableItem is
+        -- a real loaded item and must block new loads.
         if macroTorch.itemLoadingTable then
             for _, loadingTable in pairs(macroTorch.itemLoadingTable) do
-                -- If any slot has a usable item that hasn't been used yet, block new loading
                 if loadingTable.useableItem and loadingTable.useableItemUsed == false then
                     macroTorch.show("A usable item is already loaded: " .. loadingTable.useableItem)
                     return false
@@ -442,53 +540,93 @@ function macroTorch.Player:new()
             end
 
             if obj.hasItem(useableItem) and obj.getItemInBagCoolDown(useableItem) <= 30 then
-                -- Check what item is currently equipped in targetSlot
-                local currentItemLink = GetInventoryItemLink("player", targetSlot)
-
-                if not macroTorch.itemLoadingTable then
-                    macroTorch.itemLoadingTable = {}
+                -- Snapshot first: what is occupying the target slot right now?
+                local currentSlotLink = macroTorch.getEquippedItemLink(targetSlot)
+                if currentSlotLink then
+                    -- Swap path: remember the displaced item so the restore
+                    -- press can put it back to the same slot
+                    local displacedItem = macroTorch.getItemNameFromLink(currentSlotLink)
+                    if not obj.equipItemToSlotVerified(useableItem, targetSlot) then
+                        macroTorch.show("Useable item load failed to slot " .. targetSlot .. ": " .. useableItem)
+                        return false
+                    end
+                    if not macroTorch.itemLoadingTable then
+                        macroTorch.itemLoadingTable = {}
+                    end
+                    macroTorch.itemLoadingTable[targetSlot] = {
+                        useableItem = useableItem,
+                        useableItemUsed = false,
+                        swappingItem = displacedItem
+                    }
+                    if saying and not macroTorch.isNumber(saying) then
+                        macroTorch.itemLoadingTable[targetSlot].saying = saying
+                    end
+                    macroTorch.show("Useable item loaded to slot " .. targetSlot .. ": " .. useableItem)
+                    return true
                 end
-                if not macroTorch.itemLoadingTable[targetSlot] then
-                    macroTorch.itemLoadingTable[targetSlot] = {}
+
+                -- Target slot empty: snapshot the main hand (16) and try
+                -- equipping. Success keeps the main hand untouched; refusal
+                -- means a two-hander blocks the off-hand and it must move first.
+                local mainHandLink = macroTorch.getEquippedItemLink(16)
+                local mainHandItem = nil
+                if mainHandLink then
+                    mainHandItem = macroTorch.getItemNameFromLink(mainHandLink)
+                end
+                if obj.equipItemToSlotVerified(useableItem, targetSlot) then
+                    if not macroTorch.itemLoadingTable then
+                        macroTorch.itemLoadingTable = {}
+                    end
+                    macroTorch.itemLoadingTable[targetSlot] = {
+                        useableItem = useableItem,
+                        useableItemUsed = false
+                    }
+                    if saying and not macroTorch.isNumber(saying) then
+                        macroTorch.itemLoadingTable[targetSlot].saying = saying
+                    end
+                    macroTorch.show("Useable item loaded to slot " .. targetSlot .. ": " .. useableItem)
+                    return true
                 end
 
-                -- Additional safety check: ensure no item is already in this slot
-                if macroTorch.itemLoadingTable[targetSlot].useableItem ~= nil then
-                    macroTorch.show("Slot " .. targetSlot .. " already has a loaded item")
+                -- The off-hand equip was refused. Only the 17-slot case with a
+                -- really occupied main hand can be repaired here; any other
+                -- refusal (wrong item type, empty main hand) just fails.
+                if not mainHandItem or targetSlot ~= 17 then
+                    macroTorch.show("Useable item load failed to slot " .. targetSlot .. ": " .. useableItem)
                     return false
                 end
 
-                -- Check if slot has an equipped item
-                if currentItemLink then
-                    -- Extract item name from the link
-                    local currentItemName = macroTorch.getItemNameFromLink(currentItemLink)
-                    -- Set swappingItem to currently equipped item name
-                    macroTorch.itemLoadingTable[targetSlot].swappingItem = currentItemName
-                    -- (ignore useableItemsTable.backupItem configuration when slot has item)
-                elseif useableItemsTable.backupItem and useableItemsTable.backupItem[saying] then
-                    -- Slot is empty, check backupItem configuration
-                    local backupItemConfig = useableItemsTable.backupItem[saying]
-                    if type(backupItemConfig) == "string" then
-                        -- Backup item as string: restore to same slot
-                        macroTorch.itemLoadingTable[targetSlot].backupItemName = backupItemConfig
-                    elseif type(backupItemConfig) == "table" and backupItemConfig.item then
-                        -- Backup item as table: restore to specified slot
-                        macroTorch.itemLoadingTable[targetSlot].backupItemName = backupItemConfig.item
-                        macroTorch.itemLoadingTable[targetSlot].backupItemSlot = backupItemConfig.slot
-                    end
+                -- Unequip the two-hander into an empty bag slot (rollback-safe)
+                -- and record it as the restore target for the main hand
+                if not obj.unequipToBagVerified(mainHandItem, 16) then
+                    macroTorch.show("Useable item load failed to slot " .. targetSlot .. ": " .. useableItem)
+                    return false
                 end
-
-                -- Set useable item details
-                macroTorch.itemLoadingTable[targetSlot].useableItem = useableItem
-                macroTorch.itemLoadingTable[targetSlot].useableItemUsed = false
-                if saying and not macroTorch.isNumber(saying) then
-                    macroTorch.itemLoadingTable[targetSlot].saying = saying
+                if not macroTorch.itemLoadingTable then
+                    macroTorch.itemLoadingTable = {}
                 end
+                macroTorch.itemLoadingTable[targetSlot] = {
+                    mainHandItem = mainHandItem,
+                    pendingEquip = useableItem,
+                    pendingSaying = saying
+                }
 
-                -- Equip useableItem to targetSlot
+                -- Final equip + verify; on failure the pending entry stays so
+                -- the next press resumes without re-unequipping anything
                 obj.equipItem(useableItem, targetSlot)
-                macroTorch.show("Useable item loaded to slot " .. targetSlot .. ": " .. useableItem)
-                return true
+                if obj.isItemNameInSlot(targetSlot, useableItem) then
+                    macroTorch.itemLoadingTable[targetSlot].useableItem = useableItem
+                    macroTorch.itemLoadingTable[targetSlot].useableItemUsed = false
+                    if saying and not macroTorch.isNumber(saying) then
+                        macroTorch.itemLoadingTable[targetSlot].saying = saying
+                    end
+                    macroTorch.itemLoadingTable[targetSlot].pendingEquip = nil
+                    macroTorch.itemLoadingTable[targetSlot].pendingSaying = nil
+                    macroTorch.show("Useable item loaded to slot " .. targetSlot .. ": " .. useableItem)
+                    return true
+                end
+                macroTorch.show("Useable item load failed to slot " .. targetSlot .. ": " .. useableItem .. " (two-hand weapon unequipped, retry next press)")
+                return false
             end
         end
         return false
@@ -531,8 +669,7 @@ function macroTorch.Player:new()
                 [skeletonSaying] = 17,
                 [mechanicalYetiSaying] = 13,
                 [decoyDragonlingSaying] = 17
-            },
-            backupItem = { [skeletonSaying] = { item = "Jadestone Skewer", slot = 16 } }
+            }
         }
         obj.loadUseableItemToSlot(orderedTable)
     end
@@ -543,39 +680,95 @@ function macroTorch.Player:new()
             return
         end
         for swappingSlot, loadingTable in pairs(macroTorch.itemLoadingTable) do
-            if swappingSlot and loadingTable.useableItem and obj.isItemEquipped(loadingTable.useableItem) then
-                if loadingTable.useableItemUsed == false then
-                    if obj.isEquippedItemCooledDown(loadingTable.useableItem) then
-                        obj.useEquippedItem(loadingTable.useableItem)
-                        macroTorch.show("Useable item casted: " .. loadingTable.useableItem)
-                        if loadingTable.saying then
-                            obj.say(loadingTable.saying)
+            if swappingSlot and loadingTable and loadingTable.useableItem then
+                if obj.isItemEquipped(loadingTable.useableItem) then
+                    if loadingTable.useableItemUsed == false then
+                        -- Release press 1: use the item + say the saying. Usable
+                        -- items stay usable in combat, so this arm is not
+                        -- paused; only the restore arm below is combat-paused.
+                        if obj.isEquippedItemCooledDown(loadingTable.useableItem) then
+                            obj.useEquippedItem(loadingTable.useableItem)
+                            macroTorch.show("Useable item casted: " .. loadingTable.useableItem)
+                            if loadingTable.saying then
+                                obj.say(loadingTable.saying)
+                            end
+                            loadingTable.useableItemUsed = true
+                        else
+                            macroTorch.show("Useable item is in CD: " .. loadingTable.useableItem)
+                            -- keep useableItemUsed = false: the use did not
+                            -- happen, so the next press retries instead of
+                            -- restoring
                         end
                     else
-                        macroTorch.show("Useable item is in CD: " .. loadingTable.useableItem)
+                        -- Release press 2: restore the original equipment.
+                        -- Combat pause: protected equip actions are
+                        -- client-refused in combat; press again after combat,
+                        -- state is kept.
+                        if UnitAffectingCombat("player") then
+                            return
+                        end
+                        if loadingTable.swappingItem then
+                            -- Swap path reversed: equip the displaced off-hand
+                            -- back to its slot; the client swaps the pokemon
+                            -- back into the bag. Idempotent: an already
+                            -- restored state clears immediately.
+                            if obj.isItemNameInSlot(swappingSlot, loadingTable.swappingItem)
+                                    and not obj.isItemNameInSlot(swappingSlot, loadingTable.useableItem) then
+                                macroTorch.show("Original item restored: " .. loadingTable.swappingItem)
+                                macroTorch.itemLoadingTable[swappingSlot] = nil
+                                return
+                            end
+                            obj.equipItem(loadingTable.swappingItem, swappingSlot)
+                            if obj.isItemNameInSlot(swappingSlot, loadingTable.swappingItem)
+                                    and not obj.isItemNameInSlot(swappingSlot, loadingTable.useableItem) then
+                                macroTorch.show("Original item restored: " .. loadingTable.swappingItem)
+                                macroTorch.itemLoadingTable[swappingSlot] = nil
+                                return
+                            end
+                            macroTorch.show("Original item restore failed: " .. loadingTable.swappingItem)
+                            return
+                        elseif loadingTable.mainHandItem then
+                            -- Unequipped two-hander path: equip it back to main
+                            -- hand (16) in one step; the client auto-returns
+                            -- the off-hand pokemon to the bag. Idempotent
+                            -- clear on re-press.
+                            if obj.isItemNameInSlot(16, loadingTable.mainHandItem)
+                                    and not obj.isItemNameInSlot(swappingSlot, loadingTable.useableItem) then
+                                macroTorch.show("Main hand weapon restored: " .. loadingTable.mainHandItem)
+                                macroTorch.itemLoadingTable[swappingSlot] = nil
+                                return
+                            end
+                            obj.equipItem(loadingTable.mainHandItem, 16)
+                            if obj.isItemNameInSlot(16, loadingTable.mainHandItem)
+                                    and not obj.isItemNameInSlot(swappingSlot, loadingTable.useableItem) then
+                                macroTorch.show("Main hand weapon restored: " .. loadingTable.mainHandItem)
+                                macroTorch.itemLoadingTable[swappingSlot] = nil
+                                return
+                            end
+                            macroTorch.show("Main hand weapon restore failed: " .. loadingTable.mainHandItem)
+                            return
+                        else
+                            -- Nothing was displaced during load: just unequip
+                            -- the pokemon from its slot into the bag
+                            if not obj.isItemNameInSlot(swappingSlot, loadingTable.useableItem) then
+                                macroTorch.show("Useable item removed from slot " .. swappingSlot)
+                                macroTorch.itemLoadingTable[swappingSlot] = nil
+                                return
+                            end
+                            if obj.unequipToBagVerified(loadingTable.useableItem, swappingSlot) then
+                                macroTorch.show("Useable item removed from slot " .. swappingSlot)
+                                macroTorch.itemLoadingTable[swappingSlot] = nil
+                                return
+                            end
+                            macroTorch.show("Useable item remove failed from slot " .. swappingSlot)
+                            return
+                        end
                     end
-                    loadingTable.useableItemUsed = true
+                    return
                 else
-                    -- Determine what to restore (priority: swappingItem > backupItem > none)
-                    if loadingTable.swappingItem then
-                        -- Restore original item that was in slot
-                        obj.equipItem(loadingTable.swappingItem, swappingSlot)
-                        macroTorch.show("Original item restored: " .. loadingTable.swappingItem)
-                    elseif loadingTable.backupItemName then
-                        -- Restore backup item (slot was initially empty)
-                        local restoreSlot = loadingTable.backupItemSlot or swappingSlot
-                        obj.equipItem(loadingTable.backupItemName, restoreSlot)
-                        macroTorch.show("Backup item equipped: " .. loadingTable.backupItemName)
-                    else
-                        -- No restore item, just clear the slot
-                        macroTorch.show("Useable item removed from slot " .. swappingSlot)
-                    end
+                    -- sth got wrong, just reset (the item is no longer equipped)
                     macroTorch.itemLoadingTable[swappingSlot] = nil
                 end
-                return
-            else
-                -- sth got wrong, just reset
-                macroTorch.itemLoadingTable[swappingSlot] = nil
             end
         end
     end
