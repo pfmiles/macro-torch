@@ -693,14 +693,14 @@ function macroTorch.Player:new()
                                 obj.say(loadingTable.saying)
                             end
                             loadingTable.useableItemUsed = true
-                        else
-                            macroTorch.show("Useable item is in CD: " .. loadingTable.useableItem)
-                            -- keep useableItemUsed = false: the use did not
-                            -- happen, so the next press retries instead of
-                            -- restoring
+                            return
                         end
-                    else
-                        -- Release press 2: restore the original equipment.
+                        macroTorch.show("Useable item is in CD, restoring: " .. loadingTable.useableItem)
+                        -- On cooldown the use is skipped; the same press restores the original equipment
+                        loadingTable.useableItemUsed = true
+                    end
+                    if loadingTable.useableItemUsed then
+                        -- Restore arm: press 2, or the same press after a CD skip, restores the original equipment.
                         -- Combat pause: protected equip actions are
                         -- client-refused in combat; press again after combat,
                         -- state is kept.
