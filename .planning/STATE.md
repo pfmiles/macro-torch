@@ -3,8 +3,8 @@ gsd_state_version: "1.0"
 milestone: v1.0
 status: in_progress
 stopped_at: Phase 28 complete, ready to plan Phase 29
-last_updated: "2026-10-16T02:36:37.943Z"
-state_head: 665dd4ade33423d02781f41efc188f469036abbf
+last_updated: "2026-10-16T14:43:42.122Z"
+state_head: 2c2f413fe1c084af4234c1ab7ba482a21f3dfd65
 progress:
   total_phases: 29
   completed_phases: 15
@@ -15,7 +15,7 @@ last_activity: 2026-10-16
 current_phase: 29
 current_phase_name: 统一 landing 判定重构
 current_plan: Not started
-last_activity_desc: "Completed quick task 261016-20c: refactor pokemon load/restore pipeline (three-arm auto-snapshot load + three-arm verified restore + 3 helpers; static gates all green; three-scenario in-game UAT pending, verification human_needed)"
+last_activity_desc: "Completed quick task 261016-vbt: castLoadedItem CD-hit semantics — skip use and restore same-press (user ruling 2026-10-16); success path two-press semantics unchanged; restore arm 707-766 byte-identical; in-game UAT pending"
 ---
 
 # Project State
@@ -298,6 +298,7 @@ last_activity_desc: "Completed quick task 261016-20c: refactor pokemon load/rest
 | 260917-j9z | 纯机械符号改名 selectFerocityOrEmeraldRot → selectBuilderRelic：Druid.lua 定义处+4 调用点、selftest.lua 24 处引用（O-08..O-16 stub 调用与 assert 文案）同步替换，零语义改动（两处 2.5s 能量门逐字节不变、物品名注释保留），行数 1795/2783 与注册计数 16 不变，三解释器全绿；principles 文档工作树同步 | 2026-09-17 | b30ca29 | [260917-j9z-macrotorch-selectferocityoremeraldrot-ma](./quick/260917-j9z-macrotorch-selectferocityoremeraldrot-ma/) |
 | 261016-04w | 更新 pokemonLoad orderedTable：删 Dog Whistle、加 Onyxian Brood Egg/Mechanical Yeti/Decoy Dragonling Remote，7 条目按召唤物等级排序（鸡/龙/蛋/巴罗夫/骷髅书/雪人/诱饵龙），backupItem 不动 | 2026-10-16 | 941330a | [261016-04w-pokemonload-orderedtable-entity-player-l](./quick/261016-04w-pokemonload-orderedtable-entity-player-l/) |
 | 261016-20c | 副手 pokemon 装载/恢复管线重构：三支自动快照装载（swap/空槽/双手卸装）+ 三臂验证式恢复 + 三个新 helper + 三解释器全绿；三场景实机 UAT 待执行 | 2026-10-16 | 665dd4a | [261016-20c-pokemon-entity-player-lua-loaduseableite](./quick/261016-20c-pokemon-entity-player-lua-loaduseableite/) |
+| 261016-vbt | castLoadedItem CD 命中语义修正（用户裁决 2026-10-16）：CD 未好时跳过释放同一按直接换回原装备（raid 无等待时间）；成功路径两按语义不变；恢复臂 707-766 逐字节不变，四带 md5 对焊+三解释器全绿，实机验证待执行 | 2026-10-16 | 2c2f413 | [261016-vbt-castloadeditem-cd-entity-player-lua-685-](./quick/261016-vbt-castloadeditem-cd-entity-player-lua-685-/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
