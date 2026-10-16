@@ -3,8 +3,8 @@ gsd_state_version: "1.0"
 milestone: v1.0
 status: in_progress
 stopped_at: Phase 28 complete, ready to plan Phase 29
-last_updated: "2026-10-16T14:43:42.122Z"
-state_head: 2c2f413fe1c084af4234c1ab7ba482a21f3dfd65
+last_updated: "2026-10-16T15:52:44.692Z"
+state_head: b587c964394c2339f6280d1a4021d5fd03bc3e50
 progress:
   total_phases: 29
   completed_phases: 15
@@ -15,7 +15,7 @@ last_activity: 2026-10-16
 current_phase: 29
 current_phase_name: 统一 landing 判定重构
 current_plan: Not started
-last_activity_desc: "Completed quick task 261016-vbt: castLoadedItem CD-hit semantics — skip use and restore same-press (user ruling 2026-10-16); success path two-press semantics unchanged; restore arm 707-766 byte-identical; in-game UAT pending"
+last_activity_desc: "Completed quick task 261016-wo0: CR-01 lock predicate fix (entry-exists locks; used-but-unrestored reload refused) + WR-03 dead obj.loadUseableItem removal (review 261016-code-review-recent option A); restore-arm freeze md5 re-verified via text anchor; verification human_needed — in-game lock/unlock UAT pending"
 ---
 
 # Project State
@@ -299,6 +299,7 @@ last_activity_desc: "Completed quick task 261016-vbt: castLoadedItem CD-hit sema
 | 261016-04w | 更新 pokemonLoad orderedTable：删 Dog Whistle、加 Onyxian Brood Egg/Mechanical Yeti/Decoy Dragonling Remote，7 条目按召唤物等级排序（鸡/龙/蛋/巴罗夫/骷髅书/雪人/诱饵龙），backupItem 不动 | 2026-10-16 | 941330a | [261016-04w-pokemonload-orderedtable-entity-player-l](./quick/261016-04w-pokemonload-orderedtable-entity-player-l/) |
 | 261016-20c | 副手 pokemon 装载/恢复管线重构：三支自动快照装载（swap/空槽/双手卸装）+ 三臂验证式恢复 + 三个新 helper + 三解释器全绿；三场景实机 UAT 待执行 | 2026-10-16 | 665dd4a | [261016-20c-pokemon-entity-player-lua-loaduseableite](./quick/261016-20c-pokemon-entity-player-lua-loaduseableite/) |
 | 261016-vbt | castLoadedItem CD 命中语义修正（用户裁决 2026-10-16）：CD 未好时跳过释放同一按直接换回原装备（raid 无等待时间）；成功路径两按语义不变；恢复臂 707-766 逐字节不变，四带 md5 对焊+三解释器全绿，实机验证待执行 | 2026-10-16 | 2c2f413 | [261016-vbt-castloadeditem-cd-entity-player-lua-685-](./quick/261016-vbt-castloadeditem-cd-entity-player-lua-685-/) |
+| 261016-wo0 | 修复 CR-01 锁谓词漏洞（条目存在即锁）+ WR-03 死代码 obj.loadUseableItem 下线（来源: 261016 code review 选项 A） | 2026-10-16 | b587c96 | [261016-wo0-cr-01-blocker-wr-03-planning-quick-26101](./quick/261016-wo0-cr-01-blocker-wr-03-planning-quick-26101/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
