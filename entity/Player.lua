@@ -346,13 +346,21 @@ function macroTorch.Player:new()
     -- with an automatic snapshot of whatever the load displaces:
     --   * target slot occupied -> the displaced item name is recorded (swap path)
     --     so the restore press can put it back to the same slot;
-    --   * target slot empty (off-hand) -> the main hand (16) is snapshotted first,
-    --     then the item is equipped and verified via GetInventoryItemLink:
-    --       - verified: keep the load, main hand untouched (nothing to restore
-    --         except the loaded item itself);
-    --       - refused (a two-hand weapon in the main hand blocks the off-hand):
-    --         the two-hander is unequipped into an empty bag slot (recorded),
-    --         then the equip is retried and verified again.
+    --   * target slot empty (off-hand) -> the main hand (16) is snapshotted, then
+    --     the item is equipped. A deferred (next-frame) refusal - the item back
+    --     in the bag while a two-hander still occupies the main hand - moves the
+    --     two-hander into an empty bag slot (recorded) and retries the equip.
+    -- All equip/unequip actions run through the frame-split queue
+    -- (macroTorch.pokemonEquipQueue, pumped by the periodic task
+    -- 'pokemonPipelineTick'): ONE cursor op per tick, verification on the tick
+    -- AFTER the action. Live forensics (2026-10-19) pinned three client facts:
+    --   * an equip into an EMPTY slot lands but GetInventoryItemLink does not
+    --     show it on the same frame - same-frame verification is unusable;
+    --   * same-frame multi-op cursor chains keep only their first op: later
+    --     PickupContainerItem / EquipCursorItem calls get dropped and the item
+    --     strands on the cursor;
+    --   * therefore every equip judgement below reads the slot link one tick
+    --     after the equip action, and no tick issues more than one cursor op.
     -- Only one item can be loaded at a time - must cast and unload before loading
     -- another.
     -- @param useableItemsTable table with keys, values (maps key->item name) and
@@ -387,67 +395,6 @@ function macroTorch.Player:new()
         return macroTorch.toBoolean(link and strfind(link, itemName))
     end
 
-    -- Equip a bag item into targetSlot and verify the result through the slot
-    -- link. This gate fixes the former unconditional-success bug: the client
-    -- refuses the equip (e.g. off-hand while a two-hander occupies the main
-    -- hand) with a clean cursor and the item auto-returned to the bag, so the
-    -- only trustworthy success signal is the slot link itself.
-    -- @param itemName string item name in bag
-    -- @param targetSlot number equipment slot index
-    -- @return boolean true only when the slot link confirms the item landed
-    function obj.equipItemToSlotVerified(itemName, targetSlot)
-        obj.equipItem(itemName, targetSlot)
-        return obj.isItemNameInSlot(targetSlot, itemName)
-    end
-
-    -- Unequip the named item from equipment slot into the first empty bag slot,
-    -- verifying every sub-step; on any failed sub-step the item is rolled back
-    -- into the original slot so the inventory is never left half-moved.
-    -- Sub-steps: PickupInventoryItem(slot) lifts the item onto the cursor and
-    -- empties the slot; PickupContainerItem(bag, emptySlot) deposits the cursor
-    -- item into that empty slot (same-frame protected-action pairing as the
-    -- verified PickupContainerItem + EquipCursorItem sequence).
-    -- @param itemName string expected item name in slot
-    -- @param slot number equipment slot index
-    -- @return boolean true only when the slot no longer holds itemName and
-    --         itemName is found in a bag
-    function obj.unequipToBagVerified(itemName, slot)
-        if not obj.isItemNameInSlot(slot, itemName) then
-            return false
-        end
-        PickupInventoryItem(slot)
-        if obj.isItemNameInSlot(slot, itemName) then
-            return false
-        end
-        local depositBag, depositSlot = nil, nil
-        for bag = 0, 4 do
-            local numSlots = GetContainerNumSlots(bag)
-            for s = 1, numSlots do
-                local slotLink = GetContainerItemLink(bag, s)
-                if not slotLink then
-                    depositBag, depositSlot = bag, s
-                    break
-                end
-            end
-            if depositBag then
-                break
-            end
-        end
-        if not depositBag then
-            EquipCursorItem(slot)
-            return false
-        end
-        PickupContainerItem(depositBag, depositSlot)
-        if CursorHasItem() then
-            EquipCursorItem(slot)
-            return false
-        end
-        if obj.isItemNameInSlot(slot, itemName) or not macroTorch.isItemExist(itemName) then
-            return false
-        end
-        return true
-    end
-
     function obj.loadUseableItemToSlot(useableItemsTable)
         -- Ensure useableItemsTable has required fields
         if not useableItemsTable or not useableItemsTable.keys or not useableItemsTable.toSlots then
@@ -462,27 +409,19 @@ function macroTorch.Player:new()
             return false
         end
 
-        -- Resume arm pre-scan: a previous press unequipped the two-hander but
-        -- the final equip was not verified, so the state table only holds a
-        -- pending entry. Finish it before any fresh load attempt so it can
-        -- never be shadowed by another loadable item in the ordered table.
+        -- Resume arm pre-scan: a previous press left a pending entry (equip
+        -- enqueued but not yet verified). Finish it before any fresh load
+        -- attempt so it can never be shadowed by another loadable item in the
+        -- ordered table. Everything below enqueues the frame-split sequence;
+        -- the pump completes it over the following ticks with no extra
+        -- keypresses.
         if macroTorch.itemLoadingTable then
             for slot, pendingTable in pairs(macroTorch.itemLoadingTable) do
                 if slot and pendingTable and pendingTable.pendingEquip and not pendingTable.useableItem then
-                    obj.equipItem(pendingTable.pendingEquip, slot)
-                    if obj.isItemNameInSlot(slot, pendingTable.pendingEquip) then
-                        pendingTable.useableItem = pendingTable.pendingEquip
-                        pendingTable.useableItemUsed = false
-                        if pendingTable.pendingSaying and not macroTorch.isNumber(pendingTable.pendingSaying) then
-                            pendingTable.saying = pendingTable.pendingSaying
-                        end
-                        pendingTable.pendingEquip = nil
-                        pendingTable.pendingSaying = nil
-                        macroTorch.show("Useable item loaded to slot " .. slot .. ": " .. pendingTable.useableItem)
-                        return true
-                    end
-                    macroTorch.show("Useable item load failed to slot " .. slot .. ": " .. pendingTable.pendingEquip)
-                    return false
+                    macroTorch.pokemonEnqueue({ t = 'pickupBag', itemName = pendingTable.pendingEquip, targetSlot = slot })
+                    macroTorch.pokemonEnqueue({ t = 'equipCursor', slot = slot })
+                    macroTorch.pokemonEnqueue({ t = 'verifyEquipLoad', itemName = pendingTable.pendingEquip, targetSlot = slot, saying = pendingTable.pendingSaying })
+                    return true
                 end
             end
         end
@@ -514,89 +453,42 @@ function macroTorch.Player:new()
                 local currentSlotLink = macroTorch.getEquippedItemLink(targetSlot)
                 if currentSlotLink then
                     -- Swap path: remember the displaced item so the restore
-                    -- press can put it back to the same slot
-                    local displacedItem = macroTorch.getItemNameFromLink(currentSlotLink)
-                    if not obj.equipItemToSlotVerified(useableItem, targetSlot) then
-                        macroTorch.show("Useable item load failed to slot " .. targetSlot .. ": " .. useableItem)
-                        return false
-                    end
+                    -- press can put it back to the same slot. The state entry
+                    -- is written now (in-flight shape); the deferred verify
+                    -- promotes it or keeps it pending for the next press.
                     if not macroTorch.itemLoadingTable then
                         macroTorch.itemLoadingTable = {}
                     end
                     macroTorch.itemLoadingTable[targetSlot] = {
-                        useableItem = useableItem,
-                        useableItemUsed = false,
-                        swappingItem = displacedItem
+                        swappingItem = macroTorch.getItemNameFromLink(currentSlotLink),
+                        pendingEquip = useableItem,
+                        pendingSaying = saying
                     }
-                    if saying and not macroTorch.isNumber(saying) then
-                        macroTorch.itemLoadingTable[targetSlot].saying = saying
-                    end
-                    macroTorch.show("Useable item loaded to slot " .. targetSlot .. ": " .. useableItem)
+                    macroTorch.pokemonEnqueue({ t = 'pickupBag', itemName = useableItem, targetSlot = targetSlot })
+                    macroTorch.pokemonEnqueue({ t = 'equipCursor', slot = targetSlot })
+                    macroTorch.pokemonEnqueue({ t = 'verifyEquipLoad', itemName = useableItem, targetSlot = targetSlot, saying = saying })
                     return true
                 end
 
-                -- Target slot empty: snapshot the main hand (16) and try
-                -- equipping. Success keeps the main hand untouched; refusal
-                -- means a two-hander blocks the off-hand and it must move first.
+                -- Target slot empty: snapshot the main hand name. The deferred
+                -- verify carries the snapshot; only a confirmed refusal (the
+                -- item back in the bag) then moves the two-hander out of 16.
                 local mainHandLink = macroTorch.getEquippedItemLink(16)
                 local mainHandItem = nil
                 if mainHandLink then
                     mainHandItem = macroTorch.getItemNameFromLink(mainHandLink)
                 end
-                if obj.equipItemToSlotVerified(useableItem, targetSlot) then
-                    if not macroTorch.itemLoadingTable then
-                        macroTorch.itemLoadingTable = {}
-                    end
-                    macroTorch.itemLoadingTable[targetSlot] = {
-                        useableItem = useableItem,
-                        useableItemUsed = false
-                    }
-                    if saying and not macroTorch.isNumber(saying) then
-                        macroTorch.itemLoadingTable[targetSlot].saying = saying
-                    end
-                    macroTorch.show("Useable item loaded to slot " .. targetSlot .. ": " .. useableItem)
-                    return true
-                end
-
-                -- The off-hand equip was refused. Only the 17-slot case with a
-                -- really occupied main hand can be repaired here; any other
-                -- refusal (wrong item type, empty main hand) just fails.
-                if not mainHandItem or targetSlot ~= 17 then
-                    macroTorch.show("Useable item load failed to slot " .. targetSlot .. ": " .. useableItem)
-                    return false
-                end
-
-                -- Unequip the two-hander into an empty bag slot (rollback-safe)
-                -- and record it as the restore target for the main hand
-                if not obj.unequipToBagVerified(mainHandItem, 16) then
-                    macroTorch.show("Useable item load failed to slot " .. targetSlot .. ": " .. useableItem)
-                    return false
-                end
                 if not macroTorch.itemLoadingTable then
                     macroTorch.itemLoadingTable = {}
                 end
                 macroTorch.itemLoadingTable[targetSlot] = {
-                    mainHandItem = mainHandItem,
                     pendingEquip = useableItem,
                     pendingSaying = saying
                 }
-
-                -- Final equip + verify; on failure the pending entry stays so
-                -- the next press resumes without re-unequipping anything
-                obj.equipItem(useableItem, targetSlot)
-                if obj.isItemNameInSlot(targetSlot, useableItem) then
-                    macroTorch.itemLoadingTable[targetSlot].useableItem = useableItem
-                    macroTorch.itemLoadingTable[targetSlot].useableItemUsed = false
-                    if saying and not macroTorch.isNumber(saying) then
-                        macroTorch.itemLoadingTable[targetSlot].saying = saying
-                    end
-                    macroTorch.itemLoadingTable[targetSlot].pendingEquip = nil
-                    macroTorch.itemLoadingTable[targetSlot].pendingSaying = nil
-                    macroTorch.show("Useable item loaded to slot " .. targetSlot .. ": " .. useableItem)
-                    return true
-                end
-                macroTorch.show("Useable item load failed to slot " .. targetSlot .. ": " .. useableItem .. " (two-hand weapon unequipped, retry next press)")
-                return false
+                macroTorch.pokemonEnqueue({ t = 'pickupBag', itemName = useableItem, targetSlot = targetSlot })
+                macroTorch.pokemonEnqueue({ t = 'equipCursor', slot = targetSlot })
+                macroTorch.pokemonEnqueue({ t = 'verifyEquipLoad', itemName = useableItem, targetSlot = targetSlot, saying = saying, repair = mainHandItem })
+                return true
             end
         end
         return false
@@ -670,10 +562,12 @@ function macroTorch.Player:new()
                         loadingTable.useableItemUsed = true
                     end
                     if loadingTable.useableItemUsed then
-                        -- Restore arm: press 2, or the same press after a CD skip, restores the original equipment.
-                        -- Combat pause: protected equip actions are
-                        -- client-refused in combat; press again after combat,
-                        -- state is kept.
+                        -- Restore arm: press 2, or the same press after a CD skip,
+                        -- restores the original equipment. Combat pause: protected
+                        -- equip actions are client-refused in combat; press again
+                        -- after combat, state is kept. All three restore arms ride
+                        -- the frame-split queue: one cursor op per tick, verify on
+                        -- the tick after.
                         if UnitAffectingCombat("player") then
                             return
                         end
@@ -688,14 +582,9 @@ function macroTorch.Player:new()
                                 macroTorch.itemLoadingTable[swappingSlot] = nil
                                 return
                             end
-                            obj.equipItem(loadingTable.swappingItem, swappingSlot)
-                            if obj.isItemNameInSlot(swappingSlot, loadingTable.swappingItem)
-                                    and not obj.isItemNameInSlot(swappingSlot, loadingTable.useableItem) then
-                                macroTorch.show("Original item restored: " .. loadingTable.swappingItem)
-                                macroTorch.itemLoadingTable[swappingSlot] = nil
-                                return
-                            end
-                            macroTorch.show("Original item restore failed: " .. loadingTable.swappingItem)
+                            macroTorch.pokemonEnqueue({ t = 'pickupBag', itemName = loadingTable.swappingItem, targetSlot = swappingSlot })
+                            macroTorch.pokemonEnqueue({ t = 'equipCursor', slot = swappingSlot })
+                            macroTorch.pokemonEnqueue({ t = 'verifyEquipRestore', slot = swappingSlot, backItem = loadingTable.swappingItem, goneSlot = swappingSlot, goneItem = loadingTable.useableItem, okMsg = 'Original item restored: ' .. loadingTable.swappingItem, failMsg = 'Original item restore failed: ' .. loadingTable.swappingItem })
                             return
                         elseif loadingTable.mainHandItem then
                             -- Unequipped two-hander path: equip it back to main
@@ -708,14 +597,9 @@ function macroTorch.Player:new()
                                 macroTorch.itemLoadingTable[swappingSlot] = nil
                                 return
                             end
-                            obj.equipItem(loadingTable.mainHandItem, 16)
-                            if obj.isItemNameInSlot(16, loadingTable.mainHandItem)
-                                    and not obj.isItemNameInSlot(swappingSlot, loadingTable.useableItem) then
-                                macroTorch.show("Main hand weapon restored: " .. loadingTable.mainHandItem)
-                                macroTorch.itemLoadingTable[swappingSlot] = nil
-                                return
-                            end
-                            macroTorch.show("Main hand weapon restore failed: " .. loadingTable.mainHandItem)
+                            macroTorch.pokemonEnqueue({ t = 'pickupBag', itemName = loadingTable.mainHandItem, targetSlot = 16 })
+                            macroTorch.pokemonEnqueue({ t = 'equipCursor', slot = 16 })
+                            macroTorch.pokemonEnqueue({ t = 'verifyEquipRestore', slot = 16, backItem = loadingTable.mainHandItem, goneSlot = swappingSlot, goneItem = loadingTable.useableItem, okMsg = 'Main hand weapon restored: ' .. loadingTable.mainHandItem, failMsg = 'Main hand weapon restore failed: ' .. loadingTable.mainHandItem })
                             return
                         else
                             -- Nothing was displaced during load: just unequip
@@ -725,12 +609,8 @@ function macroTorch.Player:new()
                                 macroTorch.itemLoadingTable[swappingSlot] = nil
                                 return
                             end
-                            if obj.unequipToBagVerified(loadingTable.useableItem, swappingSlot) then
-                                macroTorch.show("Useable item removed from slot " .. swappingSlot)
-                                macroTorch.itemLoadingTable[swappingSlot] = nil
-                                return
-                            end
-                            macroTorch.show("Useable item remove failed from slot " .. swappingSlot)
+                            macroTorch.pokemonEnqueue({ t = 'pickupInventory', slot = swappingSlot, itemName = loadingTable.useableItem })
+                            macroTorch.pokemonEnqueue({ t = 'verifySlotEmpty', slot = swappingSlot, itemName = loadingTable.useableItem, mode = 'plain' })
                             return
                         end
                     end
@@ -752,6 +632,262 @@ function macroTorch.Player:new()
     setmetatable(obj, macroTorch.classMetatable(self, "PLAYER_FIELD_FUNC_MAP"))
 
     return obj
+end
+
+-- Frame-split pokemon load/restore queue (live forensics 2026-10-19). The
+-- queue lives on macroTorch so it survives player-object recreation; it is
+-- pumped by the periodic task registered below ('pokemonPipelineTick', 0.1s),
+-- executing exactly ONE cursor op per tick and verifying on the tick after.
+-- When the player enters combat mid-sequence the pump pauses (steps are kept)
+-- and resumes after combat; the load and restore keypresses enqueue only out
+-- of combat. Step types:
+--   pickupBag          PickupContainerItem (lift the named bag item)
+--   pickupInventory    PickupInventoryItem  (lift from an equipment slot)
+--   equipCursor / rollbackCursor
+--                      EquipCursorItem      (place / return the cursor item)
+--   verifySlotEmpty    read-only, the tick after the pickup
+--   verifyEquipLoad    read-only, the tick after the equip; promotes the
+--                      pending load, or fires the two-hander repair arm on a
+--                      confirmed refusal
+--   verifyDepositUnequip / verifyDepositPlain
+--                      read-only, the tick after the bag deposit
+--   verifyEquipRestore read-only, the tick after a restore equip
+--   verifyRollback     read-only, the tick after a rollback
+function macroTorch.pokemonQueueEnsure()
+    if not macroTorch.pokemonEquipQueue then
+        macroTorch.pokemonEquipQueue = {}
+    end
+    return macroTorch.pokemonEquipQueue
+end
+
+function macroTorch.pokemonEnqueue(step)
+    table.insert(macroTorch.pokemonQueueEnsure(), step)
+end
+
+-- One tick of the queue: exactly one cursor op per tick. Cheap-first gate:
+-- an idle queue returns before any client API call, mirroring cpBuildDkiTick.
+function macroTorch.pokemonPipelineTick()
+    local queue = macroTorch.pokemonEquipQueue
+    if not queue then
+        return
+    end
+    if macroTorch.tableLen(queue) == 0 then
+        return
+    end
+    if UnitAffectingCombat("player") then
+        return
+    end
+    local step = table.remove(queue, 1)
+    macroTorch.pokemonPipelineStep(step)
+end
+
+macroTorch.registerPeriodicTask('pokemonPipelineTick', { interval = 0.1, task = macroTorch.pokemonPipelineTick })
+
+function macroTorch.pokemonPipelineStep(step)
+    if not step then
+        return
+    end
+    local t = step.t
+    if t == 'pickupBag' then
+        macroTorch.pokemonStepPickupBag(step)
+    elseif t == 'pickupInventory' then
+        macroTorch.pokemonStepPickupInventory(step)
+    elseif t == 'equipCursor' then
+        EquipCursorItem(step.slot)
+    elseif t == 'verifyEquipLoad' then
+        macroTorch.pokemonStepVerifyEquipLoad(step)
+    elseif t == 'verifySlotEmpty' then
+        macroTorch.pokemonStepVerifySlotEmpty(step)
+    elseif t == 'depositCursor' then
+        macroTorch.pokemonStepDepositCursor(step)
+    elseif t == 'verifyDepositUnequip' then
+        macroTorch.pokemonStepVerifyDepositUnequip(step)
+    elseif t == 'verifyDepositPlain' then
+        macroTorch.pokemonStepVerifyDepositPlain(step)
+    elseif t == 'verifyEquipRestore' then
+        macroTorch.pokemonStepVerifyEquipRestore(step)
+    elseif t == 'rollbackCursor' then
+        EquipCursorItem(step.slot)
+    elseif t == 'verifyRollback' then
+        macroTorch.pokemonStepVerifyRollback(step)
+    else
+        macroTorch.show('Unknown pokemon pipeline step: ' .. tostring(t))
+    end
+end
+
+-- Lift the named bag item onto the cursor (one PickupContainerItem). A busy
+-- cursor or a vanished item aborts the sequence with the pending entry kept
+-- for the next press.
+function macroTorch.pokemonStepPickupBag(step)
+    if CursorHasItem() then
+        macroTorch.show('Useable item load unconfirmed: cursor busy, retry next press')
+        return
+    end
+    local bagId, slotIndex = macroTorch.getItemBagIdAndSlot(step.itemName)
+    if not bagId or not slotIndex then
+        macroTorch.show('Useable item load failed: ' .. step.itemName .. ' not in bags')
+        return
+    end
+    PickupContainerItem(bagId, slotIndex)
+end
+
+-- Lift the item out of an equipment slot onto the cursor (one
+-- PickupInventoryItem), only when the slot still holds the expected name.
+function macroTorch.pokemonStepPickupInventory(step)
+    if not macroTorch.player.isItemNameInSlot(step.slot, step.itemName) then
+        macroTorch.show('Useable item load unconfirmed: slot ' .. step.slot .. ' no longer holds ' .. step.itemName)
+        return
+    end
+    PickupInventoryItem(step.slot)
+end
+
+-- Tick after the pickup: read-only. The slot must now be empty; otherwise the
+-- lift failed and the sequence stops with the pending entry kept.
+function macroTorch.pokemonStepVerifySlotEmpty(step)
+    if macroTorch.player.isItemNameInSlot(step.slot, step.itemName) then
+        macroTorch.show('Useable item load unconfirmed: failed to lift ' .. step.itemName .. ' from slot ' .. step.slot)
+        return
+    end
+    macroTorch.pokemonEnqueue({ t = 'depositCursor', fromSlot = step.slot, itemName = step.itemName, mode = step.mode,
+        targetSlot = step.targetSlot, useableItem = step.useableItem, saying = step.saying })
+end
+
+-- Deposit the cursor item into the first empty bag slot (one
+-- PickupContainerItem). No free slot (or nothing on the cursor) rolls back
+-- into the original slot on the following ticks.
+function macroTorch.pokemonStepDepositCursor(step)
+    if not CursorHasItem() then
+        macroTorch.show('Useable item load unconfirmed: nothing on cursor')
+        return
+    end
+    local depositBag, depositSlot = nil, nil
+    for bag = 0, 4 do
+        local numSlots = GetContainerNumSlots(bag)
+        for s = 1, numSlots do
+            local slotLink = GetContainerItemLink(bag, s)
+            if not slotLink then
+                depositBag, depositSlot = bag, s
+                break
+            end
+        end
+        if depositBag then
+            break
+        end
+    end
+    if not depositBag then
+        macroTorch.pokemonEnqueue({ t = 'rollbackCursor', slot = step.fromSlot, itemName = step.itemName })
+        macroTorch.pokemonEnqueue({ t = 'verifyRollback', slot = step.fromSlot, itemName = step.itemName, okMsg = 'Useable item load failed: no empty bag slot, rolled back into slot ' .. step.fromSlot, failMsg = 'Useable item load unconfirmed: rollback did not return the item to slot ' .. step.fromSlot })
+        return
+    end
+    PickupContainerItem(depositBag, depositSlot)
+    if step.mode == 'twohand' then
+        macroTorch.pokemonEnqueue({ t = 'verifyDepositUnequip', fromSlot = step.fromSlot, itemName = step.itemName,
+            targetSlot = step.targetSlot, useableItem = step.useableItem, saying = step.saying })
+    else
+        macroTorch.pokemonEnqueue({ t = 'verifyDepositPlain', slot = step.fromSlot, itemName = step.itemName })
+    end
+end
+
+-- Tick after the two-hander deposit: read-only. Confirmed (cursor clean, slot
+-- empty, item in a bag) commits the repair context and re-runs the pokemon
+-- equip with a fresh deferred verify; any doubt keeps the pending entry and
+-- rolls back the cursor item into its slot.
+function macroTorch.pokemonStepVerifyDepositUnequip(step)
+    if CursorHasItem() then
+        macroTorch.pokemonEnqueue({ t = 'rollbackCursor', slot = step.fromSlot, itemName = step.itemName })
+        macroTorch.pokemonEnqueue({ t = 'verifyRollback', slot = step.fromSlot, itemName = step.itemName, okMsg = 'Useable item load failed: two-handed weapon deposit dropped, rolled back into slot ' .. step.fromSlot, failMsg = 'Useable item load unconfirmed: rollback did not return the item to slot ' .. step.fromSlot })
+        return
+    end
+    if macroTorch.player.isItemNameInSlot(step.fromSlot, step.itemName) or not macroTorch.isItemExist(step.itemName) then
+        macroTorch.show('Useable item load unconfirmed: ' .. step.itemName .. ' is not in a bag')
+        return
+    end
+    if macroTorch.itemLoadingTable and macroTorch.itemLoadingTable[step.targetSlot] then
+        macroTorch.itemLoadingTable[step.targetSlot].mainHandItem = step.itemName
+        macroTorch.itemLoadingTable[step.targetSlot].pendingEquip = step.useableItem
+        macroTorch.itemLoadingTable[step.targetSlot].pendingSaying = step.saying
+    end
+    macroTorch.pokemonEnqueue({ t = 'pickupBag', itemName = step.useableItem, targetSlot = step.targetSlot })
+    macroTorch.pokemonEnqueue({ t = 'equipCursor', slot = step.targetSlot })
+    macroTorch.pokemonEnqueue({ t = 'verifyEquipLoad', itemName = step.useableItem, targetSlot = step.targetSlot, saying = step.saying })
+end
+
+-- Tick after a plain restore-unequip deposit: read-only. Success clears the
+-- loading entry (pokemon back in a bag); doubt rolls back and keeps it.
+function macroTorch.pokemonStepVerifyDepositPlain(step)
+    if CursorHasItem() then
+        macroTorch.pokemonEnqueue({ t = 'rollbackCursor', slot = step.slot, itemName = step.itemName })
+        macroTorch.pokemonEnqueue({ t = 'verifyRollback', slot = step.slot, itemName = step.itemName, okMsg = 'Useable item remove failed: deposit dropped, rolled back into slot ' .. step.slot, failMsg = 'Useable item remove unconfirmed: rollback did not return the item to slot ' .. step.slot })
+        return
+    end
+    if macroTorch.player.isItemNameInSlot(step.slot, step.itemName) or not macroTorch.isItemExist(step.itemName) then
+        macroTorch.show('Useable item remove unconfirmed from slot ' .. step.slot)
+        return
+    end
+    if macroTorch.itemLoadingTable then
+        macroTorch.itemLoadingTable[step.slot] = nil
+    end
+    macroTorch.show('Useable item removed from slot ' .. step.slot)
+end
+
+-- Tick after an equip action: read-only verify through the slot link. Success
+-- promotes the pending load; the two-hander repair arm fires only on a
+-- confirmed refusal (item back in the bag, slot 17, a non-empty main-hand
+-- snapshot) and is the only path that ever touches slot 16. Any other
+-- failure reports the unconfirmed state and keeps it for the next press.
+function macroTorch.pokemonStepVerifyEquipLoad(step)
+    local slot = step.targetSlot
+    if macroTorch.player.isItemNameInSlot(slot, step.itemName) then
+        local entry = macroTorch.itemLoadingTable and macroTorch.itemLoadingTable[slot]
+        if not entry then
+            if not macroTorch.itemLoadingTable then
+                macroTorch.itemLoadingTable = {}
+            end
+            entry = {}
+            macroTorch.itemLoadingTable[slot] = entry
+        end
+        entry.useableItem = step.itemName
+        entry.useableItemUsed = false
+        if step.saying and not macroTorch.isNumber(step.saying) then
+            entry.saying = step.saying
+        end
+        entry.pendingEquip = nil
+        entry.pendingSaying = nil
+        macroTorch.show('Useable item loaded to slot ' .. slot .. ': ' .. step.itemName)
+        return
+    end
+    if step.repair and slot == 17 and macroTorch.isItemExist(step.itemName) then
+        macroTorch.pokemonEnqueue({ t = 'pickupInventory', slot = 16, itemName = step.repair })
+        macroTorch.pokemonEnqueue({ t = 'verifySlotEmpty', slot = 16, itemName = step.repair, mode = 'twohand',
+            targetSlot = slot, useableItem = step.itemName, saying = step.saying })
+        macroTorch.show('Useable item load refused: moving the two-handed weapon out of the main hand, retrying')
+        return
+    end
+    macroTorch.show('Useable item load failed to slot ' .. slot .. ': ' .. step.itemName .. ' (unconfirmed, retry next press)')
+end
+
+-- Tick after a restore equip: read-only. Both target conditions met clears
+-- the loading entry; otherwise the entry is kept for the next press.
+function macroTorch.pokemonStepVerifyEquipRestore(step)
+    if macroTorch.player.isItemNameInSlot(step.slot, step.backItem)
+            and not macroTorch.player.isItemNameInSlot(step.goneSlot, step.goneItem) then
+        if macroTorch.itemLoadingTable then
+            macroTorch.itemLoadingTable[step.goneSlot] = nil
+        end
+        macroTorch.show(step.okMsg)
+        return
+    end
+    macroTorch.show(step.failMsg)
+end
+
+-- Tick after a rollback equip: read-only; both outcomes keep the state for
+-- idempotent re-press convergence, only the message differs.
+function macroTorch.pokemonStepVerifyRollback(step)
+    if macroTorch.player.isItemNameInSlot(step.slot, step.itemName) then
+        macroTorch.show(step.okMsg)
+    else
+        macroTorch.show(step.failMsg)
+    end
 end
 
 -- player fields to function mapping
