@@ -745,19 +745,35 @@ function macroTorch.pokemonStepPickupBag(step)
 end
 
 -- Lift the item out of an equipment slot onto the cursor (one
--- PickupInventoryItem), only when the slot still holds the expected name.
+-- PickupInventoryItem), only when the cursor is free and the slot still
+-- holds the expected name. Every pickupInventory chain in this file is the
+-- 2-step pair pickupInventory -> verifySlotEmpty; either abort here drains
+-- that one remaining verify from the queue head so an aborted sequence ends
+-- instead of letting the paired verify act on the wrong cursor contents.
 function macroTorch.pokemonStepPickupInventory(step)
+    if CursorHasItem() then
+        macroTorch.show('Useable item load unconfirmed: cursor busy, retry next press')
+        local q = macroTorch.pokemonQueueEnsure()
+        table.remove(q, 1)  -- verifySlotEmpty of this chain
+        return
+    end
     if not macroTorch.player.isItemNameInSlot(step.slot, step.itemName) then
         macroTorch.show('Useable item load unconfirmed: slot ' .. step.slot .. ' no longer holds ' .. step.itemName)
+        local q = macroTorch.pokemonQueueEnsure()
+        table.remove(q, 1)  -- verifySlotEmpty of this chain
         return
     end
     PickupInventoryItem(step.slot)
 end
 
--- Tick after the pickup: read-only. The slot must now be empty; otherwise the
--- lift failed and the sequence stops with the pending entry kept.
+-- Tick after the pickup: read-only. Cursor ops mutate the local model
+-- immediately, while the slot link can lag (E1-class latency; the removal
+-- direction was never forensically pinned). With the pickupInventory cursor
+-- guard above, a busy cursor here IS the lifted item - proceed to the
+-- deposit. Stop the chain only when the cursor is empty AND the slot link
+-- still shows the item.
 function macroTorch.pokemonStepVerifySlotEmpty(step)
-    if macroTorch.player.isItemNameInSlot(step.slot, step.itemName) then
+    if not CursorHasItem() and macroTorch.player.isItemNameInSlot(step.slot, step.itemName) then
         macroTorch.show('Useable item load unconfirmed: failed to lift ' .. step.itemName .. ' from slot ' .. step.slot)
         return
     end
