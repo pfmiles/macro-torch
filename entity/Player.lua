@@ -870,6 +870,18 @@ function macroTorch.pokemonStepVerifyEquipLoad(step)
         return
     end
     if step.repair and slot == 17 and macroTorch.isItemExist(step.itemName) then
+        -- First doubt is not a confirmed refusal: the equip link of an empty
+        -- slot can lag for 1-2 seconds (E1). Re-run this same verify every
+        -- tick for up to that window; a refreshed link promotes the load
+        -- early (first check above), and only a link that still misses after
+        -- ~2 s while the item sits back in the bags is a real refusal.
+        -- 20 ticks at the registered 0.1 s interval cover the full E1 lag.
+        step.wait = step.wait or 20
+        step.wait = step.wait - 1
+        if step.wait > 0 then
+            macroTorch.pokemonEnqueue(step)
+            return
+        end
         macroTorch.pokemonEnqueue({ t = 'pickupInventory', slot = 16, itemName = step.repair })
         macroTorch.pokemonEnqueue({ t = 'verifySlotEmpty', slot = 16, itemName = step.repair, mode = 'twohand',
             targetSlot = slot, useableItem = step.itemName, saying = step.saying })
