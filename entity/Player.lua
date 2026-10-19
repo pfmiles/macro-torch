@@ -616,8 +616,18 @@ function macroTorch.Player:new()
                     end
                     return
                 else
-                    -- sth got wrong, just reset (the item is no longer equipped)
-                    macroTorch.itemLoadingTable[swappingSlot] = nil
+                    -- sth got wrong, just reset - only for verified entries.
+                    -- An in-flight (pending) load is owned by the queue: its
+                    -- equip has been enqueued but not verified yet, so the
+                    -- entry still carries the swap/repair context
+                    -- (swappingItem, or the mainHandItem handed over by a
+                    -- deposit commit). Clearing it here would wipe that
+                    -- context before the deferred verify can promote the
+                    -- entry - the deferred verify will rebuild it over the
+                    -- next ticks.
+                    if not loadingTable.pendingEquip then
+                        macroTorch.itemLoadingTable[swappingSlot] = nil
+                    end
                 end
             end
         end
