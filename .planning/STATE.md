@@ -3,19 +3,19 @@ gsd_state_version: "1.0"
 milestone: v1.0
 status: in_progress
 stopped_at: Phase 28 complete, ready to plan Phase 29
-last_updated: "2026-10-16T15:52:44.692Z"
-state_head: b587c964394c2339f6280d1a4021d5fd03bc3e50
+last_updated: "2026-10-19T15:34:50.468Z"
+state_head: 41cc865bdc49d46f5f49f05253f7dc3c39e9a51d
 progress:
   total_phases: 29
   completed_phases: 15
   total_plans: 68
   completed_plans: 68
 milestone_name: milestone
-last_activity: 2026-10-16
+last_activity: 2026-10-19
 current_phase: 29
 current_phase_name: 统一 landing 判定重构
 current_plan: Not started
-last_activity_desc: "Completed quick task 261016-wo0: CR-01 lock predicate fix (entry-exists locks; used-but-unrestored reload refused) + WR-03 dead obj.loadUseableItem removal (review 261016-code-review-recent option A); restore-arm freeze md5 re-verified via text anchor; verification human_needed — in-game lock/unlock UAT pending"
+last_activity_desc: "Completed quick task 261019-w6s: 副手 pokemon 装载/恢复管线帧拆分修复（entity/Player.lua）——同帧装备+验证废除、修复臂确认拒绝门、pokemonPipelineTick 0.1s 逐帧单光标队列；实机取证 E1/E2/E3 驱动；三场景 UAT+光标 Empty 回归点 user-side unrun-verify 待执行（Windows+Cygwin 重建 SM_Extend.lua）"
 ---
 
 # Project State
@@ -300,6 +300,7 @@ last_activity_desc: "Completed quick task 261016-wo0: CR-01 lock predicate fix (
 | 261016-20c | 副手 pokemon 装载/恢复管线重构：三支自动快照装载（swap/空槽/双手卸装）+ 三臂验证式恢复 + 三个新 helper + 三解释器全绿；三场景实机 UAT 待执行 | 2026-10-16 | 665dd4a | [261016-20c-pokemon-entity-player-lua-loaduseableite](./quick/261016-20c-pokemon-entity-player-lua-loaduseableite/) |
 | 261016-vbt | castLoadedItem CD 命中语义修正（用户裁决 2026-10-16）：CD 未好时跳过释放同一按直接换回原装备（raid 无等待时间）；成功路径两按语义不变；恢复臂 707-766 逐字节不变，四带 md5 对焊+三解释器全绿，实机验证待执行 | 2026-10-16 | 2c2f413 | [261016-vbt-castloadeditem-cd-entity-player-lua-685-](./quick/261016-vbt-castloadeditem-cd-entity-player-lua-685-/) |
 | 261016-wo0 | 修复 CR-01 锁谓词漏洞（条目存在即锁）+ WR-03 死代码 obj.loadUseableItem 下线（来源: 261016 code review 选项 A） | 2026-10-16 | b587c96 | [261016-wo0-cr-01-blocker-wr-03-planning-quick-26101](./quick/261016-wo0-cr-01-blocker-wr-03-planning-quick-26101/) |
+| 261019-w6s | 副手 pokemon 装载/恢复管线帧拆分修复（entity/Player.lua）：废除同帧装备+验证、修复臂改确认拒绝门、装卸/回滚改 pokemonPipelineTick 0.1s 逐帧单光标队列；根治空槽装备同帧 link 滞后误判与光标滞留；三场景 UAT+光标 Empty 回归点待实机 | 2026-10-19 | 41cc865 | [261019-w6s-pokemon-load-restore-pipeline-frame-spli](./quick/261019-w6s-pokemon-load-restore-pipeline-frame-spli/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness
