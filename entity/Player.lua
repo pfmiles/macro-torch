@@ -918,7 +918,9 @@ function macroTorch.pokemonStepVerifyEquipLoad(step)
 end
 
 -- Tick after a restore equip: read-only. Both target conditions met clears
--- the loading entry; otherwise the entry is kept for the next press.
+-- the loading entry; a truly vanished restore target clears it too (it can
+-- never be satisfied again and would otherwise lock the load key behind the
+-- global lock forever); any other failure keeps the entry for the next press.
 function macroTorch.pokemonStepVerifyEquipRestore(step)
     if macroTorch.player.isItemNameInSlot(step.slot, step.backItem)
             and not macroTorch.player.isItemNameInSlot(step.goneSlot, step.goneItem) then
@@ -926,6 +928,21 @@ function macroTorch.pokemonStepVerifyEquipRestore(step)
             macroTorch.itemLoadingTable[step.goneSlot] = nil
         end
         macroTorch.show(step.okMsg)
+        return
+    end
+    -- The restore target may have vanished (sold / banked / destroyed) while
+    -- it sat in the bags. Only a target that is truly gone drops the state:
+    -- nothing on the cursor, not in its target slot, and not in any bag.
+    -- Every transient failure misses at least one of these gates (item still
+    -- in a bag, or still sitting in the slot), so it keeps the entry and the
+    -- next press can converge.
+    if not CursorHasItem()
+            and not macroTorch.player.isItemNameInSlot(step.slot, step.backItem)
+            and not macroTorch.isItemExist(step.backItem) then
+        if macroTorch.itemLoadingTable then
+            macroTorch.itemLoadingTable[step.goneSlot] = nil
+        end
+        macroTorch.show(step.failMsg)
         return
     end
     macroTorch.show(step.failMsg)
