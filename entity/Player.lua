@@ -716,11 +716,24 @@ function macroTorch.pokemonPipelineStep(step)
 end
 
 -- Lift the named bag item onto the cursor (one PickupContainerItem). A busy
--- cursor or a vanished item aborts the sequence with the pending entry kept
--- for the next press.
+-- cursor aborts the WHOLE 3-step chain: the paired equipCursor and verify*
+-- are drained from the queue, because the unattended equipCursor would
+-- otherwise equip the foreign cursor item into the target slot on the next
+-- tick. A vanished item keeps the pair enqueued on purpose - the cursor is
+-- empty so the equipCursor is a no-op, and the paired verify still
+-- adjudicates that failure (literally-gone versus keep-for-next-press).
 function macroTorch.pokemonStepPickupBag(step)
     if CursorHasItem() then
         macroTorch.show('Useable item load unconfirmed: cursor busy, retry next press')
+        -- Abort the WHOLE chain: the paired equipCursor must never run
+        -- against a foreign cursor item. Every 3-step chain in this file is
+        -- enqueued atomically as pickupBag -> equipCursor -> verify*, so the
+        -- remaining two steps of this chain sit at the queue head: drain
+        -- both before returning (table.remove on index 1 twice shifts the
+        -- array left twice, Lua 5.0 1-based list semantics).
+        local q = macroTorch.pokemonQueueEnsure()
+        table.remove(q, 1)  -- equipCursor of this chain
+        table.remove(q, 1)  -- verify* of this chain
         return
     end
     local bagId, slotIndex = macroTorch.getItemBagIdAndSlot(step.itemName)
