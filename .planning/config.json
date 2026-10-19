@@ -41,7 +41,8 @@
   "commit_docs": true,
   "git": {
     "branching_strategy": "none",
-    "create_tag": false
+    "create_tag": false,
+    "allow_default_branch_commits": true
   },
   "intel": {
     "enabled": false
