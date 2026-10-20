@@ -98,8 +98,16 @@ macroTorch.ES_FIELD_FUNC_MAP = {
 local frame = CreateFrame("Frame")
 
 -- sets the fixed periodic logic
-frame.lastUpdate = 0
 frame.leastUpdateInterval = 0.1
+-- Monotonic in-game clock, accumulated from OnUpdate's per-frame elapsed
+-- (arg1). GetTime() must not be the scheduler clock on this client: since
+-- the heartbeat re-bases frame.lastUpdate every 0.1s, a task whose interval
+-- exceeds the heartbeat can only ever fire after a large single gap (e.g.
+-- a loading screen) - once per zone transition (the uatPC interval=1 probe
+-- firing exactly twice across two zone-ins), never on a steady in-game
+-- clock. arg1 only accrues while the client actually updates, which is the
+-- time base every interval is meant to be measured in.
+frame.elapsed = 0
 if not macroTorch.periodicTasks then
     macroTorch.periodicTasks = {}
 end
@@ -108,7 +116,7 @@ function macroTorch.onPeriodicUpdate()
     -- on periodic update
     local expired = {}
     for name, task in pairs(macroTorch.periodicTasks) do
-        if GetTime() - frame.lastUpdate >= task.interval then
+        if frame.elapsed >= task.nextRun then
             if not task.times or task.times > 0 then
                 if task.times then
                     task.times = task.times - 1
@@ -117,6 +125,7 @@ function macroTorch.onPeriodicUpdate()
             else
                 table.insert(expired, name)
             end
+            task.nextRun = frame.elapsed + (task.interval or 0)
         end
     end
     for _, name in ipairs(expired) do
@@ -125,6 +134,8 @@ function macroTorch.onPeriodicUpdate()
 end
 
 function macroTorch.registerPeriodicTask(name, task)
+    -- Per-task countdown: re-registering a name restarts its countdown.
+    task.nextRun = frame.elapsed + (task.interval or 0)
     macroTorch.periodicTasks[name] = task
 end
 
@@ -137,14 +148,20 @@ function macroTorch.setRepeat(name, interval, times, func)
     macroTorch.registerPeriodicTask(name, { interval = interval, times = times, task = func })
 end
 
+-- Heartbeat is a monotonic TARGET comparison, never a subtraction: at
+-- larger elapsed magnitudes (elapsed - lastUpdate >= interval) loses float
+-- precision and silently skips every other beat (~8 s and beyond), halving
+-- the fire rate of every registered task.
+frame.nextBeat = frame.leastUpdateInterval
 frame:SetScript("OnUpdate", function()
-    if GetTime() - frame.lastUpdate >= frame.leastUpdateInterval then
+    frame.elapsed = frame.elapsed + (arg1 or 0)
+    if frame.elapsed >= frame.nextBeat then
         -- 使用pcall安全执行onPeriodicUpdate，确保后续代码一定执行
         local success, errorMsg = pcall(macroTorch.onPeriodicUpdate)
         if not success then
             -- 记录错误但不中断执行
             macroTorch.show("onPeriodicUpdate执行错误: " .. tostring(errorMsg), "red")
         end
-        frame.lastUpdate = GetTime()
+        frame.nextBeat = frame.elapsed + frame.leastUpdateInterval
     end
 end)
