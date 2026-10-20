@@ -418,6 +418,21 @@ function macroTorch.Player:new()
         if macroTorch.itemLoadingTable then
             for slot, pendingTable in pairs(macroTorch.itemLoadingTable) do
                 if slot and pendingTable and pendingTable.pendingEquip and not pendingTable.useableItem then
+                    -- Spam guard: when this slot's chain (the load chain itself,
+                    -- its tick-after verify polling, or its equipCursor step) is
+                    -- already queued, the pump is handling the load - absorb the
+                    -- press instead of enqueueing junk duplicate chains that
+                    -- would spam chat and could re-promote the entry later.
+                    local pumpQueue = macroTorch.pokemonEquipQueue
+                    if pumpQueue then
+                        local queueLength = macroTorch.tableLen(pumpQueue)
+                        for i = 1, queueLength do
+                            local queued = pumpQueue[i]
+                            if queued and (queued.targetSlot == slot or (queued.t == 'equipCursor' and queued.slot == slot)) then
+                                return true
+                            end
+                        end
+                    end
                     macroTorch.pokemonEnqueue({ t = 'pickupBag', itemName = pendingTable.pendingEquip, targetSlot = slot })
                     macroTorch.pokemonEnqueue({ t = 'equipCursor', slot = slot })
                     macroTorch.pokemonEnqueue({ t = 'verifyEquipLoad', itemName = pendingTable.pendingEquip, targetSlot = slot, saying = pendingTable.pendingSaying })
@@ -886,7 +901,10 @@ function macroTorch.pokemonStepVerifyEquipLoad(step)
             macroTorch.itemLoadingTable[slot] = entry
         end
         entry.useableItem = step.itemName
-        entry.useableItemUsed = false
+        -- Spam guard: a duplicate promote (a leftover verify step re-confirming
+        -- the same load) must never re-arm an already used item back to the
+        -- unused state - that would let a second cast press fire the use again.
+        entry.useableItemUsed = entry.useableItemUsed or false
         if step.saying and not macroTorch.isNumber(step.saying) then
             entry.saying = step.saying
         end
