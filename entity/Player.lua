@@ -749,6 +749,19 @@ end
 -- adjudicates that failure (literally-gone versus keep-for-next-press).
 function macroTorch.pokemonStepPickupBag(step)
     if CursorHasItem() then
+        -- Fault tolerance: when the cursor already holds the step's own item
+        -- (a previous equipCursor was interrupted or client-refused, e.g. a
+        -- full backpack with nowhere to put the swapped-out gear), keep the
+        -- paired equipCursor + verify queued so the next ticks retry placing
+        -- it - spam drives the retry and converges once a bag slot frees up.
+        -- Only a FOREIGN cursor item drains the pair (the CR-01 guard below).
+        if type(GetCursorInfo) == 'function' then
+            local cursorType, cursorId, cursorLink = GetCursorInfo()
+            if cursorType == 'item' and cursorLink and strfind(cursorLink, step.itemName) then
+                macroTorch.show('Useable item load recovery: ' .. step.itemName .. ' is on the cursor, retrying equip')
+                return
+            end
+        end
         macroTorch.show('Useable item load unconfirmed: cursor busy, retry next press')
         -- Abort the WHOLE chain: the paired equipCursor must never run
         -- against a foreign cursor item. Every 3-step chain in this file is
