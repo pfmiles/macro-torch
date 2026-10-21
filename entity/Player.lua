@@ -902,6 +902,15 @@ function macroTorch.pokemonStepVerifyDepositUnequip(step)
         macroTorch.pokemonEnqueue({ t = 'verifyRollback', slot = step.fromSlot, itemName = step.itemName, okMsg = 'Useable item load failed: two-handed weapon deposit dropped, rolled back into slot ' .. step.fromSlot, failMsg = 'Useable item load unconfirmed: rollback did not return the item to slot ' .. step.fromSlot })
         return
     end
+    -- E1/E4 lag: the slot link and the bag model can stay stale for 1-2 s
+    -- after the deposit - judging early stalls the repair reload on a false
+    -- 'not in a bag' while the two-hander actually reached the bags.
+    step.wait = step.wait or 20
+    step.wait = step.wait - 1
+    if step.wait > 0 then
+        macroTorch.pokemonEnqueue(step)
+        return
+    end
     if macroTorch.player.isItemNameInSlot(step.fromSlot, step.itemName) or not macroTorch.isItemExist(step.itemName) then
         macroTorch.show('Useable item load unconfirmed: ' .. step.itemName .. ' is not in a bag')
         return
@@ -922,6 +931,15 @@ function macroTorch.pokemonStepVerifyDepositPlain(step)
     if CursorHasItem() then
         macroTorch.pokemonEnqueue({ t = 'rollbackCursor', slot = step.slot, itemName = step.itemName })
         macroTorch.pokemonEnqueue({ t = 'verifyRollback', slot = step.slot, itemName = step.itemName, okMsg = 'Useable item remove failed: deposit dropped, rolled back into slot ' .. step.slot, failMsg = 'Useable item remove unconfirmed: rollback did not return the item to slot ' .. step.slot })
+        return
+    end
+    -- E1/E4 lag: the slot link and the bag model can stay stale for 1-2 s
+    -- after the deposit - judging early prints a false 'remove unconfirmed'
+    -- and keeps the entry even though the pokemon reached the bag.
+    step.wait = step.wait or 20
+    step.wait = step.wait - 1
+    if step.wait > 0 then
+        macroTorch.pokemonEnqueue(step)
         return
     end
     if macroTorch.player.isItemNameInSlot(step.slot, step.itemName) or not macroTorch.isItemExist(step.itemName) then
@@ -997,6 +1015,17 @@ function macroTorch.pokemonStepVerifyEquipRestore(step)
             macroTorch.itemLoadingTable[step.goneSlot] = nil
         end
         macroTorch.show(step.okMsg)
+        return
+    end
+    -- E1/E4 lag: the equipment link AND the bag model can both stay stale
+    -- for 1-2 seconds after the swap. Re-poll this read-only verify for up
+    -- to ~2 s before adjudicating - an early read sees the restore as failed
+    -- while it actually succeeded (observed live: 'restore failed' message
+    -- plus a stale loaded entry holding the load key after a good swap-back).
+    step.wait = step.wait or 20
+    step.wait = step.wait - 1
+    if step.wait > 0 then
+        macroTorch.pokemonEnqueue(step)
         return
     end
     -- The restore target may have vanished (sold / banked / destroyed) while
