@@ -597,6 +597,12 @@ function macroTorch.Player:new()
                                 macroTorch.itemLoadingTable[swappingSlot] = nil
                                 return
                             end
+                            -- Spam guard: a restore chain for this slot is
+                            -- already pumping; absorb this press instead of
+                            -- queueing a duplicate chain.
+                            if macroTorch.pokemonSlotQueued(swappingSlot) then
+                                return
+                            end
                             macroTorch.pokemonEnqueue({ t = 'pickupBag', itemName = loadingTable.swappingItem, targetSlot = swappingSlot })
                             macroTorch.pokemonEnqueue({ t = 'equipCursor', slot = swappingSlot })
                             macroTorch.pokemonEnqueue({ t = 'verifyEquipRestore', slot = swappingSlot, backItem = loadingTable.swappingItem, goneSlot = swappingSlot, goneItem = loadingTable.useableItem, okMsg = 'Original item restored: ' .. loadingTable.swappingItem, failMsg = 'Original item restore failed: ' .. loadingTable.swappingItem })
@@ -612,6 +618,11 @@ function macroTorch.Player:new()
                                 macroTorch.itemLoadingTable[swappingSlot] = nil
                                 return
                             end
+                            -- Spam guard: a restore chain for slot 16 is
+                            -- already pumping; absorb this press.
+                            if macroTorch.pokemonSlotQueued(16) then
+                                return
+                            end
                             macroTorch.pokemonEnqueue({ t = 'pickupBag', itemName = loadingTable.mainHandItem, targetSlot = 16 })
                             macroTorch.pokemonEnqueue({ t = 'equipCursor', slot = 16 })
                             macroTorch.pokemonEnqueue({ t = 'verifyEquipRestore', slot = 16, backItem = loadingTable.mainHandItem, goneSlot = swappingSlot, goneItem = loadingTable.useableItem, okMsg = 'Main hand weapon restored: ' .. loadingTable.mainHandItem, failMsg = 'Main hand weapon restore failed: ' .. loadingTable.mainHandItem })
@@ -622,6 +633,11 @@ function macroTorch.Player:new()
                             if not obj.isItemNameInSlot(swappingSlot, loadingTable.useableItem) then
                                 macroTorch.show("Useable item removed from slot " .. swappingSlot)
                                 macroTorch.itemLoadingTable[swappingSlot] = nil
+                                return
+                            end
+                            -- Spam guard: a plain-unequip chain for this
+                            -- slot is already pumping; absorb this press.
+                            if macroTorch.pokemonSlotQueued(swappingSlot) then
                                 return
                             end
                             macroTorch.pokemonEnqueue({ t = 'pickupInventory', slot = swappingSlot, itemName = loadingTable.useableItem })
@@ -687,6 +703,27 @@ end
 
 function macroTorch.pokemonEnqueue(step)
     table.insert(macroTorch.pokemonQueueEnsure(), step)
+end
+
+-- True when any queued pipeline step already touches this slot (targetSlot,
+-- slot or fromSlot). Used to absorb spam presses of the release key while a
+-- chain for that slot is mid-flight; a press after a dead chain still works
+-- because a dead chain leaves the queue empty.
+function macroTorch.pokemonSlotQueued(slot)
+    local q = macroTorch.pokemonEquipQueue
+    if not q then
+        return false
+    end
+    local queueLength = macroTorch.tableLen(q)
+    for i = 1, queueLength do
+        local queued = q[i]
+        if queued and ((queued.targetSlot and queued.targetSlot == slot)
+                or (queued.slot and queued.slot == slot)
+                or (queued.fromSlot and queued.fromSlot == slot)) then
+            return true
+        end
+    end
+    return false
 end
 
 -- One tick of the queue: exactly one cursor op per tick. Cheap-first gate:
@@ -926,19 +963,20 @@ function macroTorch.pokemonStepVerifyEquipLoad(step)
         macroTorch.show('Useable item loaded to slot ' .. slot .. ': ' .. step.itemName)
         return
     end
+    -- Not confirmed yet. The equip link of a freshly equipped slot can lag
+    -- for 1-2 seconds (E1), so re-poll this read-only verify every tick for
+    -- up to ~2 s before adjudicating. While the poll is queued, load-key
+    -- spam is absorbed by the pre-scan dedup guard, so a single press
+    -- converges silently; a refreshed link promotes early via the check
+    -- above. Only a link still missing after the full window is judged: the
+    -- repair arm on a confirmed refusal, otherwise retry-on-next-press.
+    step.wait = step.wait or 20
+    step.wait = step.wait - 1
+    if step.wait > 0 then
+        macroTorch.pokemonEnqueue(step)
+        return
+    end
     if step.repair and slot == 17 and macroTorch.isItemExist(step.itemName) then
-        -- First doubt is not a confirmed refusal: the equip link of an empty
-        -- slot can lag for 1-2 seconds (E1). Re-run this same verify every
-        -- tick for up to that window; a refreshed link promotes the load
-        -- early (first check above), and only a link that still misses after
-        -- ~2 s while the item sits back in the bags is a real refusal.
-        -- 20 ticks at the registered 0.1 s interval cover the full E1 lag.
-        step.wait = step.wait or 20
-        step.wait = step.wait - 1
-        if step.wait > 0 then
-            macroTorch.pokemonEnqueue(step)
-            return
-        end
         macroTorch.pokemonEnqueue({ t = 'pickupInventory', slot = 16, itemName = step.repair })
         macroTorch.pokemonEnqueue({ t = 'verifySlotEmpty', slot = 16, itemName = step.repair, mode = 'twohand',
             targetSlot = slot, useableItem = step.itemName, saying = step.saying })
