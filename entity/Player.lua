@@ -902,19 +902,12 @@ function macroTorch.pokemonStepVerifyDepositUnequip(step)
         macroTorch.pokemonEnqueue({ t = 'verifyRollback', slot = step.fromSlot, itemName = step.itemName, okMsg = 'Useable item load failed: two-handed weapon deposit dropped, rolled back into slot ' .. step.fromSlot, failMsg = 'Useable item load unconfirmed: rollback did not return the item to slot ' .. step.fromSlot })
         return
     end
-    -- E1/E4 lag: the slot link and the bag model can stay stale for 1-2 s
-    -- after the deposit - judging early stalls the repair reload on a false
-    -- 'not in a bag' while the two-hander actually reached the bags.
-    step.wait = step.wait or 20
-    step.wait = step.wait - 1
-    if step.wait > 0 then
-        macroTorch.pokemonEnqueue(step)
-        return
-    end
-    if macroTorch.player.isItemNameInSlot(step.fromSlot, step.itemName) or not macroTorch.isItemExist(step.itemName) then
-        macroTorch.show('Useable item load unconfirmed: ' .. step.itemName .. ' is not in a bag')
-        return
-    end
+    -- Cursor truth beats lagging models: the deposit step only ever runs
+    -- with the item on the cursor, and this verify only runs after it. An
+    -- empty cursor is immediate client-local proof that the two-hander left
+    -- the cursor into the bag slot - the slot/bag links lag 1-2 s (E1/E4)
+    -- and must not gate the reload chain (polling them here stalled the
+    -- whole repair for the lag window).
     if macroTorch.itemLoadingTable and macroTorch.itemLoadingTable[step.targetSlot] then
         macroTorch.itemLoadingTable[step.targetSlot].mainHandItem = step.itemName
         macroTorch.itemLoadingTable[step.targetSlot].pendingEquip = step.useableItem
@@ -933,19 +926,12 @@ function macroTorch.pokemonStepVerifyDepositPlain(step)
         macroTorch.pokemonEnqueue({ t = 'verifyRollback', slot = step.slot, itemName = step.itemName, okMsg = 'Useable item remove failed: deposit dropped, rolled back into slot ' .. step.slot, failMsg = 'Useable item remove unconfirmed: rollback did not return the item to slot ' .. step.slot })
         return
     end
-    -- E1/E4 lag: the slot link and the bag model can stay stale for 1-2 s
-    -- after the deposit - judging early prints a false 'remove unconfirmed'
-    -- and keeps the entry even though the pokemon reached the bag.
-    step.wait = step.wait or 20
-    step.wait = step.wait - 1
-    if step.wait > 0 then
-        macroTorch.pokemonEnqueue(step)
-        return
-    end
-    if macroTorch.player.isItemNameInSlot(step.slot, step.itemName) or not macroTorch.isItemExist(step.itemName) then
-        macroTorch.show('Useable item remove unconfirmed from slot ' .. step.slot)
-        return
-    end
+    -- Cursor truth beats lagging models: the deposit step only ever runs
+    -- with the pokemon on the cursor, and this verify only runs after it.
+    -- An empty cursor is immediate proof the deposit executed - the pokemon
+    -- cannot be anywhere else. The slot/bag links lag 1-2 s (E1/E4) and
+    -- must not gate the clear (polling them here delayed the 'removed'
+    -- message and the loading-table unlock by the whole lag window).
     if macroTorch.itemLoadingTable then
         macroTorch.itemLoadingTable[step.slot] = nil
     end
