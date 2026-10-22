@@ -15,7 +15,7 @@ last_activity: 2026-10-19
 current_phase: 29
 current_phase_name: 统一 landing 判定重构
 current_plan: Not started
-last_activity_desc: "Completed quick task 261019-w6s: 副手 pokemon 装载/恢复管线帧拆分修复（entity/Player.lua）——同帧装备+验证废除、修复臂确认拒绝门、pokemonPipelineTick 0.1s 逐帧单光标队列；实机取证 E1/E2/E3 驱动；三场景 UAT+光标 Empty 回归点 user-side unrun-verify 待执行（Windows+Cygwin 重建 SM_Extend.lua）"
+last_activity_desc: "Completed quick task 261019-w6s: 副手 pokemon 装载/恢复管线帧拆分修复（entity/Player.lua）——同帧装备+验证废除、修复臂确认拒绝门、pokemonPipelineTick 0.1s 逐帧单光标队列；实机取证 E1/E2/E3 驱动；三场景 UAT+光标 Empty 回归点实机全绿（slot 13/17、单双持、连打幂等、CD 命中恢复），三个低概率冷路径（战斗中断续跑/CD 进战斗/背包满 rollback）按用户裁决跳过，2026-10-22 完结"
 ---
 
 # Project State
@@ -297,10 +297,10 @@ last_activity_desc: "Completed quick task 261019-w6s: 副手 pokemon 装载/恢�
 | 260916-utm | catAtk builder 神像选择三层化：selectFerocityOrEmeraldRot 增加 clickContext 参数（8/8 T1 优先→战斗中粘性防 builder 互切→fast/trivial/pvp 用 Ferocity、普通用 Emerald Rot），computeNormalRelic 4 处调用点传参，执行层零改动，新增 Cat O-08..O-16 九项 selftest（三解释器 12/12 全绿） | 2026-09-16 | 638ca74 | [260916-utm-catatk-builder-1-selectferocityoremerald](./quick/260916-utm-catatk-builder-1-selectferocityoremerald/) |
 | 260917-j9z | 纯机械符号改名 selectFerocityOrEmeraldRot → selectBuilderRelic：Druid.lua 定义处+4 调用点、selftest.lua 24 处引用（O-08..O-16 stub 调用与 assert 文案）同步替换，零语义改动（两处 2.5s 能量门逐字节不变、物品名注释保留），行数 1795/2783 与注册计数 16 不变，三解释器全绿；principles 文档工作树同步 | 2026-09-17 | 1b494bc | [260917-j9z-macrotorch-selectferocityoremeraldrot-ma](./quick/260917-j9z-macrotorch-selectferocityoremeraldrot-ma/) |
 | 261016-04w | 更新 pokemonLoad orderedTable：删 Dog Whistle、加 Onyxian Brood Egg/Mechanical Yeti/Decoy Dragonling Remote，7 条目按召唤物等级排序（鸡/龙/蛋/巴罗夫/骷髅书/雪人/诱饵龙），backupItem 不动 | 2026-10-16 | 3e6b9ad | [261016-04w-pokemonload-orderedtable-entity-player-l](./quick/261016-04w-pokemonload-orderedtable-entity-player-l/) |
-| 261016-20c | 副手 pokemon 装载/恢复管线重构：三支自动快照装载（swap/空槽/双手卸装）+ 三臂验证式恢复 + 三个新 helper + 三解释器全绿；三场景实机 UAT 待执行 | 2026-10-16 | 80ece00 | [261016-20c-pokemon-entity-player-lua-loaduseableite](./quick/261016-20c-pokemon-entity-player-lua-loaduseableite/) |
-| 261016-vbt | castLoadedItem CD 命中语义修正（用户裁决 2026-10-16）：CD 未好时跳过释放同一按直接换回原装备（raid 无等待时间）；成功路径两按语义不变；恢复臂 707-766 逐字节不变，四带 md5 对焊+三解释器全绿，实机验证待执行 | 2026-10-16 | f32705c | [261016-vbt-castloadeditem-cd-entity-player-lua-685-](./quick/261016-vbt-castloadeditem-cd-entity-player-lua-685-/) |
+| 261016-20c | 副手 pokemon 装载/恢复管线重构：三支自动快照装载（swap/空槽/双手卸装）+ 三臂验证式恢复 + 三个新 helper + 三解释器全绿；三场景实机 UAT 随 261019-w6s 管线闭环（2026-10-22） | 2026-10-16 | 80ece00 | [261016-20c-pokemon-entity-player-lua-loaduseableite](./quick/261016-20c-pokemon-entity-player-lua-loaduseableite/) |
+| 261016-vbt | castLoadedItem CD 命中语义修正（用户裁决 2026-10-16）：CD 未好时跳过释放同一按直接换回原装备（raid 无等待时间）；成功路径两按语义不变；恢复臂 707-766 逐字节不变，四带 md5 对焊+三解释器全绿，实机验证随 261019-w6s 管线闭环（2026-10-22） | 2026-10-16 | f32705c | [261016-vbt-castloadeditem-cd-entity-player-lua-685-](./quick/261016-vbt-castloadeditem-cd-entity-player-lua-685-/) |
 | 261016-wo0 | 修复 CR-01 锁谓词漏洞（条目存在即锁）+ WR-03 死代码 obj.loadUseableItem 下线（来源: 261016 code review 选项 A） | 2026-10-16 | 6c0e24f | [261016-wo0-cr-01-blocker-wr-03-planning-quick-26101](./quick/261016-wo0-cr-01-blocker-wr-03-planning-quick-26101/) |
-| 261019-w6s | 副手 pokemon 装载/恢复管线帧拆分修复（entity/Player.lua）：废除同帧装备+验证、修复臂改确认拒绝门、装卸/回滚改 pokemonPipelineTick 0.1s 逐帧单光标队列；根治空槽装备同帧 link 滞后误判与光标滞留；三场景 UAT+光标 Empty 回归点待实机 | 2026-10-19 | 7710456 | [261019-w6s-pokemon-load-restore-pipeline-frame-spli](./quick/261019-w6s-pokemon-load-restore-pipeline-frame-spli/) |
+| 261019-w6s | 副手 pokemon 装载/恢复管线帧拆分修复（entity/Player.lua）：废除同帧装备+验证、修复臂改确认拒绝门、装卸/回滚改 pokemonPipelineTick 0.1s 逐帧单光标队列；根治空槽装备同帧 link 滞后误判与光标滞留；三场景 UAT+光标 Empty 回归点实机全绿；战斗中断续跑/CD进战斗/背包满 rollback 三冷路径用户裁决跳过，2026-10-22 完结 | 2026-10-19 | 7710456 | [261019-w6s-pokemon-load-restore-pipeline-frame-spli](./quick/261019-w6s-pokemon-load-restore-pipeline-frame-spli/) |
 
 - [Phase 21-02]: D-04: Field named isPseudoInfiniteEnergy — emphasizes approximate (erps >= SHRED_E) semantics
 - [Phase 21-02]: D-05: Computation in catAtk() after clickContext init, before module calls — each keystroke rebuilds clickContext, guaranteeing freshness

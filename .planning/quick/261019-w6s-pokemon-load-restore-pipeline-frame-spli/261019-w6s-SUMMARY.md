@@ -163,34 +163,22 @@ present, porcelain exactly the untracked quick-plan dir), three byte-locked Edit
 adjudication md5 matched on the first pass, full gate battery green, one commit with the
 byte-locked message, Task 2 closure gates green with zero commits.
 
-## User-side UAT (unrun-verify — filed per WINDOWS unrun-verify precedent)
+## User-side UAT (resolved — 主线路实机全绿，冷路径按用户裁决跳过)
 
-**实机验证为 user-side unrun-verify（不并入本 quick 自动门，与 20c/Phase 27-30 的 WINDOWS
-unrun-verify 先例一致）**：用户需在 **Windows+Cygwin 侧运行 ./build.sh 重建 SM_Extend.lua** 后在木桩
-跑「20c 三场景矩阵 + 新回归点」。所有预期都建立在逐帧队列之上：装载/恢复按键后由 pump 在约
-0.3-1.5 秒内自动收尾（A 场景修复链约 7 tick ≈ 0.7-1s），**无需在结算窗口内补按任何键**；重按幂等
-（续跑预扫再入队同串）。观察 L16/L17 与光标 cur：
+**已实测通过（用户实机，最新 build；2026-10-19/20/22 收口）**：装载/释放 A/B/C 三场景全部收敛、
+无光标滞留（slot 13 与 17、单双持、副手空/占用均覆盖）；光标 Empty 新回归点所有路径按键收尾后
+≤1.5s 落定为空；连打/骚扰/重复按键幂等并最终收敛；CD 命中显示「Useable item is in CD,
+restoring:」转入恢复且不重新触发 CD（Decoy 远程 ≤30s 窗口 + Onyxian Brood Egg（slot 13）反复实测）；
+释放键第 1 下真实使用物品（实机确认 CD-after 时间推进）。
 
-| 场景 | 装载键（1 键，pump 自动收尾） | 释放键第 1 下 | 释放键第 2 下 |
-|------|--------------------|--------------------|--------------------|
-| A 双手武器在 16、17 空 | 装备被确认拒绝（物品回包）→自动卸双手入包（16 空）→重装 17 并下一帧验证：L17=pokemon、L16 空 | 使用物品 + 喊对应 saying | 双手回 16（L16=双手）、L17 空、pokemon 自动回包 |
-| B 单手主手 + 17 有装备 | pokemon swap 入 17（L17=pokemon），原副手入包、L16 全程不动 | 同上 | 原副手回 17（L17=原副手名）、pokemon 回包、L16 仍不动 |
-| C 单手主手 + 17 空 | pokemon 装 17（L17=pokemon）、L16 不动 | 同上 | pokemon 卸下回包、L17 空、L16 仍在 |
+**用户裁决跳过（低概率冷路径，2026-10-22，不再安排实机）**：
+1. 队列中途进战斗 → PAUSE 零动作不丢状态 → 脱战 pump 自动续跑（附加收敛点 Step 4）；
+2. CD 命中且当时正在战斗中（恢复臂战斗静默暂停、状态不丢）；
+3. 背包满 deposit 无空位 rollback 兜底（F7 自愈冷路径）。
+裁决依据：pokemon 实际使用由战斗前人工择时保证；释放键在进战斗前恢复战斗装备的主线路已实测可靠
+（战斗中按下由战斗暂停臂保护状态 by design），三条冷路径不影响 raid 使用。
 
-**新回归点（本次 quick 主验点，高于一切，取代 20c A/C 场景的滞留观察）**：每次按键（装载或释放）
-收尾后——屏幕提示信息落定、约 ≤1.5 秒——`CursorHasItem()` 必须为空：三场景全路径 + 装载失败收敛路径
-都不允许光标滞留任何物品（E3 根治）。按键后 0~0.5 秒内 pickup 拆帧造成的短暂上光标是设计内瞬态，
-判定只看落定态，不看瞬时。
-
-**CD 命中进战斗（vbt 语义延续，by design 非 bug）**：CD 命中显示「Useable item is in CD,
-restoring:」并同按转入恢复；若此刻在战斗中，恢复臂静默战斗暂停、状态不丢；脱战续按收敛。
-
-附加收敛点（20c 抽验项延续）：装载中断/失败后重复按装载键不重复出乱、最终收敛；中途进战斗队列
-PAUSE 零动作不丢状态，脱战后 pump 自动续跑至收敛。
-
-**unrun-verify 状态：** 上述全部为 user-side pending；自动门已全绿，但实机矩阵须由用户执行。
-**Required user actions:** 1) Windows/Cygwin 侧 `./build.sh` 重建 SM_Extend.lua；2) 木桩跑三场景矩阵 +
-光标 Empty 回归点 + CD-in-combat 观察。
+**状态：** unrun-verify 解除——主线路 verified + 冷路径 waived-by-user；本 quick UAT 完结。
 
 ## Known Stubs
 
