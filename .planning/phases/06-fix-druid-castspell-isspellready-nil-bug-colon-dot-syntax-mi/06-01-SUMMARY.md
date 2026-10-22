@@ -63,9 +63,9 @@ completed: 2026-06-14
 
 Each task was committed atomically:
 
-1. **Task 1: Fix _castSpell internal calls — self:xxx() to obj.xxx()** - `968c2e1` (fix)
-2. **Task 2: Fix Druid skill methods — self:_castSpell to obj._castSpell** - `7668163` (fix)
-3. **Task 3: Add Category F selftest tests** - `cc67f09` (test)
+1. **Task 1: Fix _castSpell internal calls — self:xxx() to obj.xxx()** - `15683f6` (fix)
+2. **Task 2: Fix Druid skill methods — self:_castSpell to obj._castSpell** - `ae734fc` (fix)
+3. **Task 3: Add Category F selftest tests** - `914c7a6` (test)
 
 ## Files Created/Modified
 - `entity/Player.lua` - 4 lines changed (lines 52, 59, 69, 79): `self:isSpellReady` -> `obj.isSpellReady`, `self:_isInRange` -> `obj._isInRange`, `self:_hasResource` -> `obj._hasResource`, `self:cast` -> `obj.cast`

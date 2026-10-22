@@ -17,13 +17,13 @@ status: complete
 ## Tasks Completed
 
 ### Task 1: interface_debug.lua 新增 coffee/violet 两臂 + 同步 @param 颜色列表
-- **Commit:** `57cfba8` — `feat(announce): add coffee/violet custom RGB arms to macroTorch.show`
+- **Commit:** `1d40c00` — `feat(announce): add coffee/violet custom RGB arms to macroTorch.show`
 - **Changes:** green 臂之后插入 4 行（coffee/violet 两臂）；@param 颜色列表行末追加 `, "coffee", "violet"`（既有中文逐字保留）
 - **Verification:** 两臂 grep 上下文逐字命中；计数门 1/1/1；既有五臂零扰动（diff 中 custom_blue/custom_green/ChatTypeInfo 出现 0 次）；新增行 CJK = 1（唯一含 CJK 的新增行就是 @param 行）；bbcheck BALANCED；Lua 5.0 令牌门 0；CRLF 0；git diff --check 干净
 - **Diff form:** 5 insertions(+), 1 deletion(-)（4 行色臂 + @param 行替换）
 
 ### Task 2: 两个锁定调用点传新色名（cat.lua / Druid.lua）
-- **Commit:** `50dfcbe` — `feat(announce): pass coffee/violet color names at readyReshift/safeFF call sites`
+- **Commit:** `8b8fa53` — `feat(announce): pass coffee/violet color names at readyReshift/safeFF call sites`
 - **Changes:** cat.lua readyReshift 末行 `TIGER_E))` → `TIGER_E), 'coffee')`；Druid.lua safeFF 末行 `comboPoints))` → `comboPoints), 'violet')`；bear.lua 零改动
 - **Verification:** 两处第二参计数各 1；新增行不含 coffee/violet 的为 0（恰好两处改动）；新增行 CJK 0；diff --stat 恰两文件各 1 增 1 删；bbcheck 双文件 BALANCED；令牌门 0；CRLF 0/0；diff --check 干净
 - **Diff form:** 2 files, 2 insertions(+), 2 deletions(-)
@@ -66,4 +66,4 @@ status: complete
 ## Self-Check: PASSED
 
 - Files created/modified exist: interface_debug.lua, classes/druid/cat.lua, classes/druid/Druid.lua（均在工作树，diff 已核验）
-- Commits exist: `57cfba8`、`50dfcbe`（`git log -2` 已核验，消息与锁定文本逐字一致）
+- Commits exist: `1d40c00`、`8b8fa53`（`git log -2` 已核验，消息与锁定文本逐字一致）

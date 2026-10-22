@@ -59,7 +59,7 @@ must_haves:
 10. **executor 绝不 commit 文档**（PLAN/SUMMARY/STATE 由 quick 流程 orchestrator 收口）。
 11. **无名字冲突**：规划时 `git grep -cF 'EPR|PDT'` 全仓 0 实证（执行时 Step 1 复验）。
 
-## 背景事实（2026-09-15 规划时实地核对 HEAD 37c2234，编辑锚点以本节为准；行号供定位，执行时以锚文本为准复验）
+## 背景事实（2026-09-15 规划时实地核对 HEAD 132e63c，编辑锚点以本节为准；行号供定位，执行时以锚文本为准复验）
 
 - `core/events.lua:124` `    elseif event == "CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE" then` ← 分支体为空（125 行空行）。
 - `core/events.lua:126` `    elseif event == "CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE" then` ← 分支体为空（127 行空行）。

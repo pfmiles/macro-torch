@@ -81,7 +81,7 @@ All 19 must-have truths from the 3 PLAN frontmatters were verified:
 | KillShot comments survive in build | `grep -c KillShot SM_Extend.lua` | 24 occurrences | PASS |
 | SIDE EFFECT survives in build | `grep -c "SIDE EFFECT" SM_Extend.lua` | 1 occurrence (line 5792) | PASS |
 | D-07 preserved functions unchanged | Manual inspection of shouldDoReshift, shouldCastFFDuringWaitWindow, recoverNormalRelic | Zero isPseudoInfiniteEnergy references; all use computeErps directly with different semantics | PASS |
-| Zero behavior changes | `git diff bc62eda..HEAD -- classes/druid/{combo,cat}.lua classes/druid/Druid.lua` | 18 insertions(+), 8 deletions(-): all are comment lines or `erps >= SHRED_E` -> `clickContext.isPseudoInfiniteEnergy` replacements | PASS |
+| Zero behavior changes | `git diff 4a6e9bb..HEAD -- classes/druid/{combo,cat}.lua classes/druid/Druid.lua` | 18 insertions(+), 8 deletions(-): all are comment lines or `erps >= SHRED_E` -> `clickContext.isPseudoInfiniteEnergy` replacements | PASS |
 
 ### Requirements Coverage
 
@@ -117,11 +117,11 @@ All changes are comment-only or semantically-equivalent variable reference subst
 
 | Commit | Type | Files | Content |
 |--------|------|-------|---------|
-| `38980b1` | docs | combo.lua | Fix comment numbering 7/6 -> 6/7; add KillShot call-site comments |
-| `85769df` | docs | cat.lua | Add KillShot dual-entry function head comments |
-| `703bd4b` | refactor | combo.lua, cat.lua | Tracer: add isPseudoInfiniteEnergy assignment + oocMod replacement |
-| `12aac43` | refactor | cat.lua, Druid.lua | Expansion: replace remaining 4 isPseudoInfiniteEnergy refs |
-| `1f7facc` | docs | cat.lua | Add [SIDE EFFECT] comment block in keepRake |
+| `866448c` | docs | combo.lua | Fix comment numbering 7/6 -> 6/7; add KillShot call-site comments |
+| `9fdefa3` | docs | cat.lua | Add KillShot dual-entry function head comments |
+| `d06dafe` | refactor | combo.lua, cat.lua | Tracer: add isPseudoInfiniteEnergy assignment + oocMod replacement |
+| `4c6cc17` | refactor | cat.lua, Druid.lua | Expansion: replace remaining 4 isPseudoInfiniteEnergy refs |
+| `79e0ab4` | docs | cat.lua | Add [SIDE EFFECT] comment block in keepRake |
 
 ---
 

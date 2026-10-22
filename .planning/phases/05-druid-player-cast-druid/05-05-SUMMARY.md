@@ -67,8 +67,8 @@ completed: 2026-06-13
 
 Each task was committed atomically:
 
-1. **Task 1: Replace player.cast calls in druidBuffs** - `4b3300f` (feat)
-2. **Task 2: Replace all 10 player.cast calls in druidStun, druidDefend, druidControl** - `453c55c` (feat)
+1. **Task 1: Replace player.cast calls in druidBuffs** - `c05d617` (feat)
+2. **Task 2: Replace all 10 player.cast calls in druidStun, druidDefend, druidControl** - `2015644` (feat)
 
 ## Files Created/Modified
 - `classes/druid/utility.lua` - All 13 player.cast() calls replaced with skill method calls, 0 remain

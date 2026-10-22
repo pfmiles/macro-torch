@@ -91,8 +91,8 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1: build_order.txt comment update** - `e2bf81a` (chore)
-2. **Task 2: Delete deprecated files + build verification** - `8da2184` (chore)
+1. **Task 1: build_order.txt comment update** - `235673f` (chore)
+2. **Task 2: Delete deprecated files + build verification** - `4c2487c` (chore)
 
 ## Files Created/Modified
 
@@ -118,7 +118,7 @@ Each task was committed atomically:
 - **Fix:** Reduced scope to comment-only update — changing `# classes/ — Hunter (Phase 8)` to `# classes/ — Hunter (Phase 8 / Phase 25 combo refactor)`, which fully satisfies the plan's objective of documenting the architectural change
 - **Files modified:** build_order.txt
 - **Verification:** grep verification confirmed combo.lua after Hunter.lua and combat.lua/utility.lua absent from build_order.txt
-- **Committed in:** e2bf81a
+- **Committed in:** 235673f
 
 **2. [Rule 3 - Blocking] Broken shell syntax in PLAN.md verify section**
 
@@ -127,7 +127,7 @@ Each task was committed atomically:
 - **Fix:** Changed to `VAR=$(grep ... | head -1)` pattern for correct variable assignment
 - **Files modified:** 25-03-PLAN.md (verify section)
 - **Verification:** Verification script ran successfully with corrected syntax
-- **Committed in:** e2bf81a
+- **Committed in:** 235673f
 
 ---
 

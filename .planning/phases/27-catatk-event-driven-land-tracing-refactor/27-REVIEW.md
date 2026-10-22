@@ -25,7 +25,7 @@ status: clean
 **Files Reviewed:** 6
 **Status:** issues_found (2 info-level; no critical/warning)
 
-**Scope:** This is the THIRD incremental pass, scoped to `git diff 30d5c1f..HEAD` restricted to the six files above (commits 1ca4c0f through 400f0f5). The first and second passes (preserved in git history; second-pass report at commit 30bbcb8) ended clean. This report REPLACES the second-pass content entirely. Findings established in prior passes were re-verified as still fixed where the delta touches the same functions; they are not re-litigated here.
+**Scope:** This is the THIRD incremental pass, scoped to `git diff 1464afa..HEAD` restricted to the six files above (commits a807376 through cc87bc2). The first and second passes (preserved in git history; second-pass report at commit bf790a9) ended clean. This report REPLACES the second-pass content entirely. Findings established in prior passes were re-verified as still fixed where the delta touches the same functions; they are not re-litigated here.
 
 ## Summary
 
@@ -78,14 +78,14 @@ Q-02 (765-766, 770, 789), Q-05 (854, 864, 878), and Q-07 (914, 921, 933) snapsho
 **File:** `classes/druid/combo.lua:70`
 **Issue:** The refactor moved Pounce duration to the file-scope `macroTorch.POUNCE_DURATION = 18` (Druid.lua:867), which `computePounce_Duration` reads. `pounceLeft` was the last reader of the per-click field and now goes through `computePounce_Duration()` (Druid.lua:1255). A repo-wide grep confirms `clickContext.POUNCE_DURATION = 18` at combo.lua:70 has no remaining reader anywhere. Two sources of truth for the same constant (per-click field vs file-scope global) invites drift if one is ever changed alone.
 **Fix:** Remove line 70 from `macroTorch.catAtk()` (the clickContext field), leaving `macroTorch.POUNCE_DURATION` as the single source. Keep it only if a future per-click override is planned — in which case a comment stating that intent should be added.
-**Status:** FIXED in commit `cf4f505`.
+**Status:** FIXED in commit `95d349f`.
 
 ### IN-02: `showEnergyUsageSet` now duplicates the file-scope constant (harmless, never called)
 
 **File:** `classes/druid/Druid.lua:265`
 **Issue:** The never-called `showEnergyUsageSet` assigns `macroTorch.POUNCE_DURATION = 18`, which now duplicates the new file-scope assignment at Druid.lua:867 with the same value. Both are 18 today; the duplication is dead code only (the function has no callers in-tree), so no behavioral risk, but it is a second write site for a constant the refactor intended to centralize.
 **Fix:** Optionally drop `macroTorch.POUNCE_DURATION = 18` from `showEnergyUsageSet` (or convert that legacy function to read the file-scope constant) so exactly one write site exists, mirroring how `RIP_BASE_DURATION = 10` / `RAKE_DURATION = 9` were consolidated.
-**Status:** FIXED in commit `4234f3f`.
+**Status:** FIXED in commit `a329c32`.
 
 ## Prior-Pass Findings Re-Verified (not re-broken by this delta)
 
@@ -100,4 +100,4 @@ Q-02 (765-766, 770, 789), Q-05 (854, 864, 878), and Q-07 (914, 921, 933) snapsho
 _Reviewed: 2026-08-30_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
-_Scope: git diff 30d5c1f..HEAD (third incremental pass on phase 27)_
+_Scope: git diff 1464afa..HEAD (third incremental pass on phase 27)_

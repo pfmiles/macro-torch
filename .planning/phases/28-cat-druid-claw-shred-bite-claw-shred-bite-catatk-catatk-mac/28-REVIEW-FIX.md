@@ -12,7 +12,7 @@ status: all_fixed
 # Phase 28: Code Review Fix Report (re-run review)
 
 **Fixed at:** 2026-09-09T01:05:48+08:00
-**Source review:** `.planning/phases/28-cat-druid-claw-shred-bite-claw-shred-bite-catatk-catatk-mac/28-REVIEW.md` (re-run after fixes 58735b4, c94af69; this report supersedes the previous 28-REVIEW-FIX.md iteration)
+**Source review:** `.planning/phases/28-cat-druid-claw-shred-bite-claw-shred-bite-catatk-catatk-mac/28-REVIEW.md` (re-run after fixes 190ed17, 1a531bb; this report supersedes the previous 28-REVIEW-FIX.md iteration)
 **Iteration:** 1 (fix_scope = critical_warning)
 
 **Summary:**
@@ -27,7 +27,7 @@ status: all_fixed
 
 **Verdict: CONFIRMED**
 
-Concrete code evidence (all line numbers from the working tree at commit `b91f09f`, which matches the reviewed state):
+Concrete code evidence (all line numbers from the working tree at commit `063ba78`, which matches the reviewed state):
 
 1. **Eager argument evaluation is real.** `classes/druid/Druid.lua:27` reads
    `local cpDmg = macroTorch.cpDamageSample('claw', macroTorch.computeClaw_E())`
@@ -49,7 +49,7 @@ Concrete code evidence (all line numbers from the working tree at commit `b91f09
    anywhere in this chain (in contrast to `hasWolfsheartEnchant`, which caches
    but is not on this path). Per-cast cost while disabled is ~70-90 WoW API
    calls — the reviewer's "roughly 70-120" estimate is the right magnitude.
-3. **The cost is NEW in phase 28.** Commit `a602cc0` (feat(28-01)) shows
+3. **The cost is NEW in phase 28.** Commit `059e7a9` (feat(28-01)) shows
    `+ local cpDmg = macroTorch.cpDamageSample('claw', macroTorch.computeClaw_E())`
    added to `obj.claw`; before that, `claw()` passed only the function
    REFERENCE into `_castSpell`.
@@ -121,7 +121,7 @@ fixed (out of fix scope).
 ### WR-01: `claw()`/`shred()` eagerly evaluate the energy-cost functions on every cast even when `cpDamageLog` is false
 
 **Files modified:** `classes/druid/Druid.lua`
-**Commit:** `8610100`
+**Commit:** `552b1a1`
 **Applied fix:** Mirrored the `cpBuildLog` short-circuit idiom so the entire
 expression — including the argument evaluation — is skipped when the switch is
 off:
@@ -132,7 +132,7 @@ off:
 
 `ferocious_bite` (`:68`) was left unchanged — it passes the literal `35` and
 eagerly evaluates nothing (matches the reviewer's guidance). The 2-line diff
-is the complete change (`git show 8610100`).
+is the complete change (`git show 552b1a1`).
 
 ## Skipped Issues
 
@@ -152,7 +152,7 @@ None — the only in-scope finding (WR-01) was fixed.
   Lua 5.0-forbidden constructs were introduced. Selftest suite was not run
   (verifier phase handles it).
 - **Commit discipline:** one atomic commit for the one in-scope finding
-  (`8610100`), listing the single modified file. This REVIEW-FIX.md is NOT
+  (`552b1a1`), listing the single modified file. This REVIEW-FIX.md is NOT
   committed by the fixer (orchestrator handles it).
 
 ---

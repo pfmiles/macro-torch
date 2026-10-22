@@ -121,9 +121,9 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1: Fix P-02 shadow-field corruption (CR-01) and P-06 lazy-cache coupling (IN-03) in core/selftest.lua** — `306cd1e` (test)
-2. **Task 2: Guard getNextAbilityCost against phantom fast-battle abilities (WR-01) in Druid.lua** — `a3559d5` (fix)
-3. **Task 3: Add isCanAttack precondition (IN-04), fix Rip-duration comment (IN-01), stale header (IN-02), and P-03/P-05 guards** — `5d46a78` (fix)
+1. **Task 1: Fix P-02 shadow-field corruption (CR-01) and P-06 lazy-cache coupling (IN-03) in core/selftest.lua** — `5488645` (test)
+2. **Task 2: Guard getNextAbilityCost against phantom fast-battle abilities (WR-01) in Druid.lua** — `a51a397` (fix)
+3. **Task 3: Add isCanAttack precondition (IN-04), fix Rip-duration comment (IN-01), stale header (IN-02), and P-03/P-05 guards** — `b77b7fc` (fix)
 
 **Plan metadata:** combined in the final `docs(26-03)` commit.
 
@@ -156,7 +156,7 @@ None — no external service configuration required.
 ## Self-Check: PASSED
 
 - Files exist: `.planning/phases/26-phase-fast/26-03-SUMMARY.md`, `core/selftest.lua`, `classes/druid/Druid.lua`
-- Commits exist: `306cd1e` (Task 1), `a3559d5` (Task 2), `5d46a78` (Task 3), `0115a80` (SUMMARY)
+- Commits exist: `5488645` (Task 1), `a51a397` (Task 2), `b77b7fc` (Task 3), `2336909` (SUMMARY)
 - Final `./build.sh` exits 0; working tree clean apart from pre-existing untracked GSD files
 
 ---

@@ -8,7 +8,7 @@
 ## Tasks Executed
 
 ### Task 1: Create Priest class definition, combat, and utility files
-**Commit:** `87dfb35`
+**Commit:** `9309af2`
 **Files created:**
 - `classes/priest/Priest.lua` (127 lines) -- Class definition with classMetatable + PRIEST_FIELD_FUNC_MAP + 7 skill methods with locale tables + registerPlayerClass + 10 SelfTest registrations + SpellTrace placeholder
 - `classes/priest/combat.lua` (75 lines) -- priestRangedAtk (CastSpellByName('Holy Fire') replaced with player.holy_fire()) + priestAtk (unchanged)
@@ -28,7 +28,7 @@
 **SelfTest registrations:** 10 (3 infra + 7 skill methods)
 
 ### Task 2: Create Warlock class definition and combat files
-**Commit:** `20585e8`
+**Commit:** `55d41a1`
 **Files created:**
 - `classes/warlock/Warlock.lua` (99 lines) -- Class definition with classMetatable + WARLOCK_FIELD_FUNC_MAP + 4 skill methods with locale tables (for future migration) + registerPlayerClass + 7 SelfTest registrations + SpellTrace placeholder
 - `classes/warlock/combat.lua` (93 lines) -- All 6 original functions preserved; all 5 castIfBuffAbsent calls preserved unchanged; NOTE comment about preservation at top

@@ -25,25 +25,25 @@ status: partial
 ### WR-01: Dead code in `computeLandTable` guard -- unreachable `not lastCast` check
 
 **Files modified:** `core/spell_trace_core.lua`
-**Commit:** 3ebb910
+**Commit:** 338ba51
 **Applied fix:** Removed the redundant `not lastCast` sub-condition from the guard on line 122. The `or 0` fallback on line 119 guarantees `lastCast` is always a number, so `not lastCast` was dead code. The `lastCast == 0` check already covers the nil-fallback case.
 
 ### WR-02: Unconditional `macroTorch.context` dereference in UI_ERROR_MESSAGE handler
 
 **Files modified:** `core/events.lua`
-**Commit:** c7922b7
+**Commit:** 57029c2
 **Applied fix:** Added a nil-guard (`if macroTorch.context then ... end`) around the `macroTorch.context.behindAttackFailedTime = GetTime()` assignment in the UI_ERROR_MESSAGE handler. Prevents Lua runtime errors when UI errors fire outside of combat.
 
 ### WR-03: Target identity race in immune-tracing callbacks
 
 **Files modified:** `core/spell_trace_immune.lua`
-**Commit:** c90692f
+**Commit:** c712b9f
 **Applied fix:** Added an 8-line documentation comment above `macroTorch.spellsImmuneTracing` explaining the known race window between spell event recording and periodic processing, where `macroTorch.target` may have changed. Documented this as acceptable for PvE and provided guidance for a future fix (store mob name in callback closure for explicit API lookup).
 
 ### WR-04: Missing nil-guard on `context` in `loadImmuneTable` and `loadDefiniteBleedingTable`
 
 **Files modified:** `core/spell_trace_immune.lua`
-**Commit:** cf43081
+**Commit:** 6f95c8f
 **Applied fix:** Added `if not macroTorch.context then return end` early-return nil-guards at the top of both `loadImmuneTable()` and `loadDefiniteBleedingTable()`. Prevents Lua errors when these functions are called while context is nil (e.g., `isImmune` checked from a macro outside combat).
 
 ## Skipped Issues

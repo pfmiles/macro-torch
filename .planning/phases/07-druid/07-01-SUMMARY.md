@@ -71,9 +71,9 @@ completed: 2026-06-15
 
 Each task was committed atomically:
 
-1. **Task 1: 新增 5 个 DRUID_FIELD_FUNC_MAP 形态判断条目** - `d76c720` (feat)
-2. **Task 2: 替换 7 处 isFormActive 硬编码调用** - `97faa23` (feat)
-3. **Task 3: 更新 Category G2 SelfTest 注册** - `88370da` (test)
+1. **Task 1: 新增 5 个 DRUID_FIELD_FUNC_MAP 形态判断条目** - `f32dde0` (feat)
+2. **Task 2: 替换 7 处 isFormActive 硬编码调用** - `f78cd7d` (feat)
+3. **Task 3: 更新 Category G2 SelfTest 注册** - `bbf91b2` (test)
 
 **Plan metadata:** (pending final commit)
 

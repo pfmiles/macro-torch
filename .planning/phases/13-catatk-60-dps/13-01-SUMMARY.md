@@ -72,8 +72,8 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1: computeReshiftEnergy + shared decision function guards + openerMod guard** - `b62f875` (feat: add computeReshiftEnergy(), replace hardcoded RESHIFT_ENERGY, add shared decision function guards, add openerMod guard)
-2. **Task 2: Module-level isSpellExist guards** - `14e6df2` (feat: add module-level isSpellExist guards to keepRip, keepRake, keepFF, keepTigerFury, termMod, otMod in cat.lua)
+1. **Task 1: computeReshiftEnergy + shared decision function guards + openerMod guard** - `b8fed2f` (feat: add computeReshiftEnergy(), replace hardcoded RESHIFT_ENERGY, add shared decision function guards, add openerMod guard)
+2. **Task 2: Module-level isSpellExist guards** - `588bfd7` (feat: add module-level isSpellExist guards to keepRip, keepRake, keepFF, keepTigerFury, termMod, otMod in cat.lua)
 
 ## Files Created/Modified
 - `classes/druid/Druid.lua` - computeReshiftEnergy() definition, shouldUseShred/shouldCastRip/shouldUseBite guards, openerMod inline guards, RESHIFT_ENERGY dynamic computation

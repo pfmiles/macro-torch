@@ -102,8 +102,8 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1: Initialize _spellIdMonitored global set table in spell_trace_core.lua** - `129f2b1` (feat)
-2. **Task 2: Add whitelist write logic to SpellTrace:register land branch** - `88f1695` (feat)
+1. **Task 1: Initialize _spellIdMonitored global set table in spell_trace_core.lua** - `dd10e6e` (feat)
+2. **Task 2: Add whitelist write logic to SpellTrace:register land branch** - `096f086` (feat)
 
 ## Files Created/Modified
 - `core/spell_trace_core.lua` - Added `macroTorch._spellIdMonitored` lazy-init (lines 18-23) and whitelist write logic in `SpellTrace:register` land branch (lines 85-96)

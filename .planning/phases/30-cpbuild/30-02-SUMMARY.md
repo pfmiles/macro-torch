@@ -106,9 +106,9 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1 (deviation fix pre-commit)** - `d78d6a2` (fix: clear stale DKI t0 on kill-shot WAIT_ANCHOR returns)
-2. **Task 1: Category S-05..S-12 stubbed DKI selftests** - `997f443` (feat)
-3. **Task 2: HUMAN-UAT.md Phase 30 section + phase-wide battery** - `b3d86d3` (docs)
+1. **Task 1 (deviation fix pre-commit)** - `ddde49a` (fix: clear stale DKI t0 on kill-shot WAIT_ANCHOR returns)
+2. **Task 1: Category S-05..S-12 stubbed DKI selftests** - `e30b0d2` (feat)
+3. **Task 2: HUMAN-UAT.md Phase 30 section + phase-wide battery** - `1d9e257` (docs)
 
 **Plan metadata:** committed after the SUMMARY (docs commit).
 
@@ -133,7 +133,7 @@ Each task was committed atomically:
 - **Fix:** Added `macroTorch.cpBuildDki.t0 = nil` before `state = 'WAIT_ANCHOR'` at both sites (BUILDING kill-shot branch and DONE kill-shot branch), making WAIT_ANCHOR permanently pristine. No D-04 transition semantics changed — t0 was never read while WAIT_ANCHOR.
 - **Files modified:** classes/druid/Druid.lua (+2 lines, 2 comment lines adjusted)
 - **Verification:** bbcheck BALANCED; S-09 drives the patched machine — exactly one `[cpBuildT] fail` line, state WAIT_ANCHOR, t0 nil; all Task 1/2 gates green including the allowed-diff-set battery (Druid.lua is one of the five phase files).
-- **Committed in:** d78d6a2
+- **Committed in:** ddde49a
 
 ---
 **Total deviations:** 1 auto-fixed (Rule 2 missing critical)

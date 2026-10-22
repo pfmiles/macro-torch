@@ -30,8 +30,8 @@ metrics:
 
 | # | Name | Commit | Status |
 |---|------|--------|--------|
-| 1 | Create core/spell_trace_immune.lua | c363764 | done |
-| 2 | Create core/events.lua | 3386e47 | done |
+| 1 | Create core/spell_trace_immune.lua | 70034ad | done |
+| 2 | Create core/events.lua | a680127 | done |
 
 ## Task 1: core/spell_trace_immune.lua
 
@@ -73,4 +73,4 @@ None.
 
 - `core/spell_trace_immune.lua` exists (93 lines) — PASSED
 - `core/events.lua` exists (115 lines) — PASSED
-- Commits c363764 and 3386e47 verified — PASSED
+- Commits 70034ad and a680127 verified — PASSED

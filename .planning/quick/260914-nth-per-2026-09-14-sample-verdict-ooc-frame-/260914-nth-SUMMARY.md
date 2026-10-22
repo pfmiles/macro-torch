@@ -28,8 +28,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - "classes/druid/Druid.lua — shouldUseShred 1016-1024 分支3 改写（提交 c1f4e67）"
-    - "classes/druid/selftest.lua — R6-05 重写(484-529) + R6-05b 新增(530-553)（提交 c1f4e67）"
+    - "classes/druid/Druid.lua — shouldUseShred 1016-1024 分支3 改写（提交 93ec6d1）"
+    - "classes/druid/selftest.lua — R6-05 重写(484-529) + R6-05b 新增(530-553)（提交 93ec6d1）"
     - ".planning/catAtk-core-principles.md — Rule 6 表行3 + 伪代码行3（UNTRACKED，永不提交；.gitignore:34）"
 
 key-decisions:
@@ -67,11 +67,11 @@ status: complete
 
 ## Task Commits
 
-1. **Task 1: Druid.lua 分支3 改写 + selftest R6-05 重写/R6-05b + 全电池** - `c1f4e67` (fix)
+1. **Task 1: Druid.lua 分支3 改写 + selftest R6-05 重写/R6-05b + 全电池** - `93ec6d1` (fix)
 2. **Task 2: 原则文档 2 处锁定修订** - 无 commit（untracked 工作树-only，按计划永不提交）
 3. **Task 3: SUMMARY 输出** - 无 commit（.planning 收口留给 quick 流程 docs commit）
 
-`git show --stat --format= HEAD` 确认 c1f4e67 仅含 `classes/druid/Druid.lua`（+8/-1 呈现）与 `classes/druid/selftest.lua`（+49/-2 呈现），57 insertions / 3 deletions，无文件删除。
+`git show --stat --format= HEAD` 确认 93ec6d1 仅含 `classes/druid/Druid.lua`（+8/-1 呈现）与 `classes/druid/selftest.lua`（+49/-2 呈现），57 insertions / 3 deletions，无文件删除。
 
 ## Files Created/Modified
 
@@ -117,7 +117,7 @@ status: complete
 - **Fix:** 保留计划 GATE 2 全部内容断言（逐字执行，全过），计数断言的期望值改为实测地面真值（1 与 2），并追加更强的等价检查：删除行集合 = 旧锁定块签名行（三串 grep -vF 过滤后为空集）。计划的意图（删除面=旧块、无越界删除）被完全保留且强化。
 - **Files modified:** 无（仅验证脚本参数）
 - **Verification:** 删除行逐行 cat -A 目视 = 锁定旧块字节；GATE 3 hunk 范围全部落在计划带内。
-- **Committed in:** c1f4e67（Task 1 commit）
+- **Committed in:** 93ec6d1（Task 1 commit）
 
 **2. [Rule 3 - 计划 diff 算术] GATE 3 hunk 正则假设 `@@ -行,count` 格式，git 在 count=1 时省略 `,count`**
 - **Found during:** Task 1（GATE 3 执行）
@@ -177,7 +177,7 @@ None - 无外部服务配置。仅需实机验证（见下）。
 
 - [x] `classes/druid/Druid.lua` 存在且 1778 行（+6）
 - [x] `classes/druid/selftest.lua` 存在且 2366 行（+48）
-- [x] commit c1f4e67 存在：`git log --oneline -1` = `c1f4e67 fix(druid): 3+ bleeds free frames (OoC/infinite) behind use Shred; R6-05 rewrite + R6-05b paid-frame pin`
+- [x] commit 93ec6d1 存在：`git log --oneline -1` = `93ec6d1 fix(druid): 3+ bleeds free frames (OoC/infinite) behind use Shred; R6-05 rewrite + R6-05b paid-frame pin`
 - [x] `git status --porcelain` 仅剩 quick 目录 `??` 一行（原则文档隐性、被 ignore）
 - [x] 原则文档 `wc -l` = 495、`git check-ignore` 输出路径、末行无换行
 - [x] GATE 0-6 全绿（0 全过、1 全过 16/16、4 双 BALANCED+区段平衡、5 全过、6 意图保真全过；2/3 按地面真值修正后全过）

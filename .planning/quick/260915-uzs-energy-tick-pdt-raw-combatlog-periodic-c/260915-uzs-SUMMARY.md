@@ -11,10 +11,10 @@ one_liner: "energy tick 探针 PDT 双传输扩展：core/events.lua 三处纯�
 key_files:
   modified: [core/events.lua]
 decisions:
-  - "零偏差执行：G1-G3 预检全绿（HEAD 37c2234，三条锚文本与规划背景事实逐字一致）、三处 Edit 一次命中逐字落地、GATES 4-8 与 T2a-e 首轮全绿零修复；Lua 5.0.3 正门 /tmp/luabuild/lua-5.0.3/bin/lua 在位（G8e 全强度通过），规划预留的 5.0.3 降级口径未触发"
+  - "零偏差执行：G1-G3 预检全绿（HEAD 132e63c，三条锚文本与规划背景事实逐字一致）、三处 Edit 一次命中逐字落地、GATES 4-8 与 T2a-e 首轮全绿零修复；Lua 5.0.3 正门 /tmp/luabuild/lua-5.0.3/bin/lua 在位（G8e 全强度通过），规划预留的 5.0.3 降级口径未触发"
   - "unrun-verify 项按执行器规范追加 .planning/WINDOWS.md 台账（kind unrun-verify）：EPR|PDT 实机电池（tx=RAW 与 tx=CHAT 双行出现）需用户在 Windows+Cygwin 重建 /mt 后验证——未 commit，随 .planning 工件由 orchestrator docs commit 收口"
 commits:
-  code: 344a81a
+  code: d99883f
 duration_seconds: 450
 estimate:
   tokens: 32000
@@ -40,7 +40,7 @@ energy tick 取证探针（tt3/udx 装置）按其 design brief 260915-uzs 扩�
 | Edit 2 PDT-CHAT tap creature | core/events.lua | 原为空的 `elseif event == "CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE" then` 分支体插入恰 3 行（守卫 `if macroTorch.energyProbe and macroTorch.log and arg1 then` + `EPR|PDT|...` 行 `tx="CHAT"`、`ch=tostring(event)`、`txt=tostring(arg1)` + `end`）；原空行原样保留在插入行之后。落地行 125-127 |
 | Edit 3 PDT-CHAT tap hostileplayer | core/events.lua | 同形状，原为空的 `elseif event == "CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE" then` 分支体插入恰 3 行；原空行原样保留。落地行 130-132 |
 
-提交：`344a81a` — `feat(260915-uzs): capture periodic damage ticks in probe via EPR|PDT dual transport (RAW + CHAT)`（message 逐字复核一致；1 file changed, 9 insertions(+)，跨提交 0 意外删除）。`.planning/` 工件（PLAN.md / 本 SUMMARY / STATE.md 表行 / WINDOWS.md 台账追加）由 quick 流程 orchestrator docs commit 收口，代码 commit 零夹带。
+提交：`d99883f` — `feat(260915-uzs): capture periodic damage ticks in probe via EPR|PDT dual transport (RAW + CHAT)`（message 逐字复核一致；1 file changed, 9 insertions(+)，跨提交 0 意外删除）。`.planning/` 工件（PLAN.md / 本 SUMMARY / STATE.md 表行 / WINDOWS.md 台账追加）由 quick 流程 orchestrator docs commit 收口，代码 commit 零夹带。
 
 ## 验证电池结果
 
@@ -80,7 +80,7 @@ energy tick 取证探针（tt3/udx 装置）按其 design brief 260915-uzs 扩�
 
 ## Self-Check: PASSED
 
-- `git log --oneline -1` → `344a81a feat(260915-uzs): capture periodic damage ticks in probe via EPR|PDT dual transport (RAW + CHAT)`，message 逐字一致。
+- `git log --oneline -1` → `d99883f feat(260915-uzs): capture periodic damage ticks in probe via EPR|PDT dual transport (RAW + CHAT)`，message 逐字一致。
 - `git diff HEAD~1 HEAD --name-only | sort` → 恰 `core/events.lua` 一行。
 - `git diff HEAD~1 HEAD --numstat` → 恰 `9	0	core/events.lua`。
 - `git status --porcelain | grep -v '^?? .planning/'` → 代码零残留；仅 ` M .planning/WINDOWS.md`（本 SUMMARY 追加的 unrun-verify 台账，.planning 域由 orchestrator docs commit 收口，executor 绝不 commit）。

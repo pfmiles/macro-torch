@@ -33,8 +33,8 @@ metrics:
 
 | Task | Name                                           | Commit   | Files Created        |
 | ---- | ---------------------------------------------- | -------- | -------------------- |
-| 1    | SelfTest framework + /mt SLASH command         | 8b67afe  | core/selftest.lua    |
-| 2    | 71 infrastructure self-test items registration | ac21fff  | core/selftest.lua    |
+| 1    | SelfTest framework + /mt SLASH command         | ea74803  | core/selftest.lua    |
+| 2    | 71 infrastructure self-test items registration | 4b30711  | core/selftest.lua    |
 
 ## Completed Tasks
 
@@ -92,5 +92,5 @@ None. All security surface is documented in the plan's threat model and handled 
 ## Self-Check: PASSED
 
 - core/selftest.lua exists at expected path
-- 8b67afe and ac21fff commits confirmed in git log
+- ea74803 and 4b30711 commits confirmed in git log
 - Build output SM_Extend.lua contains 75 SelfTest:register and 4 SelfTest:run references

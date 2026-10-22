@@ -24,7 +24,7 @@ status: issues_found
 
 ## Summary
 
-Reviewed the three changed files from commit c371482: the `getMinimumAffordableAbilityCost` → `getNextAbilityCost` rename across `Druid.lua` and `cat.lua`, the new "earning" log field in `readyReshift`, and the `isKeywordInEquippedItemTooltip` function in `biz_util.lua`.
+Reviewed the three changed files from commit bda597b: the `getMinimumAffordableAbilityCost` → `getNextAbilityCost` rename across `Druid.lua` and `cat.lua`, the new "earning" log field in `readyReshift`, and the `isKeywordInEquippedItemTooltip` function in `biz_util.lua`.
 
 **Rename correctness:** ✅ All call sites have been updated. Zero residual references to the old name (`minimumAffordable` / `getMinimumAffordableAbilityCost`) exist in the codebase. The `SM_Extend.lua` generated file also reflects the rename (verified).
 

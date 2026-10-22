@@ -115,10 +115,10 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1: 提取器 + CLI 分派完备化（沙箱执行 + 参数解析，D-14/D-15）** - `15288eb` (feat)
-2. **Task 2: 解码器 + 前缀过滤 + 字段校验（D-13 识别链 + T-28-03 容错）** - `524a156` (feat)
-3. **Task 3: 统计引擎 — 四档桶 + 双层报表 + bite 最小二乘（D-17..D-20）** - `5202704` (feat)
-4. **Task 4: 报表 + 决策建议行 + --json-out + 完整 --selftest（D-16/D-21/D-15 收口）** - `a163fff` (feat)
+1. **Task 1: 提取器 + CLI 分派完备化（沙箱执行 + 参数解析，D-14/D-15）** - `7e7352f` (feat)
+2. **Task 2: 解码器 + 前缀过滤 + 字段校验（D-13 识别链 + T-28-03 容错）** - `e924b4c` (feat)
+3. **Task 3: 统计引擎 — 四档桶 + 双层报表 + bite 最小二乘（D-17..D-20）** - `9ed85bf` (feat)
+4. **Task 4: 报表 + 决策建议行 + --json-out + 完整 --selftest（D-16/D-21/D-15 收口）** - `75b5942` (feat)
 
 **Plan metadata:** see final docs commit below.
 
@@ -143,7 +143,7 @@ Each task was committed atomically:
 - **Fix:** 该处双引号改写 `string.char(34)`；Task 4 fixture 同此纪律（line()/body() 构造全用 DQ，手写 EXPECT_LINE1 采用 U-03 同款「引号对相邻、括号居两端」布局）；文件其余裸引号仅剩与 impl_util 逐字节同构的三行 encoder 组合（已实测该组合安全，impl_util 通过同一门）
 - **Files modified:** tools/cpdamage.lua
 - **Verification:** bbcheck BALANCED 恢复 + `grep -n "'[^']*\""` 仅剩三行 encoder 组合 + 全文件词法/引号奇偶审计清零
-- **Committed in:** 524a156（Task 2 commit）
+- **Committed in:** e924b4c（Task 2 commit）
 
 ---
 
@@ -167,7 +167,7 @@ None - no external service configuration required. The `lua tools/cpdamage.lua -
 - 无阻塞项。
 
 ## Self-Check: PASSED
-- Task commits exist: 15288eb / 524a156 / 5202704 / a163fff
+- Task commits exist: 7e7352f / e924b4c / 9ed85bf / 75b5942
 - tools/cpdamage.lua exists in the worktree, bbcheck BALANCED, diff --check clean, 0 CR bytes, trailing newline present
 - All static gates green at every task boundary; forbidden tokens (no length operator / goto / unpack) zero across the final file
 

@@ -44,9 +44,9 @@ metrics:
 
 | # | Name | Status | Commit | Files |
 |---|------|--------|--------|-------|
-| 1 | Create Hunter class definition file | done | 8756068 | classes/hunter/Hunter.lua |
-| 2 | Create Hunter combat and utility files | done | 26c5543 | classes/hunter/combat.lua, classes/hunter/utility.lua |
-| 3 | Create Warrior class definition, combat, and utility files | done | 55ea3b6 | classes/warrior/Warrior.lua, classes/warrior/combat.lua, classes/warrior/utility.lua |
+| 1 | Create Hunter class definition file | done | 2c49623 | classes/hunter/Hunter.lua |
+| 2 | Create Hunter combat and utility files | done | 5023615 | classes/hunter/combat.lua, classes/hunter/utility.lua |
+| 3 | Create Warrior class definition, combat, and utility files | done | 12e798d | classes/warrior/Warrior.lua, classes/warrior/combat.lua, classes/warrior/utility.lua |
 
 ### Task 1: Hunter Class Definition
 
@@ -151,5 +151,5 @@ Note: Line count discrepancies for combat/utility files are because the plan's `
 ## Self-Check: PASSED
 
 - All 6 files exist and contain expected content
-- All 3 commits exist in git history: 8756068, 26c5543, 55ea3b6
+- All 3 commits exist in git history: 2c49623, 5023615, 12e798d
 - All verification checks pass (classMetatable, registerPlayerClass, SelfTest:register, skill method count, CastSpellByName absence for spells, CastShapeshiftForm preservation)

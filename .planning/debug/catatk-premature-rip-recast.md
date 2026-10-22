@@ -9,9 +9,9 @@ updated: 2026-08-28T01:00:00Z
 <!-- OVERWRITE on each update - reflects NOW -->
 
 hypothesis: ripLeft 自报时钟的证据链(landTable 落地事件)偶发断裂——通道1:初始 Rip 落地事件丢失(castTable/landTable 缺失,blip 窗口/inCombat 门控/目标分桶/UNIT_CASTEVENT 桥);通道2:bite 刷新补记链断裂(0.4s 消费窗口/GetComboPoints 时序/isRipPresent 前置自锁)——导致 isRipPresent = hasBuff AND ripLeft>0 在"自己的 rip 仍存活"时误判 false,进而触发 Savagery 换神像+提前重放 Rip+切回 Ferocity。
-test: 用户 2026-08-27 指令的 RAWDIAG 侦察 dump 已落地并完成自验(括号平衡 OK、产物含代码、commit 8ffd759 未 push);剩余全部依赖用户游戏机采集。
+test: 用户 2026-08-27 指令的 RAWDIAG 侦察 dump 已落地并完成自验(括号平衡 OK、产物含代码、commit 7a12088 未 push);剩余全部依赖用户游戏机采集。
 expecting: 用户拉取 commit 后经 build.sh 生成/拷贝 SM_Extend.lua 到游戏机,木桩战斗中绿色 [RAWDIAG] 行写入 MACRO_TORCH_LOG(SuperMacro.lua),拷回后据 arg1 字段布局判定方向3可行性:caster guid/name 是否存在、SPELL_AURA_APPLIED/REFRESH 是否下发、列序是否稳定。
-next_action: [第二轮定向采样 2026-08-27 方案B(基于 816a26a)] 用户侧:①push 816a26a(含 878092a/8ffd759/cf5ade7),游戏机拉取 + Cygwin build.sh + 游戏 /reload 确认加载;②场景A(自然到期):正面或背面桩随意,挂上 Rip 后立即停按宏,静候 Rip 自然消失(约 16~25s),期间不作任何输入,记录:[RAWDIAG] scout armed、后续 apply/ticks/fade 行、最后一条 "your Rip" tick 的时刻、是否出现 "Rip fades from ...";③场景B(重挂与决策):换去**正面**打桩正常挂机 10~15min(正面=bug 复现条件),重点抓取 [RAWDIAG] safeRip fired: hasBuff/ripLeft/cp 行与新的 [DIAG rip-contradiction] 行;④logout 拷回 SuperMacro.lua(可多 reload 快照多份)。回报后据数据定稿方向3:自然到期 fade 归属策略、hasBuff 缺失(debuff槽位溢出)兜底、apply 抑制规则确认、事件驱动 landing 正式设计(GSD 流程实施)。硬约束不变:不动 catAtk 判定逻辑、ripLeft 所有权鉴权不可退化。
+next_action: [第二轮定向采样 2026-08-27 方案B(基于 172b895)] 用户侧:①push 172b895(含 2a5408b/7a12088/e22e346),游戏机拉取 + Cygwin build.sh + 游戏 /reload 确认加载;②场景A(自然到期):正面或背面桩随意,挂上 Rip 后立即停按宏,静候 Rip 自然消失(约 16~25s),期间不作任何输入,记录:[RAWDIAG] scout armed、后续 apply/ticks/fade 行、最后一条 "your Rip" tick 的时刻、是否出现 "Rip fades from ...";③场景B(重挂与决策):换去**正面**打桩正常挂机 10~15min(正面=bug 复现条件),重点抓取 [RAWDIAG] safeRip fired: hasBuff/ripLeft/cp 行与新的 [DIAG rip-contradiction] 行;④logout 拷回 SuperMacro.lua(可多 reload 快照多份)。回报后据数据定稿方向3:自然到期 fade 归属策略、hasBuff 缺失(debuff槽位溢出)兜底、apply 抑制规则确认、事件驱动 landing 正式设计(GSD 流程实施)。硬约束不变:不动 catAtk 判定逻辑、ripLeft 所有权鉴权不可退化。
 
 ## Symptoms
 <!-- Written during gathering, then IMMUTABLE -->
@@ -83,9 +83,9 @@ started: 不确定;无法与近期代码改动建立时间关联。客户端为�
   implication: 落盘载体、事件布局、arm 收口点、构建产物全部核实完毕,可以开始写码;持久化契约无需新增文件。(补充更正:SM_Extend.lua 经 git ls-files 确认被 .gitignore 排除、不在版本库,由 build.sh 在用户 Cygwin 端按 build_order.txt 拼装再生并直接拷入游戏机 AddOns 目录——因此 commit 只需含源文件)
 
 - timestamp: 2026-08-27T04:35:00Z
-  checked: RAWDIAG 侦察 dump 实施与三步自验 (core/events.lua + core/spell_trace_core.lua; node 括号平衡校验; build.sh 产物; commit 8ffd759)
-  found: ① 两处纯新增落地:core/events.lua(RAWDIAG_KEYWORDS 局部表 + RAW_COMBATLOG 分支替换原注释块为侦察 dump,逐参 argN= 原样序列化防 nil、20 样本+关键词过滤、150 行/60s 解除)/core/spell_trace_core.lua(recordCastTable push 成功后 Rip 专属 arm 钩子,fresh arm 重置计数器并一条绿色 armed 提示,active 期 re-arm 仅刷窗口起点);② node lua 感知括号平衡校验(跳过注释/长短字符串)双源文件 + 重建 SM_Extend.lua 均 OK,RAWDIAG 在产物预期位置;③ git diff 仅纯新增(events.lua 76+/18-,spell_trace_core.lua +15),git diff --check 无空白错误;④ 已显式 stage 两源文件并 commit 8ffd759(chore 英文 message,未 push)
-  implication: SM_Extend.lua 被 .gitignore 排除、由 build.sh 再生,commit 只含源文件;arm 提示行与 [RAWDIAG] 绿行在聊天框可见,可当场确认 scout 工作;注意:此自验只做了括号平衡,未做 Lua 5.0 文法校验,埋下了 8ffd759 的语法错误(见下一条)
+  checked: RAWDIAG 侦察 dump 实施与三步自验 (core/events.lua + core/spell_trace_core.lua; node 括号平衡校验; build.sh 产物; commit 7a12088)
+  found: ① 两处纯新增落地:core/events.lua(RAWDIAG_KEYWORDS 局部表 + RAW_COMBATLOG 分支替换原注释块为侦察 dump,逐参 argN= 原样序列化防 nil、20 样本+关键词过滤、150 行/60s 解除)/core/spell_trace_core.lua(recordCastTable push 成功后 Rip 专属 arm 钩子,fresh arm 重置计数器并一条绿色 armed 提示,active 期 re-arm 仅刷窗口起点);② node lua 感知括号平衡校验(跳过注释/长短字符串)双源文件 + 重建 SM_Extend.lua 均 OK,RAWDIAG 在产物预期位置;③ git diff 仅纯新增(events.lua 76+/18-,spell_trace_core.lua +15),git diff --check 无空白错误;④ 已显式 stage 两源文件并 commit 7a12088(chore 英文 message,未 push)
+  implication: SM_Extend.lua 被 .gitignore 排除、由 build.sh 再生,commit 只含源文件;arm 提示行与 [RAWDIAG] 绿行在聊天框可见,可当场确认 scout 工作;注意:此自验只做了括号平衡,未做 Lua 5.0 文法校验,埋下了 7a12088 的语法错误(见下一条)
 
 - timestamp: 2026-08-27T16:46:40Z
   checked: 用户回报样本 .planning/samples/sample1_back.txt(114行)/sample2_back.txt(302行)/sample3_front.txt(501行)
@@ -106,13 +106,13 @@ started: 不确定;无法与近期代码改动建立时间关联。客户端为�
   found: Savagery 的 0.9 时长是增强而非惩罚:tick 次数不变、总伤在更短窗口打完(伤害密度+~10%);与样本 tick 间隔 ~1.7-1.9s(18跳压缩进16.2s)自洽;新鲜施放记账 ×0.9 依然正确,漂移只发生在咬刷新节点(服务器刷新后时长 >16.2s,推断不沿用 Savagery 快照/按咬时神像重快照)
   implication: 结论不变,术语修正为"刷新节点记账漂移";tick 间隔本身亦可作为辅助信号(压缩节拍 ≈ Savagery 存活)
   checked: 用户质疑「服务器被咬刷新了,宏不知道」+ sample3 逐秒重推(9155.563 续期到 9213 全程无 FB 行)
-  found: ① 续期链确实执行过:DIAG #2 显示 lastRenewingRipAt=9155.563(该伪 cast 亦 armed 窗口)=一条不可见的 landed bite(旧窗 150 行封顶恰好截断)正常驱动了补记——"宏没记录"不成立;② 真正的偏差是**刷新后时长记账错误**:模型按 savagery 快照 16.2s 计,到期 9171.763,但服务器 rip 在 9172.383 仍在跳血(tick 序列直到 9213 不断)→ 服务器刷新后时长 >16.2s;反推 5星不含 0.9 罚=18s 可完美闭合全部时间线(9173.61 提前重挂、apply 抑制、DIAG #2/#3 触发点);③ 推断:乌龟服的咬刷新**不再施加以咬时神像/原快照计算的 Savagery 0.9 罚**(或以咬周期的 Builder 神像重新快照),导致每刷一次模型漂移 +1.8s——咬频繁时新鲜续期掩盖漂移(正面样本 27 landed/224s 零复发),咬荒 >17s 即引爆;④ 9183.78 parried Rip 的决策上下文该构建尚无 safeRip fired 插桩(816a26a 之后才有),留待本轮 recurrence 重现
+  found: ① 续期链确实执行过:DIAG #2 显示 lastRenewingRipAt=9155.563(该伪 cast 亦 armed 窗口)=一条不可见的 landed bite(旧窗 150 行封顶恰好截断)正常驱动了补记——"宏没记录"不成立;② 真正的偏差是**刷新后时长记账错误**:模型按 savagery 快照 16.2s 计,到期 9171.763,但服务器 rip 在 9172.383 仍在跳血(tick 序列直到 9213 不断)→ 服务器刷新后时长 >16.2s;反推 5星不含 0.9 罚=18s 可完美闭合全部时间线(9173.61 提前重挂、apply 抑制、DIAG #2/#3 触发点);③ 推断:乌龟服的咬刷新**不再施加以咬时神像/原快照计算的 Savagery 0.9 罚**(或以咬周期的 Builder 神像重新快照),导致每刷一次模型漂移 +1.8s——咬频繁时新鲜续期掩盖漂移(正面样本 27 landed/224s 零复发),咬荒 >17s 即引爆;④ 9183.78 parried Rip 的决策上下文该构建尚无 safeRip fired 插桩(172b895 之后才有),留待本轮 recurrence 重现
   implication: 蓝图修正——新机制中**时长模型降级为参考值**:存在性=hasBuff+tick 活性(≤3s),到期=fade 事件,刷新=咬命中事件驱动"续期"而不假设时长;这比"补记链加固"更治本,因为漂移是系统性记账错误,不是偶发丢事件
   checked: 第二轮采样回报 sample_rip_fades.txt / sample_front_again.txt(Rip 生命周期 + 正面桩挂机)与既有样本合并推演
   found: ① 自然到期实锤:apply(12986.420)→"Rip fades"(13002.595)真实时长 16.175s;第二周期 apply(13067.564)→fade(13083.821)=16.257s——与模型 (10+8)*0.9=16.2s 一致,**模型无系统性偏差**;fade 行在最后一次 tick 后 ~200-300ms 到达(正面样本:tick 13549.410→fade 13549.626),可作精确清零时刻;② safeRip fired 决策行揭秘:hasBuff=false 时 Lua and 短路 → ripLeft 不计算 → 打印 -1,佐证这些是"无 rip"合法重挂;③ 正面样本 224s(13262→13549)内 27+ 次 landed bite 与大量 parried/dodged bite 并存,零 contradiction、零真实 rip 重挂——只要成功咬 16.2s 内至少来一口,续期链不断活;sample3 的坏窗口是正面 parry 连击造成的 ~28s 咬荒(9155.5→9183.7)所致;④ 复发配方定稿:正面桩 + 成功咬间隔 >16.2s(招架闪避连击) → 模型到期而服务器 rip 仍活 → 误判 → 换 Savagery → 5星重放 rip
   implication: 全部证据齐备,方向 3 机制蓝图可以定稿:apply(fresh 应用配对自己 cast)→即时 land;fail(同批 Your)→即时失败;tick(每2s)→所有权活性;fade→精确到期;咬 hits/crits+我 rip 活→事件驱动续期(废除 0.4s/0.02-0.9 两窗口);hasBuff 缺失(槽位溢出)以 tick 兜底。无需再采样,进入实施阶段
-  checked: 用户决策(先补采样,方案B)+ 既有样本再推演 + safeRip 决策上下文插桩(commit 816a26a)
-  found: ① 既有样本已间接确认「同施法者 refresh 时服务器跳过 apply 行」:9173.61 的 Rip 重挂在捕获窗口内既无 afflicted 行也无 fail 行(9183.78 的 parry 有行,故 fail 行必被捕获)→ 该次重挂成功落地且 apply 行被服务器抑制,疑点1基本闭环;② 仍未采样:Rip 自然到期是否必发 fade 行、9183.78 parried Rip 的决策根因(ripLeft==0 vs hasBuff==false/debuff槽位>16 溢出);③ 新增纯增量插桩:safeRip 每次施法用 macroTorch.log 持久化 [RAWDIAG] safeRip fired: hasBuff/ripLeft/cp 决策上下文(原因是现有 Rip!!! 展示行走 show 不入 SavedVariables,用户无法抄录),Lua 5.0 安全复核通过,已提交 816a26a 未 push
+  checked: 用户决策(先补采样,方案B)+ 既有样本再推演 + safeRip 决策上下文插桩(commit 172b895)
+  found: ① 既有样本已间接确认「同施法者 refresh 时服务器跳过 apply 行」:9173.61 的 Rip 重挂在捕获窗口内既无 afflicted 行也无 fail 行(9183.78 的 parry 有行,故 fail 行必被捕获)→ 该次重挂成功落地且 apply 行被服务器抑制,疑点1基本闭环;② 仍未采样:Rip 自然到期是否必发 fade 行、9183.78 parried Rip 的决策根因(ripLeft==0 vs hasBuff==false/debuff槽位>16 溢出);③ 新增纯增量插桩:safeRip 每次施法用 macroTorch.log 持久化 [RAWDIAG] safeRip fired: hasBuff/ripLeft/cp 决策上下文(原因是现有 Rip!!! 展示行走 show 不入 SavedVariables,用户无法抄录),Lua 5.0 安全复核通过,已提交 172b895 未 push
   implication: 第二轮采样协议已定:场景A=挂 Rip 后停按宏观察自然到期(app ly→ticks→fade 行+最后 tick 时刻,验证 16.2s 模型 vs 服务器真实时长);场景B=正面桩正常挂机 10~15min 收集 safeRip fired 决策行+新 rip-contradiction(正面=bug 复现条件);用户回报后据数据定稿方向3 新机制(fade 归属策略与 hasBuff 缺失兜底)
 
 - timestamp: 2026-08-28T00:50:00Z

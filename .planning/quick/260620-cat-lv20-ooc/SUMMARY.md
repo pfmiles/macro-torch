@@ -14,4 +14,4 @@ date: 2026-06-20
 
 ## 提交
 
-`a775068` feat(druid): add ooc handling to cat_lv20 — prioritize Claw on Omen of Clarity proc
+`fbe3176` feat(druid): add ooc handling to cat_lv20 — prioritize Claw on Omen of Clarity proc

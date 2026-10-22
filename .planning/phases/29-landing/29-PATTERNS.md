@@ -8,7 +8,7 @@
 
 | New/Modified File | Role | Data Flow | Closest Analog | Match Quality |
 |-------------------|------|-----------|----------------|---------------|
-| `core/spell_trace_core.lua` | utility (framework module) | event-driven (game event callbacks + 0.1s periodic task -> landTable writes + chat announcements) | itself (in-file purge/pair skeletons) + `eb56a257:core/spell_trace_core.lua:68-190` (archived maintainLandTables/computeLandTable) | exact (same file, historical variant) |
+| `core/spell_trace_core.lua` | utility (framework module) | event-driven (game event callbacks + 0.1s periodic task -> landTable writes + chat announcements) | itself (in-file purge/pair skeletons) + `7f427b2b:core/spell_trace_core.lua:68-190` (archived maintainLandTables/computeLandTable) | exact (same file, historical variant) |
 | `classes/druid/Druid.lua` | provider/hook (class module: declarative registration + land listener) | event-driven (listener callback) | `classes/druid/Druid.lua:802-856` (existing register block + FB renewal listener) | exact |
 | `classes/hunter/Hunter.lua` | provider (class module: declarative registration only) | event-driven | `classes/hunter/Hunter.lua:151-165` + `classes/druid/Druid.lua:802-828` | exact |
 | `classes/druid/selftest.lua` | test | batch (pcall-isolated stubbed fixtures) | `classes/druid/selftest.lua:763-930+` (Category Q: Q-01..Q-07 CR-01 fixture discipline) | exact |
@@ -82,7 +82,7 @@ Per DESIGN-CONTEXT: register 改签名与守卫（pattern-safe 断言）—— t
     end
     macroTorch.loginContext.intentTable[spell][mob].push({ state = 'pending', castAt = GetTime(), landAt = nil })
 ```
-D-07: push adds `ttl = config.intentTtl or macroTorch.LAND_INTENT_TTL`. Planner note: `recordCastTable` currently has no `config`; it needs the per-spell ttl lookup (e.g. a registry keyed by spell name populated at register time). `recordCastTable` also carries the 0.2s dedup guard from cast path in `eb56a257` history (same shape as current, lines 103-108: `if last and (GetTime() - last) < 0.2 then return end`).
+D-07: push adds `ttl = config.intentTtl or macroTorch.LAND_INTENT_TTL`. Planner note: `recordCastTable` currently has no `config`; it needs the per-spell ttl lookup (e.g. a registry keyed by spell name populated at register time). `recordCastTable` also carries the 0.2s dedup guard from cast path in `7f427b2b` history (same shape as current, lines 103-108: `if last and (GetTime() - last) < 0.2 then return end`).
 
 #### 1c. Window reads become `intent.ttl` (D-05/D-07)
 
@@ -140,7 +140,7 @@ D-02: insert cast-dimension predicate before `push` — `lastLand >= lastCast` d
 
 #### 1e. Revive maintainLandTables + computeLandTable (D-03/D-04/D-13/D-14)
 
-**Analog (git history of the same tracked file):** `git show eb56a257:core/spell_trace_core.lua` — `maintainLandTables` at lines 68-76, `computeLandTable` at line 150. This is the tracked origin (current `core/spell_trace_core.lua` is track-verified), not a mirror.
+**Analog (git history of the same tracked file):** `git show 7f427b2b:core/spell_trace_core.lua` — `maintainLandTables` at lines 68-76, `computeLandTable` at line 150. This is the tracked origin (current `core/spell_trace_core.lua` is track-verified), not a mirror.
 
 ```lua
 -- set up the land event generation for spells set tracing
@@ -344,7 +344,7 @@ Same shape in `recordCastTable` (87-101), `pairLandIntent` (164-175), `finalizeF
 macroTorch.registerPeriodicTask('spellsImmuneTracing',
     { interval = 0.1, task = macroTorch.spellsImmuneTracing })
 ```
-Revived `maintainLandTables` re-registers the exact archived line (`eb56a257` line 76). `registerPeriodicTask` defined in `core/periodic.lua:127-129`. Task names are unique registry keys — do not reuse an existing name.
+Revived `maintainLandTables` re-registers the exact archived line (`7f427b2b` line 76). `registerPeriodicTask` defined in `core/periodic.lua:127-129`. Task names are unique registry keys — do not reuse an existing name.
 
 ### Announcement discipline (show + color)
 **Source:** `core/spell_trace_core.lua:355-357` (green, announce-BEFORE-record causal order) and `:437-440` (same for self-hit), `:394-399` (red cancellation), archived computeLandTable (blue). Rules: plain `macroTorch.show(msg, 'green'|'red'|'blue')`, English message text, announce precedes `recordLandEvent` so listener output follows the landed line (causal-order comment at 429-435 is load-bearing and survives the gate removal).
@@ -370,7 +370,7 @@ None — every modified file is its own best analog (in-file or in-git-history p
 
 ## Metadata
 
-**Analog search scope:** `core/`, `classes/druid/`, `classes/hunter/`, git history (`eb56a257` pre-refactor spell_trace_core.lua)
-**Files scanned:** 10 read (`spell_trace_core.lua`, `spell_trace_immune.lua`, `events.lua`, `periodic.lua`, `core/selftest.lua` (partial), `Druid.lua` (partial), `Hunter.lua` (partial), `druid/selftest.lua` (partial), `29-CONTEXT.md`, `DESIGN-CONTEXT.md`) + 1 git-object (`eb56a257:core/spell_trace_core.lua`)
+**Analog search scope:** `core/`, `classes/druid/`, `classes/hunter/`, git history (`7f427b2b` pre-refactor spell_trace_core.lua)
+**Files scanned:** 10 read (`spell_trace_core.lua`, `spell_trace_immune.lua`, `events.lua`, `periodic.lua`, `core/selftest.lua` (partial), `Druid.lua` (partial), `Hunter.lua` (partial), `druid/selftest.lua` (partial), `29-CONTEXT.md`, `DESIGN-CONTEXT.md`) + 1 git-object (`7f427b2b:core/spell_trace_core.lua`)
 **Pattern extraction date:** 2026-09-10
 **Tracked-source gate:** all named analogs verified via `git ls-files` (core/spell_trace_core.lua, core/periodic.lua, core/events.lua, core/spell_trace_immune.lua, classes/druid/Druid.lua, classes/druid/selftest.lua, classes/hunter/Hunter.lua); the archived computeLandTable is cited as git history of the tracked file, not a mirror.

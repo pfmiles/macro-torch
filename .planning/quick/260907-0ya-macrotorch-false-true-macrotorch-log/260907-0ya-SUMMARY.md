@@ -25,8 +25,8 @@ never invoked, no API calls, no output, and no loop-file change at all.
 
 | Task | Result | Commit |
 |------|--------|--------|
-| T1: cpBuildLog switch (macro_torch.lua) + Claw/Shred/Rake cast-log hooks (Druid.lua) | done — 46 insertions, 3 deletions | 30ef165 |
-| T2: Category S selftests S-01..S-03 (classes/druid/selftest.lua) | done — 63 insertions, 0 deletions | 90ef069 |
+| T1: cpBuildLog switch (macro_torch.lua) + Claw/Shred/Rake cast-log hooks (Druid.lua) | done — 46 insertions, 3 deletions | 2922a08 |
+| T2: Category S selftests S-01..S-03 (classes/druid/selftest.lua) | done — 63 insertions, 0 deletions | be1f65c |
 
 ## Implementation Notes
 
@@ -114,7 +114,7 @@ designed off-state short-circuit.
 
 ## Self-Check: PASSED
 
-- macro_torch.lua, classes/druid/Druid.lua committed (30ef165); classes/druid/
-  selftest.lua committed (90ef069)
+- macro_torch.lua, classes/druid/Druid.lua committed (2922a08); classes/druid/
+  selftest.lua committed (be1f65c)
 - SUMMARY.md present at
   `.planning/quick/260907-0ya-macrotorch-false-true-macrotorch-log/260907-0ya-SUMMARY.md`

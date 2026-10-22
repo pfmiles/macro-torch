@@ -87,8 +87,8 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1: shred + ferocious_bite 采样同构挂接（三技能全覆盖，D-07/D-08/D-09）** - `25d4a8f` (feat)
-2. **Task 2: Category U SelfTest 9 条注册（U-01..U-09，D-03/D-05/D-06/D-07 断言固化）** - `817ebc9` (feat)
+1. **Task 1: shred + ferocious_bite 采样同构挂接（三技能全覆盖，D-07/D-08/D-09）** - `74ba1d3` (feat)
+2. **Task 2: Category U SelfTest 9 条注册（U-01..U-09，D-03/D-05/D-06/D-07 断言固化）** - `fbe042f` (feat)
 
 **Plan metadata:** final docs commit below (SUMMARY + STATE + ROADMAP).
 
@@ -124,7 +124,7 @@ None - no external service configuration required. Runtime-level proof of the U-
 - no blockers
 
 ## Self-Check: PASSED
-- Task commits exist: 25d4a8f / 817ebc9
+- Task commits exist: 74ba1d3 / fbe042f
 - bbcheck BALANCED on both modified files; build.sh exit 0
 - SM_Extend.lua anchors: cpDamageSample == 4, cpDamageCast == 4, Cat U-0 == 9
 - git diff --check clean; zero deleted registration lines

@@ -43,7 +43,7 @@ Each persistent log entry now stores a simple string instead of a JSON object wi
 
 ## Deviations from Plan
 
-- **Base check mismatch (procedural):** The worktree was forked from `origin/main` at `a627b5d` before the PLAN.md commit `b847061` was pushed. Zero source code divergence exists between the fork point and expected base (only the PLAN.md file differs). Execution proceeded since the code change target was identical at both commits.
+- **Base check mismatch (procedural):** The worktree was forked from `origin/main` at `1fc8616` before the PLAN.md commit `e2b66cf` was pushed. Zero source code divergence exists between the fork point and expected base (only the PLAN.md file differs). Execution proceeded since the code change target was identical at both commits.
 
 ## Commit
 

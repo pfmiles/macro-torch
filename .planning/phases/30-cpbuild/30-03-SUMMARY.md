@@ -96,9 +96,9 @@ status: complete
 
 Each task was committed atomically (hooks ran, no --no-verify):
 
-1. **Task 1: Harness copy + terse fixed-field parser** - `454ee1c` (feat)
-2. **Task 2: k/T statistics, dual pass rates, report, json-out, CLI main** - `35a66d4` (feat)
-3. **Task 3: selftest battery + tokenNumber key-length fix** - `11689f2` (feat)
+1. **Task 1: Harness copy + terse fixed-field parser** - `77126a3` (feat)
+2. **Task 2: k/T statistics, dual pass rates, report, json-out, CLI main** - `1bfb7c5` (feat)
+3. **Task 3: selftest battery + tokenNumber key-length fix** - `c65667a` (feat)
 
 **Plan metadata:** the `docs(30-03): complete cpbuild analyzer plan` commit carrying this SUMMARY, STATE.md and ROADMAP.md
 
@@ -123,7 +123,7 @@ Each task was committed atomically (hooks ran, no --no-verify):
 - **Fix:** key length read off the key itself (`string.len(key)` for the prefix check and the value slice).
 - **Files modified:** tools/cpbuild.lua
 - **Verification:** battery 26/26 PASSED plus a full synthetic-SavedVariables report run with hand-checked numbers
-- **Committed in:** 11689f2 (Task 3 commit)
+- **Committed in:** c65667a (Task 3 commit)
 
 ### Method notes (not rule deviations)
 
@@ -174,5 +174,5 @@ None - no external service configuration required.
 ## Self-Check: PASSED
 
 - FOUND: tools/cpbuild.lua (1269 lines) on disk
-- FOUND: commits 454ee1c / 35a66d4 / 11689f2 in git log
+- FOUND: commits 77126a3 / 1bfb7c5 / c65667a in git log
 - bbcheck BALANCED re-run post-fix; selftest ALL 26 PASSED re-run post-fix

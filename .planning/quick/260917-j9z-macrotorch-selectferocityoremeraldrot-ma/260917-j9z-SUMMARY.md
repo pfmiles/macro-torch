@@ -12,12 +12,12 @@ key_files:
   modified: [classes/druid/Druid.lua, classes/druid/selftest.lua]
   worktree_only: [.planning/catAtk-core-principles.md]
 decisions:
-  - "零代码偏差执行：Task 1/2 锚点字节级核对一致（结论：计划背景事实为实，无漂移/无并发落地，规划 BASE 34aa9228 即执行起始 HEAD），每文件恰一次 Edit(replace_all, old=selectFerocityOrEmeraldRot, new=selectBuilderRelic)、一次命中、无 sed/perl；Task 1 commit 6e7b759 恰含 Druid.lua（5 ins / 5 del，锁 1795 行），Task 2 commit b30ca29 恰含 selftest.lua（24 ins / 24 del，锁 2783 行），message 逐字符合锁定文本；两任务 verify 内门首轮全绿（含 5 个 hunk 全落 600-635 带、24 个 hunk 全落 947-1224 带）"
+  - "零代码偏差执行：Task 1/2 锚点字节级核对一致（结论：计划背景事实为实，无漂移/无并发落地，规划 BASE c9687ba4 即执行起始 HEAD），每文件恰一次 Edit(replace_all, old=selectFerocityOrEmeraldRot, new=selectBuilderRelic)、一次命中、无 sed/perl；Task 1 commit 4fe4f1f 恰含 Druid.lua（5 ins / 5 del，锁 1795 行），Task 2 commit 1b494bc 恰含 selftest.lua（24 ins / 24 del，锁 2783 行），message 逐字符合锁定文本；两任务 verify 内门首轮全绿（含 5 个 hunk 全落 600-635 带、24 个 hunk 全落 947-1224 带）"
   - "Task 3 收口门重锚定（#3786 活体观测权威）：规划侧 `git status --porcelain = 0` 基于规划时工作树（quick 计划目录尚未创建）；执行时该计划目录自身 untracked（?? .planning/quick/260917-j9z-.../），门原样必然不可满足。重锚为等价不变式——porcelain 恰 1 行、该行恰为本 quick 自建计划目录、零 tracked 改动、零其他 untracked 文件——同一真实约束（执行者零残留）实锤通过；其余收口断言（BASE..HEAD 恰 2 文件、cat.lua/SM_Extend.lua 零 diff、'Idol of' 变更行 0、repo 范围旧名归零、cat.lua:326 逐字节、两条 commit message 逐字）无需重锚即首轮全绿"
   - "SM_Extend.lua（build 产物）内旧名 5 处按规划零触碰：repo 范围旧名归零门豁免该文件与 .planning/，待用户下次 build.sh 重建自动再生为新名"
   - "实机 /mt 电池（O-08..O-16）按 quick-260916-utm 同一 unrun-verify 口径仅 SUMMARY 备案，WINDOWS.md 零触碰（规划锁定）"
 commits:
-  code: "6e7b759, b30ca29"
+  code: "4fe4f1f, 1b494bc"
 duration_seconds: 180
 estimate:
   tokens: 36000
@@ -39,8 +39,8 @@ actuals:
 
 | Task | 内容 | 结果 | Commit |
 |------|------|------|--------|
-| 1 | Druid.lua 纯改名 5 处 | 旧名 0 / 新名 5；行数 1795；diff 恰 5 个 hunk（603/607/615/619/631） | `6e7b759`（5 ins / 5 del，恰 1 文件） |
-| 2 | selftest.lua 纯改名 24 处 | 旧名 0 / 新名 24（12 调用 + 12 文案）；行数 2783；Cat O- 注册 16；diff 恰 24 个 hunk（全落 947-1224 带） | `b30ca29`（24 ins / 24 del，恰 1 文件） |
+| 1 | Druid.lua 纯改名 5 处 | 旧名 0 / 新名 5；行数 1795；diff 恰 5 个 hunk（603/607/615/619/631） | `4fe4f1f`（5 ins / 5 del，恰 1 文件） |
+| 2 | selftest.lua 纯改名 24 处 | 旧名 0 / 新名 24（12 调用 + 12 文案）；行数 2783；Cat O- 注册 16；diff 恰 24 个 hunk（全落 947-1224 带） | `1b494bc`（24 ins / 24 del，恰 1 文件） |
 | 3 | 参考文档工作树更新 + 收口门 | 行 347 反引号标识符更名、语义文案「残忍圣物 vs 翡翠腐朽圣物选择」一字不动；文件仍 gitignored（check-ignore 通过）；收口门全绿 | 零 commit（工作树 only） |
 
 **验证 gates（全绿，首轮通过）：**
@@ -58,7 +58,7 @@ actuals:
 
 1. **[Plan gate re-anchor] `git status --porcelain | wc -l = 0` 不可满足。** 规划侧背景事实「工作树 clean（porcelain 为空）」取证于 quick 计划目录创建之前；执行时该目录自身以 `?? .planning/quick/260917-j9z-macrotorch-selectferocityoremeraldrot-ma/` 形式 untracked（docs 收口在 orchestrator Step 8，不在执行者职责内），原门必然失败。重锚为等价不变式：porcelain 恰 1 行、该行恰为本 quick 计划目录、零 tracked 改动、零其他 untracked 文件——同一真实约束（执行者工作树零残留）实锤通过。git-diff 建模无缺陷，其余全部断言按规划原样首轮通过。
 
-其余按规划零偏差：Task 1/2 锚点字节级核对一致（结论：计划背景事实为实，无文件漂移、无并发会话落地，规划 BASE `34aa9228...` 即执行起始 HEAD）、每文件恰一次 `Edit(replace_all)` 一次命中（禁用 sed/perl 落位）、principles 文档 worktree-only（禁止 add/commit 落实）、SM_Extend.lua 零触碰、威胁模型 T-01/T-02 的 mitigate 门全部执行。
+其余按规划零偏差：Task 1/2 锚点字节级核对一致（结论：计划背景事实为实，无文件漂移、无并发会话落地，规划 BASE `c9687ba4...` 即执行起始 HEAD）、每文件恰一次 `Edit(replace_all)` 一次命中（禁用 sed/perl 落位）、principles 文档 worktree-only（禁止 add/commit 落实）、SM_Extend.lua 零触碰、威胁模型 T-01/T-02 的 mitigate 门全部执行。
 
 ## Unrun Verification（实机电池 — 按规划仅 SUMMARY 备案，不改 WINDOWS.md）
 
@@ -76,7 +76,7 @@ actuals:
 
 - [x] `classes/druid/Druid.lua` 1795 行、旧名 0 / 新名 5（GATE Task 1）
 - [x] `classes/druid/selftest.lua` 2783 行、旧名 0 / 新名 24、Cat O- 注册 16（GATE Task 2）
-- [x] commit `6e7b759` / `b30ca29` 存在且各自文件集合恰为一个代码文件（`git show --name-only --format= HEAD`）
+- [x] commit `4fe4f1f` / `1b494bc` 存在且各自文件集合恰为一个代码文件（`git show --name-only --format= HEAD`）
 - [x] `.planning/catAtk-core-principles.md` 行 347 更名、仍 gitignored、未入库（GATE Task 3）
 - [x] 本 SUMMARY.md 已写到 `.planning/quick/260917-j9z-.../`（未进入代码 commit，留给 quick 流程 docs 收口）
 - [x] commit 后 `git status --porcelain` 仅剩本 quick 计划目录 `??`

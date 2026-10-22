@@ -110,9 +110,9 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1 (tracer): End-to-end fast battle path — isFastBattleNotPvp + cp5Bite 5CP trigger** — `6995638` (feat)
-2. **Task 2 (auto): catAtk main flow — opener Pounce skip, Rip bypass, regularAttack precondition** — `1627c16` (feat)
-3. **Task 3 (auto): Close remaining bleed leaks — keepRake guard + energyDischargeBeforeBite** — `3b76447` (feat)
+1. **Task 1 (tracer): End-to-end fast battle path — isFastBattleNotPvp + cp5Bite 5CP trigger** — `f667b1b` (feat)
+2. **Task 2 (auto): catAtk main flow — opener Pounce skip, Rip bypass, regularAttack precondition** — `1f46700` (feat)
+3. **Task 3 (auto): Close remaining bleed leaks — keepRake guard + energyDischargeBeforeBite** — `626a3db` (feat)
 
 **Tracer feedback gate:** Task 1 `<verify>` 重跑在 commit 后仍然全绿（grep 计数 + build），SM_Extend.lua 含新符号（11 处），随后展开 Task 2/3。
 
@@ -136,7 +136,7 @@ Code execution: None — plan executed exactly as written (all 3 tasks, all per-
 
 **1. [Docs] ROADMAP.md Phase 26 wave rows still said "Category O SelfTest"**
 - **Found during:** Post-execution ROADMAP review
-- **Issue:** Plan-checker revision ba4aca3 renamed the category to P in the plan files, but both Phase 26 wave lines in ROADMAP.md still referenced "Category O" (that is Phase 23's Idol Dance category in classes/druid/selftest.lua)
+- **Issue:** Plan-checker revision bd827b5 renamed the category to P in the plan files, but both Phase 26 wave lines in ROADMAP.md still referenced "Category O" (that is Phase 23's Idol Dance category in classes/druid/selftest.lua)
 - **Fix:** Corrected both 26-01 and 26-02 wave lines to "Category P SelfTest"; Phase 23's Category O references left intact
 - **Files modified:** .planning/ROADMAP.md
 
@@ -161,8 +161,8 @@ None - no external service configuration required.
 ## Self-Check: PASSED
 
 - `FOUND: .planning/phases/26-phase-fast/26-01-SUMMARY.md` (existence check)
-- `FOUND: 6995638` — Task 1 commit (feat(26-01): add isFastBattleNotPvp fast-battle judgment + cp5Bite 5CP trigger)
-- `FOUND: 1627c16` — Task 2 commit (feat(26-01): arm catAtk for fast battles — Pounce skip, Rip bypass, regularAttack precondition)
-- `FOUND: 3b76447` — Task 3 commit (feat(26-01): close remaining bleed leaks — keepRake guard + energyDischarge Rake fallback)
+- `FOUND: f667b1b` — Task 1 commit (feat(26-01): add isFastBattleNotPvp fast-battle judgment + cp5Bite 5CP trigger)
+- `FOUND: 1f46700` — Task 2 commit (feat(26-01): arm catAtk for fast battles — Pounce skip, Rip bypass, regularAttack precondition)
+- `FOUND: 626a3db` — Task 3 commit (feat(26-01): close remaining bleed leaks — keepRake guard + energyDischarge Rake fallback)
 - Build gate: `./build.sh` exit 0 on every task and at overall verification (8/8 checks green)
 - ROADMAP.md 26-01 wave line ticked `[x]`; SM_Extend.lua contains `function macroTorch.isFastBattleNotPvp` exactly once

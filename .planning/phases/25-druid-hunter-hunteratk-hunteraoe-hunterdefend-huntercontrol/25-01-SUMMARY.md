@@ -134,7 +134,7 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1: Hunter.lua 完全重写（tracer）** — `dce87d9` (feat)
+1. **Task 1: Hunter.lua 完全重写（tracer）** — `1032a7e` (feat)
 2. **Task 2: SelfTest 完善验证（auto/tdd）** — No code changes needed (pure verification, all criteria already met from Task 1)
 
 ## Files Modified
@@ -154,7 +154,7 @@ Each task was committed atomically:
 - **Found during:** Task 2
 - **Issue:** Plan labeled Task 2 as `tdd="true"` with `<behavior>` block, but all 28 SelfTest registrations were already complete and correct from Task 1. No RED/GREEN cycle was needed — the task reduced to verification-only.
 - **Resolution:** All verification criteria were met without code changes. The existing SelfTest registrations already satisfied all 5 behavior tests (count=28, all isOptional=true, all UnitClass guarded, all 25 skills covered, infrastructure before skills).
-- **Impact:** Task 2 produced no additional commit beyond Task 1's `dce87d9`.
+- **Impact:** Task 2 produced no additional commit beyond Task 1's `1032a7e`.
 
 No other deviations — plan executed as specified for Task 1; Task 2 was verification-only with all criteria passing.
 

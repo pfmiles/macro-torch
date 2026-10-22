@@ -53,7 +53,7 @@ blocked: 0
   reason: "User reported: 行为都符合预期，就是蓝色和绿色刚好搞反了：rake/bite全都是蓝色的landed, pounce和rip的inferred landed都是绿色的，没有红色"
   severity: minor
   test: 3
-  root_cause: "interface_debug.lua:87-99 macroTorch.show 渲染表绿/蓝两臂色相颠倒：'blue'→OFFICER(实渲染绿色)、'green'→{0,0.5,0.9}(实渲染蓝色)。Phase 29 判定逻辑与调用点标签均正确；缺陷为 GSD 重构前遗留（7d2369b/5594a09），Phase 29 建立绿/蓝协议后首次可见"
+  root_cause: "interface_debug.lua:87-99 macroTorch.show 渲染表绿/蓝两臂色相颠倒：'blue'→OFFICER(实渲染绿色)、'green'→{0,0.5,0.9}(实渲染蓝色)。Phase 29 判定逻辑与调用点标签均正确；缺陷为 GSD 重构前遗留（84d0440/30858f6），Phase 29 建立绿/蓝协议后首次可见"
   artifacts:
     - path: "interface_debug.lua"
       issue: "macroTorch.show 颜色名→渲染色相翻译表绿/蓝两臂颠倒"

@@ -146,8 +146,8 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1: combo.lua 核心架构 — hunterAtk 距离路由 + hunterAtkRanged 模块链 + hunterAtkMelee + hunterDefend** - `ac77456` (feat)
-2. **Task 2: combo.lua 扩展 — hunterAoe + hunterControl + hunterMobTagging + 完整 SelfTest** - `f4141bd` (feat)
+1. **Task 1: combo.lua 核心架构 — hunterAtk 距离路由 + hunterAtkRanged 模块链 + hunterAtkMelee + hunterDefend** - `64d6146` (feat)
+2. **Task 2: combo.lua 扩展 — hunterAoe + hunterControl + hunterMobTagging + 完整 SelfTest** - `9fea487` (feat)
 
 ## Files Created/Modified
 - `classes/hunter/combo.lua` (316 lines) — 5 public Hunter one-button combo macro functions + 2 internal helpers + 5 SelfTest registrations

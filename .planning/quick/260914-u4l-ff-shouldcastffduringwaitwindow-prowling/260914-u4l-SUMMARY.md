@@ -16,7 +16,7 @@ decisions:
   - "nil 容错成对覆盖：既有 WR-01 构造 ctx 无 prowling 字段（nil→falsy→不排除）继续判 true，新 pin 用 prowling=true 钉死排除侧，一含一不含钉死 nil 容忍契约"
   - "新 pin stub 纪律镜像 WR-01：pcall 内执行，4 函数 stub + 2 own-key shadow 全部于 assert 之前按 rawget 快照/引用还原（CR-01）；shouldDoReshift 不 stub"
 commits:
-  code: b0a610a
+  code: 5df9076
 duration_seconds: 337
 actuals:
   tokens: 554
@@ -26,7 +26,7 @@ actuals:
 
 # Quick 260914-u4l Summary
 
-潜行帧禁止 FF 等待窗填充：`shouldCastFFDuringWaitWindow` 基础排除块新增 `or clickContext.prowling` 臂（净增 3 行）+ selftest 反义镜像 pin（净增 48 行 = 47 行 pin + 1 分隔空行），全部锁定约束逐字落地，验证电池跑绿后原子提交 `b0a610a`。
+潜行帧禁止 FF 等待窗填充：`shouldCastFFDuringWaitWindow` 基础排除块新增 `or clickContext.prowling` 臂（净增 3 行）+ selftest 反义镜像 pin（净增 48 行 = 47 行 pin + 1 分隔空行），全部锁定约束逐字落地，验证电池跑绿后原子提交 `5df9076`。
 
 ## 任务完成
 
@@ -35,7 +35,7 @@ actuals:
 | prowling 排除臂 | classes/druid/Druid.lua | `shouldCastFFDuringWaitWindow` 基础排除块（1173-1178 行区域）纯插入 3 行：ooc 臂之后新增第二臂 `or clickContext.prowling` + 2 行英注释（位于当前 1174-1176 行）；零删除，头注释与块内其余行字节不动 |
 | 反义回归 pin | classes/druid/selftest.lua | WR-01 块结尾（827 行 `end, true)`）之后、828 空行之后、`-- End of Batch 2` 之前插入 47 行新 register 块 + 1 分隔空行：与 WR-01 完全相同帧（razor edge 能量窗全条件满足），唯一差异 `prowling = true`，断言返回 false；注册名/断言文案逐字锁定 |
 
-提交：`b0a610a` — `fix(260914-u4l): exclude prowling frames from FF wait-window fill; add stealth-refusal selftest pin`。恰含两个锁定代码文件（Druid.lua 3 insertions；selftest.lua 48 insertions；两文件 0 deletions，合计 51 insertions）；`.planning/` 工件（PLAN.md / 本 SUMMARY / STATE.md 表行）由 quick 流程 docs commit 收口，代码 commit 零夹带。
+提交：`5df9076` — `fix(260914-u4l): exclude prowling frames from FF wait-window fill; add stealth-refusal selftest pin`。恰含两个锁定代码文件（Druid.lua 3 insertions；selftest.lua 48 insertions；两文件 0 deletions，合计 51 insertions）；`.planning/` 工件（PLAN.md / 本 SUMMARY / STATE.md 表行）由 quick 流程 docs commit 收口，代码 commit 零夹带。
 
 ## 验证电池结果
 
@@ -74,7 +74,7 @@ actuals:
 
 ## Self-Check: PASSED
 
-- 提交 `b0a610a` 存在：`2 files changed, 51 insertions(+)`，0 deletions，只含 classes/druid/Druid.lua（3 insertions）与 classes/druid/selftest.lua（48 insertions），无 tracked 文件删除。
+- 提交 `5df9076` 存在：`2 files changed, 51 insertions(+)`，0 deletions，只含 classes/druid/Druid.lua（3 insertions）与 classes/druid/selftest.lua（48 insertions），无 tracked 文件删除。
 - commit message 与锁定文案逐字一致（Task 2 复核 `git log -1 --format=%s`）。
 - 插入区域与计划锁定 after 块逐字节 diff 全等（48 行）；Druid.lua 1171-1182 行 GATE 7 钉死通过。
 - 三解释器 LOADFILE-OK ×3（GATE 0，提交前后各一轮）；bbcheck BALANCED ×2（GATE 4，提交前后各一轮）。

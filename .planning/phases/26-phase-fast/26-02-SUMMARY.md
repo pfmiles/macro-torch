@@ -42,7 +42,7 @@ key-decisions:
   - "P-03/P-05 guard on macroTorch.target.isPlayerControlled (duel makes fast=false spuriously); P-04 guards on isCanAttack so healthMax is a real number"
   - "P-04 stubs estimatePlayerDPS to 1e9: (mateNearMyTargetCount+1) * 1e9 * 8.5 exceeds any real healthMax, making Condition B deterministic with willDieInSeconds stubbed false"
   - "P-06 stubs the full cast chain (safeBite/readyBite/energyDischargeBeforeBite) so no real spell fires during login self-test (T-26-05); isPseudoInfiniteEnergy=true makes shouldDischarge=false without relying on the discharge stub"
-  - "Phase-wide verification scope = phase base a1467b1..HEAD excluding .planning/ metadata: shows exactly the 4 planned code files"
+  - "Phase-wide verification scope = phase base 43001d1..HEAD excluding .planning/ metadata: shows exactly the 4 planned code files"
   - "Category P registration-count comment updated to '6 tests (2 in 26-01, 4 in 26-02)' — the previous '4 more arrive in 26-02' text became stale once P-06 landed"
 
 requirements-completed: [D-09, D-10, D-12, D-13]
@@ -99,8 +99,8 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1: 注册判定路径 SelfTest P-03/P-04/P-05（HRPS、血量估算、优先级关系）** — `e40dfe5` (feat)
-2. **Task 2: 注册 cp5Bite 回归 SelfTest P-06 + 全阶段验证** — `7c80079` (feat)
+1. **Task 1: 注册判定路径 SelfTest P-03/P-04/P-05（HRPS、血量估算、优先级关系）** — `b46907d` (feat)
+2. **Task 2: 注册 cp5Bite 回归 SelfTest P-06 + 全阶段验证** — `7bb584e` (feat)
 
 ## Files Created/Modified
 
@@ -110,7 +110,7 @@ Each task was committed atomically:
 
 - 完整遵循 26-CONTEXT.md D-01..D-13 与 26-02-PLAN.md 的 stub/restore 纪律：原函数全部保存到 local → pcall 体内执行 → **先恢复后 assert**，失败的测试不会污染后续测试（T-26-04/T-26-06）
 - P-04 用 1e9 DPS stub 保证条件 B 决定性成立；P-06 用 `isPseudoInfiniteEnergy=true` 让泄能检查自然跳过，防御性 stub 泄能函数兜底
-- 全阶段验证以 phase 基线 `a1467b1..HEAD`（排除 .planning 元数据）为准：恰好 4 个计划内代码文件、catLeveling 零改动
+- 全阶段验证以 phase 基线 `43001d1..HEAD`（排除 .planning 元数据）为准：恰好 4 个计划内代码文件、catLeveling 零改动
 
 ## Deviations from Plan
 
@@ -128,7 +128,7 @@ Code execution: None — plan executed exactly as written (both tasks, all per-t
 - **Found during:** Task 2 收尾
 - **Issue:** 旧注释 "Registration count: Category P adds 2 tests in 26-01; 4 more arrive in 26-02" 在 P-06 落地后不再真实（"4 more arrive" 描述的是未完成状态）
 - **Fix:** 更新为 "Registration count: Category P adds 6 tests (2 in 26-01, 4 in 26-02)"
-- **Files modified:** core/selftest.lua（注释行，commit 7c80079 中的 1 deletion）
+- **Files modified:** core/selftest.lua（注释行，commit 7bb584e 中的 1 deletion）
 
 ## Issues Encountered
 
@@ -153,10 +153,10 @@ None — 全部 6 个注册为真实断言；stub 函数均为测试内的临时
 
 ## Self-Check: PASSED
 
-- `FOUND: e40dfe5` — Task 1 commit (feat(26-02): register judgment-path SelfTests P-03/P-04/P-05)
-- `FOUND: 7c80079` — Task 2 commit (feat(26-02): register cp5Bite regression SelfTest P-06 + phase-wide verification)
+- `FOUND: b46907d` — Task 1 commit (feat(26-02): register judgment-path SelfTests P-03/P-04/P-05)
+- `FOUND: 7bb584e` — Task 2 commit (feat(26-02): register cp5Bite regression SelfTest P-06 + phase-wide verification)
 - Build gate: `./build.sh` exit 0 on both tasks（Task 2 收尾时再跑一次仍绿）
 - `grep -c 'P: isFastBattleNotPvp\|P: fast battle\|P: cp5Bite' core/selftest.lua` = 6（六个 test-name 行）
 - Category P 区域内 `SelfTest:register` 与 `end, true)` 各 6 处（全部 isOptional=true）
 - `grep -c "function macroTorch.isFastBattleNotPvp" SM_Extend.lua` = 1；SM_Extend.lua 含 P-06 注册名
-- 全阶段 diff（a1467b1..HEAD，排除 .planning）= 仅 Druid.lua/combo.lua/cat.lua/core/selftest.lua；`classes/druid/leveling.lua` 零 hunk
+- 全阶段 diff（43001d1..HEAD，排除 .planning）= 仅 Druid.lua/combo.lua/cat.lua/core/selftest.lua；`classes/druid/leveling.lua` 零 hunk

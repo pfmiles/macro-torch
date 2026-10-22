@@ -68,7 +68,7 @@ completed: 2026-06-08
 
 Each task was committed atomically:
 
-1. **Task 1: 添加 SpellTrace 命名空间和 :register() API** - `7b55d77` (feat)
+1. **Task 1: 添加 SpellTrace 命名空间和 :register() API** - `1b7ebc1` (feat)
 
 ## Files Created/Modified
 - `core/spell_trace_core.lua` — 插入 19 行：SpellTrace 命名空间表 + register() 方法定义（第 48-66 行），位于 setTraceSpellImmuneByName 之后、maintainLandTables 之前

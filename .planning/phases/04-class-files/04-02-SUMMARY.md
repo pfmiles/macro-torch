@@ -62,8 +62,8 @@ completed: 2026-06-09
 
 ## Task Commits
 
-1. **Task 1: git mv 6 non-Druid files to classes/ directory** - `f2afc2f` (feat)
-2. **Task 2: Add TODO comment to classes/Hunter.lua** - `bf06487` (feat)
+1. **Task 1: git mv 6 non-Druid files to classes/ directory** - `39369e6` (feat)
+2. **Task 2: Add TODO comment to classes/Hunter.lua** - `46440ee` (feat)
 
 ## Files Created/Modified
 - `classes/Hunter.lua` - Hunter class (git mv + TODO comment added at line 33)

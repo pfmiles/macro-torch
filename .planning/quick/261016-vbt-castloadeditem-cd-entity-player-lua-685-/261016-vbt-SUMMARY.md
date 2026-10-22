@@ -19,7 +19,7 @@ key-files:
 decisions:
   - "裁决 2026-10-16：释放键按下且 pokemon 在 CD → 跳过使用（不喊 saying）、打印 CD 提示、置 useableItemUsed=true、同一按立即走恢复臂换回原装备（等价成功场景第 2 下）；成功两按语义不变（第 1 下 use+say 后 return）；无重试保持逻辑"
   - "CD 命中不做重试保持：raid 背景道具 CD 没转好时无时间等待，必须直接换回正确装备进 boss 战；装载后 CD 内能否释放由用户人工保证"
-  - "UAT 口径覆盖：261016-20c SUMMARY/VERIFICATION 已提交制品（29dbc6e）中 Truth 4 的「CD 重试」语义被本裁决覆盖——制品不改（约束），仅在本 quick SUMMARY 备案"
+  - "UAT 口径覆盖：261016-20c SUMMARY/VERIFICATION 已提交制品（db9edbd）中 Truth 4 的「CD 重试」语义被本裁决覆盖——制品不改（约束），仅在本 quick SUMMARY 备案"
 metrics:
   duration_sec: ~240
   completed_date: 2026-10-16
@@ -55,15 +55,15 @@ entity/Player.lua 单文件最小三改（恰 1 次 Edit 逐字节取编辑契�
 ## UAT 口径更新
 
 - **CD 命中 → 同按恢复**（本条裁决）。
-- 原 `261016-20c` SUMMARY/VERIFICATION（已提交于 29dbc6e 制品）中 **Truth 4** 的「CD 重试」语义（CD 命中不置 used、下次再按才恢复）已被本裁决覆盖；已提交的 `261016-20c` 制品**零改动**（约束 6），覆盖备案仅落在本 quick SUMMARY 中。
+- 原 `261016-20c` SUMMARY/VERIFICATION（已提交于 db9edbd 制品）中 **Truth 4** 的「CD 重试」语义（CD 命中不置 used、下次再按才恢复）已被本裁决覆盖；已提交的 `261016-20c` 制品**零改动**（约束 6），覆盖备案仅落在本 quick SUMMARY 中。
 
 ## 交付
 
 | 项 | 值 |
 |----|----|
-| commit | `2c2f413` `fix(261016-vbt): restore same-press on pokemon CD hit (castLoadedItem)` |
+| commit | `f32705c` `fix(261016-vbt): restore same-press on pokemon CD hit (castLoadedItem)` |
 | 文件 | 恰 `entity/Player.lua`（+7/-7，改区恰 1 hunk） |
-| BASE | `29dbc6e`（`docs(quick-261016-20c): add task summary + VERIFICATION + STATE.md row`，无重锚定） |
+| BASE | `db9edbd`（`docs(quick-261016-20c): add task summary + VERIFICATION + STATE.md row`，无重锚定） |
 
 ## 静态门（全部实测绿，无规避）
 
@@ -71,7 +71,7 @@ entity/Player.lua 单文件最小三改（恰 1 次 Edit 逐字节取编辑契�
 - **计数门**：`useableItemUsed = true` 恰 2、旧 CD 提示行（`Useable item is in CD: `）0、旧 keep 注释 0、新 restoring 提示恰 1、承接行 `if loadingTable.useableItemUsed then` 恰 1、战斗守卫行仍 707。
 - **语法门**：lua-5.0.3 `loadfile`（权威）+ 5.1.5 / 5.4.7 `loadfile` 全绿、bbcheck **BALANCED**、CRLF 0、新增行无 `#`/`goto`/`::`。
 - **diff 卫生门**：恰 1 hunk、`git diff --check` clean、改动恰 entity/Player.lua 一个文件。
-- **交付门**：恰 1 个 commit message 逐字对焊、`HEAD~1` = `29dbc6e` 精确锚定、docs/ / SM_Extend.lua / core/selftest.lua / 261016-20c 目录零 diff、porcelain 等价门（恰为本 quick 目录一行 untracked）。
+- **交付门**：恰 1 个 commit message 逐字对焊、`HEAD~1` = `db9edbd` 精确锚定、docs/ / SM_Extend.lua / core/selftest.lua / 261016-20c 目录零 diff、porcelain 等价门（恰为本 quick 目录一行 untracked）。
 
 ## Deviations from Plan
 
@@ -90,6 +90,6 @@ None.
 
 ## Self-Check: PASSED
 
-- `entity/Player.lua` 已提交于 HEAD `2c2f413`（`git show --stat --format= --name-only HEAD` = `entity/Player.lua`，message 逐字对焊；`git merge-base --is-ancestor 2c2f413 HEAD` 成立）
+- `entity/Player.lua` 已提交于 HEAD `f32705c`（`git show --stat --format= --name-only HEAD` = `entity/Player.lua`，message 逐字对焊；`git merge-base --is-ancestor f32705c HEAD` 成立）
 - Task 1 两段 `<verify>`（提交前门 + 提交后门）全绿；Task 2 收口门全绿（SUMMARY 三关键词 + 零新增 commit + 零 tracked 改动 + porcelain 恰本目录一行）
 - 本文件不产生 commit；docs 收口归 orchestrator Step 8

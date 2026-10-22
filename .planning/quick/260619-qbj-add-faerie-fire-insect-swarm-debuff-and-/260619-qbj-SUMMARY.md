@@ -3,8 +3,8 @@ status: complete
 plan: 260619-qbj-01
 date: 2026-06-19
 commits:
-  - 59e15c0 feat(260619-qbj): add Faerie Fire and Insect Swarm textures to SPELL_TEXTURE_MAP
-  - cd9ec17 feat(260619-qbj): extend casterAtk rotation with Faerie Fire, Insect Swarm, and Starfire
+  - 1ededdb feat(260619-qbj): add Faerie Fire and Insect Swarm textures to SPELL_TEXTURE_MAP
+  - 112fd86 feat(260619-qbj): extend casterAtk rotation with Faerie Fire, Insect Swarm, and Starfire
 files_modified:
   - classes/druid/combo.lua
   - texture_map.lua

@@ -25,7 +25,7 @@ status: issues_found
 ## Summary
 
 Reviewed the strictly-additive RAWDIAG2 forensics instrumentation introduced by
-commit `953bd50` relative to `f2ac754` (scope: `core/events.lua`,
+commit `9ce26c7` relative to `6ad3a36` (scope: `core/events.lua`,
 `core/spell_trace_core.lua`, `classes/druid/cat.lua`). Verdict: the build is
 safe as shipped for its stated purpose — no crash, no gameplay-decision, no
 security risk in any of the three probes — with two forensics-validity warnings
@@ -33,7 +33,7 @@ and three info notes. No critical issues.
 
 **Verified-correct against plan intent (differential review):**
 
-- **Strictly additive:** `git show 953bd50 --numstat` = 16/51/46 insertions,
+- **Strictly additive:** `git show 9ce26c7 --numstat` = 16/51/46 insertions,
   0 deletions. `git diff --check` clean. Every pre-existing branch, return
   value, guard and scheduling decision is untouched.
 - **Lua 5.0 validity:** no `#` length operator, no `goto`/labels anywhere in

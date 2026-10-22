@@ -24,8 +24,8 @@ status: issues_found
 
 ## Summary
 
-Reviewed the diff introduced by commits `30ef165` and `90ef069` relative to
-`9740e7e` (scope: `macro_torch.lua`, `classes/druid/Druid.lua`,
+Reviewed the diff introduced by commits `2922a08` and `be1f65c` relative to
+`04cbc8a` (scope: `macro_torch.lua`, `classes/druid/Druid.lua`,
 `classes/druid/selftest.lua`). The change implements the opt-in
 `macroTorch.cpBuildLog` measurement switch and its Claw/Shred/Rake cast hooks,
 plus Category S selftests.
@@ -43,7 +43,7 @@ plus Category S selftests.
   plain `nil` local when the flag is false — zero API calls, return value
   unchanged (`_castSpell` returns only true/false, so wrapping it in a local
   and `return cast` is behavior-identical).
-- **R4 locked files untouched:** `git diff --stat 9740e7e..HEAD` touches only
+- **R4 locked files untouched:** `git diff --stat 04cbc8a..HEAD` touches only
   the three planned files plus `.planning/` docs. `cat.lua`/`combo.lua`
   unchanged.
 - **Lua 5.0 constraints:** T3 token gate passes (no `goto`/`#`/labels added);

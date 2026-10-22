@@ -29,9 +29,9 @@ metrics:
 
 | Task | Name                                    | Type | Commit   | Result |
 |------|-----------------------------------------|------|----------|--------|
-| 1    | Add _castSpell to entity/Player.lua     | auto | fc6df4a  | PASS   |
-| 2    | Add _isInRange to entity/Player.lua     | auto | 8090fea  | PASS   |
-| 3    | Add _hasResource to entity/Player.lua   | auto | 401448c  | PASS   |
+| 1    | Add _castSpell to entity/Player.lua     | auto | 1aecd82  | PASS   |
+| 2    | Add _isInRange to entity/Player.lua     | auto | e066a0c  | PASS   |
+| 3    | Add _hasResource to entity/Player.lua   | auto | 5c98a79  | PASS   |
 
 **Total:** 3/3 tasks complete. All builds pass (`./build.sh` exits 0).
 
@@ -90,6 +90,6 @@ Player:new()
 
 ## Self-Check: PASSED
 
-- All 3 commits verified in git log (fc6df4a, 8090fea, 401448c)
+- All 3 commits verified in git log (1aecd82, e066a0c, 5c98a79)
 - entity/Player.lua exists and contains all 3 new methods
 - ./build.sh exits 0 on final state

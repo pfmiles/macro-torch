@@ -35,7 +35,7 @@ overrides_applied: 0
 | 12 | Game-dependent tests use conditional skip guards (Pattern C from CONTEXT.md) | VERIFIED | R2-02\~07, R4-01\~04, R5-01\~04, R7-01\~02, R8-02\~06 all have `player.isInCombat` or `isKillShotOrLastChance` or `isImmune` skip guards |
 | 13 | All tests follow "Principle R\<n\>-\<nn\>: description" naming per D-03 | VERIFIED | All 43 tests match `Principle (PF|R\d)-\d\d` pattern |
 | 14 | selftest.lua contains Batch 1 + Batch 2 tests, ordered by rule number 2->4->5->6->7->8 | VERIFIED | Batch 1 (PF-01\~07, R9-01\~03) → Batch 2 (R2-01\~07 → R4-01\~04 → R5-01\~04 → R6-01\~06 → R7-01\~06 → R8-01\~06) — confirmed by line-number grep |
-| 15 | Zero behavior changes to existing functions | VERIFIED | `git diff e9d40be..HEAD --name-only` filtered: only `selftest.lua`, `build_order.txt`, and `.planning/` docs modified; zero production source files touched |
+| 15 | Zero behavior changes to existing functions | VERIFIED | `git diff eebc5da..HEAD --name-only` filtered: only `selftest.lua`, `build_order.txt`, and `.planning/` docs modified; zero production source files touched |
 | 16 | Build succeeds: `./build.sh` produces valid SM_Extend.lua | VERIFIED | `./build.sh` exit code 0; no errors |
 
 **Score:** 16/16 truths verified (all presence-based; no behavior-dependent truths at the must-have level)

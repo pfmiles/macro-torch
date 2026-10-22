@@ -153,9 +153,9 @@ status: complete
 
 Each task committed atomically (English conventional messages, source files only):
 
-1. **Task 1: landSource registrations + FB-land-event renewal listener** — `0ac3bf7` (feat) — classes/druid/Druid.lua
-2. **Task 2: Delete druid-side legacy polling consumer branch + all debug-session diagnostics** — `b3bd8c6` (fix) — classes/druid/Druid.lua + classes/druid/cat.lua
-3. **Task 3: Hunter Sting landSource migration** — `31d69d1` (feat) — classes/hunter/Hunter.lua
+1. **Task 1: landSource registrations + FB-land-event renewal listener** — `c6a19c8` (feat) — classes/druid/Druid.lua
+2. **Task 2: Delete druid-side legacy polling consumer branch + all debug-session diagnostics** — `4e49311` (fix) — classes/druid/Druid.lua + classes/druid/cat.lua
+3. **Task 3: Hunter Sting landSource migration** — `16728ff` (feat) — classes/hunter/Hunter.lua
 
 ## Files Created/Modified
 

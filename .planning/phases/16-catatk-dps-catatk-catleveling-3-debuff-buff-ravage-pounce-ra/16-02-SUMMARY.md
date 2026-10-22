@@ -31,7 +31,7 @@ status: complete
 
 | # | Type | Name | Commit | Status |
 |---|------|------|--------|--------|
-| 1 | feat | 添加 5 条 catLeveling SelfTest 注册 (Category J) | 9798da5 | done |
+| 1 | feat | 添加 5 条 catLeveling SelfTest 注册 (Category J) | a6dfaf5 | done |
 
 ## Execution Summary
 
@@ -77,6 +77,6 @@ status: complete
 ## Self-Check: PASSED
 
 - [x] `core/selftest.lua` contains 5 registrations with "J: " prefix
-- [x] Commit `9798da5` exists in git history
+- [x] Commit `a6dfaf5` exists in git history
 - [x] `./build.sh` passes with exit code 0
 - [x] All acceptance criteria verified via grep and awk

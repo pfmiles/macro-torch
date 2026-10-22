@@ -32,8 +32,8 @@ metrics:
 
 | Task | Name | Commit | Files |
 |------|------|--------|-------|
-| 1 | 删除 battle_event_queue.lua 中的 Druid 多态 hack，接入 initPlayer | 77dab07 | battle_event_queue.lua |
-| 2 | SM_Extend_Druid.lua 中注册 Druid 到 initPlayer 注册表 | 22497a9 | SM_Extend_Druid.lua |
+| 1 | 删除 battle_event_queue.lua 中的 Druid 多态 hack，接入 initPlayer | 6219c52 | battle_event_queue.lua |
+| 2 | SM_Extend_Druid.lua 中注册 Druid 到 initPlayer 注册表 | d447db2 | SM_Extend_Druid.lua |
 
 ## Deviations from Plan
 
@@ -53,4 +53,4 @@ All 6 checks passed:
 - `initPlayer()` call precedes `loginContext` initialization
 - `macroTorch.registerPlayerClass("DRUID", macroTorch.Druid)` present in SM_Extend_Druid.lua
 - Registration call follows Druid singleton initialization
-- Both commits (77dab07, 22497a9) confirmed in git history
+- Both commits (6219c52, d447db2) confirmed in git history

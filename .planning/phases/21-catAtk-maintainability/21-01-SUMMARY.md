@@ -84,8 +84,8 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1 (tracer): Fix catAtk comment numbering 7/6 swap to 6/7 in combo.lua** - `38980b1` (docs)
-2. **Task 2 (auto): Add KillShot dual-entry design intent comments in combo.lua and cat.lua** - `85769df` (docs)
+1. **Task 1 (tracer): Fix catAtk comment numbering 7/6 swap to 6/7 in combo.lua** - `866448c` (docs)
+2. **Task 2 (auto): Add KillShot dual-entry design intent comments in combo.lua and cat.lua** - `9fdefa3` (docs)
 
 ## Files Modified
 - `classes/druid/combo.lua` - Fixed oocMod/termMod comment numbering (7/6 -> 6/7) and updated both call site comments with KillShot design intent

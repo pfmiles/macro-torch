@@ -17,7 +17,7 @@ status: complete
 ## Tasks Completed
 
 ### Task 1: 新增 encodeKey + 两项 selftest 断言（先 RED 后 GREEN）
-- **Commit:** `1b62f12` — `fix(tools): quote numeric object keys via encodeKey in cpdamage --json-out (G-28-5)`
+- **Commit:** `35c0def` — `fix(tools): quote numeric object keys via encodeKey in cpdamage --json-out (G-28-5)`
 - **Changes:** `encodeKey` 插于 `encodeScalar`（564 行 `end`）与 `encodeValue` 注释之间（17 行新增，含注释）；对象分支 `encodeScalar(k)` → `encodeKey(k)`（598 行）；`runSelftest` 在 mUni/bad2 解码检查之后、`statsRef` 构造之前插入两条断言（期望串用 `DQ = string.char(34)` 拼接，沿用文件既有的括号门避让设计）
 - **RED 见证:** 修改前基线 `ALL 33 PASSED`/exit 0；仅加入两条断言后 5.4.7 上 `selftest: FAIL - json encoder quotes numeric object keys` + exit 1 —— 新门实测捕获 G-28-5（裸数字键 `0:{"n":0}` 被形状断言拒绝）
 - **GREEN:** 修复后 5.4.7 上 `selftest: ALL 35 PASSED` + exit 0
@@ -54,5 +54,5 @@ None - plan executed exactly as written. 补充说明（非偏差，属计划口
 ## Self-Check: PASSED
 
 - File created/modified exists: `/home/admin/workspace/macro-torch/tools/cpdamage.lua`（工作树，diff 已核验 26+/1-）
-- Commits exist: `1b62f12`（`git log -1` 已核验，`fix(tools): quote numeric object keys via encodeKey in cpdamage --json-out (G-28-5)`）
+- Commits exist: `35c0def`（`git log -1` 已核验，`fix(tools): quote numeric object keys via encodeKey in cpdamage --json-out (G-28-5)`）
 - 三解释器 `ALL 35 PASSED`、Node `STRICT-JSON-OK`、屏幕函数 diff 门 `0`、stdout 全等 —— 全部实跑通过

@@ -59,8 +59,8 @@ Plan 05-04 完成了 Druid 熊形态战斗模块的 `player.cast()` 替换工作
 
 | # | Task | Commit | Description |
 |---|------|--------|-------------|
-| 1 | Delete all 9 bear safe/ready wrapper functions | 4b948db | 删除 safeMaul/readyMaul/safeSavageBite/readySavageBite/readyGrowl/safeDemoralizingRoar/readyDemoralizingRoar/safeSwipe/readySwipe 共9个函数 |
-| 2 | Replace all bear caller functions with mode-based calls | d8ef1fd | 更新 6 个调用者函数，全部使用 `player.xxx(mode)` 形式，0 处 `player.cast()` 残留 |
+| 1 | Delete all 9 bear safe/ready wrapper functions | 4308992 | 删除 safeMaul/readyMaul/safeSavageBite/readySavageBite/readyGrowl/safeDemoralizingRoar/readyDemoralizingRoar/safeSwipe/readySwipe 共9个函数 |
+| 2 | Replace all bear caller functions with mode-based calls | e49e69f | 更新 6 个调用者函数，全部使用 `player.xxx(mode)` 形式，0 处 `player.cast()` 残留 |
 
 ## Verification Results
 
@@ -88,6 +88,6 @@ None -- all call sites are fully wired to existing skill methods in Druid.lua (a
 ## Self-Check: PASSED
 
 - `classes/druid/bear.lua` -- FOUND
-- Commit `4b948db` -- FOUND
-- Commit `d8ef1fd` -- FOUND
+- Commit `4308992` -- FOUND
+- Commit `e49e69f` -- FOUND
 - Build `./build.sh` -- exits 0

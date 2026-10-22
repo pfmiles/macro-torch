@@ -39,4 +39,4 @@ end
 - 双语类名检查：`Rogue` / `盗贼`，兼容英文/中文客户端
 - 仅无 FF 时触发：如果已有 FF debuff 则跳过，避免浪费 GCD
 
-Commit: `4ba8df4`
+Commit: `3ace4e5`

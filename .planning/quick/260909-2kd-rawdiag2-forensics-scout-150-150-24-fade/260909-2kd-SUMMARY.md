@@ -99,8 +99,8 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1: Remove the 150-line disarm branch from core/events.lua and rewrite the header comment to 60s-only** - `dfd7bd7` (refactor)
-2. **Task 2: Update the RAWDIAG2 arming log literal in core/spell_trace_core.lua to '60s window'** - `139250b` (refactor)
+1. **Task 1: Remove the 150-line disarm branch from core/events.lua and rewrite the header comment to 60s-only** - `9fc46b4` (refactor)
+2. **Task 2: Update the RAWDIAG2 arming log literal in core/spell_trace_core.lua to '60s window'** - `1a1e111` (refactor)
 
 _Note: the plan example suggested one combined commit; per-task atomic commits follow the executor's atomic-commit constraint — see Deviations._
 
@@ -132,14 +132,14 @@ _Note: the plan example suggested one combined commit; per-task atomic commits f
 - **Fix:** Verified the realized diff against the plan's verbatim replacement spec line-by-line — it matches exactly (2 cap comment lines removed, 4 cap-free comment lines added with the em-dash intact; 4 elseif lines removed; `else` kept; LF preserved). Since every content-anchored sub-check of T1 passed and the plan's explicit quoted strings are authoritative, committed the verbatim-spec result as-is. No code was altered to force the stale number.
 - **Files modified:** core/events.lua
 - **Verification:** per-sub-check T1 table above (8/8 content checks pass); full diff reviewed with `cat -A` (LF, em-dash bytes correct)
-- **Committed in:** dfd7bd7 (Task 1 commit)
+- **Committed in:** 9fc46b4 (Task 1 commit)
 
 **2. [Execution-constraint] Atomic commit granularity: 2 commits instead of the plan's example 1**
 - **Found during:** commit step
 - **Issue:** Plan success criteria give "one atomic conventional commit... e.g. refactor(druid):..." as an example; the executor constraint mandates per-task atomic commits.
-- **Fix:** Committed Task 1 (dfd7bd7, core/events.lua only) and Task 2 (139250b, core/spell_trace_core.lua only) separately. Union of files = exactly the two allowed files, so sterility is preserved.
+- **Fix:** Committed Task 1 (9fc46b4, core/events.lua only) and Task 2 (1a1e111, core/spell_trace_core.lua only) separately. Union of files = exactly the two allowed files, so sterility is preserved.
 - **Verification:** `git log --oneline -3` + `git diff --name-only HEAD~2..HEAD`
-- **Committed in:** dfd7bd7, 139250b
+- **Committed in:** 9fc46b4, 1a1e111
 
 ---
 

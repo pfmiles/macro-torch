@@ -24,7 +24,7 @@ status: all_fixed
 
 ## Verification Environment
 
-`workflow.use_worktrees` is `true`, so all edits, self-verification, and commits ran inside an isolated review-fix worktree (`.claude/worktrees/rf-260831-24c-10987-1788145088`, temp branch `gsd-reviewfix/260831-24c-10987`, based on `main` @ 7860251). The two fix commits were then fast-forwarded onto `main` during the transactional cleanup tail. bbcheck/baseline numbers below were reproduced inside that worktree; the bbcheck MISMATCH on `core/selftest.lua` is a documented pre-existing checker limitation (identical verdict on the unmodified pre-fix baseline), not a regression.
+`workflow.use_worktrees` is `true`, so all edits, self-verification, and commits ran inside an isolated review-fix worktree (`.claude/worktrees/rf-260831-24c-10987-1788145088`, temp branch `gsd-reviewfix/260831-24c-10987`, based on `main` @ 137c5b8). The two fix commits were then fast-forwarded onto `main` during the transactional cleanup tail. bbcheck/baseline numbers below were reproduced inside that worktree; the bbcheck MISMATCH on `core/selftest.lua` is a documented pre-existing checker limitation (identical verdict on the unmodified pre-fix baseline), not a regression.
 
 ## Fixed Issues
 
@@ -52,7 +52,7 @@ The closure now assigns upvalues of this local; assertions at 943-946 keep readi
     local pcallRes = pcall(function()
 ```
 
-**Commit:** `aeae393` — `fix(selftest): declare capture locals in Category R tests to stop _G pollution (WR-01)`
+**Commit:** `eb91aa5` — `fix(selftest): declare capture locals in Category R tests to stop _G pollution (WR-01)`
 
 **Self-verify results:**
 
@@ -79,7 +79,7 @@ The closure now assigns upvalues of this local; assertions at 943-946 keep readi
 
 - Line 98, definiteBleeding scrub loop: same replacement.
 
-**Commit:** `42311ab` — `fix(target): type-guard spell-level entries in clear() scrub loops (WR-02)`
+**Commit:** `fd9e6f8` — `fix(target): type-guard spell-level entries in clear() scrub loops (WR-02)`
 
 **Self-verify results:**
 
@@ -102,8 +102,8 @@ No fix required (accepted contract per the plan and house precedent: Categories 
 
 | Commit | Message |
 |--------|---------|
-| `aeae393` | fix(selftest): declare capture locals in Category R tests to stop _G pollution (WR-01) |
-| `42311ab` | fix(target): type-guard spell-level entries in clear() scrub loops (WR-02) |
+| `eb91aa5` | fix(selftest): declare capture locals in Category R tests to stop _G pollution (WR-01) |
+| `fd9e6f8` | fix(target): type-guard spell-level entries in clear() scrub loops (WR-02) |
 
 ---
 

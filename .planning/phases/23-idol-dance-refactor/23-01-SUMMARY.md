@@ -110,8 +110,8 @@ status: complete
 
 ## Task Commits
 
-1. **Task 1: End-to-end tracer — rewrite computeNormalRelic + distance bypass + 2 tracer tests** - `64f9060` (feat)
-2. **Task 2: Add remaining 5 Category O SelfTest registrations (O-02 to O-07)** - `7a55bfa` (test)
+1. **Task 1: End-to-end tracer — rewrite computeNormalRelic + distance bypass + 2 tracer tests** - `a041482` (feat)
+2. **Task 2: Add remaining 5 Category O SelfTest registrations (O-02 to O-07)** - `bcc16aa` (test)
 
 ## Files Modified
 
@@ -147,7 +147,7 @@ status: complete
 - **Fix:** Set `isRipPresent = true` directly in the clickContext table. This is simpler (no pcall/cleanup needed) and matches how the actual function reads the field.
 - **Files modified:** classes/druid/selftest.lua
 - **Verification:** Build passes; the `isRipPresent` function returns the injected value immediately on line 1013 (`return clickContext.isRipPresent`).
-- **Committed in:** 7a55bfa
+- **Committed in:** bcc16aa
 
 ---
 

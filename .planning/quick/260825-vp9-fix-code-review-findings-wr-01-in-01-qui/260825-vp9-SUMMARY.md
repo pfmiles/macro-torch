@@ -70,11 +70,11 @@ coverage:
     human_judgment: true
     rationale: "The liveness invariant is only truly exercised in the in-game selftest; the static trace proves the stub path but the real UnitMana accessor and no-cast guarantee need the live client (non-blocking, established convention)"
   - id: D3
-    description: "Single atomic commit 592284c with only classes/druid/cat.lua and core/selftest.lua (57 insertions, 2 deletions); no deleted tracked files, no untracked leftovers, SM_Extend.lua absent from the commit"
+    description: "Single atomic commit d6d3be4 with only classes/druid/cat.lua and core/selftest.lua (57 insertions, 2 deletions); no deleted tracked files, no untracked leftovers, SM_Extend.lua absent from the commit"
     requirement: QUICK-260825-VP9
     verification:
       - kind: other
-        ref: "git show 592284c --numstat (2 files) + post-commit deletion check (none) + git status --porcelain clean"
+        ref: "git show d6d3be4 --numstat (2 files) + post-commit deletion check (none) + git status --porcelain clean"
         status: pass
     human_judgment: false
 
@@ -86,7 +86,7 @@ status: complete
 
 # Quick 260825-vp9: Fix code review findings WR-01 / IN-01 Summary
 
-**quickKeepRip now defers the bite on an attempted discharge (WR-01) and a new Category P liveness selftest covers the no-discharge-condition fall-through bite (IN-01), committed atomically in 592284c**
+**quickKeepRip now defers the bite on an attempted discharge (WR-01) and a new Category P liveness selftest covers the no-discharge-condition fall-through bite (IN-01), committed atomically in d6d3be4**
 
 ## Performance
 
@@ -101,16 +101,16 @@ status: complete
 - WR-01 closed: `macroTorch.quickKeepRip` (classes/druid/cat.lua) now consumes the `energyDischargeBeforeBite` boolean contract exactly like `cp5Bite` — a true return (discharge attempted) defers the bite verdict to the next keystroke instead of immediately calling `safeBite`, closing the OoC discharge-bypass hole on the second bite path. Only the cp>=3 branch changed.
 - IN-01 closed: new Category P selftest "P: cp5Bite still bites when no discharge condition matches" exercises the real `energyDischargeBeforeBite` returning false with `shouldDischarge == true` (non-OoC, not behind, mana 50 below BITE_E+CLAW_E=BITE_E+SHRED_E, Rake present) and asserts the bite still fires; mana is pinned via rawget/own-key/rawset because `macroTorch.player.mana` is a live UnitMana metatable accessor.
 - P-06 and the t86 discharge-defer test remain byte-identical (selftest diff hunk starts at old line 854); registration count comment updated 7 -> 8.
-- classes/druid/cat.lua stays all-CRLF after the edit (478 CR / 478 lines); `bash build.sh` exits 0; single atomic English-ASCII commit 592284c contains only the two code files.
+- classes/druid/cat.lua stays all-CRLF after the edit (478 CR / 478 lines); `bash build.sh` exits 0; single atomic English-ASCII commit d6d3be4 contains only the two code files.
 
 ## Task Commits
 
 Per the locked commit spec, both tasks share one atomic commit:
 
-1. **Task 1: quickKeepRip honors the discharge boolean guard (WR-01)** - `592284c`
-2. **Task 2: IN-01 liveness selftest, count comment 7->8, build, atomic commit** - `592284c` (fixed message: `fix(cat): quickKeepRip defers bite on attempted discharge (WR-01); cp5Bite discharge-false liveness selftest (IN-01)`)
+1. **Task 1: quickKeepRip honors the discharge boolean guard (WR-01)** - `d6d3be4`
+2. **Task 2: IN-01 liveness selftest, count comment 7->8, build, atomic commit** - `d6d3be4` (fixed message: `fix(cat): quickKeepRip defers bite on attempted discharge (WR-01); cp5Bite discharge-false liveness selftest (IN-01)`)
 
-**Plan metadata:** the pre-dispatch PLAN commit `5a61738` was already made by the orchestrator before execution.
+**Plan metadata:** the pre-dispatch PLAN commit `4a95fd9` was already made by the orchestrator before execution.
 
 ## Files Created/Modified
 
@@ -147,7 +147,7 @@ The in-game `/mt` human check is non-blocking and lands on the user's next login
 ## Self-Check: PASSED
 
 - `260825-vp9-SUMMARY.md` exists at `.planning/quick/260825-vp9-fix-code-review-findings-wr-01-in-01-qui/`
-- `classes/druid/cat.lua` and `core/selftest.lua` exist and are the only files in commit `592284c`
+- `classes/druid/cat.lua` and `core/selftest.lua` exist and are the only files in commit `d6d3be4`
 
 ---
 *Task: 260825-vp9 (WR-01 + IN-01)*

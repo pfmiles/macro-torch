@@ -2,7 +2,7 @@
 phase: quick-260907-sz4-reload-selftest-macro-torch-lua-config-o
 plan: 01
 status: complete
-commit: 219071a
+commit: 923ee3f
 ---
 
 # Quick 260907-sz4: Global config options registry + login-time banner

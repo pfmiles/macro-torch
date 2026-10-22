@@ -113,9 +113,9 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1 (tracer): 配置与工具层 — cpDamageLog 开关 + JSON 微编码器 + batch 戳** - `fc60d64` (feat)
-2. **Task 2: claw 唯一路径 — 采样/独立 intent/通道门/配对/发射** - `a602cc0` (feat)
-3. **Task 3: 远端终点 — tools/cpdamage.lua 提取→过滤→解码→吐条目骨架** - `17492f7` (feat)
+1. **Task 1 (tracer): 配置与工具层 — cpDamageLog 开关 + JSON 微编码器 + batch 戳** - `fda2af5` (feat)
+2. **Task 2: claw 唯一路径 — 采样/独立 intent/通道门/配对/发射** - `059e7a9` (feat)
+3. **Task 3: 远端终点 — tools/cpdamage.lua 提取→过滤→解码→吐条目骨架** - `e27cffb` (feat)
 
 **Plan metadata:** see final docs commit below.
 
@@ -144,7 +144,7 @@ Each task was committed atomically:
 - **Fix:** flag 字面量改为顶层局部 `FLAG_SELFTEST = '-' .. '-selftest'` / `FLAG_JSON_OUT = '-' .. '-json-out'` 拼接构造，全部引用点改用常量；文件内不再有任何字符串包含相邻连字符对
 - **Files modified:** tools/cpdamage.lua
 - **Verification:** bbcheck BALANCED + 全文件「字符串内双连字符」node 扫描 0 命中 + 530/532/535/539/543 行引用点行为等价
-- **Committed in:** 17492f7（Task 3 commit）
+- **Committed in:** e27cffb（Task 3 commit）
 
 ---
 
@@ -175,7 +175,7 @@ None - no external service configuration required.（注意：持久化依赖游
 - 无阻塞项。
 
 ## Self-Check: PASSED
-- 三任务 commit 存在：fc60d64 / a602cc0 / 17492f7
+- 三任务 commit 存在：fda2af5 / 059e7a9 / e27cffb
 - 7 个产物文件全部存在于工作树且 bbcheck BALANCED
 - build.sh 重建 SM_Extend.lua 成功，含 5 个 cpDamage 函数定义
 

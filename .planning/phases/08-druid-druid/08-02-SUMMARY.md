@@ -11,8 +11,8 @@
 
 | # | Task | Type | Status | Commit |
 |---|------|------|--------|--------|
-| 1 | Create Rogue class definition and combat files | auto | done | e2d2f47 |
-| 2 | Create Mage class definition and combat files | auto | done | 3dd8abb |
+| 1 | Create Rogue class definition and combat files | auto | done | 19ff2e5 |
+| 2 | Create Mage class definition and combat files | auto | done | 6672679 |
 | 3 | Verify Rogue English skill names | checkpoint:human-verify | resolved | N/A (user approved) |
 
 ## Artifacts Created

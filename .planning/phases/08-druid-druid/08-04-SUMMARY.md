@@ -45,8 +45,8 @@ Final integration step: update build_order.txt to replace 6 old flat class file 
 
 ## Commits
 
-1. `0509cf3` build(build_order): replace 6 flat class paths with 15 subdirectory paths
-2. `9c24fc7` refactor(classes): delete 6 legacy flat class files after migration
+1. `460723b` build(build_order): replace 6 flat class paths with 15 subdirectory paths
+2. `72afdff` refactor(classes): delete 6 legacy flat class files after migration
 
 ## Verification
 

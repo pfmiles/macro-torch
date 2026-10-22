@@ -201,8 +201,8 @@ This allows testing different code paths by changing a single parameter.
 
 Commits often include "tested" in their message:
 ```
-ea1abbb minor mod, tested
-5091374 druid energy before bite logic tested
+002f549 minor mod, tested
+0f572b0 druid energy before bite logic tested
 ```
 
 ## Testing Wisdom from the Codebase

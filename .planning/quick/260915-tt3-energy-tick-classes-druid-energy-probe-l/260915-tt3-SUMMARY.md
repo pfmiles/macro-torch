@@ -16,7 +16,7 @@ decisions:
   - "GATE 7 RAW 分支头行号按 C 插入 +6 行修正锚点 145→151（sed 字节级钉死），既有语句零移动零删除由跨提交 0 deletions 实证"
   - "GATE 8 energyProbe 字面量计数以 energyProbe|energy_probe 双拼写复核：build_order.txt 行是 snake_case 路径（classes/druid/energy_probe.lua），camelCase 字面量恒不匹配"
 commits:
-  code: bf47ecc, d9319f2
+  code: f0d7a4d, 75ee736
 duration_seconds: 251
 estimate:
   tokens: 32000
@@ -43,8 +43,8 @@ energy tick 相位取证探针（tick-test-3 前序装置）：新建 `classes/d
 | D — REL 释放点前插 | classes/druid/cat.lua | readyReshift 内 `macroTorch.player.reshift('ready')`（原 412 行）之前纯插入 3 行：双守卫 + `EPR|REL|t=%.3f|e=%s|next=%s|cost=%s|earn=%s` 行（复用 nextMove/nextAbilityCost 形参与 show 调用同款 earning 表达式）；show 调用一字不动 |
 
 提交：
-- `bf47ecc` — `feat(260915-tt3): add druid energy tick forensics probe module and build_order entry`（恰含 build_order.txt 1 insertion + energy_probe.lua 129 insertions = 130，0 deletions）
-- `d9319f2` — `feat(260915-tt3): gate raw/cast/reshift energy taps behind macroTorch.energyProbe`（恰含 events.lua 9 insertions + cat.lua 3 insertions = 12，0 deletions）
+- `f0d7a4d` — `feat(260915-tt3): add druid energy tick forensics probe module and build_order entry`（恰含 build_order.txt 1 insertion + energy_probe.lua 129 insertions = 130，0 deletions）
+- `75ee736` — `feat(260915-tt3): gate raw/cast/reshift energy taps behind macroTorch.energyProbe`（恰含 events.lua 9 insertions + cat.lua 3 insertions = 12，0 deletions）
 
 `.planning/` 工件（PLAN.md / 本 SUMMARY / STATE.md 表行）由 quick 流程 docs commit 收口，两个代码 commit 零夹带。
 
@@ -88,6 +88,6 @@ energy tick 相位取证探针（tick-test-3 前序装置）：新建 `classes/d
 ## Self-Check: PASSED
 
 - `test -f classes/druid/energy_probe.lua && echo FOUND` → FOUND
-- `git log --oneline -2` → `d9319f2 feat(260915-tt3): gate raw/cast/reshift energy taps behind macroTorch.energyProbe` / `bf47ecc feat(260915-tt3): add druid energy tick forensics probe module and build_order entry` 逐字一致
+- `git log --oneline -2` → `75ee736 feat(260915-tt3): gate raw/cast/reshift energy taps behind macroTorch.energyProbe` / `f0d7a4d feat(260915-tt3): add druid energy tick forensics probe module and build_order entry` 逐字一致
 - `git diff HEAD~2 --stat` → 恰 4 文件、142 insertions、0 deletions
 - SUMMARY 存在绝对路径：/home/admin/workspace/macro-torch/.planning/quick/260915-tt3-energy-tick-classes-druid-energy-probe-l/260915-tt3-SUMMARY.md

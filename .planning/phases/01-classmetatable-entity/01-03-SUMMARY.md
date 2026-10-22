@@ -33,17 +33,17 @@ metrics:
 
 | Task | Name | Commit | Files |
 |------|------|--------|-------|
-| 1 | 创建 core/periodic.lua，迁移 LRUStack + ES_FIELD_FUNC_MAP，使用 classMetatable | `2f8b1d3` | `core/periodic.lua` (created) |
-| 2 | 迁移 registerPeriodicTask / removePeriodicTask / setRepeat / onPeriodicUpdate + 独立 OnUpdate Frame | `54c9ea2` | `core/periodic.lua` (modified) |
-| 3 | 清理：删除 event_stack.lua，从 battle_event_queue.lua 删除已迁移代码 | `e714988` | `event_stack.lua` (deleted), `battle_event_queue.lua` (modified) |
+| 1 | 创建 core/periodic.lua，迁移 LRUStack + ES_FIELD_FUNC_MAP，使用 classMetatable | `68b962f` | `core/periodic.lua` (created) |
+| 2 | 迁移 registerPeriodicTask / removePeriodicTask / setRepeat / onPeriodicUpdate + 独立 OnUpdate Frame | `f724c91` | `core/periodic.lua` (modified) |
+| 3 | 清理：删除 event_stack.lua，从 battle_event_queue.lua 删除已迁移代码 | `fd5d659` | `event_stack.lua` (deleted), `battle_event_queue.lua` (modified) |
 
 ## Commits
 
 | Hash | Message |
 |------|---------|
-| `2f8b1d3` | feat(01-classmetatable-entity-03): create core/periodic.lua with LRUStack + ES_FIELD_FUNC_MAP using classMetatable(nil) |
-| `54c9ea2` | feat(01-classmetatable-entity-03): migrate periodic task scheduling system + independent OnUpdate Frame to core/periodic.lua |
-| `e714988` | feat(01-classmetatable-entity-03): cleanup — delete event_stack.lua, remove migrated periodic-task code from battle_event_queue.lua |
+| `68b962f` | feat(01-classmetatable-entity-03): create core/periodic.lua with LRUStack + ES_FIELD_FUNC_MAP using classMetatable(nil) |
+| `f724c91` | feat(01-classmetatable-entity-03): migrate periodic task scheduling system + independent OnUpdate Frame to core/periodic.lua |
+| `fd5d659` | feat(01-classmetatable-entity-03): cleanup — delete event_stack.lua, remove migrated periodic-task code from battle_event_queue.lua |
 
 ## Key Changes
 

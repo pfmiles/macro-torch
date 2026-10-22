@@ -56,7 +56,7 @@ Inserted a Category M self-test block in `core/selftest.lua` containing 4 `SelfT
 
 | # | Task | Commit | Files |
 |---|------|--------|-------|
-| 1 | Insert Category M self-test block in selftest.lua (D-05, D-06, D-07) | 9623ea7 | core/selftest.lua |
+| 1 | Insert Category M self-test block in selftest.lua (D-05, D-06, D-07) | 2106c71 | core/selftest.lua |
 
 ## Verification Results
 
@@ -77,6 +77,6 @@ None -- plan executed exactly as written. The single task was completed with all
 
 ## Self-Check: PASSED
 
-- `core/selftest.lua` modified and committed: 9623ea7 exists
+- `core/selftest.lua` modified and committed: 2106c71 exists
 - `SM_Extend.lua` generated successfully with all 4 tests present
 - All grep-based acceptance criteria verified

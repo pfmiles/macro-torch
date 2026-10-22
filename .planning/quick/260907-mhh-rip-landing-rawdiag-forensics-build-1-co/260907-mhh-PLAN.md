@@ -76,7 +76,7 @@ Grounding facts, all verified by reading at planning time (do not re-verify
 blindly; the plan's anchors are live). Two reference commits exist in git
 history and their exact shapes were diffed into this plan:
 
-- `git show 8ffd759` — the original RAWDIAG scout (deleted later): arming hook
+- `git show 7a12088` — the original RAWDIAG scout (deleted later): arming hook
   inside recordCastTable plus the RAW_COMBATLOG dump block. The original's two
   flaws being fixed here: it dumped only lines that passed the tier-1 channel
   whitelist (the suppression bug lives in the CHAT_MSG_SPELL_PERIODIC_* channels
@@ -84,7 +84,7 @@ history and their exact shapes were diffed into this plan:
   `parts[#parts + 1]` — the Lua 5.0-forbidden # operator. This plan's scout
   reuses its structure (window/age/cap/sample semantics, _G['arg'..i] nil-safe
   serialization, macroTorch.log persistence) with RAWDIAG2 naming and no #.
-- `git show cf5ade7` — the DIAG stamp shape adopted for the [RAWDIAG2 ctx]
+- `git show e22e346` — the DIAG stamp shape adopted for the [RAWDIAG2 ctx]
   line at safeRip (success-branch stamp + context fields, pure additive).
 
 Line anchors (current HEAD):
@@ -214,7 +214,7 @@ PART 2 — core/events.lua, EDIT B: insert the scout block into the RAW_COMBATLO
 45. `end`
 46. Comment: `-- end of RAWDIAG2 scout block (arming hook: spell_trace_core.lua recordCastTable)`
 
-(The dump increments both counters only when a line is actually dumped; non-matching post-sample-20 lines increment nothing — identical semantics to the removed 8ffd759 scout. The 60s/150-line checks use `or GetTime()` / `or 0` defaults so a half-armed context can never error.)
+(The dump increments both counters only when a line is actually dumped; non-matching post-sample-20 lines increment nothing — identical semantics to the removed 7a12088 scout. The 60s/150-line checks use `or GetTime()` / `or 0` defaults so a half-armed context can never error.)
 
 PART 3 — core/spell_trace_core.lua, EDIT A (the arm hook): insert between line 125 (the intent push ending `landAt = nil })`) and line 126 (`end`, the closer of recordCastTable). 4-space indent (the function body level), exactly:
 
@@ -235,7 +235,7 @@ PART 3 — core/spell_trace_core.lua, EDIT A (the arm hook): insert between line
 15. `macroTorch.log('[RAWDIAG2] scout armed by Rip cast record, 60s / 150-line window', 'green')`
 16. `end`
 
-Why the inCombat guard is load-bearing: in game every real Rip cast record fires while the player is in combat, so nothing is lost; but selftest Q-02/Q-03 call recordCastTable('Rip') OUT of combat, and this guard keeps the arm (and its macroTorch.log line) from ever firing during /mt runs. Why reset-on-every-arm instead of only-fresh-arm (a documented deviation from 8ffd759): the 8ffd759 scout was recon for a single window; this forensics build's decisive evidence is per-cast in a repeat-cast fight (the bug is continuous re-casting), so each cast re-anchors the full budget.
+Why the inCombat guard is load-bearing: in game every real Rip cast record fires while the player is in combat, so nothing is lost; but selftest Q-02/Q-03 call recordCastTable('Rip') OUT of combat, and this guard keeps the arm (and its macroTorch.log line) from ever firing during /mt runs. Why reset-on-every-arm instead of only-fresh-arm (a documented deviation from 7a12088): the 7a12088 scout was recon for a single window; this forensics build's decisive evidence is per-cast in a repeat-cast fight (the bug is continuous re-casting), so each cast re-anchors the full budget.
   </action>
   <verify>
     <automated>cd /home/admin/workspace/macro-torch && BB=.planning/phases/27-catatk-event-driven-land-tracing-refactor/tools/bbcheck.js && node $BB core/events.lua && node $BB core/spell_trace_core.lua && grep -qF "local RAWDIAG2_KEYWORDS = { 'Rip', 'Rake', 'Bite', 'afflicted', 'fades' }" core/events.lua && test "$(grep -n "if arg1 ~= 'CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE'" core/events.lua | head -1 | cut -d: -f1)" -gt "$(grep -n '_rawdiag2Active' core/events.lua | head -1 | cut -d: -f1)" && test "$(grep -c '_rawdiag2Active = false' core/events.lua)" = "2" && grep -qF "while ai <= 12 and _G['arg' .. ai] ~= nil do" core/events.lua && grep -qF "table.insert(parts, 'arg' .. ai .. '=' .. tostring(_G['arg' .. ai]))" core/events.lua && grep -qF "if interesting or (scoutCtx._rawdiag2Samples or 0) < 20 then" core/events.lua && grep -qF "'[RAWDIAG2] line=' .. tostring(scoutCtx._rawdiag2Lines) .." core/events.lua && grep -qF "if spell == 'Rip' and macroTorch.context and macroTorch.inCombat then" core/spell_trace_core.lua && test "$(grep -c '_rawdiag2Lines = 0' core/spell_trace_core.lua)" = "1" && grep -qF "macroTorch.context._rawdiag2Active = true" core/spell_trace_core.lua && grep -qF "macroTorch.context._rawdiag2Start = GetTime()" core/spell_trace_core.lua && grep -qF "macroTorch.log('[RAWDIAG2] scout armed by Rip cast record, 60s / 150-line window', 'green')" core/spell_trace_core.lua && echo "T1 GATE OK"</automated>
@@ -317,7 +317,7 @@ Insert into safeRip's success branch BETWEEN line 428 (the end of the existing s
 3. Comment: `-- (hasBuff / ripLeft / last land / pending-intent depth / cp) at the decision`
 4. Comment: `-- instant. Pure additive logging, no existing branch, return value or`
 5. Comment: `-- scheduling is touched (same one-shot stamp shape as removed commit`
-6. Comment: `-- cf5ade7). Only reads: clickContext.ripLeft / clickContext.isRipPresent were`
+6. Comment: `-- e22e346). Only reads: clickContext.ripLeft / clickContext.isRipPresent were`
 7. Comment: `-- already computed earlier in this same click (safeRip always runs after`
 8. Comment: `-- shouldCastRip), so these reads hit caches and nothing can change any`
 9. Comment: `-- later decision in the click.`

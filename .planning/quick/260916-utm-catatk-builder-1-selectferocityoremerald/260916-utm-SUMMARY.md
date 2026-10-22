@@ -20,7 +20,7 @@ actuals:
   tokens: 3772     # chars/4 over the realized diff (git diff 15088 chars)
   tasks: 2         # tasks completed
   commits: 2       # MEASURED: git rev-list --count <plan_head_before>..HEAD
-plan_head_before: 6f3e4f167328921631e32a91777e2e58208eae99
+plan_head_before: ca64265b83cb3a6a351e3bde225dc41b0e4b0390
 
 # Tech tracking
 tech-stack:
@@ -99,8 +99,8 @@ completed: 2026-09-16
 
 Each task was committed atomically:
 
-1. **Task 1: Druid.lua 三层选择重构 + 4 调用点传参** - `4854eaa` (feat)
-2. **Task 2: selftest Cat O-08..O-16 九项注册** - `619452e` (test)
+1. **Task 1: Druid.lua 三层选择重构 + 4 调用点传参** - `cf2e696` (feat)
+2. **Task 2: selftest Cat O-08..O-16 九项注册** - `638ca74` (test)
 
 ## Files Created/Modified
 
@@ -148,9 +148,9 @@ None - no external service configuration required.
 
 ## Self-Check: PASSED
 
-- `classes/druid/Druid.lua` — present, 1795 lines, committed in `4854eaa`
-- `classes/druid/selftest.lua` — present, 2783 lines, committed in `619452e`
-- `git log --oneline -2` confirms `619452e` and `4854eaa` on `main`
+- `classes/druid/Druid.lua` — present, 1795 lines, committed in `cf2e696`
+- `classes/druid/selftest.lua` — present, 2783 lines, committed in `638ca74`
+- `git log --oneline -2` confirms `638ca74` and `cf2e696` on `main`
 
 ---
 

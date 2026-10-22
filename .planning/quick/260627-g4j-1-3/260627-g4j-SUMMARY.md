@@ -17,4 +17,4 @@ status: complete
 - **修复后:** 与问题 1 一起删除。`recordImmune` 的日志已包含完整法术名称。
 
 **变更文件:** `core/spell_trace_immune.lua` — 删除 2 行日志
-**Commit:** fef6f2f
+**Commit:** 1d1a567

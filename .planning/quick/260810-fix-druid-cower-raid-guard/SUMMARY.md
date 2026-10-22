@@ -26,4 +26,4 @@ end
 ## 改动
 
 - `classes/druid/cat.lua` — otMod 函数：新增独立 guard + 删除 L79 旧条件
-- Commit: `e917b88`
+- Commit: `f92a9b0`

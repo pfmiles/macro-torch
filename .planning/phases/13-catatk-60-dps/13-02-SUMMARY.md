@@ -72,7 +72,7 @@ All tests follow the established Druid selftest convention: `UnitClass('player')
 
 Each task was committed atomically:
 
-1. **Task 1: Register Category H selftest cases** - `8383f1f` (feat: register 8 Category H selftests for catAtk low-level guard verification, 100 lines added)
+1. **Task 1: Register Category H selftest cases** - `b2359c3` (feat: register 8 Category H selftests for catAtk low-level guard verification, 100 lines added)
 
 ## Files Created/Modified
 
@@ -91,7 +91,7 @@ None — plan executed exactly as written. The 8 selftest registrations were pla
 ## Self-Check: PASSED
 
 - `classes/druid/Druid.lua` — FOUND, contains all 8 Category H test registrations
-- Commit `8383f1f` — FOUND in git log
+- Commit `b2359c3` — FOUND in git log
 - `bash build.sh` — PASSES, produces valid SM_Extend.lua with all Category H tests
 - `grep -c "Category H: catAtk" classes/druid/Druid.lua` — returns 1 (section header present)
 - `grep -c "end, true)" classes/druid/Druid.lua` — returns 18 (10 pre-existing + 8 new)

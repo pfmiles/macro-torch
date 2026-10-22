@@ -5,10 +5,10 @@ fixed_at: 2026-09-07T14:31:54Z
 review_path: .planning/quick/260907-tuh-cower-threat-threshold-75/260907-tuh-REVIEW.md
 iteration: 1
 fix_commits:
-  - hash: 04c5483d3f3f192202ddd8db8e0494d0a36b4c3d
+  - hash: c39837baf30780cc9f1c2f764e811b859b5860ac
     finding: WR-01
     message: fix(druid): tonumber guard for user-configurable Cower threat threshold (WR-01, quick 260907-tuh)
-  - hash: 2c05c8c9ea4d8f1bb3f0641644af69b57a414499
+  - hash: c94636885faa28c4955b2992d97f28d873ba9c11
     finding: WR-02
     message: fix(selftest): reprint config banner on /mt when selftest already ran (WR-02, quick 260907-tuh)
 findings_in_scope: 2
@@ -42,7 +42,7 @@ Before fixing, both findings were re-verified against the code at the cited line
 
 **Outcome:** fixed
 **Files modified:** `classes/druid/cat.lua` (otMod)
-**Commit:** 04c5483
+**Commit:** c39837b
 **Applied fix:** Coerce the user-settable threshold once at the single consumption site before the comparison:
 ```lua
     -- Coerce the /run-settable threshold once: Lua 5.0 raises on mixed-type
@@ -60,7 +60,7 @@ Accepting the numeric default unchanged, tolerating quoted numeric strings (`'75
 
 **Outcome:** fixed
 **Files modified:** `core/selftest.lua` (/mt SlashCmdList handler)
-**Commit:** 2c05c8c
+**Commit:** c946368
 **Applied fix:** Snapshot `_selfTestRan` before the run() call and reprint the banner when the selftest was skipped:
 ```lua
     if trimmed == "" then

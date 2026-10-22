@@ -18,7 +18,7 @@ status: clean
 
 **Reviewed:** 2026-09-17T06:41:24Z
 **Depth:** standard
-**Files Reviewed:** 2（classes/druid/Druid.lua +5/-5、classes/druid/selftest.lua +24/-24；diff base `34aa922`，范围 `34aa922..6260215` 共 3 个 commit：6e7b759=Task 1 代码、b30ca29=Task 2 代码、6260215=docs（STATE.md + PLAN + SUMMARY，零 classes/ 文件））
+**Files Reviewed:** 2（classes/druid/Druid.lua +5/-5、classes/druid/selftest.lua +24/-24；diff base `c9687ba`，范围 `c9687ba..878d04b` 共 3 个 commit：4fe4f1f=Task 1 代码、1b494bc=Task 2 代码、878d04b=docs（STATE.md + PLAN + SUMMARY，零 classes/ 文件））
 **Status:** clean（0 critical / 0 warning / 2 info 纪律备忘，无缺陷）
 
 ## Summary
@@ -37,8 +37,8 @@ status: clean
 
 ### Commit 与归档合规（对照实测）
 
-- `6e7b759` 恰含 `classes/druid/Druid.lua` 一个文件（5 ins/5 del）；`b30ca29` 恰含 `classes/druid/selftest.lua` 一个文件（24 ins/24 del）；`6260215` 仅 3 个 .planning 文档（STATE.md + 本 quick PLAN/SUMMARY），零 classes/ 文件。messages `git log --format='%s' 34aa922..HEAD` 逐字符合锁定两行 + docs 一行。
-- 归档零触碰：`git diff 34aa922..HEAD -- cat.lua`、`-- SM_Extend.lua` 均为空；历史归档（既有 PLAN/SUMMARY/REVIEW）零 diff（STATE.md 的行新增为 docs commit 职责，执行者零触碰的口径成立）。
+- `4fe4f1f` 恰含 `classes/druid/Druid.lua` 一个文件（5 ins/5 del）；`1b494bc` 恰含 `classes/druid/selftest.lua` 一个文件（24 ins/24 del）；`878d04b` 仅 3 个 .planning 文档（STATE.md + 本 quick PLAN/SUMMARY），零 classes/ 文件。messages `git log --format='%s' c9687ba..HEAD` 逐字符合锁定两行 + docs 一行。
+- 归档零触碰：`git diff c9687ba..HEAD -- cat.lua`、`-- SM_Extend.lua` 均为空；历史归档（既有 PLAN/SUMMARY/REVIEW）零 diff（STATE.md 的行新增为 docs commit 职责，执行者零触碰的口径成立）。
 - 参考文档 `.planning/catAtk-core-principles.md` 行 347 实测已更名（旧 0 / 新 1），中文语义文案「残忍圣物 vs 翡翠腐朽圣物选择」原样；文件仍被 `.gitignore:34` 忽略（`git check-ignore` 通过）、未入库（`git status --porcelain` 为空）。
 
 ## Critical Issues

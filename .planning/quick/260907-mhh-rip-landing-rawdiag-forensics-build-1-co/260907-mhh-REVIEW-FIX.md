@@ -1,7 +1,7 @@
 ---
 phase: quick-260907-mhh-rip-landing-rawdiag-forensics-build
 reviewed: 2026-09-07
-fix_commit: fe1f417
+fix_commit: fed970f
 findings_fixed:
   - WR-01
   - WR-02
@@ -14,7 +14,7 @@ status: fixed
 
 # Quick 260907-mhh: Code Review Fix Report
 
-`fe1f417 fix(druid): RAWDIAG2 WR-01 cached-gate ctx field + hasBuffLive, WR-02 rawdiag2Enabled master switch (quick 260907-mhh)`
+`fed970f fix(druid): RAWDIAG2 WR-01 cached-gate ctx field + hasBuffLive, WR-02 rawdiag2Enabled master switch (quick 260907-mhh)`
 
 ## Fixed
 
@@ -52,4 +52,4 @@ default off.
 
 - bbcheck BALANCED on core/events.lua, core/spell_trace_core.lua, classes/druid/cat.lua, macro_torch.lua
 - WR-01 fragment gate: `isRipPresent=` cached field + `hasBuffLive=` + single non-comment `RAWDIAG2 ctx` statement
-- SWITCH DEFAULT OK (macro_torch.lua nil-guard), ARM GATE OK (switch in arm condition), LF OK, TOKEN GATE OK, ADDITIVE-vs-BASE OK (diff vs f2ac754 still purely additive)
+- SWITCH DEFAULT OK (macro_torch.lua nil-guard), ARM GATE OK (switch in arm condition), LF OK, TOKEN GATE OK, ADDITIVE-vs-BASE OK (diff vs 6ad3a36 still purely additive)

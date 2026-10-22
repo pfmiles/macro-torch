@@ -21,4 +21,4 @@ completed: 2026-08-01
 
 ## 提交
 
-`feat(druid): add druidMobTagging mob-tagging macro` (832065c)
+`feat(druid): add druidMobTagging mob-tagging macro` (b77a405)

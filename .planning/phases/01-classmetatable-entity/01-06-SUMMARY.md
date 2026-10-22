@@ -13,8 +13,8 @@ duration-s: 180
 tasks-total: 2
 tasks-completed: 2
 commits:
-  - df4317f
-  - ed3df22
+  - cf1a68e
+  - 93cd6ad
 files-created:
   - build_order.txt
 files-modified:
@@ -39,13 +39,13 @@ One-liner: Replaced grep -v blacklist build.sh with a 44-line declaration-based 
 ## Tasks Executed
 
 ### Task 1: Create build_order.txt with full Phase 1-4 file list
-- **Commit:** `df4317f`
+- **Commit:** `cf1a68e`
 - **Action:** Created 44-line `build_order.txt` containing all Phase 1 current files (core/, entity/, SM_Extend_*.lua, battle_event_queue.lua, texture_map.lua, etc.) and all Phase 2-4 future files (core/events.lua, core/combat_context.lua, core/spell_trace.lua, core/selftest.lua, classes/Druid/*, classes/*.lua)
 - **Dependency order:** macro_torch.lua -> impl_util.lua -> biz_util.lua -> core/ -> entity/ -> battle_event_queue.lua -> texture_map.lua -> interface_debug.lua -> SM_Extend_*.lua -> future core/ Phase 2-3 -> future classes/ Phase 4
 - **Key ordering guarantees:** core/ before entity/ (metatable + periodic deps), entity/Unit.lua before subclasses (inheritance), comment sections separate logical groups
 
 ### Task 2: Rewrite build.sh to read build_order.txt with fault-tolerant mode
-- **Commit:** `ed3df22`
+- **Commit:** `93cd6ad`
 - **Action:** Completely rewrote build.sh to replace hardcoded file list and grep -v blacklist with a while-read loop that processes build_order.txt. Each line: skip empty/comment, `[ -f "$line" ]` guard, then `printf '\n'` + `cat` to target. Cygwin copy logic preserved.
 - **Verification:** `./build.sh` runs successfully, produces 196KB SM_Extend.lua with classMetatable, initPlayer, and registerPeriodicTask symbols present
 - **Threat mitigations:** T-01-06a (tampering) accepted - static file paths with no injection points. T-01-06b (DoS from missing files) mitigated - `[ -f "$line" ]` guard skips Phase 2-4 files not yet created
@@ -89,5 +89,5 @@ None - no hardcoded empty values, placeholders, or unwired data sources in any f
 - [x] build.sh contains while-read-loop and fault-tolerant guard
 - [x] ./build.sh completes with exit code 0
 - [x] SM_Extend.lua exists and contains key symbols
-- [x] df4317f commit exists on branch
-- [x] ed3df22 commit exists on branch
+- [x] cf1a68e commit exists on branch
+- [x] 93cd6ad commit exists on branch

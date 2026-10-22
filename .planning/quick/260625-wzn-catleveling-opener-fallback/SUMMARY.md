@@ -33,4 +33,4 @@ end
 | 两者都不可用 + 背后 + Shred 已学 | Shred('ready') 打破潜行 |
 | 两者都不可用 + 正面/无 Shred + Claw 已学 | Claw('ready') 打破潜行 |
 
-Commit: `0e19f75`
+Commit: `61acdb9`

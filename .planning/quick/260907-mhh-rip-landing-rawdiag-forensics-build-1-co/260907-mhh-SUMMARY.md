@@ -2,7 +2,7 @@
 phase: quick-260907-mhh-rip-landing-rawdiag-forensics-build
 plan: 01
 status: complete
-commit: 953bd50
+commit: 9ce26c7
 ---
 
 # Quick 260907-mhh: RAWDIAG2 Rip landing forensics instrumentation

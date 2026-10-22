@@ -61,7 +61,7 @@ metrics:
 
 ## Task Commits
 
-1. **Task 1: Register Category N selftests for SPELL_ID_AUTO_CORRECT** - `90787d3` (feat)
+1. **Task 1: Register Category N selftests for SPELL_ID_AUTO_CORRECT** - `46ddd73` (feat)
 
 ## Files Created/Modified
 - `core/selftest.lua` - Added Category N section (90 lines) with 5 selftest registrations after Category M
@@ -91,4 +91,4 @@ None.
 ## Self-Check: PASSED
 - SUMMARY.md exists
 - core/selftest.lua exists
-- commit 90787d3 confirmed in git history
+- commit 46ddd73 confirmed in git history

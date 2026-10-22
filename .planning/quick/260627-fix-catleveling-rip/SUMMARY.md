@@ -20,4 +20,4 @@ status: complete
 
 ### Commit
 
-`daa632b` — fix(druid): set lastRipAtCp in catLeveling Rip module to prevent premature re-cast
+`b3d4b8c` — fix(druid): set lastRipAtCp in catLeveling Rip module to prevent premature re-cast

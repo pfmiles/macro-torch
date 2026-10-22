@@ -49,9 +49,9 @@ metrics:
 
 | # | Task | Commit | Files |
 |---|------|--------|-------|
-| 1 | Create core/spell_id_map.lua + insert into build_order.txt | `8b84479` | `core/spell_id_map.lua` (created), `build_order.txt` |
-| 2 | FF prowling guard + resolveSpellId + SpellTrace:register spellName support | `c414e89` | `core/spell_trace_core.lua`, `classes/druid/leveling.lua` |
-| 3 | loadSpellIdMap + onPlayerEnteringWorld integration | `7b26aa2` | `core/spell_trace_immune.lua`, `core/combat_context.lua` |
+| 1 | Create core/spell_id_map.lua + insert into build_order.txt | `72d94e2` | `core/spell_id_map.lua` (created), `build_order.txt` |
+| 2 | FF prowling guard + resolveSpellId + SpellTrace:register spellName support | `89e11ee` | `core/spell_trace_core.lua`, `classes/druid/leveling.lua` |
+| 3 | loadSpellIdMap + onPlayerEnteringWorld integration | `66d26e1` | `core/spell_trace_immune.lua`, `core/combat_context.lua` |
 
 ## Architecture Overview
 
@@ -129,4 +129,4 @@ None — no new network endpoints, auth paths, file access patterns, or trust bo
 - `core/spell_id_map.lua` exists
 - `build_order.txt` has `core/spell_id_map.lua` at line 21 (between combat_context.lua and spell_trace_core.lua)
 - `./build.sh` succeeds with all new symbols in `SM_Extend.lua`
-- All 3 commits verified in git history: `8b84479`, `c414e89`, `7b26aa2`
+- All 3 commits verified in git history: `72d94e2`, `89e11ee`, `66d26e1`

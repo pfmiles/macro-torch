@@ -68,7 +68,7 @@
 
 ### Reusable Assets
 - `pairLandIntent`（spell_trace_core.lua）— purge/pair 双趟骨架直接改造（窗口改读 intent.ttl）
-- `computeLandTable`（git 历史 `eb56a257:core/spell_trace_core.lua:150`）— 旧反推算法原文（blip 0.02~0.9、±0.05s 否决），本 phase 按 D-03/D-04 改良复活
+- `computeLandTable`（git 历史 `7f427b2b:core/spell_trace_core.lua:150`）— 旧反推算法原文（blip 0.02~0.9、±0.05s 否决），本 phase 按 D-03/D-04 改良复活
 - `LRUStack`、`recordLandEvent` 监听框架、`consumeLandEvent/consumeFailEvent` — 结构全部可复用
 - `finalizeFail` revoke 机制（land 撤销 + fail-wins）— 保留不改语义
 - selftest 既有 fixture 化风格（fakeLoginContext / fakeTarget / pcall 隔离）— 新边界用例沿用

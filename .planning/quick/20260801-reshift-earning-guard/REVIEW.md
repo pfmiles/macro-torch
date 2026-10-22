@@ -10,7 +10,7 @@ total: 0
 
 # Code Review: reshift effective energy guard
 
-**Commit:** `eeb306a` — `fix(druid): add effective energy guard to shouldDoReshift`
+**Commit:** `1bd92c2` — `fix(druid): add effective energy guard to shouldDoReshift`
 **Date:** 2026-08-01
 
 ## Scope

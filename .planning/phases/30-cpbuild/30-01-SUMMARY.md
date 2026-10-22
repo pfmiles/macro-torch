@@ -114,8 +114,8 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1: DKI three-state live timer — poll, anchor, ok/fail emission, load-time registration** - `704f2dd` (feat)
-2. **Task 2: Global reset wiring — PLAYER_TARGET_CHANGED and combat-exit hooks in core/events.lua** - `e128acd` (feat)
+1. **Task 1: DKI three-state live timer — poll, anchor, ok/fail emission, load-time registration** - `76e71c4` (feat)
+2. **Task 2: Global reset wiring — PLAYER_TARGET_CHANGED and combat-exit hooks in core/events.lua** - `e06edcf` (feat)
 
 **Plan metadata:** committed separately after the SUMMARY (docs commit).
 

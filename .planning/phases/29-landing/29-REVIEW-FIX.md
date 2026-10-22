@@ -13,7 +13,7 @@ status: all_fixed
 
 **Fixed at:** 2026-09-11T18:07:34Z
 **Source review:** `.planning/phases/29-landing/29-REVIEW.md` (focused re-review, 2026-09-11, status `issues_found` — 2 warnings, 4 info)
-**Iteration:** 1 (second review cycle for this phase; the first cycle's report is preserved in git history at commit d7caee0)
+**Iteration:** 1 (second review cycle for this phase; the first cycle's report is preserved in git history at commit 4bc58d2)
 
 **Summary:**
 - Findings in scope: 2 (WR-01, WR-02; fix_scope=critical_warning — Info items out of scope)
@@ -37,7 +37,7 @@ untouched (the guard only gains an AND-clause).
 'violet' lied about the rendered hue.
 
 **Files modified:** `interface_debug.lua`, `classes/druid/Druid.lua`
-**Commit:** d87685a
+**Commit:** 4533e40
 **Applied fix:** Honest rename of the color KEY from 'violet' to 'pink' at the three
 mandated sites, with zero RGB change and zero visual change (user ruling: the pink
 rendering is final):
@@ -59,7 +59,7 @@ the first evidence of cast B — no land, no announcement, no listener dispatch,
 inference for B — the same silent-bite symptom family reopened through a narrower route.
 
 **Files modified:** `core/spell_trace_core.lua`, `classes/druid/selftest.lua`
-**Commit:** a30f5fb
+**Commit:** a357b44
 **Applied fix:** Explicit origin marker instead of value-equality inference:
 1. New state `macroTorch.loginContext.inferredAnchors` — per-spell per-mob
    `LRUStack` (maxSize 100), lazy-initialized with the same shape as

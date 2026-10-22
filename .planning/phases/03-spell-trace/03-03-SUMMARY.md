@@ -31,12 +31,12 @@ metrics:
 ### Task 1: events.lua 挂载 SelfTest:run()
 - **File:** `core/events.lua` (line 52)
 - **Change:** 将预留注释 `-- Phase 3: macroTorch.SelfTest:run()` 替换为实际调用 `macroTorch.SelfTest:run()`
-- **Commit:** `da9a7aa`
+- **Commit:** `a1f10ff`
 
 ### Task 2: 修正 build_order.txt 中 core/selftest.lua 顺序
 - **File:** `build_order.txt` (line 24-25)
 - **Change:** 将 `core/selftest.lua` 移到 `core/events.lua` 之前，确保函数定义先于调用方加载
-- **Commit:** `97b7402`
+- **Commit:** `1ba42b2`
 - **Build verified:** `./build.sh` 成功，SM_Extend.lua 中包含 SelfTest:run 和 SelfTest:register 符号
 
 ## Verification Results

@@ -66,7 +66,7 @@ coverage:
         ref: "leftover sweep (9 identifiers) clean outside Q-09 nil-assert guards; repo-wide goto/label grep empty"
         status: pass
       - kind: other
-        ref: "scope gate: git diff --stat 17d0c7a HEAD -- '*.lua' = exactly the 7 intended files; entity/Unit.lua, build_order.txt, spell_trace_immune.lua, core/selftest.lua absent"
+        ref: "scope gate: git diff --stat 8ceae0f HEAD -- '*.lua' = exactly the 7 intended files; entity/Unit.lua, build_order.txt, spell_trace_immune.lua, core/selftest.lua absent"
         status: pass
       - kind: other
         ref: "fidelity gate: isRipPresent function byte-identical to phase start (diff empty); ripLeft region diff = 30 pure deletions of the [DIAG rip-contradiction] block with return clickContext.ripLeft and all computation intact"
@@ -120,7 +120,7 @@ status: complete
 | 1 | bbcheck BALANCED on all 7 phase files | PASS (7/7) |
 | 2 | build.sh exit 0; pairLandIntent/recordLandEvent/processRawAuraApply/onSelfDamageLine/finalizeFail/onLandEvent/removeMatch all present in SM_Extend.lua; FB listener registered (line 4872); artifact ignored and unstaged | PASS |
 | 3 | leftover sweep — 9 identifiers repo-wide | PASS (clean outside Q-09 nil-assert guards; see Decisions) |
-| 4 | scope gate — git diff vs phase start (17d0c7a) = exactly the 7 source files; entity/Unit.lua, build_order.txt, spell_trace_immune.lua, core/selftest.lua absent | PASS |
+| 4 | scope gate — git diff vs phase start (8ceae0f) = exactly the 7 source files; entity/Unit.lua, build_order.txt, spell_trace_immune.lua, core/selftest.lua absent | PASS |
 | 5 | fidelity gate — isRipPresent byte-identical; ripLeft diff = 30 pure deletions of the DIAG dump block, `return clickContext.ripLeft` and all computation intact | PASS |
 | 6 | Lua 5.0 audit — zero `#` operator (3 hits are comment text), zero goto/labels repo-wide, zero 4-arg string.find | PASS |
 | 7 | git diff --check — clean on working tree and across the phase range | PASS |
@@ -129,8 +129,8 @@ status: complete
 
 ## Task Commits
 
-1. **Task 1: Category Q land-framework selftests** — `f448b21` (`test(27)`) — classes/druid/selftest.lua (+203)
-2. **Task 2: battery only** — no additional source commit required: the 6 non-selftest phase files landed in plans 27-01 (`ff925bb`, `3c1e2db`) and 27-02 (`0ac3bf7`, `b3bd8c6`, `31d69d1`); per plan, no empty commit was created.
+1. **Task 1: Category Q land-framework selftests** — `1c656d4` (`test(27)`) — classes/druid/selftest.lua (+203)
+2. **Task 2: battery only** — no additional source commit required: the 6 non-selftest phase files landed in plans 27-01 (`d32a1c4`, `dcbd921`) and 27-02 (`c6a19c8`, `4e49311`, `16728ff`); per plan, no empty commit was created.
    Plan metadata commits: `docs(27-03)` (this summary) and `docs(phase-27)` (tracking) — see close-out.
 
 ## Files Created/Modified
@@ -148,8 +148,8 @@ status: complete
 
 ## Deviations from Plan
 
-1. **[Rule 1 - Bug] Q-02 pair timeline made deterministic.** As literally specified, `recordCastTable` seeds `castAt = GetTime()` (real clock), which can never sit in the [998.5, 1000.5] window pairLandIntent requires for the fake 1000.5 apply — the test would always return nil in-game. Fix: after the real recordCastTable bridge call, align the seeded intent's `castAt` to 999.0 on the fake context (fake-context write only). Files: classes/druid/selftest.lua. Commit: f448b21.
-2. **[Rule 2 - Missing critical test safety] hasBuff stub on the fake target.** Without it, the real Ferocious Bite renewal listener (dispatched by recordLandEvent during Q-07; un-stubbable per criterion 4) crashes on the plain fake target. Fix: fake target carries a `hasBuff` accessor returning false. Files: classes/druid/selftest.lua. Commit: f448b21.
+1. **[Rule 1 - Bug] Q-02 pair timeline made deterministic.** As literally specified, `recordCastTable` seeds `castAt = GetTime()` (real clock), which can never sit in the [998.5, 1000.5] window pairLandIntent requires for the fake 1000.5 apply — the test would always return nil in-game. Fix: after the real recordCastTable bridge call, align the seeded intent's `castAt` to 999.0 on the fake context (fake-context write only). Files: classes/druid/selftest.lua. Commit: 1c656d4.
+2. **[Rule 2 - Missing critical test safety] hasBuff stub on the fake target.** Without it, the real Ferocious Bite renewal listener (dispatched by recordLandEvent during Q-07; un-stubbable per criterion 4) crashes on the plain fake target. Fix: fake target carries a `hasBuff` accessor returning false. Files: classes/druid/selftest.lua. Commit: 1c656d4.
 3. **[Battery step 3 reconciliation] leftover sweep vs Q-09.** The 9-identifier grep hits Q-09's nil-assert guards by design (must_haves truth #4). Scope of the sweep narrowed to: zero hits anywhere except the Q-09 guard lines, confirmed. No code change required; noted in Decisions.
 
 ## Issues Encountered

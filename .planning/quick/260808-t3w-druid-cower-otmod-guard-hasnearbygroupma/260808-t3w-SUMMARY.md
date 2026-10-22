@@ -3,7 +3,7 @@ quick_id: 260808-t3w
 slug: druid-cower-otmod-guard-hasnearbygroupma
 description: druid cower otMod guard hasNearbyGroupMates
 date: 2026-08-08
-commit: 601160c
+commit: 863cb0a
 status: complete
 ---
 

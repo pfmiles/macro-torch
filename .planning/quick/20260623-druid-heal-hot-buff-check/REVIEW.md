@@ -107,7 +107,7 @@ _Depth: standard_
 
 | Finding | Verdict | Action |
 |---------|---------|--------|
-| CR-01: No fallback when both HoTs active at 50-70% | ✅ Real | Fixed in 7544b41 — added HT fallback |
+| CR-01: No fallback when both HoTs active at 50-70% | ✅ Real | Fixed in 4e95d3c — added HT fallback |
 | WR-01: HT unconditional at <50% | ❌ False positive | HT is direct heal (no HoT), no CD, emergency spam is correct |
 | WR-02: TargetUnit unchecked | ⏭️ Pre-existing | Not introduced by this change; out of scope |
 | IN-01: HT missing buff check | ❌ False positive | HT has no HoT component — nothing to check |

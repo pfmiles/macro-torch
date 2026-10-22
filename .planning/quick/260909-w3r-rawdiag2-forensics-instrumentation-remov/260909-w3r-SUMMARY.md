@@ -27,8 +27,8 @@ key-files:
     - core/events.lua
     - core/spell_trace_core.lua
 key-decisions:
-  - "Proceeded past the 'halt if HEAD moved' preflight: c4725a2..HEAD contains only the plan's own docs commit (947f81f); git diff against the anchor shows the four source files byte-identical, so all zone anchors held exactly"
-  - "events.lua Z1 blank-line restoration follows the authentic pre-instrumentation upstream state (git show 953bd50^) — one blank separator, not the double-blank the plan's literal 'blank 27 survives' reading would leave"
+  - "Proceeded past the 'halt if HEAD moved' preflight: 0a3003d..HEAD contains only the plan's own docs commit (6769784); git diff against the anchor shows the four source files byte-identical, so all zone anchors held exactly"
+  - "events.lua Z1 blank-line restoration follows the authentic pre-instrumentation upstream state (git show 9ce26c7^) — one blank separator, not the double-blank the plan's literal 'blank 27 survives' reading would leave"
   - "spell_trace_core.lua Z1 deletion extends through the arming if's closing end (plan labeled that line as surviving 'closes recordCastTable'; it actually closes the if — function close is the line below). Deleting 126-142 alone would leave a dangling end; bbcheck BALANCED gates the corrected boundary"
   - "Commit granularity: two per-task atomic commits per the launch constraint ('commit each task atomically, code only'); plan's 'one atomic commit' success-criterion example honored in substance — the two commits together contain exactly the four files and nothing else"
 patterns-established: []
@@ -89,10 +89,10 @@ All gates run exactly as specified in the plan; each task's gate ran before that
 
 Each task committed atomically (code only, English messages):
 
-1. **Task 1: Delete the RAWDIAG2 master switch, banner entry, and safeRip decision stamp** - `000a156` (refactor) — macro_torch.lua, classes/druid/cat.lua; 4 insertions, 40 deletions
-2. **Task 2: Delete the RAW combat-log scout, keyword table, arming hook, intent-depth helper, and pair ledger** - `c383f34` (refactor) — core/events.lua, core/spell_trace_core.lua; 94 deletions, zero insertions
+1. **Task 1: Delete the RAWDIAG2 master switch, banner entry, and safeRip decision stamp** - `5a0d364` (refactor) — macro_torch.lua, classes/druid/cat.lua; 4 insertions, 40 deletions
+2. **Task 2: Delete the RAW combat-log scout, keyword table, arming hook, intent-depth helper, and pair ledger** - `c4cc7e9` (refactor) — core/events.lua, core/spell_trace_core.lua; 94 deletions, zero insertions
 
-Together the two commits contain exactly the four planned files and nothing else (`git diff 947f81f..HEAD --name-only` = 4 files, no deletions of tracked files, clean working tree after commits).
+Together the two commits contain exactly the four planned files and nothing else (`git diff 6769784..HEAD --name-only` = 4 files, no deletions of tracked files, clean working tree after commits).
 
 ## Files Modified
 
@@ -103,8 +103,8 @@ Together the two commits contain exactly the four planned files and nothing else
 
 ## Decisions Made
 
-- Proceeded past the plan's "halt if HEAD moved" preflight: the only commit since planning anchor c4725a2 is the plan's own docs commit (947f81f); `git diff c4725a2..HEAD -- '*.lua'` is empty, so all zone line anchors were exact and the preflight's protective intent (edit nothing based on stale anchors) was satisfied by verifying byte-identity instead of halting
-- events.lua Z1 restored the single-blank-line separator of the authentic pre-instrumentation state (verified via `git show 953bd50^:core/events.lua`); the plan's literal "blank line 27 survives" reading would have left a cosmetic double-blank artifact
+- Proceeded past the plan's "halt if HEAD moved" preflight: the only commit since planning anchor 0a3003d is the plan's own docs commit (6769784); `git diff 0a3003d..HEAD -- '*.lua'` is empty, so all zone line anchors were exact and the preflight's protective intent (edit nothing based on stale anchors) was satisfied by verifying byte-identity instead of halting
+- events.lua Z1 restored the single-blank-line separator of the authentic pre-instrumentation state (verified via `git show 9ce26c7^:core/events.lua`); the plan's literal "blank line 27 survives" reading would have left a cosmetic double-blank artifact
 - spell_trace_core.lua Z1 deleted through the arming if's closing `end` (the plan's zone label misattributed that line as the function close, which is the line below); leaving it would have produced a dangling `end` — bbcheck BALANCED confirms the corrected boundary
 - Two per-task atomic commits instead of the plan's single-commit success-criterion example, per the launch constraint "commit each task atomically"; each task's verify gate ran before its commit, and the G1-G7 battery ran on the fully-edited uncommitted tree as G5 requires
 
@@ -114,8 +114,8 @@ Together the two commits contain exactly the four planned files and nothing else
 
 **1. HEAD anchor moved — verified benign, proceeded**
 - **Found during:** Task 1 preflight
-- **Issue:** Plan required halting if HEAD != c4725a2; HEAD was 947f81f
-- **Fix:** Confirmed the sole intervening commit is the plan's own docs commit and all four source files are byte-identical to the anchor (empty `git diff c4725a2..HEAD -- '*.lua'`, live grep tallies 8/12/7/15 matching the plan exactly); proceeded with the plan's exact anchors
+- **Issue:** Plan required halting if HEAD != 0a3003d; HEAD was 6769784
+- **Fix:** Confirmed the sole intervening commit is the plan's own docs commit and all four source files are byte-identical to the anchor (empty `git diff 0a3003d..HEAD -- '*.lua'`, live grep tallies 8/12/7/15 matching the plan exactly); proceeded with the plan's exact anchors
 - **Files modified:** none
 - **Verification:** preflight diff + tallies above
 
@@ -124,10 +124,10 @@ Together the two commits contain exactly the four planned files and nothing else
 **1. [Rule 1 - Bug] events.lua Z1 double-blank artifact avoided**
 - **Found during:** Task 2 (Z1 deletion)
 - **Issue:** Plan's "blank line 27 survives" would leave two consecutive blank lines between `local frame = CreateFrame("Frame")` and the registerEvent comment
-- **Fix:** Consumed the blank separator so the region matches the pre-RAWDIAG2 upstream state (one blank line), verified via `git show 953bd50^:core/events.lua`
+- **Fix:** Consumed the blank separator so the region matches the pre-RAWDIAG2 upstream state (one blank line), verified via `git show 9ce26c7^:core/events.lua`
 - **Files modified:** core/events.lua
 - **Verification:** bbcheck BALANCED, T2 gate FAIL=0
-- **Committed in:** c383f34
+- **Committed in:** c4cc7e9
 
 **2. [Rule 1 - Bug] spell_trace_core.lua Z1 dangling-end hazard avoided**
 - **Found during:** Task 2 (Z1 deletion)
@@ -135,15 +135,15 @@ Together the two commits contain exactly the four planned files and nothing else
 - **Fix:** Deleted through the if's closing `end` (126-143); the intent-seed push above and the function-closing `end` below survive, matching the plan's own "function-closing `end` below survives" wording
 - **Files modified:** core/spell_trace_core.lua
 - **Verification:** bbcheck BALANCED, T2 gate FAIL=0
-- **Committed in:** c383f34
+- **Committed in:** c4cc7e9
 
 **3. [Rule 3 - Blocker] Commit/battery sequencing reordered**
 - **Found during:** Closing battery preparation
 - **Issue:** Launch constraints require per-task commits, but battery G5 pins `git status --porcelain` at exactly four modified files — unsatisfiable with commits already made
 - **Fix:** Mixed-reset my two unpushed task commits (working tree preserved), ran the G1-G7 battery on the four-file uncommitted tree (`BATTERY FAIL=0`), then re-committed Task 1 and Task 2 atomically
 - **Files modified:** none (working tree content unchanged by the reset)
-- **Verification:** battery FAIL=0, final log c383f34 / 000a156
-- **Committed in:** c383f34, 000a156
+- **Verification:** battery FAIL=0, final log c4cc7e9 / 5a0d364
+- **Committed in:** c4cc7e9, 5a0d364
 
 ---
 
@@ -169,7 +169,7 @@ Per the plan's user_setup (evidence collection on the user's machine, weekly-CD 
 ## Self-Check
 
 - Files verified present and BALANCED: macro_torch.lua, classes/druid/cat.lua, core/events.lua, core/spell_trace_core.lua
-- Commits exist: 000a156 (Task 1), c383f34 (Task 2)
+- Commits exist: 5a0d364 (Task 1), c4cc7e9 (Task 2)
 - Battery `BATTERY FAIL=0`; baseline sha256sum check clean; working tree clean after commits
 
 `## Self-Check: PASSED`

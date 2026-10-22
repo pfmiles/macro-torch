@@ -3,7 +3,7 @@ quick_id: 260801-akl
 slug: druid-buffs-caster-atk-fix
 description: 修复 druidBuffs 自我施法和 casterAtk 自动攻击
 date: 2026-08-01
-commit: 605531b
+commit: be860f9
 status: complete
 ---
 

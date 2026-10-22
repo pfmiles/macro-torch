@@ -18,7 +18,7 @@ status: clean
 
 **Reviewed:** 2026-09-16T15:08:57Z
 **Depth:** standard
-**Files Reviewed:** 2（classes/druid/Druid.lua +25/-11、classes/druid/selftest.lua +279 纯插入；diff base `4854eaaa^`，范围 `4854eaaa^..fa1b359` 共 3 个 commit：4854eaa=Task 1 代码、619452e=Task 2 代码、fa1b359=docs）
+**Files Reviewed:** 2（classes/druid/Druid.lua +25/-11、classes/druid/selftest.lua +279 纯插入；diff base `cf2e6968^`，范围 `cf2e6968^..c9edafe` 共 3 个 commit：cf2e696=Task 1 代码、638ca74=Task 2 代码、c9edafe=docs）
 **Status:** clean（0 critical / 0 warning / 3 info 纪律备忘，无缺陷）
 
 ## Summary
@@ -39,7 +39,7 @@ status: clean
 
 5. **selftest 正确性 — 通过**。O-08..O-16 九项逐一目视核对：三拍齐全（6-family 快照 → 安装 → 还原；O-16 为 4-family，两个判定函数保留真实实现）；`isInCombat` 全程 rawget 快照（正常 nil）→ rawset 遮蔽 → rawset 按快照值还原（nil 还原即删自有键、accessor 复活）；所有还原行无条件置于任何 assert 之前（stub 安装为纯赋值不会出错，pcall 失败路径亦先还原后断言，零泄漏）；O-13/O-15 多轮测试经 mutable-upvalue 闭包实现 install-once。注册计数 `grep -c 'register("Cat O-'` = 16（7→+9），九个新注册行号 949-1198 全部位于 O-07 尾（947）与 Category Q（1228）之间，且全部在文件顶 `if UnitClass('player') == 'Druid' then` 块内。Lua 5.0 合规：新增行无 `#`/`goto`/`::`（token 门 0），三解释器 loadfile 复核通过（见 Verification 表）。抽查断言种子与预期映射全部与代码路径吻合（O-10 否定种子 Vt/Vf=false、O-12 否定种子 Vt/Vf=true、O-15b 期望 E、O-16 两轮期望 F）。
 
-6. **diff 纯度 — 通过**。`git diff 4854eaaa^..fa1b359 --name-only` 仅 5 文件：Druid.lua（4854eaa 单文件 commit）、selftest.lua（619452e 单文件 commit）、fa1b359 仅 3 个 .planning 文档。Druid.lua 4 个 hunk（@@ -600/-612/-624/-643）全部落在 600-669 行选择层带内，变更行最深处 669（默认 return 区尾），恢复层 673 行起字节零 diff；+25/-11 与 1781→1795 行、selftest +279 纯插入（2504→2783）与 SUMMARY 口径一致。无 cat.lua / combo.lua / recoverNormalRelic / ensureRelicEquipped / equipRelic 任何改动。
+6. **diff 纯度 — 通过**。`git diff cf2e6968^..c9edafe --name-only` 仅 5 文件：Druid.lua（cf2e696 单文件 commit）、selftest.lua（638ca74 单文件 commit）、c9edafe 仅 3 个 .planning 文档。Druid.lua 4 个 hunk（@@ -600/-612/-624/-643）全部落在 600-669 行选择层带内，变更行最深处 669（默认 return 区尾），恢复层 673 行起字节零 diff；+25/-11 与 1781→1795 行、selftest +279 纯插入（2504→2783）与 SUMMARY 口径一致。无 cat.lua / combo.lua / recoverNormalRelic / ensureRelicEquipped / equipRelic 任何改动。
 
 ## Critical Issues
 
@@ -69,9 +69,9 @@ status: clean
 
 | 门 | 命令 / 对象 | 结果 |
 |----|------------|------|
-| 变更范围取证 | `git log --oneline 4854eaaa^..fa1b359` + 逐 commit `--stat` | 恰 3 commit；两个代码 commit 各恰 1 文件；执行层零文件 |
-| Druid.lua diff 取证 | `git diff 4854eaaa^..4854eaa -- classes/druid/Druid.lua` | +25/-11；4 个 hunk 全部 < 660（@@ -600/-612/-624/-643） |
-| selftest diff 取证 | `git diff 4854eaaa^..619452e -- classes/druid/selftest.lua` | 单 hunk @@ -946,6 +946,285 = 279 纯插入 |
+| 变更范围取证 | `git log --oneline cf2e6968^..c9edafe` + 逐 commit `--stat` | 恰 3 commit；两个代码 commit 各恰 1 文件；执行层零文件 |
+| Druid.lua diff 取证 | `git diff cf2e6968^..cf2e696 -- classes/druid/Druid.lua` | +25/-11；4 个 hunk 全部 < 660（@@ -600/-612/-624/-643） |
+| selftest diff 取证 | `git diff cf2e6968^..638ca74 -- classes/druid/selftest.lua` | 单 hunk @@ -946,6 +946,285 = 279 纯插入 |
 | 调用点完备性 | 全仓 grep `selectFerocityOrEmeraldRot`（*.lua，除 .planning） | 定义 1 + 生产调用 4（全带参）+ selftest 15；无参形式 0（grep exit 1） |
 | 三层优先级目视 | live code 631-671 逐行对照 PLAN 锁定约束 | D-01/D-02/D-04 顺序、词形、F-先于-E 全部一致 |
 | 粘性闭合推演 | 选择层 × recoverNormalRelic 调用链（combo.lua:102/111）逐场景推演 | 无 F↔E 抖动；worldboss/T1 边界见 IN-02 |

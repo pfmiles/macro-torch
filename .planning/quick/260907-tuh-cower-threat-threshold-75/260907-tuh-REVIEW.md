@@ -2,7 +2,7 @@
 phase: quick-260907-tuh-cower-threat-threshold-75
 reviewed: 2026-09-07T14:05:27Z
 depth: standard
-diff_base: 6660b28
+diff_base: 8c11696
 files_reviewed: 3
 files_reviewed_list:
   - macro_torch.lua
@@ -25,7 +25,7 @@ status: issues_found
 
 ## Summary
 
-Reviewed the delta `6660b28..HEAD` covering two quick tasks: the `macroTorch.CONFIG_OPTIONS` registry + `printConfigBanner()` (260907-sz4) and the user-configurable `COWER_THREAT_THRESHOLD` nil-guard + registry entry replacing the hardcoded Druid.lua:909 assignment (260907-tuh).
+Reviewed the delta `8c11696..HEAD` covering two quick tasks: the `macroTorch.CONFIG_OPTIONS` registry + `printConfigBanner()` (260907-sz4) and the user-configurable `COWER_THREAT_THRESHOLD` nil-guard + registry entry replacing the hardcoded Druid.lua:909 assignment (260907-tuh).
 
 The delta is structurally clean: the plan's own FINAL GATE chain was re-run independently and passes (`bbcheck.js` reports BALANCED for both modified files, zero forbidden Lua 5.0 tokens in added lines — no `#`/goto/`::`, `git diff --check` clean, LF-only endings verified via `cat -A`). Load-order analysis confirms no hazard: `build_order.txt` puts `macro_torch.lua` first, so the nil-guard executes before every consumer; cat.lua:99 consumes the threshold only at click time. Symbol confinement holds: exactly 3 source files reference `COWER_THREAT_THRESHOLD` (macro_torch.lua, cat.lua, Druid.lua comment). `tostring(opt.default)` renders the number default 75 as "75" correctly, and the `_selfTestRan` gate guarantees no double-print on a single addon load.
 

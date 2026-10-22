@@ -74,9 +74,9 @@ completed: 2026-06-08
 
 Each task was committed atomically:
 
-1. **Task 1: 迁移 Pet.lua to entity/Pet.lua，替换 metatable** - `4bdc9b0` (feat)
-2. **Task 2: 迁移 TargetTarget.lua to entity/TargetTarget.lua，替换 setmetatable(obj, self) 模式** - `4859614` (feat)
-3. **Task 3: 批量迁移 TargetPet, PetTarget, Group, Raid 到 entity/** - `23fa32b` (feat)
+1. **Task 1: 迁移 Pet.lua to entity/Pet.lua，替换 metatable** - `fc6e829` (feat)
+2. **Task 2: 迁移 TargetTarget.lua to entity/TargetTarget.lua，替换 setmetatable(obj, self) 模式** - `65d7e8b` (feat)
+3. **Task 3: 批量迁移 TargetPet, PetTarget, Group, Raid 到 entity/** - `cd92ca5` (feat)
 
 ## Files Created/Modified
 

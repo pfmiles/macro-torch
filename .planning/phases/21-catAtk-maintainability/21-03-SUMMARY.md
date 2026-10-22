@@ -85,7 +85,7 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1 (auto): Add [SIDE EFFECT] comment block above atkPowerBurst call in keepRake** - `1f7facc` (docs)
+1. **Task 1 (auto): Add [SIDE EFFECT] comment block above atkPowerBurst call in keepRake** - `79e0ab4` (docs)
 2. **Task 2 (auto): Final cross-file verification — all 4 Phase 21 items complete** - verification-only (no code changes)
 
 ## Files Modified
@@ -122,9 +122,9 @@ None — this is a pure comment addition with zero behavior impact. No placehold
 
 ## Next Phase Readiness
 Phase 21 (catAtk maintainability) is complete. All 4 items implemented across 3 commits:
-1. `38980b1` — docs(catAtk): fix comment numbering and add KillShot design intent comments (Wave 1)
-2. `12aac43` — refactor(catAtk): centralize isPseudoInfiniteEnergy in clickContext (Wave 2)
-3. `1f7facc` — docs(catAtk): annotate ATK burst side effect in keepRake (Wave 3)
+1. `866448c` — docs(catAtk): fix comment numbering and add KillShot design intent comments (Wave 1)
+2. `4c6cc17` — refactor(catAtk): centralize isPseudoInfiniteEnergy in clickContext (Wave 2)
+3. `79e0ab4` — docs(catAtk): annotate ATK burst side effect in keepRake (Wave 3)
 
 ---
 *Phase: 21-catAtk-maintainability*

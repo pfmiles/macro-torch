@@ -127,8 +127,8 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1: Append Batch 2A — R2 reshift + R4+R5 bleed primacy tests** - `62133ef` (test)
-2. **Task 2: Append Batch 2B — R6 builder choice + R7 bite trigger + R8 FF fill tests** - `0f8fd38` (test)
+1. **Task 1: Append Batch 2A — R2 reshift + R4+R5 bleed primacy tests** - `5dd2bb8` (test)
+2. **Task 2: Append Batch 2B — R6 builder choice + R7 bite trigger + R8 FF fill tests** - `84e0bb7` (test)
 
 ## Files Created/Modified
 
@@ -205,8 +205,8 @@ None — no external service configuration required. Tests execute within the Wo
 ## Self-Check: PASSED
 
 - SUMMARY.md exists at expected path
-- Task 1 commit `62133ef` exists in git history
-- Task 2 commit `0f8fd38` exists in git history
+- Task 1 commit `5dd2bb8` exists in git history
+- Task 2 commit `84e0bb7` exists in git history
 - `classes/druid/selftest.lua` exists (584 lines, 43 registrations)
 - `./build.sh` succeeds
 

@@ -53,7 +53,7 @@ Removed three legacy blocks from `Druid:new()`:
 
 After removal, `Druid:new()` flows cleanly: `local obj = {}` -> `setmetatable(...)` -> `showEnergyUsageSet`.
 
-**Commit:** b275e0f
+**Commit:** 40dd9a4
 
 ### Task 2: Add all 53 Druid skill methods to Druid:new()
 
@@ -79,7 +79,7 @@ Inserted 53 skill methods between `setmetatable` and `showEnergyUsageSet`, organ
 - Caster mana: nil (no mana check, preserves existing behavior)
 - Self buffs: 0 cost for prowl, dash, barkskin, track_humanoids, natures_swiftness, innervate, enrage, reshift, berserk
 
-**Commit:** 164e953
+**Commit:** d93914b
 
 ## Verification Results
 
@@ -128,5 +128,5 @@ Subsequent plans (05-03, 05-04, 05-05) replace `player.cast()` call sites and de
 |------|--------|
 | classes/druid/Druid.lua modified | FOUND |
 | 05-02-SUMMARY.md created | FOUND |
-| Commit b275e0f (Task 1) | FOUND |
-| Commit 164e953 (Task 2) | FOUND |
+| Commit 40dd9a4 (Task 1) | FOUND |
+| Commit d93914b (Task 2) | FOUND |

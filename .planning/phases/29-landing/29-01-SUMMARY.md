@@ -68,9 +68,9 @@ status: complete
 - **selftest 基线重对齐 (D-15):** Q-01 重写为统一 OR 断言（旧注册表 nil / 六 tracingSpells 项 / LAND_INTENT_TTL == 0.9 / 六项 per-spell ttl 取值 / 三 apply pattern 存在且 FF 缺席）；Q-02 种植 castAt 999.0 → 1000.0（0.5s <= 0.9 窗）；Q-03..Q-08/Q-10 逐差复核全部保持绿色；Category Q 头注释去除已删表名、预告 Q-11..Q-16 由 29-02/29-03 挂入。
 
 ## Task Commits
-1. **Task 1 (tracer): 统一 OR 证据链核心** — `9f5952f` feat (spell_trace_core.lua 全链改动；tracer gate: verify 重跑全绿后展开)
-2. **Task 2: 职业注册点迁移** — `62792a9` feat (Druid.lua + Hunter.lua)
-3. **Task 3: selftest 基线重对齐** — `d010419` test (selftest.lua)
+1. **Task 1 (tracer): 统一 OR 证据链核心** — `43e1790` feat (spell_trace_core.lua 全链改动；tracer gate: verify 重跑全绿后展开)
+2. **Task 2: 职业注册点迁移** — `f80268c` feat (Druid.lua + Hunter.lua)
+3. **Task 3: selftest 基线重对齐** — `3007e10` test (selftest.lua)
 **Plan metadata:** docs commit (SUMMARY + STATE + ROADMAP + REQUIREMENTS) follows this file.
 
 ## Files Created/Modified
@@ -91,7 +91,7 @@ status: complete
 - **Issue:** `"U-05 expected nil beyond the 2s LAND_INTENT_TTL window"` 中的 "2s" 因 LAND_INTENT_TTL 2→0.9 直接失效（断言语义 4.0 > 0.9 仍成立，仅消息字面过时）
 - **Fix:** 消息改为 "beyond the LAND_INTENT_TTL window"，断言不改
 - **Files modified:** classes/druid/selftest.lua
-- **Commit:** d010419
+- **Commit:** 3007e10
 
 **2. [Task-2 token gate 假阳性 — 计划门假设偏差] see 覆盖块 rationale；无需修复（修复将违反计划第 5 条"注释原样保留"）**
 - **Found during:** Task 2 verify

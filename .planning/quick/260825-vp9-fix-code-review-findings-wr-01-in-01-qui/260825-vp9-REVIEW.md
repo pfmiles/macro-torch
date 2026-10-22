@@ -1,5 +1,5 @@
 ---
-phase: quick-260825-vp9 (cumulative review of quick tasks 260825-s3v + 260825-t86 + 260825-vp9, base dc6bc00)
+phase: quick-260825-vp9 (cumulative review of quick tasks 260825-s3v + 260825-t86 + 260825-vp9, base 51350f4)
 reviewed: 2026-08-25T15:46:06Z
 depth: standard
 files_reviewed: 2
@@ -24,7 +24,7 @@ status: issues
 ## Summary
 
 Reviewed the cumulative end state of `classes/druid/cat.lua` and `core/selftest.lua` at HEAD
-(diff `dc6bc00..HEAD`, source commits ad093c9, 96e55d1, 592284c). The change chain gives
+(diff `51350f4..HEAD`, source commits c8db8ed, b65d65c, d6d3be4). The change chain gives
 `macroTorch.energyDischargeBeforeBite` a total boolean return contract (`true` = a discharge
 attempt was initiated on this frame, `false` only when no condition matched), makes `cp5Bite`
 defer its bite verdict for one frame on `true`, extends the same contract to `quickKeepRip`

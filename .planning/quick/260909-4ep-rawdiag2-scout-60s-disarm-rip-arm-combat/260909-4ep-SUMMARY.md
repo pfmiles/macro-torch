@@ -9,7 +9,7 @@ requires:
   - phase: quick-260907-mhh
     provides: RAWDIAG2 Rip-landing forensics scout (armed by Rip cast record in core/spell_trace_core.lua, dumped in core/events.lua RAW_COMBATLOG branch)
   - phase: quick-260909-2kd
-    provides: 150-line acquisition cap already removed (139250b/dfd7bd7); rests the arm window on the surviving 60s timed disarm that this quick removes
+    provides: 150-line acquisition cap already removed (1a1e111/9fc46b4); rests the arm window on the surviving 60s timed disarm that this quick removes
   - phase: quick-260907-vve
     provides: macroTorch.LOG_MAX_SIZE rotating-buffer cap (user-raised to 2000 per session — the volume sink that makes a full-fight armed dump safe now that the timed bound is gone)
 
@@ -92,8 +92,8 @@ being wiped on leaving combat (combat_context.lua reset) is now the scout's only
 
 | Task | Name | Commit | Verify |
 |------|------|--------|--------|
-| 1 | Delete the timed-disarm branch from the RAWDIAG2 scout (core/events.lua) | 95eb3a3 | `core/events.lua: BALANCED` → `T1 GATE OK` (exit 0) |
-| 2 | Update arming literal + comment block to the until-combat-exit contract (core/spell_trace_core.lua) | 69a0954 | `core/spell_trace_core.lua: BALANCED` → `T2 GATE OK` (exit 0) |
+| 1 | Delete the timed-disarm branch from the RAWDIAG2 scout (core/events.lua) | 410d173 | `core/events.lua: BALANCED` → `T1 GATE OK` (exit 0) |
+| 2 | Update arming literal + comment block to the until-combat-exit contract (core/spell_trace_core.lua) | e1888ad | `core/spell_trace_core.lua: BALANCED` → `T2 GATE OK` (exit 0) |
 | 3 | Closing battery over the combined uncommitted diff (no file edits) | — (gate ran pre-commit on the combined diff) | `core/events.lua: BALANCED`, `core/spell_trace_core.lua: BALANCED` → `BATTERY OK` (exit 0) |
 
 All three automated verify gates were run before committing (Task 3's battery measured the
@@ -134,7 +134,7 @@ None blocking. Two documentation-grade notes:
    as 260909-2kd deviation #1 — no code was altered to force numbers.
 2. **Commit granularity: 2 per-task commits instead of the plan example's single combined commit**
    The executor constraint mandates per-task atomic commits; precedent 260909-2kd did the same.
-   Commits: 95eb3a3 (core/events.lua only), 69a0954 (core/spell_trace_core.lua only). The union of
+   Commits: 410d173 (core/events.lua only), e1888ad (core/spell_trace_core.lua only). The union of
    files is exactly the two allowed files, so sterility is preserved.
 
 ## Issues Encountered

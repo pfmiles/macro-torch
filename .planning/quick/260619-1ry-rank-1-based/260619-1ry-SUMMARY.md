@@ -48,4 +48,4 @@ player.wrath(nil, 99)
 
 ### Correctness Note
 
-Executor's first attempt (reverted in 1f27aa2) inserted an extra `nil` argument, shifting resourceCost/onSelf/rank positions. Fixed in the re-do (33a9a92) — each `_castSpell` call appends `, rank` as the last argument without any position shift.
+Executor's first attempt (reverted in d73cc9a) inserted an extra `nil` argument, shifting resourceCost/onSelf/rank positions. Fixed in the re-do (64954b9) — each `_castSpell` call appends `, rank` as the last argument without any position shift.

@@ -18,12 +18,12 @@ status: issues_found
 
 **Reviewed:** 2026-09-14T14:46:34Z
 **Depth:** standard
-**Files Reviewed:** 2（classes/druid/Druid.lua +3 行、classes/druid/selftest.lua +48 行，纯插入零删除，commit b0a610a）
+**Files Reviewed:** 2（classes/druid/Druid.lua +3 行、classes/druid/selftest.lua +48 行，纯插入零删除，commit 5df9076）
 **Status:** issues_found（0 critical / 0 warning / 3 info）
 
 ## Summary
 
-对 commit `b0a610a`（diff base `b0a610a^`）的两个文件做了标准深度审查，并对 PLAN 的 6 项 review focus 逐项对照实测代码验证。**核心改动本身无 bug**：`shouldCastFFDuringWaitWindow` 基础排除块新增 `or clickContext.prowling` 臂语义正确、nil 容错成立、臂序无副作用；新 selftest pin 是方向正确型（修复前必红/修复后绿），stub 纪律合规。3 条 Info 均为注释精度/可维护性观察，不构成行为缺陷。
+对 commit `5df9076`（diff base `5df9076^`）的两个文件做了标准深度审查，并对 PLAN 的 6 项 review focus 逐项对照实测代码验证。**核心改动本身无 bug**：`shouldCastFFDuringWaitWindow` 基础排除块新增 `or clickContext.prowling` 臂语义正确、nil 容错成立、臂序无副作用；新 selftest pin 是方向正确型（修复前必红/修复后绿），stub 纪律合规。3 条 Info 均为注释精度/可维护性观察，不构成行为缺陷。
 
 ### 六项 review focus 验证结论（对照 live code，非文档）
 
@@ -31,7 +31,7 @@ status: issues_found
 2. **臂序/短路语义（focus 2）— 通过**。新臂位于 ooc 臂之后、isImmune 臂之前。ooc=true 的帧（含 ooc 与 prowling 同真的帧）在第一臂即短路 return false，改动前后行为无差；唯一行为差为 ooc=false 且 prowling=true 的帧（本 quick 的目标帧）。排除块是纯只读谓词的 OR 链，函数不消费/改写 `clickContext.ooc`，与上游 oocMod/combo.lua 无状态交互。顺带效应：prowling 帧不再触达 `macroTorch.target.isImmune('Faerie Fire (Feral)')` 真实 API 调用，纯减负无语义。
 3. **调用路径覆盖（focus 3）— 通过（附 1 条 Info 备案）**。`shouldCastFFDuringWaitWindow` 的生产调用点唯一：cat.lua:399 keepFF（combo.lua:185 在 catAtk 模块链 step 10 无守卫调用——正是暴露面，本改动闭合）。其余 FF 路线逐一核查：bear.lua:42 bearFFMod 直接调 safeFF，但潜行需猫形态、与熊形态互斥，结构上不可达；leveling.lua:226 内联 FF 分支自带 `and not player.isProwling` 守卫；combo.lua:418 druidMobTagging 的 FF 是主动引怪 hits（故意破隐 tag），非等待窗填充，out of scope——记为信息性不对称备注（见 IN-03）。另注意 Druid.lua:1313 既有政策注释 "no FF in: … 8) prowling …" 早已声明此规则，本改动使代码首次与既有文档一致。
 4. **pin 方向性（focus 4）— 通过（逐节点实测 Trace）**。新 pin ctx 与 WR-01 selftest.lua:767-783 的 15 字段逐一比对完全相同，唯一增量 `prowling = true`。修复前 Trace：ooc=false →（无臂）isImmune stub false → shouldDoReshift（未 stub，cat.lua:258 自身含 `clickContext.prowling` 排除 → return false，不触发外层排除；RESHIFT_ENERGY=40 过首检）→ isKillShot stub false → computeErps stub 60 → getNextAbilityCost：shouldUseBite false（cp=1、isImmuneRip=true，CP5 与 trivial 分支均不命中）→ isTigerPresent(ctx)=true 跳过 Tiger → shouldCastRip 因 isRipPresent=true 短路 false（不触 isFightStarted）→ Rake 因 isRakePresent 跳过 → shouldUseShred 走 3-bleed else 支返回 `(ooc or infiniteEnergy) and isBehind and not isBehindAttackJustFailed` = true → minAbilityCost=SHRED_E=60 → current=0 < 60、projected=90 ≥ 60 → waitSeconds=60/60=1.0 ≥ 1.0 → 返回 true → pcall 体 `true == false` → res=false → 判定断言红名。路径上唯一读 prowling 的函数是 shouldDoReshift（读入方向同为 false），isFightStarted（Druid.lua:1092）虽含 prowling 语义但该帧不被触达（shouldCastRip 已短路）——**pin 必为方向正确型**。修复后：第二臂真值短路 return false → `false == false` → 绿。crash 面：`assert(ok, …)` 优先于判定断言 ✓；6 个 stub/own-key shadow（2 own-key rawget 快照 + 4 函数引用）全部于 assert 之前按 WR-01 同序 rawset/赋值还原，pcall 失败也不污染会话 ✓。
-5. **Lua 5.0 合规（focus 5）— 通过（本次独立复跑）**。三解释器 loadfile LOADFILE-OK ×3；新增行 `#`/`goto`/`::` 计 0；非 ASCII 字节计 0；两文件 CR 字节计 0（全 LF）；`git diff b0a610a^ b0a610a --check` 干净；bbcheck 两文件均 BALANCED；删除面 0 行、新增 3/48（numstat 3 0 / 48 0）、变更面恰两个锁定文件。
+5. **Lua 5.0 合规（focus 5）— 通过（本次独立复跑）**。三解释器 loadfile LOADFILE-OK ×3；新增行 `#`/`goto`/`::` 计 0；非 ASCII 字节计 0；两文件 CR 字节计 0（全 LF）；`git diff 5df9076^ 5df9076 --check` 干净；bbcheck 两文件均 BALANCED；删除面 0 行、新增 3/48（numstat 3 0 / 48 0）、变更面恰两个锁定文件。
 6. **principles doc 边界（focus 6）— 通过**。commit 仅含两个代码文件（`git show --stat` 复核），`.planning/catAtk-core-principles.md` 零触碰。
 
 ## Critical Issues

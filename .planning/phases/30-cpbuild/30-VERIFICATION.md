@@ -51,7 +51,7 @@ human_verification:
 | # | Truth（来自 PLAN must_haves） | 状态 | Evidence |
 | --- | --- | --- | --- |
 | 1 | 30-01 T1：cpBuildLog 开 + 战斗中，bite 下跳锚定窗口、首达 5 星恰落一条 '[cpBuildT] ok t=<sec>' 行经 macroTorch.log（D-04/D-05/D-06） | ✓ VERIFIED | Druid.lua:425-433 转移表逐行对照 D-04 成立；S-05/S-07/S-10（锚定、ok 行、DONE 静默）在本机 Lua 5.0.3 进程内执行通过，S-07 断言捕获行恰为 '[cpBuildT] ok t=6.500'（3 位小数归档契约实证） |
-| 2 | 30-01 T2：窗口中段下跳恰落一条 '[cpBuildT] fail' 并重锚下一窗口（D-04 旁路 1） | ✓ VERIFIED | Druid.lua:434-448（fail + biteAnchor 重锚保持 BUILDING；kill-shot 变体 t0=nil 回 WAIT_ANCHOR）；S-08/S-09 进程内通过（S-09 钉 t0=nil 的 d78d6a2 修复在场） |
+| 2 | 30-01 T2：窗口中段下跳恰落一条 '[cpBuildT] fail' 并重锚下一窗口（D-04 旁路 1） | ✓ VERIFIED | Druid.lua:434-448（fail + biteAnchor 重锚保持 BUILDING；kill-shot 变体 t0=nil 回 WAIT_ANCHOR）；S-08/S-09 进程内通过（S-09 钉 t0=nil 的 ddde49a 修复在场） |
 | 3 | 30-01 T3：cpBuildLog 关时 0.1s 轮询在 GetComboPoints 前 return，轮询/采样路径零客户端 API 调用（D-01） | ✓ VERIFIED | 门序逐行核实：Druid.lua:409（cpBuildLog 首门）→ 412（inCombat 二门）→ 415（首个 API 调用）；S-12 以调用计数桩驱动真实 tick，进程内通过（关=0 / 战斗空闲=0 / 对照臂=1） |
 | 4 | 30-01 T4：PLAYER_TARGET_CHANGED 或脱战丢弃在飞窗口且不落任何行（D-04 旁路 2） | ✓ VERIFIED | reset 语义 S-11 进程内通过（回 WAIT_ANCHOR、三字段清空、零捕获行）；挂点静态精确位：events.lua:77（PLAYER_TARGET_CHANGED 分支首句）+ events.lua:99（onCombatExit 之后），共恰 2 处；实机事件投递 → 人工项 #3 |
 | 5 | 30-01 T5：轮询为加载期注册的 0.1s periodic task，体自门控，同 maintainTHV / maintainLandTables（D-05） | ✓ VERIFIED | Druid.lua:474 静态注册行；harness 注册捕获检查点验证参数相等（name='cpBuildDkiPoll', interval=0.1, task==macroTorch.cpBuildDkiTick） |

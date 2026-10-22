@@ -66,7 +66,7 @@ completed: 2026-06-08
 
 ## Task Commits
 
-1. **Task 1: Update build_order.txt and delete battle_event_queue.lua** - `83f1a65` (chore)
+1. **Task 1: Update build_order.txt and delete battle_event_queue.lua** - `623f904` (chore)
 
 ## Files Created/Modified
 - `build_order.txt` - Removed battle_event_queue.lua entry (line 18) and comment (line 17); replaced core/spell_trace.lua with spell_trace_core.lua + spell_trace_immune.lua; reordered core/ files per D-05

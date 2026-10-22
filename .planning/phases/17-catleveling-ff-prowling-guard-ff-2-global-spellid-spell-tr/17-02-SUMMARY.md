@@ -50,8 +50,8 @@ metrics:
 
 | # | Task | Commit | Files |
 |---|------|--------|-------|
-| 1 | _castSpell current_casting_spell + UNIT_CASTEVENT correction + Druid migration | `5fd4ce5` | `entity/Player.lua`, `core/events.lua`, `classes/druid/Druid.lua` |
-| 2 | Category K self-tests for spellId mapping system | `b2e24e0` | `core/selftest.lua` |
+| 1 | _castSpell current_casting_spell + UNIT_CASTEVENT correction + Druid migration | `b4e34b3` | `entity/Player.lua`, `core/events.lua`, `classes/druid/Druid.lua` |
+| 2 | Category K self-tests for spellId mapping system | `ec1f0f2` | `core/selftest.lua` |
 
 ## Architecture Overview
 
@@ -137,4 +137,4 @@ None -- no new network endpoints, auth paths, file access patterns, or trust bou
 - `classes/druid/Druid.lua` has 4 `spellName` fields, 0 hardcoded `spellId = [0-9]` in SpellTrace region
 - `core/selftest.lua` has 5 Category K SelfTest registrations
 - `./build.sh` succeeds, all symbols present in `SM_Extend.lua`
-- Commits verified: `5fd4ce5`, `b2e24e0`
+- Commits verified: `b4e34b3`, `ec1f0f2`

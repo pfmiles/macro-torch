@@ -69,9 +69,9 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1: Define SPELL_ID_AUTO_CORRECT in macro_torch.lua** - `7697199` (feat)
-2. **Task 2: Guard resolveSpellId() in core/spell_trace_core.lua** - `8876042` (feat)
-3. **Task 3: Guard loadSpellIdMap() in core/spell_trace_immune.lua** - `bb7fe4e` (feat)
+1. **Task 1: Define SPELL_ID_AUTO_CORRECT in macro_torch.lua** - `8ac441c` (feat)
+2. **Task 2: Guard resolveSpellId() in core/spell_trace_core.lua** - `76b306a` (feat)
+3. **Task 3: Guard loadSpellIdMap() in core/spell_trace_immune.lua** - `0b75181` (feat)
 
 ## Files Created/Modified
 
@@ -102,9 +102,9 @@ Ready for Plan 02 (Player.lua _castSpell bridge guard) and Plan 03 (events.lua U
 ## Self-Check: PASSED
 
 - 20-01-SUMMARY.md: FOUND
-- Commit 7697199: FOUND
-- Commit 8876042: FOUND
-- Commit bb7fe4e: FOUND
+- Commit 8ac441c: FOUND
+- Commit 76b306a: FOUND
+- Commit 0b75181: FOUND
 
 ---
 *Phase: 20-spell-id-auto-correct-spellid*

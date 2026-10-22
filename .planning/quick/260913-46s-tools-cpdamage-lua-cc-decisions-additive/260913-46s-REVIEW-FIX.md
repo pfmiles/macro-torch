@@ -9,8 +9,8 @@ fixed: 2
 skipped: 0
 status: all_fixed
 commits:
-  - 94f17b7 fix(260913-46s): WR-01 reject non-finite --erps values (inf/nan/overflow) so --json-out stays strict JSON
-  - e042f9f fix(260913-46s): WR-02 guard rDB claw rows against nil avgEff/avgDmg (hand-written stats degrade instead of crashing)
+  - b2b6727 fix(260913-46s): WR-01 reject non-finite --erps values (inf/nan/overflow) so --json-out stays strict JSON
+  - b1af987 fix(260913-46s): WR-02 guard rDB claw rows against nil avgEff/avgDmg (hand-written stats degrade instead of crashing)
 verification_env: isolated git worktree /home/admin/workspace/macro-torch/.claude/worktrees/rf-260913-46s-149424-1789298619 (branch gsd-reviewfix/260913-46s-149424, fast-forwarded to main at cleanup). All gate runs happened inside that worktree before teardown.
 ---
 
@@ -44,7 +44,7 @@ verification_env: isolated git worktree /home/admin/workspace/macro-torch/.claud
 
 结论：5.0.3 / 5.1.5 三路全部穿透守卫；5.4.7（最严格解释器）仍被溢出路径 `1e999` 穿透。三解释器全部可达，违背任务锁定约束 4（--json-out 必须 Node `JSON.parse` 可解析）。WR-01 为真问题。
 
-### 修复内容（commit `94f17b7`，仅 tools/cpdamage.lua，+15/−1）
+### 修复内容（commit `b2b6727`，仅 tools/cpdamage.lua，+15/−1）
 
 1. 新增 `local function validErps(num)`：`num ~= nil and num >= 0 and num == num and num <= 999`。NaN 通不过有序比较与自等测试；Lua 5.0 无 `math.huge`，溢出上限用字面量 999（远高于 28-OOC-BITE-CRITERIA.md 任何可达断点——文档基准封顶 25.4/s）。
 2. `main()` 的 FLAG_ERPS 分支守卫由 `num == nil or num < 0` 改为 `not validErps(num)`；error 行文本、printUsage、exit(1) 行为逐字不变。
@@ -72,7 +72,7 @@ verification_env: isolated git worktree /home/admin/workspace/macro-torch/.claud
 
 三解释器一致：`(cb.avgDmg - 37 * reg.b) / cb.avgEff` 对 nil 算术硬崩溃。与同函数 E 循环已有的守卫（`b.n > 0 and b.avgEff ~= nil`）不对称；selftest 自身已示范手写 stats 入参用法。WR-02 为真问题。
 
-### 修复内容（commit `e042f9f`，仅 tools/cpdamage.lua，+16/−1）
+### 修复内容（commit `b1af987`，仅 tools/cpdamage.lua，+16/−1）
 
 1. rDB 分支守卫由 `cb ~= nil and cb.n > 0` 补为 `cb ~= nil and cb.n > 0 and cb.avgDmg ~= nil and cb.avgEff ~= nil`，与 E 循环守卫对称。缺失层键保持 nil；两层全缺时 rDB 置 nil（既有降级路径原样生效，屏显走锁定降级文本 `no bleed<t> claw samples`、verdict 层 `n/a`）。真实管线（`buildClawShredBuckets.finalize` 保证 n>0 ⇒ 均值非 nil）行为零变化。
 2. selftest 新增 1 项断言：claw[2] 缺 avgEff、claw[3] 完整的手写 stats → 不崩溃、`rDB.bleed2 == nil` 且 `rDB.bleed3 ~= nil`（缺失层跳过、其余层保留）。
@@ -87,9 +87,9 @@ verification_env: isolated git worktree /home/admin/workspace/macro-torch/.claud
 1. **三解释器 selftest**：5.0.3 / 5.1.5 / 5.4.7 各 `selftest: ALL 55 PASSED` 且 exit 0（banner 数字与实际断言数一致）。
 2. **端到端严格 JSON**：`lua tools/cpdamage.lua /tmp/luabuild/sv.lua --json-out /tmp/luabuild/out-cc-fixed.json --erps 26`（5.0.3）→ Node `JSON.parse` 打印 `STRICT-JSON-OK oocBite erps=26 old keys intact`（`oocBite.erps===26`；decisions/aggregate/batches/dropped/source/generatedAt/truncated 既有顶层键完整）。
 3. **`--erps` 边界六连**（abc / -3 / 缺参 / inf / nan / 1e999）× 三解释器：全部 exit 1 + 1 条 error 行。
-4. **屏显 additive 口径门**：a8e7852 快照版与修复版同输入 stdout（5.0.3、sv.lua、默认 --erps=10）`diff` 为**空**（0 删除行、0 新增行）——既有输出段字节不变，OOC-Bite Criteria 段格式不变。
+4. **屏显 additive 口径门**：49082b1 快照版与修复版同输入 stdout（5.0.3、sv.lua、默认 --erps=10）`diff` 为**空**（0 删除行、0 新增行）——既有输出段字节不变，OOC-Bite Criteria 段格式不变。
 5. **bbcheck / diff / 5.0 合规**：`bbcheck.js tools/cpdamage.lua: BALANCED`；`git diff --check` 干净；新增行 `#|goto|::` 扫描 0 命中、字面 `\x` 0 命中、字符串字面量无相邻连字符对；Lua 5.0 语法合规（`num ~= num` 自等测试、无 math.huge、上限字面量 999）。
-6. **提交纪律**：两个 fix commit（94f17b7、e042f9f），各仅含 tools/cpdamage.lua；本报告不随 fix commit 提交（由编排流程处理）。
+6. **提交纪律**：两个 fix commit（b2b6727、b1af987），各仅含 tools/cpdamage.lua；本报告不随 fix commit 提交（由编排流程处理）。
 
 ---
 

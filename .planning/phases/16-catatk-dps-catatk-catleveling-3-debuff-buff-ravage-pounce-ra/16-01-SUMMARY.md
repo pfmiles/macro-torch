@@ -30,7 +30,7 @@ status: complete
 
 | # | Type | Name | Commit | Status |
 |---|------|------|--------|--------|
-| 1 | feature | 重构 leveling.lua — 实现完整的 catLeveling() 一键宏 | 7ef37a1 | done |
+| 1 | feature | 重构 leveling.lua — 实现完整的 catLeveling() 一键宏 | 090eedc | done |
 
 ## Execution Summary
 
@@ -90,6 +90,6 @@ status: complete
 ## Self-Check: PASSED
 
 - [x] `classes/druid/leveling.lua` exists and is 210 lines
-- [x] Commit `7ef37a1` exists in git history
+- [x] Commit `090eedc` exists in git history
 - [x] `./build.sh` passes with exit code 0
 - [x] All acceptance criteria verified via grep

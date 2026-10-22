@@ -91,8 +91,8 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1: Guard _castSpell() current_casting_spell bridge** - `d8b5db5` (feat)
-2. **Task 2: Guard UNIT_CASTEVENT spellId correction** - `c29a984` (feat)
+1. **Task 1: Guard _castSpell() current_casting_spell bridge** - `362c125` (feat)
+2. **Task 2: Guard UNIT_CASTEVENT spellId correction** - `c00070e` (feat)
 
 ## Files Created/Modified
 - `entity/Player.lua` — Added `if macroTorch.SPELL_ID_AUTO_CORRECT then` wrapper around stale detection (lines 89-106) and whitelist assignment (lines 111-113) inside _castSpell()

@@ -50,7 +50,7 @@ Build verification passed: `./build.sh` produces `SM_Extend.lua` with 3 `printDr
 
 | # | Name | Type | Commit | Files |
 |---|------|------|--------|-------|
-| 1 | Create classes/druid/diag.lua with printDruidDiag and wire into selftest | auto | f1bba57 | classes/druid/diag.lua (created), build_order.txt (modified), core/selftest.lua (modified) |
+| 1 | Create classes/druid/diag.lua with printDruidDiag and wire into selftest | auto | 69217a5 | classes/druid/diag.lua (created), build_order.txt (modified), core/selftest.lua (modified) |
 
 ## Task Details
 
@@ -104,7 +104,7 @@ None — all output is fully dynamic (compute function calls) or explicitly labe
 
 | Hash | Message |
 |------|---------|
-| f1bba57 | feat(quick-260623-wrh-druid): add Druid diagnostic print function |
+| 69217a5 | feat(quick-260623-wrh-druid): add Druid diagnostic print function |
 
 ## Self-Check: PASSED
 

@@ -64,7 +64,7 @@ Five critical issues were found:
 2. **CR-02**: `_hasResource` lacks a nil guard for `self.mana`, causing silent resource-check failure if called before initialization.
 3. **CR-03**: `_isInRange` hardcodes a dependency on the global `macroTorch.target` object, violating the self-contained design of Player instance methods.
 4. **CR-04**: Cat form energy cost values in skill methods (`rip=30`, `ferocious_bite=35`) are bare numbers rather than function references, creating an inconsistency with `claw`/`shred`/`rake` which use `macroTorch.compute*_E` functions. Dual resource checks (caller + `_castSpell`) are consistent by coincidence but would diverge if costs were modified.
-5. **CR-05**: `barkskin` locale entry was `{ en = 'Barkskin', zh = '树皮术' }` -- missing the "(Feral)" suffix required by the WoW 1.12.1 spellbook. The `druidDefend` guard correctly checks `isSpellReady('Barkskin (Feral)')` but the skill method casts the wrong name. (Note: this was fixed in commit 8f3f763 -- the current code at Druid.lua:158 already has `{ en = 'Barkskin (Feral)', zh = '树皮术' }`. This finding confirms the prior fix was necessary and correct.)
+5. **CR-05**: `barkskin` locale entry was `{ en = 'Barkskin', zh = '树皮术' }` -- missing the "(Feral)" suffix required by the WoW 1.12.1 spellbook. The `druidDefend` guard correctly checks `isSpellReady('Barkskin (Feral)')` but the skill method casts the wrong name. (Note: this was fixed in commit 97ead4b -- the current code at Druid.lua:158 already has `{ en = 'Barkskin (Feral)', zh = '树皮术' }`. This finding confirms the prior fix was necessary and correct.)
 
 Five warnings and four info items cover redundant checks, unused variables, mode usage inconsistencies, and documentation improvements.
 
@@ -151,9 +151,9 @@ Note: This would require defining `macroTorch.computeRip_E` and `macroTorch.comp
 ### CR-05: `barkskin` skill method locale entry -- `'Barkskin'` vs `'Barkskin (Feral)'` resolved by prior fix
 
 **File:** `classes/druid/Druid.lua:157-158`
-**Status:** Already fixed in commit 8f3f763
+**Status:** Already fixed in commit 97ead4b
 
-**Issue:** The original implementation used `{ en = 'Barkskin', zh = '树皮术' }`. The WoW 1.12.1 spellbook registers this as `'Barkskin (Feral)'` (the feral-compatible version castable in forms). The `druidDefend` function in `utility.lua:35` guards with `isSpellReady('Barkskin (Feral)')` -- a mismatch that would cause silent cast failure. The fix (commit 8f3f763) updated the locale entry to `{ en = 'Barkskin (Feral)', zh = '树皮术' }`, which is correct.
+**Issue:** The original implementation used `{ en = 'Barkskin', zh = '树皮术' }`. The WoW 1.12.1 spellbook registers this as `'Barkskin (Feral)'` (the feral-compatible version castable in forms). The `druidDefend` function in `utility.lua:35` guards with `isSpellReady('Barkskin (Feral)')` -- a mismatch that would cause silent cast failure. The fix (commit 97ead4b) updated the locale entry to `{ en = 'Barkskin (Feral)', zh = '树皮术' }`, which is correct.
 
 This finding documents that the prior fix was necessary and correct, and confirms no regression in the current code.
 

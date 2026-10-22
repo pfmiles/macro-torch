@@ -84,8 +84,8 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1 (tracer): Add isPseudoInfiniteEnergy computation in combo.lua + replace oocMod check in cat.lua** - `703bd4b` (refactor)
-2. **Task 2 (auto): Replace remaining 4 isPseudoInfiniteEnergy references across cat.lua and Druid.lua** - `12aac43` (refactor)
+1. **Task 1 (tracer): Add isPseudoInfiniteEnergy computation in combo.lua + replace oocMod check in cat.lua** - `d06dafe` (refactor)
+2. **Task 2 (auto): Replace remaining 4 isPseudoInfiniteEnergy references across cat.lua and Druid.lua** - `4c6cc17` (refactor)
 
 ## Files Modified
 - `classes/druid/combo.lua` — Added `clickContext.isPseudoInfiniteEnergy` computation at catAtk() entry (1 line)
@@ -126,8 +126,8 @@ Plan 21-03 (keepRake ATK burst annotation) is ready to proceed. It modifies cat.
 - [x] classes/druid/combo.lua exists and contains isPseudoInfiniteEnergy assignment
 - [x] classes/druid/cat.lua exists with 4 field reads
 - [x] classes/druid/Druid.lua exists with 1 field read
-- [x] Commit 703bd4b found in git log
-- [x] Commit 12aac43 found in git log
+- [x] Commit d06dafe found in git log
+- [x] Commit 4c6cc17 found in git log
 - [x] ./build.sh exits 0 and produces SM_Extend.lua (8313 lines)
 
 ## Self-Check: PASSED

@@ -43,9 +43,9 @@ Extracted Bash from druidControl into new druidCharge() with auto-form-switch, i
 
 | # | Name | Commit | Status |
 |---|------|--------|--------|
-| 1 | Remove Bash branch from druidControl and promote elseif to if | `8df086b` | done |
-| 2 | Create druidCharge() global macro method with distance-driven Charge/Bash | `5ff56f6` | done |
-| 3 | Register druidCharge self-test in combo.lua | `2504ad4` | done |
+| 1 | Remove Bash branch from druidControl and promote elseif to if | `2e535e0` | done |
+| 2 | Create druidCharge() global macro method with distance-driven Charge/Bash | `9cfc818` | done |
+| 3 | Register druidCharge self-test in combo.lua | `31ce392` | done |
 
 ## Key Changes
 

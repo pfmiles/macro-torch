@@ -23,15 +23,15 @@ status: issues_found
 **Reviewed:** 2026-09-10T16:16:06Z
 **Depth:** standard
 **Files Reviewed:** 5
-**Status:** issues_found（0 Critical / 3 Warning / 4 Info — 较第一遍 9f2950a：0 新增 Critical/Warning，IN-01 已随本轮 config 修正化解，新增 1 条 Info）
+**Status:** issues_found（0 Critical / 3 Warning / 4 Info — 较第一遍 e3cfe5e：0 新增 Critical/Warning，IN-01 已随本轮 config 修正化解，新增 1 条 Info）
 
 ## Summary
 
-本轮是用户实机测试前的重审（原话意图：验证本次重构的正确性与完整性、且不破坏 cpDamage 与 catAtk 一键宏）。第一遍审查 9f2950a 之后，5 个源码文件仅有 96dd755（.planning 工件）一次提交——**5 个被审文件自第一遍起零变化**，因此本轮工作重点是：逐条 re-verify 第一遍 7 项发现、对锁定的 D-01..D-15 契约做独立交叉核验、以及对用户最关心的非回归面（cpDamage/catAtk）做防线复核。静态门（bbcheck、diff --check、Lua 5.0 glyph、luaparser、Lua 5.0.3 实跑 26+8 条测试）已由 phase verifier 认证绿色，本轮不重跑。
+本轮是用户实机测试前的重审（原话意图：验证本次重构的正确性与完整性、且不破坏 cpDamage 与 catAtk 一键宏）。第一遍审查 e3cfe5e 之后，5 个源码文件仅有 2052a9c（.planning 工件）一次提交——**5 个被审文件自第一遍起零变化**，因此本轮工作重点是：逐条 re-verify 第一遍 7 项发现、对锁定的 D-01..D-15 契约做独立交叉核验、以及对用户最关心的非回归面（cpDamage/catAtk）做防线复核。静态门（bbcheck、diff --check、Lua 5.0 glyph、luaparser、Lua 5.0.3 实跑 26+8 条测试）已由 phase verifier 认证绿色，本轮不重跑。
 
 **契约逐条核验结论（全部相符）：**
 
-- **D-04 状态机（Druid.lua:408-472）**：三态 + 两旁路逐行对照封版协议成立。WAIT_ANCHOR→BUILDING 仅由 `prevCp > 1 and cp <= 1` 下跳触发（423 行）；cp=0 消歧只在落点恰为 0 时背查 `target.isCanAttack`（424 行 `cp == 1 or ...` 短路，cp=1 时不读目标，S-06 钉住）；BUILDING 中 `cp >= 5` 先于下跳分支检查（425-433 行，D-04 顺序锁定）；截断旁路记 fail + 存活目标重锚保持 BUILDING / 垂死目标 t0 置 nil 回 WAIT_ANCHOR（434-448 行，30-02 d78d6a2 已在场，两处 WAIT_ANCHOR 返回点均为纯净态——t0 nil、state WAIT_ANCHOR、prevCp 语义保持：局部回退后 prevCp 等于当轮 cp（0 或 1），下跳谓词要求 prevCp > 1，与 nil 等价，无二次伪锚，非死代码）；DONE 静默到下一锚（457-470 行）。kill-shot 变体"记一次 fail 不重锚"与 S-09/S-08 的 SUMMARY 决定一致。
+- **D-04 状态机（Druid.lua:408-472）**：三态 + 两旁路逐行对照封版协议成立。WAIT_ANCHOR→BUILDING 仅由 `prevCp > 1 and cp <= 1` 下跳触发（423 行）；cp=0 消歧只在落点恰为 0 时背查 `target.isCanAttack`（424 行 `cp == 1 or ...` 短路，cp=1 时不读目标，S-06 钉住）；BUILDING 中 `cp >= 5` 先于下跳分支检查（425-433 行，D-04 顺序锁定）；截断旁路记 fail + 存活目标重锚保持 BUILDING / 垂死目标 t0 置 nil 回 WAIT_ANCHOR（434-448 行，30-02 ddde49a 已在场，两处 WAIT_ANCHOR 返回点均为纯净态——t0 nil、state WAIT_ANCHOR、prevCp 语义保持：局部回退后 prevCp 等于当轮 cp（0 或 1），下跳谓词要求 prevCp > 1，与 nil 等价，无二次伪锚，非死代码）；DONE 静默到下一锚（457-470 行）。kill-shot 变体"记一次 fail 不重锚"与 S-09/S-08 的 SUMMARY 决定一致。
 - **D-01/D-05 门序（408-415 行）**：开关读 → `macroTorch.inCombat` 读 → `GetComboPoints()`。已独立确认 `macroTorch.inCombat` 是 combat_context.lua:22/33 写出的纯布尔字段（非方法），两处提前返回确为纯字段读、零客户端 API；S-12 三条臂与实现一致。轮询经 `registerPeriodicTask('cpBuildDkiPoll', { interval = 0.1, ... })`（474 行），periodic.lua 的 leastUpdateInterval=0.1 框架属实；注册成本为载入期一次表写入，战斗外 tick 空转返回。
 - **D-06 行协议**：`[cpBuildT] ok t=` 恒 `%.3f`（432 行）、fail 无 t 字段、取消不写行——与 cpbuild.lua 解析器（`parseTOkBody` 恰 2 token、'fail' 精确匹配、坏行入 badLines）闭合；`[cpBuild]` 行语义 D-02 冻结（cpBuildLogSample/cpBuildLogEvent 344-371 行为零变化，diff 仅追加其后）。
 - **D-07/D-08 分析器**：与 cpdamage.lua 的五个共享 harness 函数（readAll/extractMacroTorchLog/loadBlockSandboxed/getMessages/countList）**逐字节 diff 为空**，自包含拷贝属实（cpdamage.lua 本身 zero-diff）。k 统计 BREAK_THRESHOLD=30s 断链切分（k>30 或 k≤0 计入 breaks 且排除出一切 k 统计）、六档直方图 [<1.5)..[≥10) 与 D-08 逐字一致；双档达标率 rakeDur `d-1` / savagery `0.9d-1`、分母 = ok+fail（`calculatePassRates` 878-907 行）；窗口矩阵、badLines、26 检查 selftest 的 fixture 数学全部手算复核吻合（k 均值 4.6、断链 1、桶占用 1/0/1/1/1/1、T 双样本 [6,8)、d=9 时 savagery passed 1/2 等）。
@@ -47,7 +47,7 @@ status: issues_found
 ### WR-01（第一遍，still-open）: DKI 下跳谓词把一切连击点终结技当作咬击锚（Rip / 低星斩杀咬污染窗口）
 
 **File:** `classes/druid/Druid.lua:423-424`
-**证据（本轮复核）:** 谓词与 9f2950a 时逐字节相同；建议补丁未落地——HUMAN-UAT Phase 30 采集协议（296-300 行）仍无"采集全程禁止 Rip/非 5 星咬"的豁免行。本轮另核实前提成立的代码锚点：cat.lua `termMod → cp5Bite`（cat.lua:99-130）及其注释"若目标身上还不存在rip效果，一般5星时是优先rip而非bite的"，即常规循环在 5 星会真实打出 5→0 的 Rip 下跳（活体背查通过 → 假锚 → 一条伪 ok 窗口）；旁路 1 同样无法区分"窗口中途的 Rip/非目标态终结技"与真实的低星斩杀咬。此外同一机械假设还延伸一个此前未写明的变体：窗口中段目标被流血跳死（非咬击致死）时 3→0 下跳 + 死体背查也会落一条 fail——三类污染同根。D-09 前置（287 行）是唯一程序性保护，分析器无法事后分辨。
+**证据（本轮复核）:** 谓词与 e3cfe5e 时逐字节相同；建议补丁未落地——HUMAN-UAT Phase 30 采集协议（296-300 行）仍无"采集全程禁止 Rip/非 5 星咬"的豁免行。本轮另核实前提成立的代码锚点：cat.lua `termMod → cp5Bite`（cat.lua:99-130）及其注释"若目标身上还不存在rip效果，一般5星时是优先rip而非bite的"，即常规循环在 5 星会真实打出 5→0 的 Rip 下跳（活体背查通过 → 假锚 → 一条伪 ok 窗口）；旁路 1 同样无法区分"窗口中途的 Rip/非目标态终结技"与真实的低星斩杀咬。此外同一机械假设还延伸一个此前未写明的变体：窗口中段目标被流血跳死（非咬击致死）时 3→0 下跳 + 死体背查也会落一条 fail——三类污染同根。D-09 前置（287 行）是唯一程序性保护，分析器无法事后分辨。
 **Fix:** 维持两处程序性补强（原建议照旧）：
 1. HUMAN-UAT Phase 30 第 3 节补一行：采集全程释放的终结技仅限 5 星 Ferocious Bite 与目标态下的斩杀咬，禁止打 Rip/非 5 星咬（违者弃档）；
 2. 第 6 节追加排查条：fail 占比异常偏高 + ok 明显偏短 → 自查是否中途打过 Rip 或目标被流血跳死。
@@ -62,7 +62,7 @@ status: issues_found
 ### WR-03（第一遍，still-open）: events.lua 对 `resetCpBuildDki` 的无守卫调用位于分支首句，Druid.lua 加载失败会级联打断既有逻辑
 
 **File:** `core/events.lua:77`、`core/events.lua:99`
-**证据（本轮复核）:** 两处调用仍无 nil 守卫，与 9f2950a 相同。本轮补充核实了正常路径下无此风险（build_order.txt 中 periodic/impl/entity/interface 均先于 Druid.lua 加载，函数在事件时刻必然存在）；风险面是未来 Druid.lua 编译失败被 WoW 跳载时，PLAYER_TARGET_CHANGED 分支首句抛错会中止后续 `ffTimer / targetHealthVector` 清理与 "Target change in combat!" 提示（PLAYER_REGEN_ENABLED 分支的报错虽在 `onCombatExit()` 之后，inCombat 不会被卡 true，仍每次脱战刷错误）。
+**证据（本轮复核）:** 两处调用仍无 nil 守卫，与 e3cfe5e 相同。本轮补充核实了正常路径下无此风险（build_order.txt 中 periodic/impl/entity/interface 均先于 Druid.lua 加载，函数在事件时刻必然存在）；风险面是未来 Druid.lua 编译失败被 WoW 跳载时，PLAYER_TARGET_CHANGED 分支首句抛错会中止后续 `ffTimer / targetHealthVector` 清理与 "Target change in combat!" 提示（PLAYER_REGEN_ENABLED 分支的报错虽在 `onCombatExit()` 之后，inCombat 不会被卡 true，仍每次脱战刷错误）。
 **Fix:** 两处加免费守卫（正常路径恒真、零行为变化）：
 ```lua
 if macroTorch.resetCpBuildDki then

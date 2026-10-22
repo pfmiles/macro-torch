@@ -41,7 +41,7 @@ behavior_unverified_items:
 | 12 | 无防抖/迟滞机制（D-10） | ✓ VERIFIED | 全阶段 diff grep `C_Timer|debounce|jitter|hysteresis|throttle` 零命中；diff 形状 = 1 新函数 + 7 守卫 + 6 测试注册 |
 | 13 | clickContext 惰性缓存 pattern 与 isTrivialBattle 一致，每帧重算（D-11） | ✓ VERIFIED | Druid.lua:817 `if clickContext.isFastBattleNotPvp == nil` 与 :795 isTrivialBattle 完全同构；combo.lua:55 `local clickContext = {}` 每次 catAtk 调用重建（单次点击作用域） |
 | 14 | 恰 6 个 Category P 注册、全部 isOptional=true（D-12） | ✓ VERIFIED | core/selftest.lua:698-807 六处 `SelfTest:register(..., true)`；每个均以 `if UnitClass('player') ~= 'Druid' then return end` 开头；self-test 名 grep 计数 == 6。⚠️ 附带 Warning：P-02 的 isPlayerControlled stub 非精确恢复（见 Anti-Patterns） |
-| 15 | catLeveling 完全未动（D-13） | ✓ VERIFIED | `git diff a1467b1..HEAD -- classes/druid/leveling.lua` 零 hunk（leveling.lua 不在 diff 文件列表中） |
+| 15 | catLeveling 完全未动（D-13） | ✓ VERIFIED | `git diff 43001d1..HEAD -- classes/druid/leveling.lua` 零 hunk（leveling.lua 不在 diff 文件列表中） |
 | 16 | 构建成功 + SM_Extend.lua 含新符号 + 范围仅 4 文件 | ✓ VERIFIED | `./build.sh` exit 0（实测）；SM_Extend.lua 含 `function macroTorch.isFastBattleNotPvp` 恰 1 处、6 个测试名行；excludes .planning 后 diff 恰 4 个代码文件 |
 
 **Score:** 15/16 truths verified (1 present-but-behavior-unverified)

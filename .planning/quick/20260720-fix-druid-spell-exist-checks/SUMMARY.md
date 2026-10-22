@@ -49,4 +49,4 @@ None. Plan executed exactly as written.
 
 ## Commit
 
-`3bb1f0e` - fix(druid): add isSpellExist guards to caster/heal/control/aoe/defend functions for leveling safety
+`8136e58` - fix(druid): add isSpellExist guards to caster/heal/control/aoe/defend functions for leveling safety

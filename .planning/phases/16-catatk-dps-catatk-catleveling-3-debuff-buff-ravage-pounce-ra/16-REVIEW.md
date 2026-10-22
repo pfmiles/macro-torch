@@ -23,7 +23,7 @@ status: issues_found
 
 ## Summary
 
-Reviewed `classes/druid/leveling.lua` (211 lines, the new `catLeveling()` one-button leveling macro) and `core/selftest.lua` (Category J additions, ~40 lines). The previous review's CR-01 (`tigers_fury` typo) was already fixed in commit `08bfd51` — this review covers the post-fix state.
+Reviewed `classes/druid/leveling.lua` (211 lines, the new `catLeveling()` one-button leveling macro) and `core/selftest.lua` (Category J additions, ~40 lines). The previous review's CR-01 (`tigers_fury` typo) was already fixed in commit `f0776ec` — this review covers the post-fix state.
 
 **1 critical issue** found: a missing `POUNCE_DURATION` field on the `clickContext` that `leveling.lua` constructs. While not directly causing a crash in the current control flow, it creates a brittle contract violation. If any shared function invoked on this clickContext ever calls `isPouncePresent()` or `pounceLeft()`, the nil `POUNCE_DURATION` will produce incorrect (but non-crashing) boolean results due to Lua's handling of `nil - number`. The fix is a one-line addition.
 

@@ -45,7 +45,7 @@ made beyond WR-01.
 ### WR-01: GCD probe returns nil when Rake is not on an action bar — measurement dies silently with no diagnostic
 
 **Files modified:** `classes/druid/Druid.lua`, `macro_torch.lua`, `classes/druid/selftest.lua`
-**Commit:** `4fd31a3`
+**Commit:** `3236465`
 **Applied fix:**
 - `macroTorch.cpBuildLogSample` now binds `local gcdOk = ...` and emits a one-time
   diagnostic via `macroTorch.show('[cpBuild] GCD probe failed: put the Rake spell on an action bar, otherwise no casts will be logged', 'yellow')`
@@ -93,7 +93,7 @@ Not modified, reported per the fix-scope boundary:
 All gates ran in the **main working checkout** — the run directive for this sequential
 fixer explicitly places commits on `main` directly ("no worktree branch check
 applies"), so no isolated worktree was created despite `workflow.use_worktrees=true`.
-Edits, gate runs, and commit `4fd31a3` all happened in the main checkout on `main`.
+Edits, gate runs, and commit `3236465` all happened in the main checkout on `main`.
 
 - `bbcheck.js` (repo's bracket-balance syntax gate): **BALANCED, exit 0** on all three
   modified files (`macro_torch.lua`, `classes/druid/Druid.lua`, `classes/druid/selftest.lua`).

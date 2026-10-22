@@ -23,8 +23,8 @@ metrics:
   duration: ""
   completed: 2026-10-16
 commits: 1
-plan_head_before: e09470e65c7849c69c7b734a6626a9f71e58ec77
-plan_head_after: b587c964394c2339f6280d1a4021d5fd03bc3e50
+plan_head_before: 0f1f0a0b6261106214859a40d434c4f3085bfd5e
+plan_head_after: 6c0e24f0431f1b1f3485f974db594466febe77b8
 actuals:
   tokens: 787
   tasks: 2
@@ -33,7 +33,7 @@ actuals:
 
 # Quick 261016-wo0: CR-01 Load Lock Fix + WR-03 Dead Code Removal
 
-**One-liner:** Global load lock predicate tightened to entry-exists-lock (closes the used-but-unrestored window hole that let a same-slot reload destroy the mainHandItem two-hander restore state) and zero-call dead code `obj.loadUseableItem` removed — single file `entity/Player.lua`, single commit `b587c96`.
+**One-liner:** Global load lock predicate tightened to entry-exists-lock (closes the used-but-unrestored window hole that let a same-slot reload destroy the mainHandItem two-hander restore state) and zero-call dead code `obj.loadUseableItem` removed — single file `entity/Player.lua`, single commit `6c0e24f`.
 
 ## Results
 
@@ -62,11 +62,11 @@ actuals:
 - Counts: `useableItemUsed = false` = 4, `= true` = 2, `pendingEquip` = 8, `wc -l` = 961.
 - Syntax: lua-5.0.3 `loadfile` green (authoritative Lua 5.0 compliance) + 5.1.5/5.4.7 corroboration; `bbcheck.js` = BALANCED; CRLF = 0; added lines contain no `#`/`goto`/`::`.
 - Diff hygiene: exactly 1 file, exactly 2 hunks, `git diff --check` clean.
-- Delivery: exactly 1 commit, message verbatim `fix(261016-wo0): tighten load lock (CR-01) and drop dead loadUseableItem (WR-03)`, base `e09470e65c7849c69c7b734a6626a9f71e58ec77`, `SM_Extend.lua`/`docs/`/`core/selftest.lua` zero diff, porcelain exactly the quick dir line.
+- Delivery: exactly 1 commit, message verbatim `fix(261016-wo0): tighten load lock (CR-01) and drop dead loadUseableItem (WR-03)`, base `0f1f0a0b6261106214859a40d434c4f3085bfd5e`, `SM_Extend.lua`/`docs/`/`core/selftest.lua` zero diff, porcelain exactly the quick dir line.
 
 ## Commit
 
-- `b587c964394c2339f6280d1a4021d5fd03bc3e50` — `fix(261016-wo0): tighten load lock (CR-01) and drop dead loadUseableItem (WR-03)` (only `entity/Player.lua`)
+- `6c0e24f0431f1b1f3485f974db594466febe77b8` — `fix(261016-wo0): tighten load lock (CR-01) and drop dead loadUseableItem (WR-03)` (only `entity/Player.lua`)
 
 ## Deviations from Plan
 
@@ -87,4 +87,4 @@ Consistent with the 261016-vbt / 261016-20c precedent, in-game verification is u
 
 ## Self-Check: PASSED
 
-- `entity/Player.lua` exists, commit `b587c96` is ancestor of HEAD, SUMMARY keywords (`status: complete`, `CR-01`, `WR-03`, `81258c7e5bd319bc24055525652a8a7d`) present, Task 2 gate green.
+- `entity/Player.lua` exists, commit `6c0e24f` is ancestor of HEAD, SUMMARY keywords (`status: complete`, `CR-01`, `WR-03`, `81258c7e5bd319bc24055525652a8a7d`) present, Task 2 gate green.

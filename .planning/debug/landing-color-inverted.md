@@ -48,7 +48,7 @@ started: Discovered during UAT（Phase 29 实机验证，2026-09-10）
   implication: 调用点语义全部符合协议；倒置集中在唯一渲染入口。宏Torch.log 与 diag/Target 的绿色通告同受害（同表转发），属显示层横向缺陷，非 landing 特有
 - timestamp: 2026-09-11T00:05:00Z
   checked: git log -S "OFFICER" / -S "custom_green" 追溯
-  found: 'blue'→OFFICER 由 7d2369b (event mechanism fixed some bugs, 2025-11-24) 引入；'green'→{r=0,g=0.5,b=0.9} 由 5594a09 (minor mod, 2025-12-03) 引入；均早于 GSD 重构，重构与 CRLF 归一（0c8ba73）仅原样搬运
+  found: 'blue'→OFFICER 由 84d0440 (event mechanism fixed some bugs, 2025-11-24) 引入；'green'→{r=0,g=0.5,b=0.9} 由 30858f6 (minor mod, 2025-12-03) 引入；均早于 GSD 重构，重构与 CRLF 归一（4eb1e1c）仅原样搬运
   implication: 映射缺陷是 2025 年底遗留问题。Phase 27 前无蓝色通道作对照、协议未区分绿/蓝，故长期未被肉眼发现；Phase 29 引入 (inferred) 蓝臂 + HUMAN-UAT §247-248 绿/蓝协议后，倒置首次可被观察到
 - timestamp: 2026-09-11T00:08:00Z
   checked: classes/druid/selftest.lua Q-11..Q-16 断言内容

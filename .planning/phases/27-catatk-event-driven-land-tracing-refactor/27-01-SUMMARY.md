@@ -171,8 +171,8 @@ status: complete
 Each task was committed atomically:
 
 1. **Task 1: Confirm deletion scope (checkpoint:decision)** — resolved `option-a` by orchestrator (user reply "请继续"); zero code changes, zero commits (per locked debug decision #5)
-2. **Task 2: Core event-driven land framework** — `ff925bb` (feat)
-3. **Task 3: Production RAW_COMBATLOG handler + self-hit dispatch** — `3c1e2db` (feat)
+2. **Task 2: Core event-driven land framework** — `d32a1c4` (feat)
+3. **Task 3: Production RAW_COMBATLOG handler + self-hit dispatch** — `dcbd921` (feat)
 
 **Plan metadata:** `docs(27-01)` commit (SUMMARY.md) — see close-out
 

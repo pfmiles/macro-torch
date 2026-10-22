@@ -34,10 +34,10 @@ metrics:
 
 | # | Name | Commit | Files |
 |---|------|--------|-------|
-| 1 | Replace regularAttack with mode-based calls and delete safeShred/readyShred/safeClaw/readyClaw | `04d520d` | `classes/druid/cat.lua` |
-| 2 | Replace player.cast calls in Bite/Pounce/Cower/Reshift and delete safePounce | `6bc107e` | `classes/druid/cat.lua` |
-| 3 | Replace safeRake/safeRip player.cast calls AND inline safePounce in Druid.lua catAtk caller | `a0b8931` | `classes/druid/cat.lua`, `classes/druid/Druid.lua` |
-| 4 | Replace player.cast('Berserk') in cat.lua burstMod AND player.cast('Faerie Fire (Feral)') in Druid.lua safeFF | `3443258` | `classes/druid/cat.lua`, `classes/druid/Druid.lua` |
+| 1 | Replace regularAttack with mode-based calls and delete safeShred/readyShred/safeClaw/readyClaw | `4f3dc41` | `classes/druid/cat.lua` |
+| 2 | Replace player.cast calls in Bite/Pounce/Cower/Reshift and delete safePounce | `e61282b` | `classes/druid/cat.lua` |
+| 3 | Replace safeRake/safeRip player.cast calls AND inline safePounce in Druid.lua catAtk caller | `b046615` | `classes/druid/cat.lua`, `classes/druid/Druid.lua` |
+| 4 | Replace player.cast('Berserk') in cat.lua burstMod AND player.cast('Faerie Fire (Feral)') in Druid.lua safeFF | `70b1f11` | `classes/druid/cat.lua`, `classes/druid/Druid.lua` |
 
 ## Verification Results
 

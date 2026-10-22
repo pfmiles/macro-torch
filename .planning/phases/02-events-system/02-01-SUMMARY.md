@@ -36,7 +36,7 @@ Extracted battle_event_queue.lua combat state management and spell trace data la
 ## Tasks
 
 ### Task 1: core/combat_context.lua
-- **Commit:** `ad416d7`
+- **Commit:** `9a7f420`
 - **Functions:** `onCombatExit()`, `onCombatEnter()`, `onPlayerEnteringWorld()`
 - **Lines:** 39 (including Apache 2.0 license header)
 - Extract from battle_event_queue.lua lines 94-107 (PLAYER_REGEN_ENABLED/DISABLED + PLAYER_ENTERING_WORLD)
@@ -46,7 +46,7 @@ Extracted battle_event_queue.lua combat state management and spell trace data la
 - `onPlayerEnteringWorld`: calls `initPlayer()`, initializes `loginContext={}`
 
 ### Task 2: core/spell_trace_core.lua
-- **Commit:** `89da9b0`
+- **Commit:** `9be857a`
 - **Functions:** 17 macroTorch.* functions with exact signatures preserved
 - **Lines:** 250 (Apache 2.0 license + verbatim extracted code)
 - **Functions migrated:** setSpellTracing, setSpellTracingByName, setTraceSpellImmune, setTraceSpellImmuneByName, maintainLandTables, recordCastTable, recordFailTable, computeLandTable, consumeLandEvent, consumeFailEvent, peekCastEvent, peekFailEvent, peekLandEvent, landTableAnyMatch, landTableAllMatch, CheckDodgeParryBlockResist
@@ -64,7 +64,7 @@ Extracted battle_event_queue.lua combat state management and spell trace data la
 - **Issue:** Original extracted code was 275 lines + 16 license = 291+ lines, exceeding the 250-line maximum. Plan estimated 235 lines of code but actual count was 275.
 - **Fix:** Compressed all blank-line separators between function groups; compacted multi-line commented-out dead code block in CheckDodgeParryBlockResist (lines 374-394 in original) into a single-line summary comment. All active function bodies preserved verbatim.
 - **Files modified:** core/spell_trace_core.lua
-- **Commit:** 89da9b0
+- **Commit:** 9be857a
 
 ## Verification Results
 

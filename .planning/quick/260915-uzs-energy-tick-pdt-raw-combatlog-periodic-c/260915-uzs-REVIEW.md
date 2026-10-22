@@ -20,12 +20,12 @@ status: issues_found
 
 **Reviewed:** 2026-09-15T14:38:24Z
 **Depth:** standard
-**Files Reviewed:** 4（build_order.txt +1 行、classes/druid/cat.lua +3 行、classes/druid/energy_probe.lua 新建 117 行、core/events.lua +15 行；diff base `bf47ecc^`，纯插入零删除）
+**Files Reviewed:** 4（build_order.txt +1 行、classes/druid/cat.lua +3 行、classes/druid/energy_probe.lua 新建 117 行、core/events.lua +15 行；diff base `f0d7a4d^`，纯插入零删除）
 **Status:** issues_found（0 critical / 3 warning / 4 info）
 
 ## Summary
 
-本 review 覆盖 260915-tt3 + 260915-udx + 260915-uzs 三个 quick 的累积最终态（代码 commit：bf47ecc / d9319f2 / a80fe39 / 344a81a）。整体结构干净：`macroTorch.energyProbe` 默认 OFF（nil-guard 每次登录重挂 false），OFF 时全部 tap 短路零输出零 API 读；8 种线路型（SES/EV/POLL/RAW/CAST/REL/PDT-RAW/PDT-CHAT）全齐且全部经 `macroTorch.log`（无专用存储桶、无 DEFAULT_CHAT_FRAME 直写）；无法术白名单、无节流（符合 capture-everything 设计）；Lua 5.0.3 正门与 luac 语法门双通过、build.sh 冒烟构建成功、`git diff --check` 干净。发现 3 条 Warning：一是 EPR|RAW 的 `'nergize'` 过滤大小写敏感、疑似对 SuperWoW 大写 raw token 恒不匹配（该通道可能实机零捕获）；二是 EV 行把裸事件名字段插在 TYPE 与 `t=` 之间、偏离其余 7 种的 `EPR|<TYPE>|t=...` 固定列契约；三是 UnitMana 第一返回值缺 nil 守卫、POLL 错误帧会逐帧重抛。均不影响默认关闭时的生产行为。
+本 review 覆盖 260915-tt3 + 260915-udx + 260915-uzs 三个 quick 的累积最终态（代码 commit：f0d7a4d / 75ee736 / c8e77f4 / d99883f）。整体结构干净：`macroTorch.energyProbe` 默认 OFF（nil-guard 每次登录重挂 false），OFF 时全部 tap 短路零输出零 API 读；8 种线路型（SES/EV/POLL/RAW/CAST/REL/PDT-RAW/PDT-CHAT）全齐且全部经 `macroTorch.log`（无专用存储桶、无 DEFAULT_CHAT_FRAME 直写）；无法术白名单、无节流（符合 capture-everything 设计）；Lua 5.0.3 正门与 luac 语法门双通过、build.sh 冒烟构建成功、`git diff --check` 干净。发现 3 条 Warning：一是 EPR|RAW 的 `'nergize'` 过滤大小写敏感、疑似对 SuperWoW 大写 raw token 恒不匹配（该通道可能实机零捕获）；二是 EV 行把裸事件名字段插在 TYPE 与 `t=` 之间、偏离其余 7 种的 `EPR|<TYPE>|t=...` 固定列契约；三是 UnitMana 第一返回值缺 nil 守卫、POLL 错误帧会逐帧重抛。均不影响默认关闭时的生产行为。
 
 ### 六项 review focus 验证结论（对照 live code，非文档）
 
@@ -113,11 +113,11 @@ m = m or 0
 
 | 门 | 命令 / 对象 | 结果 |
 |----|------------|------|
-| 累积 diff 取证 | `git diff bf47ecc^..HEAD -- build_order.txt classes/druid/cat.lua classes/druid/energy_probe.lua core/events.lua` | 纯插入零删除：build_order +1、cat.lua +3、energy_probe.lua 新建 117 行、events.lua +15 |
+| 累积 diff 取证 | `git diff f0d7a4d^..HEAD -- build_order.txt classes/druid/cat.lua classes/druid/energy_probe.lua core/events.lua` | 纯插入零删除：build_order +1、cat.lua +3、energy_probe.lua 新建 117 行、events.lua +15 |
 | 语法门 1 | `/usr/bin/luac -p classes/druid/energy_probe.lua` | LUAC51-OK |
 | 语法门 2（Lua 5.0 正门） | `/tmp/luabuild/lua-5.0.3/bin/lua -e "assert(loadfile('.../energy_probe.lua'))"` | LUA50-LOADFILE-OK |
 | 构建冒烟 | `bash build.sh`（repo root；non-cygwin 不拷贝） | BUILD-OK；产物含 8 线路型：SES/EV/POLL/RAW/CAST/REL 各 1、PDT 3（tx=RAW×1 + tx=CHAT×2） |
-| diff 卫生 | `git diff bf47ecc^..HEAD --check` | DIFF-CHECK-CLEAN |
+| diff 卫生 | `git diff f0d7a4d^..HEAD --check` | DIFF-CHECK-CLEAN |
 | 定律 2 扫尾 | 全仓 grep `probeTick`/`energyProbeLog`（除 .git/.planning） | 0 残留 |
 | macroTorch.log 定义 | interface_debug.lua:113 + build_order.txt 第 18 行 | 加载期无条件定义、先于全部 tap 文件 |
 

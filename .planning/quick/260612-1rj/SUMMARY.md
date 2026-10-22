@@ -10,7 +10,7 @@ date: 2026-06-11
 ## 修改内容
 
 - `core/periodic.lua:111`: `expired[#expired + 1] = name` → `table.insert(expired, name)`
-- 提交: `55bd22b` — fix: replace unsupported # length operator with table.insert in periodic.lua
+- 提交: `6fa0033` — fix: replace unsupported # length operator with table.insert in periodic.lua
 
 ## 分析结论
 

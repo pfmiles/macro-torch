@@ -25,9 +25,9 @@ affects:
 actuals:
   tokens: 8070    # chars/4 over the realized diff (32281 chars, BASE..HEAD entity/Player.lua) vs estimate 100000
   tasks: 2        # tasks completed
-  commits: 1      # MEASURED: git rev-list --count 0e3a183..HEAD (#3968 ledger)
-plan_head_before: 0e3a1831c2a80e16b859ee41623a0a9d8ff81702
-plan_head_after: 41cc865bdc49d46f5f49f05253f7dc3c39e9a51d
+  commits: 1      # MEASURED: git rev-list --count 6e86f58..HEAD (#3968 ledger)
+plan_head_before: 6e86f587e604d4848c186d614ee3d6bf246d4016
+plan_head_after: 7710456bfb93092d31b3b41e1c7657766cebc5c9
 
 # Tech tracking
 tech-stack:
@@ -144,7 +144,7 @@ every deposit risk path — one byte-locked commit in entity/Player.lua.
   `entity/Player.lua: BALANCED`; CRLF count 0.
 - **Diff hygiene:** added lines contain no `#`/`goto`/`::`; `git diff --check` clean; name-only
   diff is exactly `entity/Player.lua`; 9 hunks as expected.
-- **Task 2 cross-file closure (zero commits):** BASE (HEAD~1) = `0e3a183` with the planner-locked
+- **Task 2 cross-file closure (zero commits):** BASE (HEAD~1) = `6e86f58` with the planner-locked
   message (`chore(gsd): allow_default_branch_commits=true (branching_strategy none)`) — used as-is,
   no re-anchoring; BASE..HEAD = 1 commit, 1 file; docs/, SM_Extend.lua, core/selftest.lua,
   build_order.txt all zero diff; diff --check clean; porcelain equivalent gate passed (exactly the
@@ -152,13 +152,13 @@ every deposit risk path — one byte-locked commit in entity/Player.lua.
 
 ## Commit
 
-- `41cc865` — `fix(261019-w6s): frame-split pokemon load/restore pipeline (Player.lua)`
+- `7710456` — `fix(261019-w6s): frame-split pokemon load/restore pipeline (Player.lua)`
   (only `entity/Player.lua`; `git show --stat --format= --name-only HEAD` outputs exactly
   `entity/Player.lua`; post-commit deletion check: none)
 
 ## Deviations from Plan
 
-None — plan executed exactly as written: precondition verified (clean tree, HEAD `0e3a183`, toolchain
+None — plan executed exactly as written: precondition verified (clean tree, HEAD `6e86f58`, toolchain
 present, porcelain exactly the untracked quick-plan dir), three byte-locked Edits top-down, head
 adjudication md5 matched on the first pass, full gate battery green, one commit with the
 byte-locked message, Task 2 closure gates green with zero commits.
@@ -205,8 +205,8 @@ the player equipment flow with the same client APIs as before.
 ## Self-Check: PASSED
 
 - File exists: `entity/Player.lua` (post-edit md5 `e92787b8b042d8994c12477d07fff945` verified)
-- Commit `41cc865` is ancestor of HEAD and message is exactly
+- Commit `7710456` is ancestor of HEAD and message is exactly
   `fix(261019-w6s): frame-split pokemon load/restore pipeline (Player.lua)`
-- Task 2 closure gates re-run green after the commit (BASE anchor `0e3a183` matched planner message)
+- Task 2 closure gates re-run green after the commit (BASE anchor `6e86f58` matched planner message)
 - SUMMARY written to this file; docs commit (PLAN.md/SUMMARY.md/STATE.md) intentionally left to the
   orchestrator per the quick-flow split

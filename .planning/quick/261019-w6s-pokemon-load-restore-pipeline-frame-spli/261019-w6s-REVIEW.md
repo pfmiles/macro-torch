@@ -22,12 +22,12 @@ status: issues_found
 
 ## Summary
 
-审查对象为 41cc865（`fix(261019-w6s): frame-split pokemon load/restore pipeline (Player.lua)`）相对基线 0e3a183 对 `entity/Player.lua` 的改动（+311/−175，962→1097 行语义区）+ 与改动交互的整文件全局状态（`macroTorch.itemLoadingTable` / `macroTorch.pokemonEquipQueue` / 全局助手）。已逐行通读 1098 行全文，并跨文件核对 `core/periodic.lua`（registerPeriodicTask/onPeriodicUpdate pcall 契约）、`impl_util.lua`（toBoolean/tableLen/isNumber/getItemNameFromLink）、`biz_util.lua`（getItemBagIdAndSlot/isItemExist/getEquippedItemLink）、`classes/druid/Druid.lua`（cpBuildDkiPoll 先例）、`build.sh`/`build_order.txt`（拼装顺序）。
+审查对象为 7710456（`fix(261019-w6s): frame-split pokemon load/restore pipeline (Player.lua)`）相对基线 6e86f58 对 `entity/Player.lua` 的改动（+311/−175，962→1097 行语义区）+ 与改动交互的整文件全局状态（`macroTorch.itemLoadingTable` / `macroTorch.pokemonEquipQueue` / 全局助手）。已逐行通读 1098 行全文，并跨文件核对 `core/periodic.lua`（registerPeriodicTask/onPeriodicUpdate pcall 契约）、`impl_util.lua`（toBoolean/tableLen/isNumber/getItemNameFromLink）、`biz_util.lua`（getItemBagIdAndSlot/isItemExist/getEquippedItemLink）、`classes/druid/Druid.lua`（cpBuildDkiPoll 先例）、`build.sh`/`build_order.txt`（拼装顺序）。
 
 ### 硬门实测记录（本轮独立复跑，全部与规划 pin 一致）
 
-- **整文件 md5**：`e92787b8b042d8994c12477d07fff945` == 要求值 ✓；工作树内容 == 41cc865 blob，审查前无未提交改动。
-- **四处冻结带对焊**（`git show 0e3a183:entity/Player.lua` 与现文件按同名锚行取段逐字节 diff）：① pokemonLoad 区（现 497-537 ↔ 旧 605-645）**IDENTICAL**；② cast 头+按压 1 臂+CD 分支（现 539-563 ↔ 旧 647-671）**IDENTICAL**；③ say→classMetatable→return obj（现 626-634 ↔ 旧 746-754）**IDENTICAL**；④ PLAYER_FIELD_FUNC_MAP→EOF（现 893-1098 ↔ 旧 757-END）**IDENTICAL** ✓。
+- **整文件 md5**：`e92787b8b042d8994c12477d07fff945` == 要求值 ✓；工作树内容 == 7710456 blob，审查前无未提交改动。
+- **四处冻结带对焊**（`git show 6e86f58:entity/Player.lua` 与现文件按同名锚行取段逐字节 diff）：① pokemonLoad 区（现 497-537 ↔ 旧 605-645）**IDENTICAL**；② cast 头+按压 1 臂+CD 分支（现 539-563 ↔ 旧 647-671）**IDENTICAL**；③ say→classMetatable→return obj（现 626-634 ↔ 旧 746-754）**IDENTICAL**；④ PLAYER_FIELD_FUNC_MAP→EOF（现 893-1098 ↔ 旧 757-END）**IDENTICAL** ✓。
 - **Lua 5.0 合规**：`/tmp/luabuild/lua-5.0.3/bin/lua`（权威）、5.1.5/5.4.7（佐证）`loadfile` 三棵全绿 ✓；CRLF 计数 0；新增行（diff 的 `+` 行）无 `#`/`goto`/`::`/`load(` ✓；`git diff --check` clean ✓。
 - **逐 tick 单光标动作纪律**（按函数体 sed 段 grep 计数实测）：`pokemonStepPickupBag`/`pokemonStepPickupInventory`/`pokemonStepDepositCursor` 各恰 1 次光标 API；六个 verify handler（SlotEmpty/DepositUnequip/DepositPlain/EquipLoad/EquipRestore/Rollback）各 0 次；dispatch（`pokemonPipelineStep`）2 次（互斥分支各 1）；tick 本体 0 次 ✓。verify 恒排在动作 step 后（enqueue 顺序：动作→verify，depositCursor/verifySlotEmpty 的续接 enqueue 都发生在自身执行之后的返回路径，下一 tick 才被 pump 消费）✓。
 - **idle/战斗门**：tick 先 `tableLen==0` 早退（零 API）、后 `UnitAffectingCombat` PAUSE（在 dequeue 之前，步骤不丢）、最后才 dequeue（现 669-682，顺序实测 TICK<U3<RM）✓；load 内顺序实测 Combat pause(408) < Resume pre-scan(418) < Global lock(432) ✓。
@@ -36,7 +36,7 @@ status: issues_found
 
 ### 历史 finding 逐条结论（上次 review-REVIEW.md 的 7 条）
 
-- **CR-01（loadingTable 同槽再装载覆盖摧毁 mainHandItem 恢复状态）**：**化解**。基线 0e3a183 起锁谓词已是收紧后的 `if loadingTable.useableItem then`（任何携带 useableItem 的条目锁新装载，无 used==false 附加条件），本次逐字节保留并实测与基线一致（现 432-439）；且帧拆分后全新条目写入（462/484 行）被「续跑预扫 return → 全局锁 return」双重前置拦断，不再存在「同槽覆盖销毁 mainHandItem」的可达路径。但该收紧锁与恢复失败联动产生新的死锁面，见 WR-04。
+- **CR-01（loadingTable 同槽再装载覆盖摧毁 mainHandItem 恢复状态）**：**化解**。基线 6e86f58 起锁谓词已是收紧后的 `if loadingTable.useableItem then`（任何携带 useableItem 的条目锁新装载，无 used==false 附加条件），本次逐字节保留并实测与基线一致（现 432-439）；且帧拆分后全新条目写入（462/484 行）被「续跑预扫 return → 全局锁 return」双重前置拦断，不再存在「同槽覆盖销毁 mainHandItem」的可达路径。但该收紧锁与恢复失败联动产生新的死锁面，见 WR-04。
 - **WR-01（pending 持续失败无出口）**：**部分化解**。castLoadedItem 的 else 支（现 618-621）可清除 pending 条目（出口存在），重试改由队列承载；但「目标物品持续不可装备」时每次按键仍无限重试+失败（无重试上限/回退），且该 else 清除与帧拆分产生新竞态 WR-03。
 - **WR-02（SM_Extend.lua 构建产物陈旧）**：**仍存在**（本 quick 只改源文件，产物待用户 `./build.sh` 重建，SUMMARY 已备案 user-side unrun-verify，不重复计为新 finding）。
 - **WR-03（遗留 obj.loadUseableItem 死代码共享同一全局表）**：**化解**。现文件已无 `obj.loadUseableItem` 定义（grep 实测 0 处），唯一装载入口为 loadUseableItemToSlot。
@@ -166,7 +166,7 @@ end
 **Issue:** else 支的语义是「useableItem 条目对应的物品已不在槽上→重置条目」，它是为**已 verify 完成的**条目写的。帧拆分后，装载按键与 verify 提级之间出现 0.3-1.5s 的 in-flight 窗口：此时条目形状是 `{pendingEquip=..., pendingSaying=..., (swap 支还有 swappingItem=...)}`、`useableItem=nil`——castLoadedItem 的配对键 `loadingTable.useableItem`（545 行）判伪，直接落入 else 支把条目清空。随后 verifyEquipLoad 照常跑：装备已落地 → promote 重建条目（841-853 行只写 useableItem/useableItemUsed/saying），**swappingItem / mainHandItem 从此不复存在**：
 - swap 支：装载时被顶出的原副手（swappingItem）已进背包，之后恢复臂退化为纯卸装臂，原副手永远不被换回；
 - 修复链中途：VDU 的提交门（805-809 行 `if itemLoadingTable and itemLoadingTable[step.targetSlot]`）因条目被清而静默跳过，两手武器进了背包却没记下 mainHandItem——恢复臂退化为纯卸装，两手武器永远滞留背包。
-基线（0e3a183）里装载/验证同帧完成，按键间不存在这个窗口，这是本重构引入的新竞态。
+基线（6e86f58）里装载/验证同帧完成，按键间不存在这个窗口，这是本重构引入的新竞态。
 
 **Fix:** else 支只清「已 verify 完成且物品不在槽」的条目，放过携带 pendingEquip 的 in-flight 条目。Lua 5.0 合法修复：
 

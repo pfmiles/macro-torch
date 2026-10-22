@@ -51,7 +51,7 @@ must_haves:
 
 ## 背景事实（2026-09-16 规划时实地取证，编辑锚点以本节为准）
 
-- 工作树 clean；HEAD = `69c2e4b`。`git status --porcelain` 为空。
+- 工作树 clean；HEAD = `bc0cfb3`。`git status --porcelain` 为空。
 - `classes/druid/Druid.lua` 共 **1781 行**（LF，`grep -c $'\r'` = 0）。锚点逐行核对过：
   - `600` = `function macroTorch.computeNormalRelic(clickContext)`；四调用点为 `603`/`607`/`615`/`619`，文本完全一致：`        return macroTorch.selectFerocityOrEmeraldRot()`（8 空格缩进）。
   - `625-629` = 现有中文头注释；`630` = `function macroTorch.selectFerocityOrEmeraldRot()`（无参）；`657` = 函数尾 `end`。

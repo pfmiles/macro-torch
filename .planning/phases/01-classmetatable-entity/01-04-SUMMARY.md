@@ -33,9 +33,9 @@ metrics:
 
 | # | Task | Commit | Key Files |
 |---|------|--------|-----------|
-| 1 | 迁移 Unit.lua -> entity/Unit.lua，替换 metatable | `7b80ca1` | `entity/Unit.lua` (created), `Unit.lua` (deleted) |
-| 2 | 迁移 Player.lua -> entity/Player.lua，替换 metatable | `a99c6bf` | `entity/Player.lua` (created), `Player.lua` (deleted) |
-| 3 | 迁移 Target.lua -> entity/Target.lua，替换 metatable | `9bb7a15` | `entity/Target.lua` (created), `Target.lua` (deleted) |
+| 1 | 迁移 Unit.lua -> entity/Unit.lua，替换 metatable | `a53b157` | `entity/Unit.lua` (created), `Unit.lua` (deleted) |
+| 2 | 迁移 Player.lua -> entity/Player.lua，替换 metatable | `4b986e8` | `entity/Player.lua` (created), `Player.lua` (deleted) |
+| 3 | 迁移 Target.lua -> entity/Target.lua，替换 metatable | `f3c197a` | `entity/Target.lua` (created), `Target.lua` (deleted) |
 
 ## Verification Results
 
@@ -83,6 +83,6 @@ None. This plan performed pure file organization + semantically equivalent metat
 - entity/Unit.lua exists: YES
 - entity/Player.lua exists: YES
 - entity/Target.lua exists: YES
-- Commit 7b80ca1 exists: YES
-- Commit a99c6bf exists: YES
-- Commit 9bb7a15 exists: YES
+- Commit a53b157 exists: YES
+- Commit 4b986e8 exists: YES
+- Commit f3c197a exists: YES

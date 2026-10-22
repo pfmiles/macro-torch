@@ -18,7 +18,7 @@ re_verification:
     - "D-02/D-03/D-04/D-06 四条行为钉闭环（原 4 项 PRESENT_BEHAVIOR_UNVERIFIED → VERIFIED）：29-UAT.md test 2 游戏内 /mt 320 passed / 0 failed / 1 warnings，Category Q-01..Q-16 全绿（Q-05/Q-06/Q-09/Q-11/Q-12/Q-13/Q-15 行为断言实机行使）"
     - "UAT test 4 多猫同目标 pass：apply 抑制下 (inferred) 兜底 + ripLeft 启动实机确认（D-03 行为面）"
     - "UAT test 1 rebuild+横幅、test 5 猎人双钉刺 2s 弹道窗均 pass（D-12 行为面）"
-    - "G-29-3 机器侧闭环（29-UAT.md test 3 issue → 修复）：commits 403116d + 6bd0015 在当前树验证在位，interface_debug.lua 蓝绿双臂与 D-14 一致、OFFICER 清零、T-02 注册（静态全绿）；实机复验仍待用户侧 rebuild（见 behavior_unverified_items）"
+    - "G-29-3 机器侧闭环（29-UAT.md test 3 issue → 修复）：commits 45f251d + d45fa00 在当前树验证在位，interface_debug.lua 蓝绿双臂与 D-14 一致、OFFICER 清零、T-02 注册（静态全绿）；实机复验仍待用户侧 rebuild（见 behavior_unverified_items）"
   gaps_remaining: []
   regressions: []
 human_verification:
@@ -37,7 +37,7 @@ human_verification:
 
 **Verified:** 2026-09-11T10:45:00Z
 **Status:** human_needed
-**Re-verification:** Yes — 前次 2026-09-10T04:20:00Z（status human_needed，14/18）。本轮为 gap-closure 复验：UAT 后关闭 4 条行为钉 + G-29-3（commits 403116d / 6bd0015 / 069f865），剩余项评估见文末。
+**Re-verification:** Yes — 前次 2026-09-10T04:20:00Z（status human_needed，14/18）。本轮为 gap-closure 复验：UAT 后关闭 4 条行为钉 + G-29-3（commits 45f251d / d45fa00 / 8d9f5e0），剩余项评估见文末。
 
 **要求面说明:** 本 phase 为 specless phase（phase_req_ids 为空）。验证以 29-CONTEXT.md D-01..D-18 为权威决策面（D-14 ∈ line 39），辅以 DESIGN-CONTEXT.md 8 条锁定决策、四个 PLAN 的 must_haves truths/prohibitions（29-04 新增 4 truths + 3 prohibitions）。D-xx 命名空间与 REQUIREMENTS.md R1-R8 不相交（前次已确认，本轮复核一致）。
 
@@ -89,7 +89,7 @@ human_verification:
 
 | Artifact | Expected | Status | Details |
 | -------- | -------- | ------ | ------- |
-| interface_debug.lua | 蓝绿双臂修正 + D-14 契约注释，仅 5 行增/2 行删 | ✓ VERIFIED | 变更面 `git diff 403116d~1..069f865` = interface_debug.lua + selftest.lua + 4 个 .planning 文档；diff 无 core/、无 Q 区改动 |
+| interface_debug.lua | 蓝绿双臂修正 + D-14 契约注释，仅 5 行增/2 行删 | ✓ VERIFIED | 变更面 `git diff 45f251d~1..8d9f5e0` = interface_debug.lua + selftest.lua + 4 个 .planning 文档；diff 无 core/、无 Q 区改动 |
 | classes/druid/selftest.lua | T-02 注册 + 计数注释更新 | ✓ VERIFIED | +52/-2；T-02 体与 29-04 计划夹具六步规格逐点吻合 |
 | SM_Extend.lua | 全程字节等于 HEAD（产物不触碰） | ✓ VERIFIED | `git status --porcelain -- SM_Extend.lua` 空；修复经用户侧 rebuild 生效 |
 
@@ -118,7 +118,7 @@ human_verification:
 | diff --check | `git diff --check` | 空 | ✓ PASS |
 | Lua 5.0 令牌门（代码行口径） | `grep -v '^[[:space:]]*--' 两文件 \| grep -c '#\|goto \|::'` | 0 / 0 | ✓ PASS |
 | CRLF 门 | `grep -c $'\r' 两文件` | 0 / 0 | ✓ PASS |
-| 新增注释 CJK 门 | `git diff -U0 403116d~1..6bd0015 -- 两文件` 增量注释 CJK | 0 | ✓ PASS |
+| 新增注释 CJK 门 | `git diff -U0 45f251d~1..d45fa00 -- 两文件` 增量注释 CJK | 0 | ✓ PASS |
 | 新增注释词元门 | 同上增量注释无 [a-z] 词元行 | 0 | ✓ PASS |
 | OFFICER 清零门 | `grep -c 'OFFICER' interface_debug.lua` | 0（全源码仅 T-02 planted 夹具 2 处，符合计划） | ✓ PASS |
 | 臂字面量/契约计数门 | custom_blue 1 / 纯绿 1 / Color-label contract 1 / SAY-YELL-SYSTEM-AddMessage 各 1 | 全部命中 | ✓ PASS |
@@ -154,9 +154,9 @@ human_verification:
 
 | Prohibition | 本机证据 | 裁决 |
 |-------------|---------|------|
-| 不修改 core/ 任何文件 | 变更面 `403116d~1..069f865` 仅 interface_debug.lua + selftest.lua + 4 文档 | 未违反 ✓（非权威 LLM-judge；human review recommended） |
+| 不修改 core/ 任何文件 | 变更面 `45f251d~1..8d9f5e0` 仅 interface_debug.lua + selftest.lua + 4 文档 | 未违反 ✓（非权威 LLM-judge；human review recommended） |
 | 不跑 build.sh、不触碰 SM_Extend.lua | SM_Extend.lua porcelain 空；源码已变而产物未变 ⇒ 本机未重建（重建将改变产物字节） | 未违反 ✓（同 flag） |
-| Category Q 16 条断言零改动 | `git diff 403116d~1..6bd0015 -- selftest.lua` 无任何 Q 区行 | 未违反 ✓（同 flag） |
+| Category Q 16 条断言零改动 | `git diff 45f251d~1..d45fa00 -- selftest.lua` 无任何 Q 区行 | 未违反 ✓（同 flag） |
 
 ## Human Verification Required
 

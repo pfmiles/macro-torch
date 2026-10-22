@@ -14,7 +14,7 @@ decisions:
   - "GATE 3 probe-routing 与 GATE 6 show-call-invariant 首轮 FAIL 均为执行器自转录缺陷（Bash 工具层给单引号内的双引号多加反斜杠），以计划逐字原文重跑全绿、文件零改动——与 260915-tt3 偏差 2/3 同型（电池脚本缺陷而非文件缺陷）"
   - "energy_probe.lua:17 模块头注释 'SavedVariables-only' 措辞随本次 refactor 语义过期，但按锁定范围（命名删除区外 additive-only）原样保留，偏差照实记录"
 commits:
-  code: a80fe39
+  code: c8e77f4
 duration_seconds: 480
 estimate:
   tokens: 26000
@@ -42,7 +42,7 @@ energy tick 相位取证探针（260915-tt3 装置）按其用户反馈（design
 | (b) Edit B RAW | core/events.lua | 守卫去掉 `macroTorch.energyProbeLog and` 合取；body 改调 `macroTorch.log`，模板逐字不动；只读落穿不回 return |
 | (c) Edit D REL | classes/druid/cat.lua | 守卫化简为 `if macroTorch.energyProbe then`；body 改调 `macroTorch.log`，模板逐字不动；show 调用（405-411）与 `reshift('ready')`（415）一字不动 |
 
-提交：`a80fe39` — `refactor(260915-udx): route energy probe lines through macroTorch.log (visible + shared persistence) instead of dedicated probeTick bucket`（恰 3 文件、9 insertions、21 deletions）。`.planning/` 工件（PLAN.md / 本 SUMMARY / STATE.md 表行）由 quick 流程 docs commit 收口，代码 commit 零夹带。
+提交：`c8e77f4` — `refactor(260915-udx): route energy probe lines through macroTorch.log (visible + shared persistence) instead of dedicated probeTick bucket`（恰 3 文件、9 insertions、21 deletions）。`.planning/` 工件（PLAN.md / 本 SUMMARY / STATE.md 表行）由 quick 流程 docs commit 收口，代码 commit 零夹带。
 
 ## 验证电池结果
 
@@ -84,7 +84,7 @@ energy tick 相位取证探针（260915-tt3 装置）按其用户反馈（design
 
 ## Self-Check: PASSED
 
-- `git log --oneline -3 | head -1` → `a80fe39 refactor(260915-udx): route energy probe lines through macroTorch.log (visible + shared persistence) instead of dedicated probeTick bucket`，message 逐字一致。
+- `git log --oneline -3 | head -1` → `c8e77f4 refactor(260915-udx): route energy probe lines through macroTorch.log (visible + shared persistence) instead of dedicated probeTick bucket`，message 逐字一致。
 - `git diff HEAD~1 HEAD --name-only | sort` → 恰 `classes/druid/cat.lua` / `classes/druid/energy_probe.lua` / `core/events.lua` 三文件。
 - `git diff HEAD~1 HEAD --numstat` → `2 2` / `3 15` / `4 4` = 9 insertions、21 deletions，与锁定「9 行改写 + 11 行删除（纯删除区）+ 行内合并余量」口径吻合（三处守卫行各含 1 改写行 + 1 body 改写行；删除块 11 行纯删除，其余 10 删除行为守卫/body 旧行替换）。
 - `git status --porcelain | grep -v '^?? .planning/'` → 空（零残留）。

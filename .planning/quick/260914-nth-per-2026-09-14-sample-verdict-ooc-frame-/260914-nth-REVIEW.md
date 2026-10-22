@@ -23,7 +23,7 @@ status: issues_found
 
 ## Summary
 
-Reviewed commit `c1f4e67` (scope: `classes/druid/Druid.lua` +8/-1, `classes/druid/selftest.lua` +52/-3). The core change — branch 3 of `shouldUseShred` flipping 3+ bleed free frames (ooc OR pseudo-infinite) to Shred behind, while paid frames keep Claw — is implemented correctly and consistently:
+Reviewed commit `93ec6d1` (scope: `classes/druid/Druid.lua` +8/-1, `classes/druid/selftest.lua` +52/-3). The core change — branch 3 of `shouldUseShred` flipping 3+ bleed free frames (ooc OR pseudo-infinite) to Shred behind, while paid frames keep Claw — is implemented correctly and consistently:
 
 - The new and-chain at Druid.lua:1023 is byte-identical to branch 2 (line 1015) and uses the same `infiniteEnergy` local defined at line 989 (no new mismatch).
 - Paid frames short-circuit `(false or false) and ...` to `false`, byte-same as the old `return false`.

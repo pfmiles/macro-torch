@@ -63,8 +63,8 @@ status: complete
 - **免疫路径 2 附带复活:** 无代码改动——spell_trace_immune.lua 的 0.1s 消费任务因 land 供给恢复而行为复位（VERIFICATION-ONLY 契约，git diff 零改动）。
 
 ## Task Commits
-1. **Task 1: 反推兜底层复活** - `50544fd` feat (spell_trace_core.lua +64)
-2. **Task 2: Q-09 复活断言 + Q-11/Q-13 双场景** - `90267cd` test (selftest.lua +139/-7)
+1. **Task 1: 反推兜底层复活** - `6ffd1ba` feat (spell_trace_core.lua +64)
+2. **Task 2: Q-09 复活断言 + Q-11/Q-13 双场景** - `21d6521` test (selftest.lua +139/-7)
 **Plan metadata:** docs commit follows (SUMMARY + STATE + ROADMAP + REQUIREMENTS)
 
 ## Files Created/Modified

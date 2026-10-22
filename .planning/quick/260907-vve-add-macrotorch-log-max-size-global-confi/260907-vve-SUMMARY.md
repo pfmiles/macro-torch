@@ -31,7 +31,7 @@ key-files:
 key-decisions:
   - "Trim loop compares tableLen against the sanitized local `limit`, never against the raw MACRO_TORCH_LOG.maxSize field — the saved schema field now has zero readers outside the two init guards (D-02/D-03)"
   - "Comment wording follows the stock-truthiness note: 0 and negatives reach the clamp (become 1); only nil/non-numeric tonumber results fall back to 500 — no comment claims zero falls back to 500 (plan's load-bearing STOCK-TRUTHINESS NOTE)"
-  - "G3/FINAL diff assertions re-anchored from worktree-vs-HEAD to the pre-task baseline dace121 because per-task atomic commits empty the worktree diff; gate semantics and expected counts unchanged (same precedent as quick 260907-tuh)"
+  - "G3/FINAL diff assertions re-anchored from worktree-vs-HEAD to the pre-task baseline b38ef67 because per-task atomic commits empty the worktree diff; gate semantics and expected counts unchanged (same precedent as quick 260907-tuh)"
 requirements-completed: [QUICK-260907-VVE]
 duration: 5min
 completed: 2026-09-07
@@ -62,9 +62,9 @@ completed: 2026-09-07
 
 Each task was committed atomically (code only; docs committed by the orchestrator in Step 8):
 
-1. **Task 1: macro_torch.lua — nil-guard + registry entry + count fix** - `097dfab` (feat, 18 insertions / 1 deletion)
-2. **Task 2: interface_debug.lua — sanitized trim limit + comment syncs** - `16b4693` (feat, 10 insertions / 1 deletion)
-3. **Task 3: classes/druid/selftest.lua — Cat T-01 default-value selftest** - `cb0fcd3` (feat, 11 insertions, strictly additive)
+1. **Task 1: macro_torch.lua — nil-guard + registry entry + count fix** - `f641fdf` (feat, 18 insertions / 1 deletion)
+2. **Task 2: interface_debug.lua — sanitized trim limit + comment syncs** - `ed7ce19` (feat, 10 insertions / 1 deletion)
+3. **Task 3: classes/druid/selftest.lua — Cat T-01 default-value selftest** - `f3a7056` (feat, 11 insertions, strictly additive)
 
 ## Files Created/Modified
 
@@ -86,7 +86,7 @@ All three tasks landed byte-exactly as prescribed; two of the plan's verificatio
 
 1. **G3's position grep needed an end-of-options separator on this host.** The plan's `grep -nF '-- Category T: ...'` operand starts with `--`, which this machine's `grep` wrapper (Claude Code shell wrapper delegating to ugrep 7.5.0) parses as options and aborts with "ugrep: invalid option". Re-run with `grep -nF -- '-- Category T: ...'` — same pattern, same expected line numbers, same assertion (T header after the Category S count comment, `T_L=1085 > S_L=1084`). No file content changed.
 2. **FINAL gate deletion count reformulated to enforce the plan's own invariant.** The plan's `git diff -U0 | grep -cE '^-[^-]'` expects 2, but one of the two deleted lines is itself a Lua comment (`-- survey ... yields exactly these two entries ...`, the count-word line), whose diff line renders as `--- survey ...` and is excluded by `^-[^-]` exactly like the `--- a/file` headers — the literal chain can only ever count 1. The plan's authoritative prose invariant is "exactly two replaced lines repo-wide" (macro_torch.lua:52 and interface_debug.lua:111). Enforced equivalently via `git diff --numstat` deletion-column sum = 2 (18/1 + 10/1 + 11/0), plus per-file verification: G1 already asserts only the new count wording remains, G2 already asserts zero `MACRO_TORCH_LOG.maxSize do` references. No code change.
-3. **FINAL gate diff anchored to the pre-task baseline `dace121`.** Because each task commits atomically, a worktree-vs-HEAD `git diff` is empty post-commit; the aggregate FINAL assertions run against `dace121..HEAD` over exactly the three planned files (same precedent as quick 260907-tuh). G1 and G2 ran pre-commit against the freshly edited working tree exactly as written.
+3. **FINAL gate diff anchored to the pre-task baseline `b38ef67`.** Because each task commits atomically, a worktree-vs-HEAD `git diff` is empty post-commit; the aggregate FINAL assertions run against `b38ef67..HEAD` over exactly the three planned files (same precedent as quick 260907-tuh). G1 and G2 ran pre-commit against the freshly edited working tree exactly as written.
 
 **Total deviations:** 0 code deviations (plan text implemented verbatim); 3 verification-chain mechanical re-anchorings (checks, not deliverables)
 **Impact on plan:** None — all six gate assertions (G1/G2/G3/FINAL) pass with their planned semantics and expected counts.
@@ -96,7 +96,7 @@ All three tasks landed byte-exactly as prescribed; two of the plan's verificatio
 - **G1 LOG_MAX OPTION OK** (pre-commit, exact chain): bbcheck BALANCED; exactly 1 nil-guard line; exactly 1 functional `macroTorch.LOG_MAX_SIZE = 500` assignment; the fourth-entry name/default/cmd/get literals exactly once each; exactly 4 registry `name = 'macroTorch.*'` entries; count comment says four with no two/three variant; LOG entry line number > COWER entry line number (position 4).
 - **G2 CONSUMER OK** (pre-commit, exact chain): bbcheck BALANCED; exactly 2 `maxSize = 500` lines (both init guards); zero old trim-condition references; exactly 1 `>= limit do`; both locked locals exactly once; signature unchanged; LOG_MAX_SIZE on exactly 3 lines; all four caller files zero diff.
 - **G3 SELFTEST OK** (pre-commit, ugrep-safe separator): bbcheck BALANCED; test name once; exactly 1 functional assert; count comment once; T header after S count comment; zero deleted lines in the diff.
-- **FINAL GATE OK** (post-commit, anchored to dace121): bbcheck BALANCED for all three files; exactly 2 true deleted lines (numstat); zero forbidden Lua 5.0 tokens (`#`/`goto`/`::`) in added lines; `git diff --check` clean; LF OK (no CR); LOG_MAX_SIZE confined to exactly `classes/druid/selftest.lua`, `interface_debug.lua`, `macro_torch.lua`; SM_Extend.lua untouched (`git status --porcelain` empty for it).
+- **FINAL GATE OK** (post-commit, anchored to b38ef67): bbcheck BALANCED for all three files; exactly 2 true deleted lines (numstat); zero forbidden Lua 5.0 tokens (`#`/`goto`/`::`) in added lines; `git diff --check` clean; LF OK (no CR); LOG_MAX_SIZE confined to exactly `classes/druid/selftest.lua`, `interface_debug.lua`, `macro_torch.lua`; SM_Extend.lua untouched (`git status --porcelain` empty for it).
 - Working tree clean after all commits (only the untracked quick-docs directory, left for the orchestrator's Step 8).
 
 ## Issues Encountered
@@ -107,7 +107,7 @@ All three tasks landed byte-exactly as prescribed; two of the plan's verificatio
 
 1. Run build.sh on the Windows+Cygwin machine to regenerate SM_Extend.lua into the AddOns dirs (established quick-task convention — never rebuild it in this repo).
 2. Log in — after the selftest diagnostics the config banner prints all four entries, the new one showing `macroTorch.LOG_MAX_SIZE = 500 (default: 500)` plus its setter line `/run macroTorch.LOG_MAX_SIZE=1000`.
-3. Run `/run macroTorch.LOG_MAX_SIZE=1000` then `/mt` — the banner reprints (WR-02 fix, commit 2c05c8c) with 1000.
+3. Run `/run macroTorch.LOG_MAX_SIZE=1000` then `/mt` — the banner reprints (WR-02 fix, commit c946368) with 1000.
 4. Confirm the counterexample: `/reload` re-arms 500 (per-session semantics identical to cpBuildLog/rawdiag2Enabled/COWER_THREAT_THRESHOLD).
 5. OPTIONAL flood probe of the cap: `/run for i=1,520 do macroTorch.log('pad '..i) end` then inspect `macroTorch.tableLen(MACRO_TORCH_LOG.messages)` — expect exactly 500.
 6. OPTIONAL edge probe: `/run macroTorch.LOG_MAX_SIZE=0` then a small flood — expect the kept count to be 1 (stock Lua 5.0 truthiness: 0 is truthy, so the clamp — not the 500 fallback — handles it).
@@ -117,7 +117,7 @@ All three tasks landed byte-exactly as prescribed; two of the plan's verificatio
 - FOUND: macro_torch.lua (guard block lines 46-55, registry entry lines 87-93, count fix line 62)
 - FOUND: interface_debug.lua (sync comment lines 18-20, sanitizer lines 114-119)
 - FOUND: classes/druid/selftest.lua (Category T block lines 1085-1093, count comment line 1095, wrapper `end` line 1096)
-- FOUND: commit 097dfab, commit 16b4693, commit cb0fcd3
+- FOUND: commit f641fdf, commit ed7ce19, commit f3a7056
 
 ---
 *Phase: quick-260907-vve-add-macrotorch-log-max-size-global-confi*

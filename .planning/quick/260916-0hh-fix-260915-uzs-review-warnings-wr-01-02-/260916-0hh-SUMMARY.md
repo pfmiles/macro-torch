@@ -15,7 +15,7 @@ decisions:
   - "GATE D 三条子断言因规划侧 git-diff 建模缺陷不可满足（非实现偏差）：(1) 删除面 wc -l = 5——旧 tap end 行与锁定 after 状态的新 end 行字节相同，任何 diff 算法都按 LCS 对齐为 unchanged，不可能呈现为删除行；(2) git status --porcelain 恰 2 行——quick 流程自建计划目录未 track，必然多一行 ??；(3) hunk 范围正则要求行号后带逗号——-U0 单行改动 hunk 头为 `@@ -57 +58 @@`（无 `,1`），正则永不匹配。三条断言所验证的真不变式（恰 5 个枚举旧行被消费/重写、工作树恰 2 个 tracked 文件被改、hunk 全落在 40-119/150-199 带内）均以等价检查实锤通过，见下与正文 GATE D'"
   - "WINDOWS.md 按规划锁约束零触碰：unrun-verify 电池仅在 SUMMARY 备案（4 项实机验证点），260915 系列电池全绿后由用户另行 close"
 commits:
-  code: 69c2e4b
+  code: bc0cfb3
 duration_seconds: 240
 estimate:
   tokens: 32000
@@ -53,7 +53,7 @@ actuals:
 
 - `bash build.sh` exit 0（本机非 cygwin，结尾不拷贝；SM_Extend.lua 为 git-ignored 产物，重建不产生工作树改动）。
 - **GATE B 全绿**：SM_Extend.lua 含 SES/POLL/RAW/CAST/REL 各 1 + PDT 3（tx=RAW×1 + tx=CHAT×2）+ 新 EV 模板恰 1；`EPR|EV|t=%.3f|ev=%s` 顺序命中 1 次；旧 `EPR|EV|%s|t=` 在产物与源码中均 0 残留。
-- **原子 commit** `69c2e4b`：message 逐字锁定 `fix(260916-0hh): case-insensitive RAW energize tap; EV line ev= KV after t=; UnitMana e nil-guard + POLL floor (WR-01/02/03)`，`git show --name-only` 恰为两代码文件、零 `.planning` 夹带。
+- **原子 commit** `bc0cfb3`：message 逐字锁定 `fix(260916-0hh): case-insensitive RAW energize tap; EV line ev= KV after t=; UnitMana e nil-guard + POLL floor (WR-01/02/03)`，`git show --name-only` 恰为两代码文件、零 `.planning` 夹带。
 - **GATE E 全绿** + commit 后 `git status --porcelain` 仅剩本 quick 计划目录 `???`（由 quick 流程 docs commit 收口）；`git diff --diff-filter=D HEAD~1 HEAD` 无 tracked 文件删除。
 
 ## 偏差
@@ -84,7 +84,7 @@ actuals:
 ## Self-Check
 
 - [x] `core/events.lua` 222 行、`classes/druid/energy_probe.lua` 119 行（GATE C）
-- [x] commit `69c2e4b` 存在且文件集合恰为两代码文件（`git show --name-only --format= HEAD`）
+- [x] commit `bc0cfb3` 存在且文件集合恰为两代码文件（`git show --name-only --format= HEAD`）
 - [x] 本 SUMMARY.md 已写到 `.planning/quick/260916-0hh-.../`（未进入代码 commit，留给 quick 流程 docs commit）
 - [x] `git status --porcelain` commit 后仅剩本 quick 计划目录 `???`
 

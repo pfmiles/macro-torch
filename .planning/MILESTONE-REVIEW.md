@@ -16,7 +16,7 @@ reviewed_at: 2026-06-09
 
 ## 审查范围
 
-从 Phase 1 首个 commit (`e87a412`) 到 HEAD (`e64a796`)，共 28 个源文件变更。
+从 Phase 1 首个 commit (`7a15f99`) 到 HEAD (`9fec917`)，共 28 个源文件变更。
 
 | 层 | 文件数 | 文件 |
 |----|--------|------|
@@ -193,19 +193,19 @@ classes/ — 8 files (Druid/含子目录 + 6 个其他职业) ✅
 
 | ID | 问题 | 修复 commit |
 |----|------|-------------|
-| CR-01 (04) | `pickPocketState` 应为全局 `macroTorch.pickPocketState` | `145ddb2` |
-| CR-02 (04) | `build.sh` 中 bash-specific `[[ ]]` 替换为 POSIX `[ ]` | `3b8b3a6` |
-| WR-01 (04) | Hunter metatable 改用 classMetatable | `3237a7d` |
-| WR-02 (04) | `computeNormalRelic` 中无效 nil-check | `d199768` |
-| WR-03 (04) | `mageRangedAtk`/`mageMeleeAtk` 未使用参数 `reapLine` | `b67b4d6` |
-| WR-01 (03) | `SUPERWOW_STRING` 检查增加 nil guard | `ca00432` |
-| WR-02 (03) | 自测中的裸全局引用 | `4ab4897` |
-| WR-03 (03) | Savagery snapshot flags 移至 loginContext | `9a11d76` |
-| WR-04 (03) | ripLeft/rakeLeft nil guard | `d434657` |
-| WR-05 (03) | SpellTrace:register() spellId 验证 | `6fb44e8` |
-| WR-06 (03) | computeNormalRelic nil guard | `eda6200` |
-| WR-01-04 (02) | immune 追踪 nil guard + 文档 | `cf43081` 等 |
-| WR-01-03 (01) | onPeriodicUpdate collect-then-delete + build_order.txt 缺失 guard + Druid metatable | `12c7ff0` 等 |
+| CR-01 (04) | `pickPocketState` 应为全局 `macroTorch.pickPocketState` | `24bb1ac` |
+| CR-02 (04) | `build.sh` 中 bash-specific `[[ ]]` 替换为 POSIX `[ ]` | `459b7b7` |
+| WR-01 (04) | Hunter metatable 改用 classMetatable | `508b7dd` |
+| WR-02 (04) | `computeNormalRelic` 中无效 nil-check | `cac2581` |
+| WR-03 (04) | `mageRangedAtk`/`mageMeleeAtk` 未使用参数 `reapLine` | `30886eb` |
+| WR-01 (03) | `SUPERWOW_STRING` 检查增加 nil guard | `2403dac` |
+| WR-02 (03) | 自测中的裸全局引用 | `be9fe77` |
+| WR-03 (03) | Savagery snapshot flags 移至 loginContext | `b5f3357` |
+| WR-04 (03) | ripLeft/rakeLeft nil guard | `3edbf1b` |
+| WR-05 (03) | SpellTrace:register() spellId 验证 | `1f44cb3` |
+| WR-06 (03) | computeNormalRelic nil guard | `a0da67d` |
+| WR-01-04 (02) | immune 追踪 nil guard + 文档 | `6f95c8f` 等 |
+| WR-01-03 (01) | onPeriodicUpdate collect-then-delete + build_order.txt 缺失 guard + Druid metatable | `eadbbe5` 等 |
 
 ---
 

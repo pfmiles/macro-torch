@@ -188,11 +188,11 @@ All symbols present in SM_Extend.lua:
 ### Git History
 
 All 5 commits verified in git log:
-- `8b84479`: core/spell_id_map.lua creation + build_order.txt
-- `c414e89`: FF prowling guard + resolveSpellId + SpellTrace:register spellName
-- `7b26aa2`: loadSpellIdMap + onPlayerEnteringWorld integration
-- `5fd4ce5`: current_casting_spell lifecycle + spellId correction + Druid migration
-- `b2e24e0`: Category K self-tests
+- `72d94e2`: core/spell_id_map.lua creation + build_order.txt
+- `89e11ee`: FF prowling guard + resolveSpellId + SpellTrace:register spellName
+- `66d26e1`: loadSpellIdMap + onPlayerEnteringWorld integration
+- `b4e34b3`: current_casting_spell lifecycle + spellId correction + Druid migration
+- `ec1f0f2`: Category K self-tests
 
 ---
 

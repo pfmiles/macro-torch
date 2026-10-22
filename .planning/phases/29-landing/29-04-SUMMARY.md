@@ -61,7 +61,7 @@ status: complete
 - **Completed:** 2026-09-11 (UTC 2026-09-10T19:02Z)
 - **Tasks:** 2
 - **Files modified:** 2 (计划变更面恰 2 个预期文件)
-- **Estimate actuals:** 1291 tokens (chars/4 over the realized diff 403116d~1..HEAD, +57/-4) vs estimate 22000; 2 tasks vs 2 estimated; 2 task commits + 1 plan metadata commit
+- **Estimate actuals:** 1291 tokens (chars/4 over the realized diff 45f251d~1..HEAD, +57/-4) vs estimate 22000; 2 tasks vs 2 estimated; 2 task commits + 1 plan metadata commit
 
 ## Accomplishments
 - **G-29-3 root_cause 直接修复 (missing 第 1 条):** `macroTorch.show` 蓝臂 'blue'→OFFICER 频道键（1.12 客户端实渲绿色，倒置源）改复用已验证渲蓝的自定义 RGB `{ r = 0, g = 0.5, b = 0.9, id = 'custom_blue' }`；绿臂 'green'→原蓝通道主导的 `{ r = 0, g = 0.5, b = 0.9, id = 'custom_green' }` 改为纯绿 `{ r = 0, g = 1, b = 0, id = 'custom_green' }`。函数签名、SAY 缺省臂、red→YELL/yellow→SYSTEM 臂、AddMessage 出口行、log() 转发表全部字节不变——共享渲染通路（spell_trace_core.lua:451/499/598 通告、macroTorch.log、diag、Target）随修复整体归位。
@@ -76,8 +76,8 @@ status: complete
 本机无 Lua 解释器（仅 node），色相行为断言无法在本机执行；已有工具链（bbcheck.balanced、Lua 5.0 令牌门、字面量 grep 门、CRLF/CJK/word 门）静态验证语法与断言在位，行为级验证落在游戏内 /mt（本任务交付的 T-02）与用户下一次实机重建。
 
 ## Task Commits
-1. **Task 1: 修正 macroTorch.show 绿/蓝两臂色相** — `403116d` fix (interface_debug.lua +5/-2)
-2. **Task 2: Category T-02 渲染映射回归自测** — `6bd0015` test (classes/druid/selftest.lua +52/-2)
+1. **Task 1: 修正 macroTorch.show 绿/蓝两臂色相** — `45f251d` fix (interface_debug.lua +5/-2)
+2. **Task 2: Category T-02 渲染映射回归自测** — `d45fa00` test (classes/druid/selftest.lua +52/-2)
 **Plan metadata:** docs commit (SUMMARY + STATE + ROADMAP + REQUIREMENTS + WINDOWS ledger) follows this file.
 
 ## Files Created/Modified

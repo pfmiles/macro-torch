@@ -17,16 +17,16 @@ status: issues_found
 
 **Reviewed:** 2026-09-13T17:01:29Z
 **Depth:** standard
-**Files Reviewed:** 1（`git diff e776e98^..e776e98 -- classes/druid/cat.lua` 精确锁定 +6/−0；e776e98..HEAD 之间仅 .planning 文档提交，cat.lua 未再触碰）
+**Files Reviewed:** 1（`git diff 028c15b^..028c15b -- classes/druid/cat.lua` 精确锁定 +6/−0；028c15b..HEAD 之间仅 .planning 文档提交，cat.lua 未再触碰）
 **Status:** issues_found
 
 ## Summary
 
-对 feature commit `e776e98`（"feat(cat): cp5Bite skips discharge when rake <=1.3s (bite renews rake)"）的 6 行纯插入按 standard depth 审查，交叉核验了 `classes/druid/Druid.lua` 的 `isRakePresent`/`rakeLeft`/`computeRake_Duration`/FB 续期监听器与 `core/selftest.lua` 的 P 系列 stub（后者为上下文读取，非审查目标）。
+对 feature commit `028c15b`（"feat(cat): cp5Bite skips discharge when rake <=1.3s (bite renews rake)"）的 6 行纯插入按 standard depth 审查，交叉核验了 `classes/druid/Druid.lua` 的 `isRakePresent`/`rakeLeft`/`computeRake_Duration`/FB 续期监听器与 `core/selftest.lua` 的 P 系列 stub（后者为上下文读取，非审查目标）。
 
 **验证通过的核心口径（无发现，仅陈述佐证）：**
 
-1. **变更面与锁定约束**：`git diff e776e98^..e776e98 --numstat` = `6 0 classes/druid/cat.lua`——恰 1 文件、6 插入、0 删除。新块位于 cat.lua:139-143，与 PLAN 锁定约束 3 逐字一致（8 空格缩进、英文注释、块前空行、与 rip 块 135-137 严格同构）。
+1. **变更面与锁定约束**：`git diff 028c15b^..028c15b --numstat` = `6 0 classes/druid/cat.lua`——恰 1 文件、6 插入、0 删除。新块位于 cat.lua:139-143，与 PLAN 锁定约束 3 逐字一致（8 空格缩进、英文注释、块前空行、与 rip 块 135-137 严格同构）。
 2. **条件自身健全性**：`rakeLeft` 恒返回数字（Druid.lua:1428-1444：无 land 事件时 0，否则 `computeRake_Duration - (GetTime - lastLand)` 且截断到 0 下限，不可能 nil/非有限数）；`isRakePresent` 为真时，同一条 `and` 链已先求值过 `rakeLeft > 0`（Druid.lua:1361-1362），故 `rakeLeft(clickContext) <= 1.3` 必然是已 memoize 的 number <= number 比较——Lua 5.0 无混合类型比较报错面。有效触发窗口 (0, 1.3]，与 PLAN 口径 `∈ (0,1.3]` 吻合。
 3. **链上短路互作**：`shouldDischarge and` 前缀保证伪无限能量门（cat.lua:130-132）置 false 后两个流血门都不再调用 helper（PLAN 约束 4 达成，无额外 `rakeLeft` 调用）；rip 门先触发时 rake 门的 helper 调用整体跳过——两门都是纯 false 置位器，顺序对结果无影响。
 4. **下游路径**：`shouldDischarge = false` 时跳过 `if shouldDischarge then` 块（含 ooc 泄能），进入 ooc → readyBite / else safeBite——与 rip 门既有下游画像完全一致；与 `isDischarged` 重入去重无冲突；`energyDischargeBeforeBite` 的 rake 补挂回退分支（cat.lua:190）前置 `not isRakePresent`，与新门（前置 isRakePresent）互斥、零碰撞。

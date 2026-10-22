@@ -45,8 +45,8 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1: Fix pounceLeft() and computePounce_Erps() in Druid.lua** - `f365098` (fix)
-2. **Task 2: Record lastPounceEquippedSavagery at cast sites** - `c6f83a7` (fix)
+1. **Task 1: Fix pounceLeft() and computePounce_Erps() in Druid.lua** - `a89c644` (fix)
+2. **Task 2: Record lastPounceEquippedSavagery at cast sites** - `89a7bce` (fix)
 
 ## Files Modified
 - `classes/druid/Druid.lua` - Added Savagery snapshot check to `pounceLeft()` (line ~1118) and `computePounce_Erps()` (line ~622)
@@ -72,8 +72,8 @@ N/A - quick task, no follow-up phases.
 ## Self-Check: PASSED
 
 - SUMMARY.md exists: yes
-- Commit f365098 (Task 1) exists: yes
-- Commit c6f83a7 (Task 2) exists: yes
+- Commit a89c644 (Task 1) exists: yes
+- Commit 89a7bce (Task 2) exists: yes
 - Modified files match expected (Druid.lua, combo.lua, leveling.lua): yes
 
 ---

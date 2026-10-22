@@ -53,8 +53,8 @@ The implementation follows all 15 locked design decisions from CONTEXT.md (D-01 
 
 | # | Task | Commit | Files |
 |---|------|--------|-------|
-| 1 | Create core/class.lua with classMetatable factory | `f358f0a` | `core/class.lua` |
-| 2 | Implement initPlayer + registerPlayerClass + PLAYER_CLASS_REGISTRY | `fb3e78e` | `core/class.lua` |
+| 1 | Create core/class.lua with classMetatable factory | `cad1a57` | `core/class.lua` |
+| 2 | Implement initPlayer + registerPlayerClass + PLAYER_CLASS_REGISTRY | `f2bea8d` | `core/class.lua` |
 
 ## Verification Results
 

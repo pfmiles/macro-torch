@@ -61,8 +61,8 @@ status: complete
 
 ## Task Commits
 
-1. **Task 1: Create classes/druid/selftest.lua with Batch 1 pure-function tests** - `2241d3c` (feat)
-2. **Task 2: Fix catAtk-core-principles.md Appendix D Rule 13 + update build_order.txt** - `4550b2e` (fix)
+1. **Task 1: Create classes/druid/selftest.lua with Batch 1 pure-function tests** - `8d0228a` (feat)
+2. **Task 2: Fix catAtk-core-principles.md Appendix D Rule 13 + update build_order.txt** - `96d8944` (fix)
 
 ## Files Created/Modified
 - `classes/druid/selftest.lua` - New file: Batch 1 SelfTest registrations, 110 lines, 10 tests, Druid-only guard, Apache 2.0 license header
@@ -84,7 +84,7 @@ status: complete
 - **Fix:** Changed guard to `if macroTorch.player.talentRank('Furor') ~= 0 or macroTorch.isKeywordInEquippedItemTooltip(1, 'Wolfsheart') then return end` — consistent with PF-02 and PF-03 documented guard semantics ("skip if talentRank != N or [other condition]")
 - **Files modified:** classes/druid/selftest.lua (PF-01 test function guard)
 - **Verification:** Guard logic matches PF-02/PF-03 pattern; PF-01 skips when player does not meet Furor=0+noWolfsheart condition, runs assertion when they do
-- **Committed in:** 2241d3c (Task 1 commit)
+- **Committed in:** 8d0228a (Task 1 commit)
 
 ---
 

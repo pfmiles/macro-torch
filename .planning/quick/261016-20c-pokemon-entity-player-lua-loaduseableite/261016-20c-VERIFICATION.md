@@ -59,7 +59,7 @@ human_verification:
 | 5 | 释放键第一下=使用+喊 saying（进战斗可用）；第二下=恢复（进战斗暂停）（R-02） | ⚠️ PRESENT_BEHAVIOR_UNVERIFIED | 臂划分静态确认：press-1 臂无 combat 守卫、useEquippedItem+obj.say、成功才置 used（L685-701）；press-2 臂有 combat 守卫（L707）；装载键各场景 1 键为客户端行为 |
 | 6 | pokemonLoad 7 条目 + 七 saying 逐字节不动，仅删硬编码行、`},`→`}` | ✓ VERIFIED | 41 行区 md5 对焊自跑通过（A=635, E=674 与契约期望文本逐字节一致）；形状门 `^        local .*Saying = ` 恰 7、`] = 17` 恰 2；diff 形状 `^-            backupItem` ×1、`^-            },`×1、`^+            }`×1 全部命中 |
 | 7 | 静态门全绿：5.0.3 权威 loadfile + 5.1.5/5.4.7、bbcheck BALANCED、CRLF 0、无 #/goto/::、diff --check、头/尾 md5 对焊（R-03） | ✓ VERIFIED | 全部自跑复测绿：三解释器 loadfile 通过、bbcheck `entity/Player.lua: BALANCED`、CRLF 计数 0、新增行 `#\|goto\|::` 计数 0、`git diff --check` clean、头部 1..374（N=375）与尾部 obj.say 起（C=SC=776）md5 对焊一致 |
-| 8 | 恰 1 commit 仅 entity/Player.lua、message 逐字锁定；docs/SM_Extend/selftest/build_order 零 diff（R-03） | ✓ VERIFIED | HEAD=665dd4a message 逐字 `feat(261016-20c): refactor pokemon load/restore pipeline (Player.lua)`；name-only 恰 `entity/Player.lua`（+299/-106）；BASE=1dea2aa 命中计划 BASE 协议 `^fix\(261016-20c\)` 前缀（计划内先例扩表，无需重锚定）；docs/、SM_Extend.lua、core/selftest.lua、build_order.txt 对 BASE..HEAD 均 0 行 diff |
+| 8 | 恰 1 commit 仅 entity/Player.lua、message 逐字锁定；docs/SM_Extend/selftest/build_order 零 diff（R-03） | ✓ VERIFIED | HEAD=80ece00 message 逐字 `feat(261016-20c): refactor pokemon load/restore pipeline (Player.lua)`；name-only 恰 `entity/Player.lua`（+299/-106）；BASE=cf25710 命中计划 BASE 协议 `^fix\(261016-20c\)` 前缀（计划内先例扩表，无需重锚定）；docs/、SM_Extend.lua、core/selftest.lua、build_order.txt 对 BASE..HEAD 均 0 行 diff |
 
 **Score:** 4/8 truths verified（静态可证全部通过）；4 present-wired behavior-unverified（全部为 WoW 客户端实机行为，代码在场、连线完整、门全绿，仅欠实机演练——与计划口径「实机验证为 user-side unrun-verify」一致）。
 
@@ -144,7 +144,7 @@ N/A — 计划与 SUMMARY 均未声明 probe，非 migration/tooling 阶段（St
 
 无结构缺口（summmary 口径与代码实测一致，无 gaps_found 项）：三支装载管线、三臂恢复管线、验证门、字节对焊、静态门、原子交付全部在代码中如实落地并经本人独立复跑验证。唯一未闭环的是实机行为验证——与计划既定口径一致（user-side unrun-verify），故状态为 human_needed 而非 passed：4 条 behavior-dependent truth 的代码在场且连通、门全绿，但状态迁移/收敛不变量未经实机演练，per 验证规程不得以 symbol presence 判 VERIFIED。
 
-**Porcelain 说明（信息项，非缺口）：** 当前工作树 porcelain 恰为 `?? .planning/quick/261016-20c-pokemon-entity-player-lua-loaduseableite/261016-20c-SUMMARY.md` 一行（docs 步骤产物，orchestrator 后续提交；PLAN.md 已在 1dea2aa 中入索引）。Task 2 执行时 porcelain 等价门以「空」通过（SUMMARY.md 尚未生成）；现有 untracked 文件属计划内「docs 由 orchestrator Step 8 收口」的既定流程状态，非执行者残留。零 tracked 改动（`git diff HEAD -- entity/Player.lua` 为空）。
+**Porcelain 说明（信息项，非缺口）：** 当前工作树 porcelain 恰为 `?? .planning/quick/261016-20c-pokemon-entity-player-lua-loaduseableite/261016-20c-SUMMARY.md` 一行（docs 步骤产物，orchestrator 后续提交；PLAN.md 已在 cf25710 中入索引）。Task 2 执行时 porcelain 等价门以「空」通过（SUMMARY.md 尚未生成）；现有 untracked 文件属计划内「docs 由 orchestrator Step 8 收口」的既定流程状态，非执行者残留。零 tracked 改动（`git diff HEAD -- entity/Player.lua` 为空）。
 
 ---
 

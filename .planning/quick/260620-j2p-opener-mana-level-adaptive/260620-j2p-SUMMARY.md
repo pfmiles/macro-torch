@@ -34,7 +34,7 @@ status: complete
 
 ### Task 1: Opener Health Threshold -> Level-Adaptive Lookup
 
-- **Commit:** `4051a5a`
+- **Commit:** `92bfee3`
 - **Files:** `classes/druid/Druid.lua`, `classes/druid/combo.lua`
 
 在 `Druid.lua` 中新增 `macroTorch.getOpenerHealthThreshold(level)` 函数，参照 `estimatePlayerDPS` 和 `getKSThreshold` 的 lookup table 模式：
@@ -48,7 +48,7 @@ status: complete
 
 ### Task 2: Mana Potion Threshold -> Percentage-Based
 
-- **Commit:** `af283bd`
+- **Commit:** `482cc30`
 - **Files:** `classes/druid/Druid.lua`, `classes/druid/combo.lua`
 
 在 `Druid.lua` 中新增两个函数：
@@ -70,5 +70,5 @@ None.
 - `classes/druid/Druid.lua` — FOUND (modified)
 - `classes/druid/combo.lua` — FOUND (modified)
 - Build output `SM_Extend.lua` — contains all 3 new functions (6 occurrences)
-- Commit `4051a5a` — FOUND
-- Commit `af283bd` — FOUND
+- Commit `92bfee3` — FOUND
+- Commit `482cc30` — FOUND

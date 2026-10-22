@@ -100,8 +100,8 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1: Replace unconditional current_casting_spell with whitelist guard + stale detection** - `2c650b9` (feat)
-2. **Task 2: Add Category L whitelist verification selftests (5 tests)** - `6a8d1bf` (test)
+1. **Task 1: Replace unconditional current_casting_spell with whitelist guard + stale detection** - `4087633` (feat)
+2. **Task 2: Add Category L whitelist verification selftests (5 tests)** - `79006fb` (test)
 3. **Task 3: Build verification** — verification-only, no source changes committed
 
 ## Files Created/Modified

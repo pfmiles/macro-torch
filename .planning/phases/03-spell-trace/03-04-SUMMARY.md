@@ -5,8 +5,8 @@ status: complete
 tasks: 2/2
 duration: "~7 min"
 commits:
-  - "6a6187c feat(03-spell-trace): convert Druid spell trace to SpellTrace:register() declarative API"
-  - "018c8f0 feat(03-spell-trace): register 25 Druid class-specific self-test items"
+  - "b3b710f feat(03-spell-trace): convert Druid spell trace to SpellTrace:register() declarative API"
+  - "5abc307 feat(03-spell-trace): register 25 Druid class-specific self-test items"
 ---
 
 ## What was built

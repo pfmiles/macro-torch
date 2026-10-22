@@ -14,7 +14,7 @@ requires:
 provides:
   - "classes/druid/HUMAN-UAT.md Phase 28 section: 6-section user-machine acceptance script (prerequisites / selftest pre-check / SV toc declaration check / dummy protocol / analyzer run / troubleshooting) covering both 28-VALIDATION.md Manual-Only rows"
   - "Phase-28 closing battery green: 8-file bbcheck, build.sh, 6 product-count assertions, Phase 27 pairLandIntent coexistence, R8 9-symbol presence, R7 zero-path audit (build manifest + analyzer + 8-commit window), diff --check"
-  - "Stale R8 acceptance anchor corrected in REQUIREMENTS.md (canDoReshift -> shouldDoReshift) — the battery's verbatim copy tripped on the docs commit 10db348 mis-transcription"
+  - "Stale R8 acceptance anchor corrected in REQUIREMENTS.md (canDoReshift -> shouldDoReshift) — the battery's verbatim copy tripped on the docs commit 936b5df mis-transcription"
 affects: ["verifier phase gate (28-UAT.md human-check folding), future phases reusing the R8 acceptance grep"]
 
 # Actuals (#2632) — pairs with the plan's `estimate` to calibrate future estimates.
@@ -75,7 +75,7 @@ status: complete
 
 # Phase 28 Plan 04: catAtk claw/shred/bite damage instrumentation — user-machine UAT script + closing battery Summary
 
-**classes/druid/HUMAN-UAT.md gains a 6-section Phase 28 acceptance script (prerequisites / two-interpreter --selftest pre-check / SavedVariables toc declaration check / dummy protocol / analyzer run / troubleshooting), and the phase-closing battery goes fully green — 8-file bbcheck, build.sh, 6 product-count assertions, Phase 27 pairLandIntent coexistence, R8 nine-symbol presence, R7 zero-path audit — after correcting the stale R8 acceptance anchor (canDoReshift -> shouldDoReshift) that docs commit 10db348 mis-transcribed**
+**classes/druid/HUMAN-UAT.md gains a 6-section Phase 28 acceptance script (prerequisites / two-interpreter --selftest pre-check / SavedVariables toc declaration check / dummy protocol / analyzer run / troubleshooting), and the phase-closing battery goes fully green — 8-file bbcheck, build.sh, 6 product-count assertions, Phase 27 pairLandIntent coexistence, R8 nine-symbol presence, R7 zero-path audit — after correcting the stale R8 acceptance anchor (canDoReshift -> shouldDoReshift) that docs commit 936b5df mis-transcribed**
 
 ## Performance
 
@@ -95,8 +95,8 @@ status: complete
 
 Each task was committed atomically:
 
-1. **Task 1: HUMAN-UAT.md 追加 Phase 28 实机验收段（含 human-check 验收协议）** - `363a189` (docs)
-2. **Task 2: 全阶段验证电池 + 收尾（R7/R8 审计与 Phase 27 语义共存断言）** - `3240733` (docs, battery fix: R8 锚点拼写修正)
+1. **Task 1: HUMAN-UAT.md 追加 Phase 28 实机验收段（含 human-check 验收协议）** - `0336e21` (docs)
+2. **Task 2: 全阶段验证电池 + 收尾（R7/R8 审计与 Phase 27 语义共存断言）** - `59a0368` (docs, battery fix: R8 锚点拼写修正)
 
 **Plan metadata:** see final docs commit below.
 
@@ -105,7 +105,7 @@ Each task was committed atomically:
 - `.planning/REQUIREMENTS.md` - R8 验收 grep 锚点 `canDoReshift` → `shouldDoReshift`（1 行）
 
 ## Decisions Made
-- **R8 锚点修正而非代码改名**：电池按计划原样运行时 R8 计数 8/9 失败——逐项拆解定位到 `canDoReshift` 在全部 tracked 源码与 build 产物中零命中；git 溯源证明该名随 phase-04 重构（fefecdf/86eca09）已成 `shouldDoReshift`（cat.lua:241），而文档提交 10db348（"update R8 module names to actual functions"）把 R8 验收 grep 误写回旧名。改代码名不可行（cat.lua 列本 phase 零改动禁域 + R2-01..R2-07 自测十余处调用点会全破），故修正锚点拼写——不弱化断言（从验证不存在的符号改为验证真实符号，语义更强），只改文档不改任何代码。
+- **R8 锚点修正而非代码改名**：电池按计划原样运行时 R8 计数 8/9 失败——逐项拆解定位到 `canDoReshift` 在全部 tracked 源码与 build 产物中零命中；git 溯源证明该名随 phase-04 重构（f3fa916/93612d1）已成 `shouldDoReshift`（cat.lua:241），而文档提交 936b5df（"update R8 module names to actual functions"）把 R8 验收 grep 误写回旧名。改代码名不可行（cat.lua 列本 phase 零改动禁域 + R2-01..R2-07 自测十余处调用点会全破），故修正锚点拼写——不弱化断言（从验证不存在的符号改为验证真实符号，语义更强），只改文档不改任何代码。
 - **UAT 段语言取中文**：计划明示「中文文档」；既有文件仅 Phase 06 一段且全英文（计划的"既有中文惯例"前提与实际不符）——结构惯例（Prerequisites/Pre-Test/checklist `- [ ]` 风格）照抄，语言按计划指令走中文，命令行与标识符保持原样。
 - **human-check 不设中途 checkpoint**：计划 objective 与 human_verify_mode=end-of-phase 一致——四项实机闭环写成文档交付 verifier 在阶段末汇入 28-UAT.md；四步动作全部落入 UAT 段第 3/2/4/5 节，含完成信号回复路径。
 
@@ -115,11 +115,11 @@ Each task was committed atomically:
 
 **1. [Rule 1 - Bug] R8 九符号断言锚点含不存在的旧符号名 canDoReshift（电池首跑 BATTERY_FAIL=1）**
 - **Found during:** Task 2 验证电池首跑（R8 计数 8/9，其余九枚断言全绿）
-- **Issue:** 计划的 R8 grep 照抄 REQUIREMENTS.md 既有验收标准原样，而该原样自文档提交 10db348 起就是错的：`canDoReshift` 在全部 tracked 源码与 SM_Extend.lua 产物中零命中（源码自 phase-04 重构起即名 `shouldDoReshift`，cat.lua:241；git log -S 证明 canDoReshift 只存在于重构前的旧时代提交）
+- **Issue:** 计划的 R8 grep 照抄 REQUIREMENTS.md 既有验收标准原样，而该原样自文档提交 936b5df 起就是错的：`canDoReshift` 在全部 tracked 源码与 SM_Extend.lua 产物中零命中（源码自 phase-04 重构起即名 `shouldDoReshift`，cat.lua:241；git log -S 证明 canDoReshift 只存在于重构前的旧时代提交）
 - **Fix:** 修正 .planning/REQUIREMENTS.md R8 验收行锚点拼写（canDoReshift → shouldDoReshift），电池以同构断言重跑（修正后计数恰 9，其中 shouldDoReshift=1）；不改任何代码符号——cat.lua/combo.lua 为本 phase 决策文件零改动禁域，改名还会打碎 selftest.lua R2-01..R2-07 与 cat.lua 十余处调用点
 - **Files modified:** .planning/REQUIREMENTS.md
 - **Verification:** 电池重跑 BATTERY_FAIL=0；修正后 R8 grep=9、shouldDoReshift 在产物=1、canDoReshift 在 tracked 源码 0 文件；git diff --check 全净；其余 9 项断言与首跑一致
-- **Committed in:** 3240733（Task 2 fix commit）
+- **Committed in:** 59a0368（Task 2 fix commit）
 
 ---
 
@@ -144,7 +144,7 @@ None - no external service configuration required by this plan itself. The user-
 - No blockers.
 
 ## Self-Check: PASSED
-- Task commits exist: 363a189 / 3240733
+- Task commits exist: 0336e21 / 59a0368
 - classes/druid/HUMAN-UAT.md exists with the Phase 28 section; three grep anchors non-zero (1 / 3 / 1)
 - Battery re-run green: BATTERY_FAIL=0 with corrected R8 anchor (== 9)
 - git diff --check clean at every task boundary; no CR bytes; working tree clean

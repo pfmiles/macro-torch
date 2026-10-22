@@ -9,7 +9,7 @@ re_verification:
   previous_status: gaps_found
   previous_score: 6/7
   gaps_closed:
-    - "config.monitorSpellId = true includes a spell in the whitelist even when land=false — whitelist write block moved outside `if config.land then` (commit 122d007)"
+    - "config.monitorSpellId = true includes a spell in the whitelist even when land=false — whitelist write block moved outside `if config.land then` (commit b10ea04)"
   gaps_remaining: []
   regressions: []
 human_verification:
@@ -42,7 +42,7 @@ behavior_unverified_items:
 
 **Verified:** 2026-07-04T12:30:00Z
 **Status:** human_needed (all 7 truths VERIFIED; 2 truths are behavior-unverified requiring in-game testing)
-**Re-verification:** Yes -- after gap closure (commit 122d007)
+**Re-verification:** Yes -- after gap closure (commit b10ea04)
 
 ## Gap Closure Summary
 
@@ -50,7 +50,7 @@ The single gap identified in the previous verification has been resolved:
 
 | Previous Gap | Fix | Status |
 |-------------|-----|--------|
-| `config.monitorSpellId = true` with `land=false` unreachable — whitelist write inside `if config.land then` | Commit `122d007` moved the whitelist maintenance block (lines 86-99) OUTSIDE the `if config.land then` block (which ends at line 85) | **CLOSED** |
+| `config.monitorSpellId = true` with `land=false` unreachable — whitelist write inside `if config.land then` | Commit `b10ea04` moved the whitelist maintenance block (lines 86-99) OUTSIDE the `if config.land then` block (which ends at line 85) | **CLOSED** |
 
 The fix moves the `shouldMonitor` resolution and `_spellIdMonitored[config.spellName] = true` write to after the `end` of the land block, so it executes for ALL registrations regardless of `config.land` value. The `shouldMonitor` resolution at lines 91-96 correctly preserves explicit `false` and defaults to `config.land` when `monitorSpellId` is nil. Selftest L4 (`monitorSpellId=true` with `land=false`) now has a reachable code path.
 
@@ -65,7 +65,7 @@ No regressions detected: all previously-verified truths, artifacts, key links, a
 | 1 | `macroTorch._spellIdMonitored` is initialized as an empty set table before any SpellTrace:register calls | ✓ VERIFIED | `core/spell_trace_core.lua:21-22`: guarded-init block at module top level (line 21), BEFORE `SpellTrace = {}` (line 49). Same pattern as `tracingSpells` init. `build_order.txt` confirms spell_trace_core.lua loads before Druid.lua. |
 | 2 | `SpellTrace:register` automatically adds `config.spellName` to `_spellIdMonitored` when `shouldMonitor=true` (default = land) | ✓ VERIFIED | `core/spell_trace_core.lua:86-99`: whitelist write OUTSIDE land block. `shouldMonitor` resolves via `if config.monitorSpellId ~= nil then ... else ... end` -- explicit false preserved, nil defaults to land. For 4 production Druid spells (Pounce/Rake/Rip/Ferocious Bite), land=true + spellName -> correctly added. |
 | 3 | `config.monitorSpellId = false` explicitly excludes from whitelist even when land=true | ✓ VERIFIED | `core/spell_trace_core.lua:92-93`: `if config.monitorSpellId ~= nil then shouldMonitor = config.monitorSpellId` -- explicit `false` is preserved (not swallowed by `or`). Selftest L3 verifies this. |
-| 4 | `config.monitorSpellId = true` includes a spell in the whitelist even when land=false | ✓ VERIFIED | `core/spell_trace_core.lua:86-99`: whitelist write is OUTSIDE `if config.land then` (which ends at line 85). When land=false, the land block is skipped but execution continues to lines 91-96 where `config.monitorSpellId=true` is correctly resolved as `shouldMonitor=true`, and lines 97-99 write to the whitelist. FIXED in commit 122d007. Selftest L4 now has a reachable code path. |
+| 4 | `config.monitorSpellId = true` includes a spell in the whitelist even when land=false | ✓ VERIFIED | `core/spell_trace_core.lua:86-99`: whitelist write is OUTSIDE `if config.land then` (which ends at line 85). When land=false, the land block is skipped but execution continues to lines 91-96 where `config.monitorSpellId=true` is correctly resolved as `shouldMonitor=true`, and lines 97-99 write to the whitelist. FIXED in commit b10ea04. Selftest L4 now has a reachable code path. |
 | 5 | `config.spellId` legacy registrations (no config.spellName) do NOT enter whitelist | ✓ VERIFIED | `core/spell_trace_core.lua:97`: `if shouldMonitor and config.spellName then` -- nil-safe guard prevents legacy registrations from entering whitelist. Selftest L5 verifies FF(Feral) absence. |
 | 6 | `current_casting_spell` is only set when mode != 'ready' AND spell's English name is in `_spellIdMonitored` | ✓ VERIFIED | `entity/Player.lua:85-101`: stale detection (lines 89-93) + whitelist guard (lines 98-100). Nil-safe: `macroTorch._spellIdMonitored and`. Uses correct `localeNames.en` key matching whitelist. |
 | 7 | Stale `current_casting_spell` triggers persistent log warning before being overwritten | ✓ VERIFIED | `entity/Player.lua:89-93`: `macroTorch.log("... was not cleared: ...", 'yellow')`. Correct `(a, color)` signature. Runs BEFORE whitelist guard. |
@@ -130,7 +130,7 @@ Step 7c: SKIPPED -- no probes declared in PLAN/SUMMARY, no conventional `scripts
 |-------------|-------------|-------------|--------|----------|
 | REQ-18-D01 | 18-01-PLAN.md | Whitelist registration timing | ✓ SATISFIED | `spell_trace_core.lua:86-99` -- land=true+spellName -> auto-add (outside land block) |
 | REQ-18-D02 | 18-01-PLAN.md | Whitelist data structure | ✓ SATISFIED | `spell_trace_core.lua:21-22` + `Player.lua:98` |
-| REQ-18-D03 | 18-01-PLAN.md | `monitorSpellId` optional field | ✓ SATISFIED | Nil-aware resolution (lines 91-96) + whitelist write (lines 97-99) now OUTSIDE land block. `monitorSpellId=true` with `land=false` is reachable (FIXED in commit 122d007). |
+| REQ-18-D03 | 18-01-PLAN.md | `monitorSpellId` optional field | ✓ SATISFIED | Nil-aware resolution (lines 91-96) + whitelist write (lines 97-99) now OUTSIDE land block. `monitorSpellId=true` with `land=false` is reachable (FIXED in commit b10ea04). |
 | REQ-18-D04 | 18-02-PLAN.md | Stale detection + whitelist guard | ✓ SATISFIED | `Player.lua:89-93` (stale), `Player.lua:98-100` (guard), `events.lua:98-119` (unchanged) |
 | REQ-18-D05 | 18-02-PLAN.md | Backward compatibility | ✓ SATISFIED | `spell_trace_core.lua:97` (spellName guard), Selftest L5 |
 
@@ -182,7 +182,7 @@ The phase requires in-game validation. 4 items need human testing (2 of which ar
 
 **Previous state:** 1 gap -- whitelist write nested inside `if config.land then` made `monitorSpellId=true + land=false` unreachable.
 
-**Fix:** Commit `122d007` moved the whitelist maintenance block from inside `if config.land then` to after its closing `end` (line 85). The block now runs for ALL SpellTrace:register calls regardless of `config.land` value. The `shouldMonitor` resolution at lines 91-96 correctly handles nil (defaults to land), explicit true (preserves), and explicit false (preserves).
+**Fix:** Commit `b10ea04` moved the whitelist maintenance block from inside `if config.land then` to after its closing `end` (line 85). The block now runs for ALL SpellTrace:register calls regardless of `config.land` value. The `shouldMonitor` resolution at lines 91-96 correctly handles nil (defaults to land), explicit true (preserves), and explicit false (preserves).
 
 **Result:** All 7 must-have truths are now VERIFIED. No regressions detected. The phase is complete at the code level.
 

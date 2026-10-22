@@ -28,7 +28,7 @@ status: all_fixed
 ### WR-01: Zero-delta energy argument inverted for `shouldCastFFDuringWaitWindow`; narrow FF-fill delta exists and unverified
 
 **Files modified:** `classes/druid/selftest.lua`
-**Commit:** 0db2f43
+**Commit:** 09ddabc
 **Disposition:** fixed-via-pin. No retro-edit of the committed PLAN.md / SUMMARY.md (historical artifacts, per constraint). The behavior is now pinned so it stops being accidental: one new deterministic selftest `"WR-01 FF wait window: essence 0-energy edge accepted (SHRED_E=60)"` placed directly after R8-06 (the FF wait-window test block). It builds the razor-edge frame — 3 bleeds, `ooc=false`, `isPseudoInfiniteEnergy=true`, erps forced to 60, `SHRED_E=60`, `player.mana` shadowed to 0 — and asserts `shouldCastFFDuringWaitWindow(ctx) == true`, explicitly ACCEPTING the current verdict (FF fills an otherwise-idle GCD during the ~1s essence regen pause; cast path models energy cost 0; client verification remains unrun-verify). The English comment above the test carries the direction-correct rationale: a HIGHER `minAbilityCost` WIDENS the `currentEnergy < min` clause; the reachable delta zone is erps == 60 (naked Essence) AND SHRED_E == 60 (no Improved Shred) AND currentEnergy == 0; pre-change CLAW_E = 45 made the window unreachable.
 
 **Stub discipline (verified against bodies before writing, not stubbed blindly):**
@@ -40,7 +40,7 @@ status: all_fixed
 ### WR-02: Branch 3 returns `nil` instead of `false` when both `ooc` and `isPseudoInfiniteEnergy` are undefined
 
 **Files modified:** `classes/druid/Druid.lua`, `classes/druid/selftest.lua`
-**Commit:** f0dc226
+**Commit:** 848dcaf
 **Disposition:** fixed-via-normalization+pin.
 1. `Druid.lua:989` normalized to `local infiniteEnergy = clickContext.isPseudoInfiniteEnergy == true` — single line, existing comment above untouched, restores the strict boolean contract (branch 3's and-chain now evaluates `false or false` -> false on absent-flag paid frames instead of `false or nil` -> nil). Zero behavior change for all real inputs: production always sets the field to an explicit boolean (combo.lua:108) and every existing R6 ctx presets it. The bare and-chain at line 1023 is byte-identical, so no gate grep needles or pinned counts needed adjustment.
 2. One new selftest `"Principle R6-05c: 3+ bleeds paid frames, absent infinite flag — strict false (WR-02 pin)"` placed directly after R6-05b, mirroring R6-05b's ctx but with the `isPseudoInfiniteEnergy` key ABSENT, asserting `shouldUseShred(ctx) == false` strictly. The and-chain short-circuits at `(false or false)` before the `isBehind` / `isBehindAttackJustFailed` accessors, so no rawget/rawset shadowing is needed (same no-shadow comment pattern as R6-05b). The R6 series has no count comments — no count updates.
@@ -52,7 +52,7 @@ status: all_fixed
 
 ## Verification Battery
 
-All gates ran in the MAIN checkout (worktrees disabled; reproducible from the current tree). All results as of commit f0dc226.
+All gates ran in the MAIN checkout (worktrees disabled; reproducible from the current tree). All results as of commit 848dcaf.
 
 | Gate | Druid.lua | selftest.lua |
 |------|-----------|--------------|
@@ -60,19 +60,19 @@ All gates ran in the MAIN checkout (worktrees disabled; reproducible from the cu
 | Lua 5.1.5 `loadfile` compile (`/tmp/luabuild/lua-5.1.5/src/lua`) | OK | OK |
 | Lua 5.4.7 `loadfile` compile (`/tmp/luabuild/lua-5.4.7/src/lua`) | OK | OK |
 | bbcheck (`.planning/phases/27-catatk-event-driven-land-tracing-refactor/tools/bbcheck.js`) | BALANCED | BALANCED |
-| Token gate: `#` in added lines (range a8fc0da..HEAD) | 0 | 0 |
+| Token gate: `#` in added lines (range 0131b2a..HEAD) | 0 | 0 |
 | Token gate: `goto `/`::` in added lines | 0 | 0 |
-| CJK in added lines (range a8fc0da..HEAD) | 0 | 0 |
+| CJK in added lines (range 0131b2a..HEAD) | 0 | 0 |
 | CRLF in files | 0 | 0 |
-| `git diff --check` (range a8fc0da..HEAD) | clean | clean |
+| `git diff --check` (range 0131b2a..HEAD) | clean | clean |
 
-**Change-surface audit** (range a8fc0da..HEAD): `Druid.lua` +1/-1 (exactly the line-989 normalization), `selftest.lua` +90/-0 (63 lines WR-01 pin + 27 lines R6-05c pin) — matches intended. Changed files match the allowlist exactly.
+**Change-surface audit** (range 0131b2a..HEAD): `Druid.lua` +1/-1 (exactly the line-989 normalization), `selftest.lua` +90/-0 (63 lines WR-01 pin + 27 lines R6-05c pin) — matches intended. Changed files match the allowlist exactly.
 
 **Gate spelling deviations (honest record):** none in the final run — every listed gate passed as specified. One harness note for transparency: an intermediate battery invocation used a Redis-style `ARGV[1]` global by mistake and printed spurious traceback lines; it was identified as harness error (not file error), discarded, and the compile gates were re-run with literal paths, all OK. No build.sh run, no SM_Extend.lua touched, no committed PLAN.md / SUMMARY.md / REVIEW.md modified, no untracked files added. The first WR-01 commit (test-only) was verified to pass against the pre-normalization production code (the ctx presets `isPseudoInfiniteEnergy = true`, so the normalize is orthogonal); the WR-02 commit carries the normalization and its pin atomically.
 
 **Commit list:**
-1. `0db2f43` `fix(260914-nth): WR-01 pin essence 0-energy FF wait-window edge (accepted verdict, SHRED_E=60)` — selftest.lua
-2. `f0dc226` `fix(260914-nth): WR-02 normalize infiniteEnergy to strict boolean + R6-05c absent-flag pin` — Druid.lua, selftest.lua
+1. `09ddabc` `fix(260914-nth): WR-01 pin essence 0-energy FF wait-window edge (accepted verdict, SHRED_E=60)` — selftest.lua
+2. `848dcaf` `fix(260914-nth): WR-02 normalize infiniteEnergy to strict boolean + R6-05c absent-flag pin` — Druid.lua, selftest.lua
 
 ---
 

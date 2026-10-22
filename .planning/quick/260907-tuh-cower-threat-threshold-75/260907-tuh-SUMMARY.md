@@ -26,7 +26,7 @@ key-files:
     - classes/druid/Druid.lua
 key-decisions:
   - "Druid.lua:909 pointer comment includes the symbol name (macroTorch.COWER_THREAT_THRESHOLD) so the FINAL gate's 3-file symbol-confinement scan passes; plan's prescribed comment text omitted the symbol and made the gate unsatisfiable (Rule 1 auto-fix, see Deviations)"
-  - "G2/FINAL diff assertions re-anchored from worktree-vs-HEAD to the pre-task baseline 033834e because per-task commits empty the worktree diff; gate semantics and expected counts unchanged"
+  - "G2/FINAL diff assertions re-anchored from worktree-vs-HEAD to the pre-task baseline 44b64f1 because per-task commits empty the worktree diff; gate semantics and expected counts unchanged"
 requirements-completed: [QUICK-260907-TUH]
 duration: 8min
 completed: 2026-09-07
@@ -56,8 +56,8 @@ completed: 2026-09-07
 
 Each task was committed atomically:
 
-1. **Task 1: macro_torch.lua nil-guard + registry entry** - `9ad9529` (feat, 16 insertions)
-2. **Task 2: Druid.lua:909 assignment -> pointer comment** - `1a8bb19` (feat, 1/1; amended once mid-task to include the symbol name, see deviation)
+1. **Task 1: macro_torch.lua nil-guard + registry entry** - `1bfac47` (feat, 16 insertions)
+2. **Task 2: Druid.lua:909 assignment -> pointer comment** - `460a312` (feat, 1/1; amended once mid-task to include the symbol name, see deviation)
 
 ## Files Created/Modified
 
@@ -67,8 +67,8 @@ Each task was committed atomically:
 ## Verification (all gates pass)
 
 - **G1 THRESHOLD OPTION OK** (pre-commit, worktree-vs-HEAD as planned): bbcheck BALANCED; exactly 1 nil-guard line and exactly 1 `= 75` assignment; each third-entry literal exactly once; exactly 3 registry `name = 'macroTorch.*'` entries; COWER at position 3.
-- **G2 DRUID OK** (re-anchored to baseline 033834e): bbcheck BALANCED; 0 old-assignment literals; 0 functional numeric references; pointer comment exactly once; exactly 1 deleted + 1 added line; cat.lua zero diff.
-- **FINAL GATE OK** (re-anchored to 033834e): bbcheck BALANCED for both files; exactly 1 deleted line repo-wide; zero forbidden Lua 5.0 tokens (`#`/goto/`::`) in added lines; `git diff --check` clean; LF OK (no CR); cat.lua zero diff; symbol confined to exactly 3 files (macro_torch.lua, Druid.lua, cat.lua — SM_Extend.lua excluded).
+- **G2 DRUID OK** (re-anchored to baseline 44b64f1): bbcheck BALANCED; 0 old-assignment literals; 0 functional numeric references; pointer comment exactly once; exactly 1 deleted + 1 added line; cat.lua zero diff.
+- **FINAL GATE OK** (re-anchored to 44b64f1): bbcheck BALANCED for both files; exactly 1 deleted line repo-wide; zero forbidden Lua 5.0 tokens (`#`/goto/`::`) in added lines; `git diff --check` clean; LF OK (no CR); cat.lua zero diff; symbol confined to exactly 3 files (macro_torch.lua, Druid.lua, cat.lua — SM_Extend.lua excluded).
 - `git status --porcelain` clean after both commits; SM_Extend.lua untouched (regenerated only on the user's game machine per user_setup).
 
 ## Deviations from Plan
@@ -82,11 +82,11 @@ Each task was committed atomically:
 - **Fix:** Minimal insertion — the comment now reads `-- Cower worldboss threat threshold (macroTorch.COWER_THREAT_THRESHOLD): nil-guarded default lives in macro_torch.lua (quick 260907-tuh); user-configurable via /run - do not re-assign here`. Still a pointer comment: no numeric literal, no assignment pattern, single-line replacement, ASCII-only, token-gate clean. Task 2 commit amended so the atomic commit carries the final line.
 - **Files modified:** classes/druid/Druid.lua
 - **Verification:** G2 + FINAL re-run pass; symbol scan now finds exactly the 3 expected files.
-- **Committed in:** `1a8bb19` (amended Task 2 commit)
+- **Committed in:** `460a312` (amended Task 2 commit)
 
 ### Gate mechanics (not a code deviation)
 
-The plan's G2/FINAL chains compute diffs against worktree-vs-HEAD. Because the workflow commits each task atomically, a post-commit re-run sees an empty (or partial) diff. Both gates were re-run with their diff assertions anchored to the pre-task baseline `033834e` — identical checks, identical expected counts, semantics preserved. The first G2 run (pre-commit) passed against HEAD exactly as written.
+The plan's G2/FINAL chains compute diffs against worktree-vs-HEAD. Because the workflow commits each task atomically, a post-commit re-run sees an empty (or partial) diff. Both gates were re-run with their diff assertions anchored to the pre-task baseline `44b64f1` — identical checks, identical expected counts, semantics preserved. The first G2 run (pre-commit) passed against HEAD exactly as written.
 
 ---
 
@@ -108,7 +108,7 @@ The plan's G2/FINAL chains compute diffs against worktree-vs-HEAD. Because the w
 
 - FOUND: macro_torch.lua (guard block at lines 37-45, registry entry at lines 70-76)
 - FOUND: classes/druid/Druid.lua:909 (pointer comment)
-- FOUND: commit 9ad9529, commit 1a8bb19
+- FOUND: commit 1bfac47, commit 460a312
 
 ---
 

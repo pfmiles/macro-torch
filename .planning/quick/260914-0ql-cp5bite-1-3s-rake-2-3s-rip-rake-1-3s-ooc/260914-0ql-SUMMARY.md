@@ -17,7 +17,7 @@ status: complete
 ## Tasks Completed
 
 ### Task 1: cat.lua 新增 1.3s 保 rake 条件（纯插入 6 行）+ 单文件 commit
-- **Commit:** `e776e98` — `feat(cat): cp5Bite skips discharge when rake <=1.3s (bite renews rake)`（逐字命中锁定消息）
+- **Commit:** `028c15b` — `feat(cat): cp5Bite skips discharge when rake <=1.3s (bite renews rake)`（逐字命中锁定消息）
 - **Changes:** 仅 `classes/druid/cat.lua`（+6 行，0 删行）。锚点块（`-- Check Rip duration` 2.3s rip 块）原文不动，其后纯插入空行 + 锁定 rake 块（8 空格行首缩进，注释英文：`-- Check Rake duration: <=1.3s left = one discharge GCD (1s) + slack; an` / `-- immediate bite renews Rake, discharge would let it fall off`），落点恰为 rip 块 `end` 之后、`if shouldDischarge then` 之前。
 - **验证电池（全部命中）:**
   - `grep -c "Check Rake duration"` = 1；`grep -c "rakeLeft(clickContext) <= 1.3"` = 1
@@ -67,5 +67,5 @@ status: complete
 ## Self-Check: PASSED
 
 - `classes/druid/cat.lua` 存在且含新条件（grep 双 1 已验证）
-- commit `e776e98` 存在（`git log` 已见）；`git show --stat` = 单文件 6 insertions(+)
+- commit `028c15b` 存在（`git log` 已见）；`git show --stat` = 单文件 6 insertions(+)
 - 三解释器编译 OK；bbcheck BALANCED；工作树仅残留编排者拥有的 config.json

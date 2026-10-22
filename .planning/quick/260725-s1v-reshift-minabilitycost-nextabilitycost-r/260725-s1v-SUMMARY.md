@@ -37,7 +37,7 @@ metrics:
 
 | Task | Name | Status | Commit |
 |------|------|--------|--------|
-| 1 | Rename getMinimumAffordableAbilityCost → getNextAbilityCost; rename minAbilityCost → nextAbilityCost; add earning to reshift log | ✅ Complete | c371482 |
+| 1 | Rename getMinimumAffordableAbilityCost → getNextAbilityCost; rename minAbilityCost → nextAbilityCost; add earning to reshift log | ✅ Complete | bda597b |
 
 ## Changes Made
 
@@ -74,13 +74,13 @@ metrics:
 - **Issue:** Plan's context section identified line 871, 1285-1298 (Druid.lua) and cat.lua calls, but missed line 849 in Druid.lua which also called the old function name
 - **Fix:** Updated `macroTorch.getMinimumAffordableAbilityCost(clickContext)` to `macroTorch.getNextAbilityCost(clickContext)`
 - **Files modified:** `classes/druid/Druid.lua`
-- **Commit:** c371482
+- **Commit:** bda597b
 
 None - plan executed exactly as written with one auto-fix.
 
 ## Self-Check: PASSED
 
-- [x] `classes/druid/Druid.lua` modified and committed (c371482)
-- [x] `classes/druid/cat.lua` modified and committed (c371482)
-- [x] Commit c371482 exists in git log
+- [x] `classes/druid/Druid.lua` modified and committed (bda597b)
+- [x] `classes/druid/cat.lua` modified and committed (bda597b)
+- [x] Commit bda597b exists in git log
 - [x] SUMMARY.md written to disk

@@ -22,7 +22,7 @@ status: issues_found
 
 ## Summary
 
-审查对象为 2026-10-16 三个 quick 任务对 `entity/Player.lua` 的累计改动（BASE `9355f9a` → HEAD：`941330a` 15/7、`665dd4a` 299/106、`2c2f413` 7/7，per-commit numstat 与 range diff 315/114 对焊一致）。逐行通读了当前 991 行全文，并跨文件核对了管线依赖的 helper（biz_util.lua / impl_util.lua）与 build 产物。
+审查对象为 2026-10-16 三个 quick 任务对 `entity/Player.lua` 的累计改动（BASE `ea099f0` → HEAD：`3e6b9ad` 15/7、`80ece00` 299/106、`f32705c` 7/7，per-commit numstat 与 range diff 315/114 对焊一致）。逐行通读了当前 991 行全文，并跨文件核对了管线依赖的 helper（biz_util.lua / impl_util.lua）与 build 产物。
 
 **验证通过的项目（无发现）：**
 
@@ -34,7 +34,7 @@ status: issues_found
 - **vbt CD 命中语义**：698-700 置 `useableItemUsed = true` 后落穿恢复臂、成功臂 696 的 `return` 是唯一提前出口——与 vbt 裁决一致；CD 命中时 useableItemUsed 先置 true 再进战斗暂停（707-709），脱战续按直接进恢复臂，不会重试使用——语义正确。
 - **战斗纪律**：装载函数入口 491、恢复臂 707 双重战斗守卫，pendingEquip/mainHandItem 全量保留，零动作。
 
-**主要关切：** 全局锁谓词只挡「未使用」条目（`useableItemUsed == false`），使用后未恢复的条目不设防，而同槽再装载会整表覆盖条目并摧毁 `mainHandItem` 恢复状态（CR-01，违背 review 规格中「loadingTable 字段不得泄漏进后续装载周期」的显式不变式；锁谓词经 `git show 665dd4a^` 验证与现状 525 行逐字节相同——该窗口是 20c 之前既有的缺陷，20c 的变化是 `mainHandItem` 成为承重恢复目标，使同一窗口后果升级为摧毁双手剑恢复状态——主手 16 空置 + 双手剑滞留背包进入战斗）。
+**主要关切：** 全局锁谓词只挡「未使用」条目（`useableItemUsed == false`），使用后未恢复的条目不设防，而同槽再装载会整表覆盖条目并摧毁 `mainHandItem` 恢复状态（CR-01，违背 review 规格中「loadingTable 字段不得泄漏进后续装载周期」的显式不变式；锁谓词经 `git show 80ece00^` 验证与现状 525 行逐字节相同——该窗口是 20c 之前既有的缺陷，20c 的变化是 `mainHandItem` 成为承重恢复目标，使同一窗口后果升级为摧毁双手剑恢复状态——主手 16 空置 + 双手剑滞留背包进入战斗）。
 
 ---
 
@@ -51,7 +51,7 @@ status: issues_found
 3. 双手路径建立的 `mainHandItem`（双手剑名，608-612）随覆盖永久丢失；
 4. 后续恢复只走 swappingItem 臂：把**旧 pokemon 物品装回 17**，双手剑滞留背包，主手 16 永久空置——需人工手动修复。
 
-该序列用锁定数据可实际触达：装载骷髅/诱饵龙（17 槽、双手路径 A）→ 按释放键使用 → 在恢复前再按装载键且 13 槽五个饰品 pokemon 全部缺席/在 CD（raid 场景常见）→ 循环到 decoy（17 槽）→ swap 支覆盖。**归属澄清（经 `git show 665dd4a^:entity/Player.lua` 实测，旧 424-429 行与当前 525 行谓词逐字节相同）：「使用后未恢复」再装载窗口是 20c 之前既有的缺陷，并非 665dd4a 引入**（此前恢复只依赖 swappingItem/backupItem，被摧毁的后果限于饰品槽的替换物状态；20c 使 `mainHandItem` 成为承重恢复目标后，同一窗口如今摧毁的是双手剑恢复状态）。另产生次生问题：不同槽再装载（如 stale [17] 条目 + 新 [13] 条目并存）时 castLoadedItem 以 `pairs` 任意序迭代且处理首个匹配条目后 `return`（696），行为不确定。
+该序列用锁定数据可实际触达：装载骷髅/诱饵龙（17 槽、双手路径 A）→ 按释放键使用 → 在恢复前再按装载键且 13 槽五个饰品 pokemon 全部缺席/在 CD（raid 场景常见）→ 循环到 decoy（17 槽）→ swap 支覆盖。**归属澄清（经 `git show 80ece00^:entity/Player.lua` 实测，旧 424-429 行与当前 525 行谓词逐字节相同）：「使用后未恢复」再装载窗口是 20c 之前既有的缺陷，并非 80ece00 引入**（此前恢复只依赖 swappingItem/backupItem，被摧毁的后果限于饰品槽的替换物状态；20c 使 `mainHandItem` 成为承重恢复目标后，同一窗口如今摧毁的是双手剑恢复状态）。另产生次生问题：不同槽再装载（如 stale [17] 条目 + 新 [13] 条目并存）时 castLoadedItem 以 `pairs` 任意序迭代且处理首个匹配条目后 `return`（696），行为不确定。
 
 违反 review 规格显式不变式「loadingTable fields must never leak into a later load cycle」与 521 行注释自述的「at most one loaded item at a time」。改区（525、556-560）不属于 707-766 恢复臂字节冻结区，可直接修。
 
